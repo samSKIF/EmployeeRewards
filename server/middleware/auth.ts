@@ -9,6 +9,12 @@ export interface AuthUser {
   isAdmin: boolean;
 }
 
+// This is the main request type with auth information
+export interface AuthenticatedRequest extends Request {
+  user?: AuthUser;
+}
+
+// For backward compatibility
 export interface AuthRequest extends Request {
   user?: AuthUser;
 }
@@ -17,7 +23,7 @@ export const generateToken = (user: AuthUser): string => {
   return jwt.sign(user, JWT_SECRET, { expiresIn: "24h" });
 };
 
-export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -33,7 +39,7 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
   }
 };
 
-export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user?.isAdmin) {
     return res.status(403).json({ message: "Admin access required" });
   }

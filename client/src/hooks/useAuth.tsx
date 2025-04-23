@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-interface User {
+export interface User {
   id: number;
   email: string;
   name: string;
   isAdmin: boolean;
+  department?: string;
 }
 
 interface AuthContextType {

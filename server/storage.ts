@@ -54,6 +54,7 @@ export interface IStorage {
   redeemPoints(userId: number, amount: number, description: string, productId: number): Promise<{ transaction: Transaction, order: Order }>;
   getTransactionsByUserId(userId: number): Promise<TransactionWithDetails[]>;
   getAllTransactions(): Promise<TransactionWithDetails[]>;
+  processPeerReward(senderId: number, recipientId: number, amount: number, reason: string, message: string): Promise<{ transaction: Transaction, recognition: Recognition }>;
   
   // Product methods
   getProducts(): Promise<Product[]>;
@@ -1076,6 +1077,100 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return comment;
+  }
+  
+  // Process a peer-to-peer reward transaction
+  async processPeerReward(
+    senderId: number, 
+    recipientId: number, 
+    amount: number, 
+    reason: string, 
+    message: string
+  ): Promise<{ transaction: Transaction, recognition: Recognition }> {
+    // Get accounts
+    const senderAccount = await this.getAccountByUserId(senderId);
+    const recipientAccount = await this.getAccountByUserId(recipientId);
+    
+    if (!senderAccount) {
+      throw new Error(`Sender account not found for user ${senderId}`);
+    }
+    
+    if (!recipientAccount) {
+      throw new Error(`Recipient account not found for user ${recipientId}`);
+    }
+    
+    // Check if sender has enough points
+    if (senderAccount.balance < amount) {
+      throw new Error(`Insufficient points. Required: ${amount}, Available: ${senderAccount.balance}`);
+    }
+    
+    // Insert the transaction (direct peer-to-peer)
+    const [transaction] = await db.insert(transactions)
+      .values({
+        fromAccountId: senderAccount.id,
+        toAccountId: recipientAccount.id,
+        amount,
+        reason: reason || 'peer_recognition',
+        description: message,
+        createdBy: senderId,
+      })
+      .returning();
+    
+    // Update account balances
+    await db
+      .update(accounts)
+      .set({ balance: senderAccount.balance - amount })
+      .where(eq(accounts.id, senderAccount.id));
+    
+    await db
+      .update(accounts)
+      .set({ balance: recipientAccount.balance + amount })
+      .where(eq(accounts.id, recipientAccount.id));
+    
+    // Create a recognition record
+    const [recognition] = await db.insert(recognitions)
+      .values({
+        recognizerId: senderId,
+        recipientId: recipientId,
+        badgeType: reason,
+        points: amount,
+        message: message,
+      })
+      .returning();
+    
+    // Update the transaction with the recognition ID
+    await db.update(transactions)
+      .set({ recognitionId: recognition.id })
+      .where(eq(transactions.id, transaction.id));
+    
+    // Create a social post for this recognition
+    try {
+      const senderInfo = await this.getUser(senderId);
+      const recipientInfo = await this.getUser(recipientId);
+      
+      if (senderInfo && recipientInfo) {
+        const recipientName = recipientInfo.name.split(' ')[0];
+        const content = `${senderInfo.name} recognized ${recipientInfo.name} with ${amount} points: ${message}`;
+        
+        const [post] = await db.insert(posts)
+          .values({
+            userId: senderId,
+            content: content,
+            type: "recognition",
+          })
+          .returning();
+        
+        // Link the post to the recognition
+        await db.update(recognitions)
+          .set({ postId: post.id })
+          .where(eq(recognitions.id, recognition.id));
+      }
+    } catch (error) {
+      console.error("Error creating social post for recognition:", error);
+      // Continue even if post creation fails
+    }
+    
+    return { transaction, recognition };
   }
 
   async getPostComments(postId: number): Promise<CommentWithUser[]> {

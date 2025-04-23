@@ -17,9 +17,11 @@ import {
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
   Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash
 } from "lucide-react";
-import { PostWithDetails, SocialStats, User } from "@shared/types";
+import { PostWithDetails, SocialStats } from "@shared/types";
+import { User } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PeerRewardForm from "@/components/points/PeerRewardForm";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
@@ -35,7 +37,7 @@ export default function SocialPage() {
   const [showOrgSettings, setShowOrgSettings] = useState(false);
   
   // Get user profile
-  const { data: user } = useQuery<User>({
+  const { data: user = { id: 0, name: '', email: '', isAdmin: false } } = useQuery<User>({
     queryKey: ["/api/users/me"],
     retry: false,
   });
@@ -418,7 +420,7 @@ export default function SocialPage() {
           <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Recognize a Teammate</h2>
+                <h2 className="text-xl font-bold">Recognize & Reward a Teammate</h2>
                 <button 
                   className="text-gray-500 hover:text-gray-700"
                   onClick={() => setIsRecognitionModalOpen(false)}
@@ -427,98 +429,10 @@ export default function SocialPage() {
                 </button>
               </div>
               
-              <div className="space-y-6">
-                {/* Recipient Selection */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Select Teammate</label>
-                  <Select value={recipientId?.toString()} onValueChange={(value) => setRecipientId(Number(value))}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a teammate" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.filter(u => u.id !== user?.id).map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
-                          {user.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Badge Selection */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Select Badge</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {badges.map((badge) => (
-                      <div 
-                        key={badge.type}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                          selectedBadge === badge.type 
-                            ? `border-${badge.color.split('-')[1]}-500 bg-${badge.color.split('-')[1]}-50` 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setSelectedBadge(badge.type)}
-                      >
-                        <div className={`${badge.color} text-white p-2 rounded-full mb-2`}>
-                          {badge.icon}
-                        </div>
-                        <span className="text-xs text-center font-medium">{badge.type}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Message */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Recognition Message</label>
-                  <Textarea 
-                    value={recognitionMessage}
-                    onChange={(e) => setRecognitionMessage(e.target.value)}
-                    placeholder="What are you recognizing them for?"
-                    className="w-full resize-none"
-                    rows={3}
-                  />
-                </div>
-                
-                {/* Points */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Points <span className="text-xs text-gray-500">(Optional)</span>
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <Button 
-                      variant="outline" size="sm"
-                      onClick={() => setRecognitionPoints(Math.max(0, recognitionPoints - 50))}
-                      disabled={recognitionPoints <= 0}
-                    >
-                      -
-                    </Button>
-                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full px-4 py-2 font-bold text-sm min-w-[100px] text-center">
-                      {recognitionPoints} Points
-                    </div>
-                    <Button 
-                      variant="outline" size="sm"
-                      onClick={() => setRecognitionPoints(recognitionPoints + 50)}
-                    >
-                      +
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">These points will be awarded to the recipient</p>
-                </div>
-                
-                <div className="flex justify-end gap-3 mt-6">
-                  <Button variant="outline" onClick={() => setIsRecognitionModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    className="bg-green-600 text-white hover:bg-green-700"
-                    onClick={handleCreateRecognition}
-                    disabled={createRecognitionMutation.isPending}
-                  >
-                    {createRecognitionMutation.isPending ? "Sending..." : "Send Recognition"}
-                  </Button>
-                </div>
-              </div>
+              <PeerRewardForm 
+                onSuccess={() => setIsRecognitionModalOpen(false)}
+                onCancel={() => setIsRecognitionModalOpen(false)}
+              />
             </div>
           </div>
         </div>

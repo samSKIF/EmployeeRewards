@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { verifyToken, requireAdmin as verifyAdmin, AuthenticatedRequest, generateToken } from "./middleware/auth";
+import { verifyToken, requireAdmin as verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
@@ -185,6 +185,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Peer-to-peer rewards endpoint
+  app.post("/api/points/peer-reward", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { recipientId, amount, reason, message } = req.body;
+      
+      if (!recipientId || !amount || !reason || !message) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Check if sending to self
+      if (recipientId === req.user.id) {
+        return res.status(400).json({ message: "You cannot send rewards to yourself" });
+      }
+      
+      // Verify that amount is positive
+      if (amount <= 0) {
+        return res.status(400).json({ message: "Reward amount must be greater than zero" });
+      }
+      
+      // Process the peer-to-peer reward
+      const result = await storage.processPeerReward(
+        req.user.id,
+        recipientId,
+        amount,
+        reason,
+        message
+      );
+      
+      // Get updated balances
+      const senderBalance = await storage.getUserBalance(req.user.id);
+      const recipientBalance = await storage.getUserBalance(recipientId);
+      
+      res.json({
+        transaction: result.transaction,
+        recognition: result.recognition,
+        senderBalance,
+        recipientBalance
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to process peer reward" });
+    }
+  });
+  
   app.post("/api/points/redeem", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
@@ -254,12 +301,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin endpoint to get all users with balance
   app.get("/api/users", verifyToken, verifyAdmin, async (req, res) => {
     try {
       const users = await storage.getAllUsersWithBalance();
       res.json(users);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get users" });
+    }
+  });
+  
+  // Regular users endpoint to get employees for peer rewards
+  app.get("/api/employees", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const users = await storage.getAllUsersWithBalance();
+      
+      // Filter out sensitive information and the current user
+      const filteredUsers = users
+        .filter(user => user.id !== req.user!.id) // Exclude current user
+        .map(user => {
+          const { password, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        });
+      
+      res.json(filteredUsers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get employees" });
     }
   });
   
