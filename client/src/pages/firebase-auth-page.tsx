@@ -87,7 +87,7 @@ export default function FirebaseAuthPage() {
         <div className="w-full max-w-md p-4">
           <Card className="shadow-lg">
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold text-center">Empulse</CardTitle>
+              <CardTitle className="text-2xl font-bold text-center">ThrivioHR</CardTitle>
               <CardDescription className="text-center">
                 Employee Engagement & Rewards Platform
               </CardDescription>
@@ -337,7 +337,7 @@ export default function FirebaseAuthPage() {
         {/* Right side: Hero section */}
         <div className="hidden md:flex w-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-r-lg shadow-lg">
           <div className="flex flex-col justify-center p-8 text-white">
-            <h1 className="text-4xl font-bold mb-4">Welcome to Empulse</h1>
+            <h1 className="text-4xl font-bold mb-4">Welcome to ThrivioHR</h1>
             <p className="text-xl mb-6">
               Empowering teams with recognition, rewards, and social connectivity.
             </p>
