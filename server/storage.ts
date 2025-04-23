@@ -4,16 +4,32 @@ import {
   accounts, Account, 
   transactions, Transaction, 
   products, Product, InsertProduct,
-  orders, Order, InsertOrder
+  orders, Order, InsertOrder,
+  posts, Post, InsertPost,
+  comments, Comment, InsertComment,
+  reactions, Reaction, InsertReaction,
+  polls, Poll, InsertPoll,
+  pollVotes, PollVote, InsertPollVote,
+  recognitions, Recognition, InsertRecognition,
+  conversations, Conversation, InsertConversation,
+  conversationParticipants, ConversationParticipant, InsertConversationParticipant,
+  messages, Message, InsertMessage
 } from "@shared/schema";
-import { eq, ne, desc, and, or, isNull, sql } from "drizzle-orm";
+import { eq, ne, desc, and, or, isNull, sql, count, sum, gt, lt, asc, inArray } from "drizzle-orm";
 import { hash, compare } from "bcrypt";
 import { 
   UserWithBalance,
   TransactionWithDetails,
   OrderWithDetails, 
   ProductWithAvailable,
-  DashboardStats
+  DashboardStats,
+  PostWithDetails,
+  CommentWithUser,
+  RecognitionWithDetails,
+  PollWithVotes,
+  MessageWithSender,
+  ConversationWithDetails,
+  SocialStats
 } from "@shared/types";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 
@@ -671,6 +687,923 @@ export class DatabaseStorage implements IStorage {
       'birthday_bonus',
       'Happy Birthday! Here\'s a gift from the company.'
     );
+  }
+
+  // Social methods - Posts
+  async createPost(userId: number, postData: InsertPost): Promise<Post> {
+    const [post] = await db.insert(posts)
+      .values({
+        ...postData,
+        userId,
+      })
+      .returning();
+    
+    return post;
+  }
+
+  async createPollPost(userId: number, postData: InsertPost, pollData: InsertPoll): Promise<{ post: Post, poll: Poll }> {
+    // Create the post first
+    const [post] = await db.insert(posts)
+      .values({
+        ...postData,
+        userId,
+        type: "poll",
+      })
+      .returning();
+    
+    // Create the poll associated with the post
+    const [poll] = await db.insert(polls)
+      .values({
+        ...pollData,
+        postId: post.id,
+      })
+      .returning();
+    
+    return { post, poll };
+  }
+
+  async createRecognitionPost(
+    userId: number, 
+    postData: InsertPost, 
+    recognitionData: InsertRecognition
+  ): Promise<{ post: Post, recognition: Recognition }> {
+    // Create the post first
+    const [post] = await db.insert(posts)
+      .values({
+        ...postData,
+        userId,
+        type: "recognition",
+      })
+      .returning();
+    
+    // Create the recognition with the post reference
+    const [recognition] = await db.insert(recognitions)
+      .values({
+        ...recognitionData,
+        recognizerId: userId,
+        postId: post.id,
+      })
+      .returning();
+    
+    // If there are points awarded with the recognition, create a transaction
+    if (recognition.points > 0) {
+      const recipient = await this.getUser(recognition.recipientId);
+      
+      if (recipient) {
+        const transaction = await this.earnPoints(
+          recognition.recipientId,
+          recognition.points,
+          'recognition',
+          `Recognition from ${userId}: ${recognition.message}`,
+          userId
+        );
+        
+        // Update the recognition with the transaction reference
+        await db.update(recognitions)
+          .set({ 
+            recognitionId: transaction.id 
+          })
+          .where(eq(recognitions.id, recognition.id));
+      }
+    }
+    
+    return { post, recognition };
+  }
+
+  async getPosts(limit: number = 20, offset: number = 0): Promise<PostWithDetails[]> {
+    // Get posts with user information
+    const postsData = await db.select({
+      post: posts,
+      user: users,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.userId, users.id))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
+    
+    // Get comment counts for each post
+    const postIds = postsData.map(p => p.post.id);
+    
+    // If no posts, return empty array
+    if (postIds.length === 0) {
+      return [];
+    }
+    
+    const commentCounts = await db.select({
+      postId: comments.postId,
+      count: count(comments.id),
+    })
+    .from(comments)
+    .where(inArray(comments.postId, postIds))
+    .groupBy(comments.postId);
+    
+    // Get reaction counts for each post
+    const reactionCounts = await db.select({
+      postId: reactions.postId,
+      type: reactions.type,
+      count: count(reactions.id),
+    })
+    .from(reactions)
+    .where(inArray(reactions.postId, postIds))
+    .groupBy(reactions.postId, reactions.type);
+    
+    // Get polls for poll posts
+    const pollsData = await db.select()
+      .from(polls)
+      .where(inArray(polls.postId, postIds));
+    
+    // Get recognitions for recognition posts
+    const recognitionsData = await db.select({
+      recognition: recognitions,
+      recognizer: users,
+      recipient: users,
+    })
+    .from(recognitions)
+    .leftJoin(users, eq(recognitions.recognizerId, users.id))
+    .leftJoin(users, eq(recognitions.recipientId, users.id))
+    .where(inArray(recognitions.postId, postIds));
+    
+    // Map data to return format
+    const commentCountMap = new Map<number, number>();
+    commentCounts.forEach(c => {
+      commentCountMap.set(c.postId, Number(c.count));
+    });
+    
+    const reactionCountsMap = new Map<number, Record<string, number>>();
+    reactionCounts.forEach(r => {
+      const countsByType = reactionCountsMap.get(r.postId) || {};
+      countsByType[r.type] = Number(r.count);
+      reactionCountsMap.set(r.postId, countsByType);
+    });
+    
+    const pollsMap = new Map<number, Poll>();
+    pollsData.forEach(p => {
+      pollsMap.set(p.postId, p);
+    });
+    
+    const recognitionsMap = new Map<number, RecognitionWithDetails>();
+    recognitionsData.forEach(r => {
+      recognitionsMap.set(r.recognition.postId!, {
+        ...r.recognition,
+        recognizer: { ...r.recognizer, password: '' },
+        recipient: { ...r.recipient, password: '' },
+      });
+    });
+    
+    // Assemble result
+    return postsData.map(p => {
+      const { password, ...userWithoutPassword } = p.user;
+      
+      return {
+        ...p.post,
+        user: userWithoutPassword,
+        commentCount: commentCountMap.get(p.post.id) || 0,
+        reactionCounts: reactionCountsMap.get(p.post.id) || {},
+        poll: p.post.type === 'poll' ? pollsMap.get(p.post.id) : undefined,
+        recognition: p.post.type === 'recognition' ? recognitionsMap.get(p.post.id) : undefined,
+      };
+    });
+  }
+
+  async getUserPosts(userId: number, limit: number = 20, offset: number = 0): Promise<PostWithDetails[]> {
+    // Similar to getPosts but filtered by userId
+    const postsData = await db.select({
+      post: posts,
+      user: users,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.userId, users.id))
+    .where(eq(posts.userId, userId))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
+    
+    // Get comment counts for each post
+    const postIds = postsData.map(p => p.post.id);
+    
+    // If no posts, return empty array
+    if (postIds.length === 0) {
+      return [];
+    }
+    
+    const commentCounts = await db.select({
+      postId: comments.postId,
+      count: count(comments.id),
+    })
+    .from(comments)
+    .where(inArray(comments.postId, postIds))
+    .groupBy(comments.postId);
+    
+    // Get reaction counts for each post
+    const reactionCounts = await db.select({
+      postId: reactions.postId,
+      type: reactions.type,
+      count: count(reactions.id),
+    })
+    .from(reactions)
+    .where(inArray(reactions.postId, postIds))
+    .groupBy(reactions.postId, reactions.type);
+    
+    // Get polls for poll posts
+    const pollsData = await db.select()
+      .from(polls)
+      .where(inArray(polls.postId, postIds));
+    
+    // Get recognitions for recognition posts
+    const recognitionsData = await db.select({
+      recognition: recognitions,
+      recognizer: users,
+      recipient: users,
+    })
+    .from(recognitions)
+    .leftJoin(users, eq(recognitions.recognizerId, users.id))
+    .leftJoin(users, eq(recognitions.recipientId, users.id))
+    .where(inArray(recognitions.postId, postIds));
+    
+    // Map data to return format as in getPosts
+    const commentCountMap = new Map<number, number>();
+    const reactionCountsMap = new Map<number, Record<string, number>>();
+    const pollsMap = new Map<number, Poll>();
+    const recognitionsMap = new Map<number, RecognitionWithDetails>();
+    
+    commentCounts.forEach(c => {
+      commentCountMap.set(c.postId, Number(c.count));
+    });
+    
+    reactionCounts.forEach(r => {
+      const countsByType = reactionCountsMap.get(r.postId) || {};
+      countsByType[r.type] = Number(r.count);
+      reactionCountsMap.set(r.postId, countsByType);
+    });
+    
+    pollsData.forEach(p => {
+      pollsMap.set(p.postId, p);
+    });
+    
+    recognitionsData.forEach(r => {
+      recognitionsMap.set(r.recognition.postId!, {
+        ...r.recognition,
+        recognizer: { ...r.recognizer, password: '' },
+        recipient: { ...r.recipient, password: '' },
+      });
+    });
+    
+    // Assemble result
+    return postsData.map(p => {
+      const { password, ...userWithoutPassword } = p.user;
+      
+      return {
+        ...p.post,
+        user: userWithoutPassword,
+        commentCount: commentCountMap.get(p.post.id) || 0,
+        reactionCounts: reactionCountsMap.get(p.post.id) || {},
+        poll: p.post.type === 'poll' ? pollsMap.get(p.post.id) : undefined,
+        recognition: p.post.type === 'recognition' ? recognitionsMap.get(p.post.id) : undefined,
+      };
+    });
+  }
+
+  async getPostById(id: number): Promise<PostWithDetails | undefined> {
+    // Get post with user information
+    const [postData] = await db.select({
+      post: posts,
+      user: users,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.userId, users.id))
+    .where(eq(posts.id, id));
+    
+    if (!postData) {
+      return undefined;
+    }
+    
+    // Get comment count
+    const [commentCount] = await db.select({
+      count: count(comments.id),
+    })
+    .from(comments)
+    .where(eq(comments.postId, id));
+    
+    // Get reaction counts
+    const reactionCounts = await db.select({
+      type: reactions.type,
+      count: count(reactions.id),
+    })
+    .from(reactions)
+    .where(eq(reactions.postId, id))
+    .groupBy(reactions.type);
+    
+    // Get poll if post type is poll
+    let poll: Poll | undefined = undefined;
+    if (postData.post.type === 'poll') {
+      const [pollData] = await db.select()
+        .from(polls)
+        .where(eq(polls.postId, id));
+      poll = pollData;
+    }
+    
+    // Get recognition if post type is recognition
+    let recognition: RecognitionWithDetails | undefined = undefined;
+    if (postData.post.type === 'recognition') {
+      const [recognitionData] = await db.select({
+        recognition: recognitions,
+        recognizer: users,
+        recipient: users,
+      })
+      .from(recognitions)
+      .leftJoin(users, eq(recognitions.recognizerId, users.id))
+      .leftJoin(users, eq(recognitions.recipientId, users.id))
+      .where(eq(recognitions.postId, id));
+      
+      if (recognitionData) {
+        recognition = {
+          ...recognitionData.recognition,
+          recognizer: { ...recognitionData.recognizer, password: '' },
+          recipient: { ...recognitionData.recipient, password: '' },
+        };
+      }
+    }
+    
+    // Map reaction counts
+    const reactionCountsMap: Record<string, number> = {};
+    reactionCounts.forEach(r => {
+      reactionCountsMap[r.type] = Number(r.count);
+    });
+    
+    // Compose response
+    const { password, ...userWithoutPassword } = postData.user;
+    
+    return {
+      ...postData.post,
+      user: userWithoutPassword,
+      commentCount: Number(commentCount.count),
+      reactionCounts: reactionCountsMap,
+      poll,
+      recognition,
+    };
+  }
+
+  async deletePost(id: number): Promise<boolean> {
+    try {
+      await db.delete(posts).where(eq(posts.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      return false;
+    }
+  }
+
+  async updatePost(id: number, postData: Partial<InsertPost>): Promise<Post> {
+    const [post] = await db.update(posts)
+      .set({ 
+        ...postData,
+        updatedAt: new Date(), 
+      })
+      .where(eq(posts.id, id))
+      .returning();
+    
+    return post;
+  }
+
+  // Social methods - Comments
+  async createComment(userId: number, commentData: InsertComment): Promise<Comment> {
+    const [comment] = await db.insert(comments)
+      .values({
+        ...commentData,
+        userId,
+      })
+      .returning();
+    
+    return comment;
+  }
+
+  async getPostComments(postId: number): Promise<CommentWithUser[]> {
+    const commentsData = await db.select({
+      comment: comments,
+      user: users,
+    })
+    .from(comments)
+    .leftJoin(users, eq(comments.userId, users.id))
+    .where(eq(comments.postId, postId))
+    .orderBy(asc(comments.createdAt));
+    
+    return commentsData.map(c => {
+      const { password, ...userWithoutPassword } = c.user;
+      
+      return {
+        ...c.comment,
+        user: userWithoutPassword,
+      };
+    });
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    try {
+      await db.delete(comments).where(eq(comments.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      return false;
+    }
+  }
+
+  // Social methods - Reactions
+  async addReaction(userId: number, reactionData: InsertReaction): Promise<Reaction> {
+    // Remove any existing reaction by this user on this post
+    await this.removeReaction(userId, reactionData.postId);
+    
+    // Add the new reaction
+    const [reaction] = await db.insert(reactions)
+      .values({
+        ...reactionData,
+        userId,
+      })
+      .returning();
+    
+    return reaction;
+  }
+
+  async removeReaction(userId: number, postId: number): Promise<boolean> {
+    try {
+      await db.delete(reactions)
+        .where(and(
+          eq(reactions.userId, userId),
+          eq(reactions.postId, postId)
+        ));
+      return true;
+    } catch (error) {
+      console.error('Error removing reaction:', error);
+      return false;
+    }
+  }
+
+  async getUserReaction(userId: number, postId: number): Promise<Reaction | undefined> {
+    const [reaction] = await db.select()
+      .from(reactions)
+      .where(and(
+        eq(reactions.userId, userId),
+        eq(reactions.postId, postId)
+      ));
+    
+    return reaction;
+  }
+
+  // Social methods - Polls
+  async getPollById(id: number): Promise<PollWithVotes | undefined> {
+    // Get the poll
+    const [poll] = await db.select()
+      .from(polls)
+      .where(eq(polls.id, id));
+    
+    if (!poll) {
+      return undefined;
+    }
+    
+    // Get vote counts for each option
+    const voteResults = await db.select({
+      optionIndex: pollVotes.optionIndex,
+      count: count(pollVotes.id),
+    })
+    .from(pollVotes)
+    .where(eq(pollVotes.pollId, id))
+    .groupBy(pollVotes.optionIndex);
+    
+    // Get total votes
+    const [totalVotesResult] = await db.select({
+      count: count(pollVotes.id),
+    })
+    .from(pollVotes)
+    .where(eq(pollVotes.pollId, id));
+    
+    const totalVotes = Number(totalVotesResult.count);
+    
+    // Construct vote counts and percentages arrays
+    const voteCounts = new Array(poll.options.length).fill(0);
+    const votePercentages = new Array(poll.options.length).fill(0);
+    
+    voteResults.forEach(result => {
+      voteCounts[result.optionIndex] = Number(result.count);
+      votePercentages[result.optionIndex] = totalVotes > 0 
+        ? Math.round((Number(result.count) / totalVotes) * 100) 
+        : 0;
+    });
+    
+    return {
+      ...poll,
+      totalVotes,
+      voteCounts,
+      votePercentages,
+    };
+  }
+
+  async votePoll(userId: number, pollId: number, optionIndex: number): Promise<PollVote> {
+    // Check if user has already voted on this poll
+    const existingVote = await this.getUserPollVote(userId, pollId);
+    
+    if (existingVote) {
+      // Update existing vote
+      const [vote] = await db.update(pollVotes)
+        .set({ optionIndex })
+        .where(eq(pollVotes.id, existingVote.id))
+        .returning();
+      
+      return vote;
+    } else {
+      // Create new vote
+      const [vote] = await db.insert(pollVotes)
+        .values({
+          userId,
+          pollId,
+          optionIndex,
+        })
+        .returning();
+      
+      return vote;
+    }
+  }
+
+  async getUserPollVote(userId: number, pollId: number): Promise<PollVote | undefined> {
+    const [vote] = await db.select()
+      .from(pollVotes)
+      .where(and(
+        eq(pollVotes.userId, userId),
+        eq(pollVotes.pollId, pollId)
+      ));
+    
+    return vote;
+  }
+
+  // Social methods - Recognitions
+  async createRecognition(recognitionData: InsertRecognition): Promise<Recognition> {
+    const [recognition] = await db.insert(recognitions)
+      .values(recognitionData)
+      .returning();
+    
+    return recognition;
+  }
+
+  async getUserRecognitionsGiven(userId: number): Promise<RecognitionWithDetails[]> {
+    const recognitionsData = await db.select({
+      recognition: recognitions,
+      recipient: users,
+    })
+    .from(recognitions)
+    .leftJoin(users, eq(recognitions.recipientId, users.id))
+    .where(eq(recognitions.recognizerId, userId))
+    .orderBy(desc(recognitions.createdAt));
+    
+    // Get recognizer info
+    const [recognizer] = await db.select()
+      .from(users)
+      .where(eq(users.id, userId));
+    
+    if (!recognizer) {
+      return [];
+    }
+    
+    return recognitionsData.map(r => {
+      const { password: recipientPassword, ...recipientWithoutPassword } = r.recipient;
+      const { password: recognizerPassword, ...recognizerWithoutPassword } = recognizer;
+      
+      return {
+        ...r.recognition,
+        recognizer: recognizerWithoutPassword,
+        recipient: recipientWithoutPassword,
+      };
+    });
+  }
+
+  async getUserRecognitionsReceived(userId: number): Promise<RecognitionWithDetails[]> {
+    const recognitionsData = await db.select({
+      recognition: recognitions,
+      recognizer: users,
+    })
+    .from(recognitions)
+    .leftJoin(users, eq(recognitions.recognizerId, users.id))
+    .where(eq(recognitions.recipientId, userId))
+    .orderBy(desc(recognitions.createdAt));
+    
+    // Get recipient info
+    const [recipient] = await db.select()
+      .from(users)
+      .where(eq(users.id, userId));
+    
+    if (!recipient) {
+      return [];
+    }
+    
+    return recognitionsData.map(r => {
+      const { password: recognizerPassword, ...recognizerWithoutPassword } = r.recognizer;
+      const { password: recipientPassword, ...recipientWithoutPassword } = recipient;
+      
+      return {
+        ...r.recognition,
+        recognizer: recognizerWithoutPassword,
+        recipient: recipientWithoutPassword,
+      };
+    });
+  }
+
+  // Social methods - Chat
+  async createConversation(
+    userId: number, 
+    conversationData: InsertConversation, 
+    participantIds: number[]
+  ): Promise<Conversation> {
+    // Create the conversation
+    const [conversation] = await db.insert(conversations)
+      .values(conversationData)
+      .returning();
+    
+    // Add participants
+    const allParticipantIds = Array.from(new Set([userId, ...participantIds]));
+    
+    for (const participantId of allParticipantIds) {
+      await db.insert(conversationParticipants)
+        .values({
+          conversationId: conversation.id,
+          userId: participantId,
+        });
+    }
+    
+    return conversation;
+  }
+
+  async getUserConversations(userId: number): Promise<ConversationWithDetails[]> {
+    // Get all conversations where user is a participant
+    const userConversations = await db.select({
+      conversationId: conversationParticipants.conversationId,
+    })
+    .from(conversationParticipants)
+    .where(eq(conversationParticipants.userId, userId));
+    
+    const conversationIds = userConversations.map(c => c.conversationId);
+    
+    if (conversationIds.length === 0) {
+      return [];
+    }
+    
+    // Get all conversations with their details
+    const conversationsData = await db.select()
+      .from(conversations)
+      .where(inArray(conversations.id, conversationIds))
+      .orderBy(desc(conversations.updatedAt));
+    
+    // For each conversation, get participants
+    const result: ConversationWithDetails[] = [];
+    
+    for (const conversation of conversationsData) {
+      // Get participants
+      const participantsData = await db.select({
+        user: users,
+      })
+      .from(conversationParticipants)
+      .leftJoin(users, eq(conversationParticipants.userId, users.id))
+      .where(eq(conversationParticipants.conversationId, conversation.id));
+      
+      const participants = participantsData.map(p => {
+        const { password, ...userWithoutPassword } = p.user;
+        return userWithoutPassword;
+      });
+      
+      // Get last message
+      const [lastMessage] = await db.select({
+        message: messages,
+        sender: users,
+      })
+      .from(messages)
+      .leftJoin(users, eq(messages.senderId, users.id))
+      .where(eq(messages.conversationId, conversation.id))
+      .orderBy(desc(messages.createdAt))
+      .limit(1);
+      
+      // Get unread count for current user
+      const [unreadCountResult] = await db.select({
+        count: count(messages.id),
+      })
+      .from(messages)
+      .where(and(
+        eq(messages.conversationId, conversation.id),
+        eq(messages.isRead, false),
+        ne(messages.senderId, userId)
+      ));
+      
+      const unreadCount = Number(unreadCountResult.count);
+      
+      // Assemble conversation details
+      let lastMessageWithSender: MessageWithSender | undefined = undefined;
+      
+      if (lastMessage) {
+        const { password, ...senderWithoutPassword } = lastMessage.sender;
+        
+        lastMessageWithSender = {
+          ...lastMessage.message,
+          sender: senderWithoutPassword,
+        };
+      }
+      
+      result.push({
+        ...conversation,
+        participants,
+        lastMessage: lastMessageWithSender,
+        unreadCount,
+      });
+    }
+    
+    return result;
+  }
+
+  async getConversationById(id: number): Promise<ConversationWithDetails | undefined> {
+    // Get the conversation
+    const [conversation] = await db.select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+    
+    if (!conversation) {
+      return undefined;
+    }
+    
+    // Get participants
+    const participantsData = await db.select({
+      user: users,
+    })
+    .from(conversationParticipants)
+    .leftJoin(users, eq(conversationParticipants.userId, users.id))
+    .where(eq(conversationParticipants.conversationId, id));
+    
+    const participants = participantsData.map(p => {
+      const { password, ...userWithoutPassword } = p.user;
+      return userWithoutPassword;
+    });
+    
+    // Get last message
+    const [lastMessage] = await db.select({
+      message: messages,
+      sender: users,
+    })
+    .from(messages)
+    .leftJoin(users, eq(messages.senderId, users.id))
+    .where(eq(messages.conversationId, id))
+    .orderBy(desc(messages.createdAt))
+    .limit(1);
+    
+    // Assemble conversation details
+    let lastMessageWithSender: MessageWithSender | undefined = undefined;
+    
+    if (lastMessage) {
+      const { password, ...senderWithoutPassword } = lastMessage.sender;
+      
+      lastMessageWithSender = {
+        ...lastMessage.message,
+        sender: senderWithoutPassword,
+      };
+    }
+    
+    return {
+      ...conversation,
+      participants,
+      lastMessage: lastMessageWithSender,
+      unreadCount: 0, // This would be specific to a user, so we set it to 0 here
+    };
+  }
+
+  async sendMessage(userId: number, messageData: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages)
+      .values({
+        ...messageData,
+        senderId: userId,
+      })
+      .returning();
+    
+    // Update conversation's updatedAt
+    await db.update(conversations)
+      .set({ updatedAt: new Date() })
+      .where(eq(conversations.id, messageData.conversationId));
+    
+    return message;
+  }
+
+  async getConversationMessages(
+    conversationId: number, 
+    limit: number = 20, 
+    offset: number = 0
+  ): Promise<MessageWithSender[]> {
+    const messagesData = await db.select({
+      message: messages,
+      sender: users,
+    })
+    .from(messages)
+    .leftJoin(users, eq(messages.senderId, users.id))
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(desc(messages.createdAt))
+    .limit(limit)
+    .offset(offset);
+    
+    return messagesData.map(m => {
+      const { password, ...senderWithoutPassword } = m.sender;
+      
+      return {
+        ...m.message,
+        sender: senderWithoutPassword,
+      };
+    });
+  }
+
+  async markMessagesAsRead(userId: number, conversationId: number): Promise<boolean> {
+    try {
+      await db.update(messages)
+        .set({ isRead: true })
+        .where(and(
+          eq(messages.conversationId, conversationId),
+          ne(messages.senderId, userId),
+          eq(messages.isRead, false)
+        ));
+      
+      return true;
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+      return false;
+    }
+  }
+
+  // Social methods - Stats
+  async getUserSocialStats(userId: number): Promise<SocialStats> {
+    // Get posts count
+    const [postsCountResult] = await db.select({
+      count: count(posts.id),
+    })
+    .from(posts)
+    .where(eq(posts.userId, userId));
+    
+    // Get comments count
+    const [commentsCountResult] = await db.select({
+      count: count(comments.id),
+    })
+    .from(comments)
+    .where(eq(comments.userId, userId));
+    
+    // Get recognitions received count
+    const [recognitionsReceivedCountResult] = await db.select({
+      count: count(recognitions.id),
+    })
+    .from(recognitions)
+    .where(eq(recognitions.recipientId, userId));
+    
+    // Get recognitions given count
+    const [recognitionsGivenCountResult] = await db.select({
+      count: count(recognitions.id),
+    })
+    .from(recognitions)
+    .where(eq(recognitions.recognizerId, userId));
+    
+    // Get unread messages count
+    const userConversations = await db.select({
+      conversationId: conversationParticipants.conversationId,
+    })
+    .from(conversationParticipants)
+    .where(eq(conversationParticipants.userId, userId));
+    
+    const conversationIds = userConversations.map(c => c.conversationId);
+    
+    let unreadMessagesCount = 0;
+    
+    if (conversationIds.length > 0) {
+      const [unreadMessagesCountResult] = await db.select({
+        count: count(messages.id),
+      })
+      .from(messages)
+      .where(and(
+        inArray(messages.conversationId, conversationIds),
+        eq(messages.isRead, false),
+        ne(messages.senderId, userId)
+      ));
+      
+      unreadMessagesCount = Number(unreadMessagesCountResult.count);
+    }
+    
+    // Calculate engagement score based on activity
+    const postsCount = Number(postsCountResult.count);
+    const commentsCount = Number(commentsCountResult.count);
+    const recognitionsReceived = Number(recognitionsReceivedCountResult.count);
+    const recognitionsGiven = Number(recognitionsGivenCountResult.count);
+    
+    // Simple engagement score calculation
+    const engagementScore = Math.min(100, 
+      postsCount * 2 + 
+      commentsCount + 
+      recognitionsReceived * 3 + 
+      recognitionsGiven * 2
+    );
+    
+    return {
+      postsCount,
+      commentsCount,
+      recognitionsReceived,
+      recognitionsGiven,
+      unreadMessages: unreadMessagesCount,
+      engagementScore,
+    };
   }
 }
 
