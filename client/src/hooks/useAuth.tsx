@@ -42,14 +42,54 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem("token");
+    // Auto-login function that automatically logs in as admin
+    const performAutoLogin = async () => {
+      try {
+        console.log("AuthProvider initializing, checking token");
+        
+        // First check if we have a token already
+        const token = localStorage.getItem("token");
+        if (token) {
+          console.log("Token found, fetching user profile");
+          fetchUserProfile();
+          return;
+        }
+        
+        // Otherwise perform auto-login
+        console.log("No token found, performing automatic admin login");
+        
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            username: "admin", 
+            password: "admin123" 
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Auto login failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Auto-login successful, token received");
+        
+        // Store token
+        localStorage.setItem("token", data.token);
+        
+        // Get user profile
+        await fetchUserProfile();
+        
+      } catch (error) {
+        console.error("Auto-login failed:", error);
+        setIsLoading(false);
+      }
+    };
     
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setIsLoading(false);
-    }
+    // Perform auto-login on initial load
+    performAutoLogin();
   }, []);
 
   const fetchUserProfile = async () => {
