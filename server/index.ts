@@ -35,15 +35,17 @@ async function startServer() {
     }
   });
 
+  // Immediately start listening on the port to satisfy Replit's workflow timeout
   server.listen(port, "0.0.0.0", () => {
     log(`Server listening on port ${port}`);
 
-    // Start full initialization in background
+    // Start full initialization in background with a longer timeout
+    // This helps with the Replit workflow 20-second timeout constraint
     setTimeout(() => {
       import("./full-init").catch(err => {
         console.error("Error loading full initialization:", err);
       });
-    }, 100);
+    }, 50); // Reduced timeout for faster initialization
   });
 }
 

@@ -1172,9 +1172,6 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Initialize the server
   const httpServer = createServer(app);
   
-  // Start the birthday rewards scheduler
-  scheduleBirthdayRewards();
-  
   // Start server first, then seed data in the background
   const server = httpServer;
   
