@@ -1,0 +1,46 @@
+import cron from "node-cron";
+import { db } from "../db";
+import { users, accounts } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
+import { awardBirthdayPoints } from '../storage';
+
+// Format for date comparison in PostgreSQL
+const formatPostgresDate = (date: Date) => {
+  return `${date.getMonth() + 1}-${date.getDate()}`;
+};
+
+// Schedule birthday rewards job - runs every day at 8:00 AM
+export const scheduleBirthdayRewards = () => {
+  console.log("🎂 Scheduling birthday rewards job (daily at 08:00)");
+  
+  cron.schedule("0 8 * * *", async () => {
+    try {
+      console.log("🎂 Running birthday rewards job...");
+      const today = new Date();
+      const monthDay = formatPostgresDate(today);
+      
+      // Find users whose birthday is today
+      const birthdayUsers = await db
+        .select()
+        .from(users)
+        .where(
+          sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
+              EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+        );
+      
+      console.log(`Found ${birthdayUsers.length} users with birthdays today`);
+      
+      // Award points to each user
+      for (const user of birthdayUsers) {
+        await awardBirthdayPoints(user.id);
+      }
+      
+      console.log("🎂 Birthday rewards job completed successfully");
+    } catch (error) {
+      console.error("Error in birthday rewards job:", error);
+    }
+  });
+  
+  // For testing purposes, you can manually trigger the job
+  // For testing: awardBirthdayPoints(1);
+};
