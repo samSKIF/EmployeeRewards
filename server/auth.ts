@@ -7,9 +7,23 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User } from "@shared/schema";
 
+// Interface for auth-related information in the request
+interface AuthenticatedRequest extends Request {
+  user: Express.User;
+}
+
 declare global {
   namespace Express {
-    interface User extends User {}
+    // Extending the Express.User interface with our User type
+    interface User {
+      id: number;
+      username: string;
+      name: string;
+      email: string;
+      isAdmin: boolean | null;
+      password: string;
+      // other user properties might also be here
+    }
   }
 }
 
@@ -65,7 +79,7 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => {
+  passport.serializeUser((user: Express.User, done) => {
     done(null, user.id);
   });
 
@@ -117,13 +131,13 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       
-      req.login(user, (err) => {
+      req.login(user, (err: any) => {
         if (err) return next(err);
         
         // Return user without password
@@ -134,9 +148,9 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
+    req.logout((err: any) => {
       if (err) return next(err);
-      req.session.destroy((err) => {
+      req.session.destroy((err: any) => {
         if (err) return next(err);
         res.clearCookie("connect.sid");
         res.status(200).json({ message: "Logged out successfully" });
