@@ -101,7 +101,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error("Auth endpoint test failed:", err);
       }
       
-      const loginData = { email, password };
+      // Try with username instead of email for our seeded admin user
+      const loginData = email === "admin@demo.io" 
+        ? { username: "admin", password } 
+        : { email, password };
       
       console.log("Sending login data:", loginData);
       
@@ -116,7 +119,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
       
       console.log("Login response status:", response.status, response.statusText);
-      console.log("Login response headers:", Object.fromEntries([...response.headers]));
       
       const responseText = await response.text();
       console.log("Raw response:", responseText);

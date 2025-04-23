@@ -14,24 +14,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
-      console.log("Login attempt received:", req.body);
-      const { email, password } = req.body;
+      console.log("LOGIN ATTEMPT - Raw body:", req.body);
       
-      if (!email || !password) {
-        console.log("Missing email or password");
-        return res.status(400).json({ message: "Email and password are required" });
+      // Handle both email and username login attempts
+      const { email, username, password } = req.body;
+      
+      if ((!email && !username) || !password) {
+        console.log("Missing authentication credentials");
+        return res.status(400).json({ message: "Email/username and password are required" });
       }
       
-      console.log(`Looking up user with email: ${email}`);
-      const user = await storage.getUserByEmail(email);
+      // Try to find user by email first, then by username if email doesn't exist
+      let user = null;
+      
+      if (email) {
+        console.log(`Looking up user with email: ${email}`);
+        user = await storage.getUserByEmail(email);
+        if (!user) {
+          console.log(`No user found with email: ${email}`);
+        }
+      }
+      
+      if (!user && username) {
+        console.log(`Looking up user with username: ${username}`);
+        // Add a getUserByUsername method to storage or use direct DB query
+        const [foundUser] = await db.select().from(users).where(eq(users.username, username));
+        user = foundUser;
+        if (!user) {
+          console.log(`No user found with username: ${username}`);
+        }
+      }
       
       if (!user) {
-        console.log(`No user found with email: ${email}`);
+        console.log("No user found with provided credentials");
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
       console.log(`User found: ${user.username}, verifying password`);
+      console.log("Stored password hash:", user.password);
+      console.log("Provided password:", password);
+      
       const passwordMatch = await storage.verifyPassword(password, user.password);
+      
+      console.log("Password verification result:", passwordMatch);
       
       if (!passwordMatch) {
         console.log("Password verification failed");
@@ -55,7 +80,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userWithoutPassword } = user;
       
       console.log("Login successful for:", userWithoutPassword);
-      res.json({
+      console.log("Generated token:", token.substring(0, 20) + "...");
+      
+      res.status(200).json({
         token,
         user: userWithoutPassword
       });
