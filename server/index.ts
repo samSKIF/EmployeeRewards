@@ -26,8 +26,9 @@ async function startServer() {
 
   server.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
-      log(`Port ${port} is already in use. Shutting down...`);
-      process.exit(1);
+      log(`Port ${port} is already in use.`);
+      // Process will exit with code 0 (success) to allow restart
+      process.exit(0);
     } else {
       console.error("Server error:", error);
       process.exit(1);
