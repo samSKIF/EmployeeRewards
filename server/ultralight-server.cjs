@@ -58,7 +58,7 @@ app.get('/api/firebase-config', (req, res) => {
 });
 
 // Import Firebase authentication middleware
-const { authenticateFirebase, requireAdmin } = require('./firebase-middleware');
+const { authenticateFirebase, requireAdmin } = require('./firebase-middleware.cjs');
 
 // Protected API endpoint requiring Firebase authentication
 app.get('/api/user-profile', authenticateFirebase, (req, res) => {
