@@ -54,7 +54,7 @@ app.get('/', (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Empulse - Employee Engagement Platform</title>
+      <title>ThrivioHR - Employee Engagement Platform</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
@@ -120,7 +120,7 @@ app.get('/', (req, res) => {
     </head>
     <body>
       <div class="container">
-        <h1>Empulse</h1>
+        <h1>ThrivioHR</h1>
         <p>Employee Engagement Platform</p>
         
         <div class="actions">

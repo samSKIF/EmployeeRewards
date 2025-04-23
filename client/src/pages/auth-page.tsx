@@ -336,7 +336,7 @@ export default function AuthPage() {
           </div>
           
           <p className="text-center text-sm text-gray-500 mt-8">
-            © 2025 Empulse. All rights reserved.
+            © 2025 ThrivioHR. All rights reserved.
           </p>
         </div>
       </div>
