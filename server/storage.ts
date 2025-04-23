@@ -56,6 +56,47 @@ export interface IStorage {
   
   // Scheduled methods
   awardBirthdayPoints(userId: number): Promise<Transaction>;
+  
+  // Social methods - Posts
+  createPost(userId: number, postData: InsertPost): Promise<Post>;
+  createPollPost(userId: number, postData: InsertPost, pollData: InsertPoll): Promise<{ post: Post, poll: Poll }>;
+  createRecognitionPost(userId: number, postData: InsertPost, recognitionData: InsertRecognition): Promise<{ post: Post, recognition: Recognition }>;
+  getPosts(limit?: number, offset?: number): Promise<PostWithDetails[]>;
+  getUserPosts(userId: number, limit?: number, offset?: number): Promise<PostWithDetails[]>;
+  getPostById(id: number): Promise<PostWithDetails | undefined>;
+  deletePost(id: number): Promise<boolean>;
+  updatePost(id: number, postData: Partial<InsertPost>): Promise<Post>;
+  
+  // Social methods - Comments
+  createComment(userId: number, commentData: InsertComment): Promise<Comment>;
+  getPostComments(postId: number): Promise<CommentWithUser[]>;
+  deleteComment(id: number): Promise<boolean>;
+  
+  // Social methods - Reactions
+  addReaction(userId: number, reactionData: InsertReaction): Promise<Reaction>;
+  removeReaction(userId: number, postId: number): Promise<boolean>;
+  getUserReaction(userId: number, postId: number): Promise<Reaction | undefined>;
+  
+  // Social methods - Polls
+  getPollById(id: number): Promise<PollWithVotes | undefined>;
+  votePoll(userId: number, pollId: number, optionIndex: number): Promise<PollVote>;
+  getUserPollVote(userId: number, pollId: number): Promise<PollVote | undefined>;
+  
+  // Social methods - Recognitions
+  createRecognition(recognitionData: InsertRecognition): Promise<Recognition>;
+  getUserRecognitionsGiven(userId: number): Promise<RecognitionWithDetails[]>;
+  getUserRecognitionsReceived(userId: number): Promise<RecognitionWithDetails[]>;
+  
+  // Social methods - Chat
+  createConversation(userId: number, conversationData: InsertConversation, participantIds: number[]): Promise<Conversation>;
+  getUserConversations(userId: number): Promise<ConversationWithDetails[]>;
+  getConversationById(id: number): Promise<ConversationWithDetails | undefined>;
+  sendMessage(userId: number, messageData: InsertMessage): Promise<Message>;
+  getConversationMessages(conversationId: number, limit?: number, offset?: number): Promise<MessageWithSender[]>;
+  markMessagesAsRead(userId: number, conversationId: number): Promise<boolean>;
+  
+  // Social methods - Stats
+  getUserSocialStats(userId: number): Promise<SocialStats>;
 }
 
 export class DatabaseStorage implements IStorage {

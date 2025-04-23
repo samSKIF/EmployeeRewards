@@ -13,14 +13,10 @@ export const users = pgTable("users", {
   department: text("department"),
   isAdmin: boolean("is_admin").default(false),
   birthDate: date("birth_date"),
+  avatarUrl: text("avatar_url"),
+  jobTitle: text("job_title"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-// Relationships for users
-export const usersRelations = relations(users, ({ many }) => ({
-  transactions: many(transactions),
-  products: many(products),
-}));
 
 // Accounts table to track point balances (ledger)
 export const accounts = pgTable("accounts", {
@@ -41,22 +37,8 @@ export const transactions = pgTable("transactions", {
   reason: text("reason"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),
+  recognitionId: integer("recognition_id").references(() => recognitions.id),
 });
-
-export const transactionsRelations = relations(transactions, ({ one }) => ({
-  fromAccount: one(accounts, {
-    fields: [transactions.fromAccountId],
-    references: [accounts.id],
-  }),
-  toAccount: one(accounts, {
-    fields: [transactions.toAccountId],
-    references: [accounts.id],
-  }),
-  creator: one(users, {
-    fields: [transactions.createdBy],
-    references: [users.id],
-  }),
-}));
 
 // Products table (rewards)
 export const products = pgTable("products", {
@@ -72,14 +54,6 @@ export const products = pgTable("products", {
   createdBy: integer("created_by").references(() => users.id),
 });
 
-export const productsRelations = relations(products, ({ one, many }) => ({
-  creator: one(users, {
-    fields: [products.createdBy],
-    references: [users.id],
-  }),
-  orders: many(orders),
-}));
-
 // Orders table
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
@@ -91,6 +65,136 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
 });
+
+// Post schema for social feed
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  type: text("type").notNull().default("standard"), // standard, poll, announcement, recognition
+  tags: text("tags").array(),
+  isPinned: boolean("is_pinned").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Comment schema
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Reaction schema
+export const reactions = pgTable("reactions", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: text("type").notNull(), // like, celebrate, insightful, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Poll schema
+export const polls = pgTable("polls", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
+  question: text("question").notNull(),
+  options: text("options").array().notNull(),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Poll vote schema
+export const pollVotes = pgTable("poll_votes", {
+  id: serial("id").primaryKey(),
+  pollId: integer("poll_id").references(() => polls.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  optionIndex: integer("option_index").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Recognition schema for peer-to-peer recognition
+export const recognitions = pgTable("recognitions", {
+  id: serial("id").primaryKey(),
+  recognizerId: integer("recognizer_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  recipientId: integer("recipient_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }),
+  badgeType: text("badge_type").notNull(), // work_anniversary, birthday, teamwork, etc.
+  points: integer("points").notNull().default(0),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Chat schema
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  isGroup: boolean("is_group").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+export const conversationParticipants = pgTable("conversation_participants", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  senderId: integer("sender_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Define relationships
+export const usersRelations = relations(users, ({ many }) => ({
+  transactions: many(transactions, { relationName: "userTransactions" }),
+  products: many(products),
+  posts: many(posts),
+  comments: many(comments),
+  reactions: many(reactions),
+  pollVotes: many(pollVotes),
+  recognitionsGiven: many(recognitions, { relationName: "recognizer" }),
+  recognitionsReceived: many(recognitions, { relationName: "recipient" }),
+  sentMessages: many(messages, { relationName: "sender" }),
+  conversationParticipants: many(conversationParticipants),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  fromAccount: one(accounts, {
+    fields: [transactions.fromAccountId],
+    references: [accounts.id],
+  }),
+  toAccount: one(accounts, {
+    fields: [transactions.toAccountId],
+    references: [accounts.id],
+  }),
+  creator: one(users, {
+    fields: [transactions.createdBy],
+    references: [users.id],
+    relationName: "userTransactions"
+  }),
+  recognition: one(recognitions, {
+    fields: [transactions.recognitionId],
+    references: [recognitions.id],
+  }),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [products.createdBy],
+    references: [users.id],
+  }),
+  orders: many(orders),
+}));
 
 export const ordersRelations = relations(orders, ({ one }) => ({
   user: one(users, {
@@ -107,12 +211,119 @@ export const ordersRelations = relations(orders, ({ one }) => ({
   }),
 }));
 
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [posts.userId],
+    references: [users.id],
+  }),
+  comments: many(comments),
+  reactions: many(reactions),
+  polls: many(polls),
+  recognitions: many(recognitions, { relationName: "postRecognition" }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const reactionsRelations = relations(reactions, ({ one }) => ({
+  post: one(posts, {
+    fields: [reactions.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [reactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const pollsRelations = relations(polls, ({ one, many }) => ({
+  post: one(posts, {
+    fields: [polls.postId],
+    references: [posts.id],
+  }),
+  votes: many(pollVotes),
+}));
+
+export const pollVotesRelations = relations(pollVotes, ({ one }) => ({
+  poll: one(polls, {
+    fields: [pollVotes.pollId],
+    references: [polls.id],
+  }),
+  user: one(users, {
+    fields: [pollVotes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const recognitionsRelations = relations(recognitions, ({ one }) => ({
+  recognizer: one(users, {
+    fields: [recognitions.recognizerId],
+    references: [users.id],
+    relationName: "recognizer"
+  }),
+  recipient: one(users, {
+    fields: [recognitions.recipientId],
+    references: [users.id],
+    relationName: "recipient"
+  }),
+  post: one(posts, {
+    fields: [recognitions.postId],
+    references: [posts.id],
+    relationName: "postRecognition"
+  }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+    relationName: "sender"
+  }),
+}));
+
+export const conversationParticipantsRelations = relations(conversationParticipants, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [conversationParticipants.conversationId],
+    references: [conversations.id],
+  }),
+  user: one(users, {
+    fields: [conversationParticipants.userId],
+    references: [users.id],
+  }),
+}));
+
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  participants: many(conversationParticipants),
+  messages: many(messages),
+}));
+
 // Insert schemas for validating API inputs
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, createdAt: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPostSchema = createInsertSchema(posts).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertReactionSchema = createInsertSchema(reactions).omit({ id: true, createdAt: true });
+export const insertPollSchema = createInsertSchema(polls).omit({ id: true, createdAt: true });
+export const insertPollVoteSchema = createInsertSchema(pollVotes).omit({ id: true, createdAt: true });
+export const insertRecognitionSchema = createInsertSchema(recognitions).omit({ id: true, createdAt: true });
+export const insertConversationSchema = createInsertSchema(conversations).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertConversationParticipantSchema = createInsertSchema(conversationParticipants).omit({ id: true, joinedAt: true });
+export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -129,3 +340,30 @@ export type InsertProduct = z.infer<typeof insertProductSchema>;
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = z.infer<typeof insertPostSchema>;
+
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+
+export type Reaction = typeof reactions.$inferSelect;
+export type InsertReaction = z.infer<typeof insertReactionSchema>;
+
+export type Poll = typeof polls.$inferSelect;
+export type InsertPoll = z.infer<typeof insertPollSchema>;
+
+export type PollVote = typeof pollVotes.$inferSelect;
+export type InsertPollVote = z.infer<typeof insertPollVoteSchema>;
+
+export type Recognition = typeof recognitions.$inferSelect;
+export type InsertRecognition = z.infer<typeof insertRecognitionSchema>;
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+
+export type ConversationParticipant = typeof conversationParticipants.$inferSelect;
+export type InsertConversationParticipant = z.infer<typeof insertConversationParticipantSchema>;
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
