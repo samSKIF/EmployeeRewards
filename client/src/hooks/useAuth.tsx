@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setIsLoading(true);
       
+      console.log("Attempting login with:", { email, password });
       const response = await apiRequest("POST", "/api/auth/login", { email, password });
       const data = await response.json();
       

@@ -17,13 +17,21 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    console.log("Login form submitted with:", { email, password });
 
     try {
+      console.log("Calling login function...");
       const success = await login(email, password);
+      console.log("Login result:", success);
       if (success) {
+        console.log("Login successful, redirecting to dashboard");
         setLocation("/dashboard");
+      } else {
+        console.log("Login failed but didn't throw an error");
+        setError("Invalid email or password");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError("Invalid email or password");
     }
   };
