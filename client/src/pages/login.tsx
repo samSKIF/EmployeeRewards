@@ -66,7 +66,9 @@ const Login = () => {
       
       // Manually store token and redirect
       localStorage.setItem("token", data.token);
-      setLocation("/dashboard");
+      
+      // Force a hard redirect instead of using the router
+      window.location.href = "/dashboard";
       
     } catch (error) {
       console.error("Direct login error:", error);
