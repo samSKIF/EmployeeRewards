@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Award } from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@demo.io");
+  const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const { login, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -33,6 +33,44 @@ const Login = () => {
     } catch (err) {
       console.error("Login error:", err);
       setError("Invalid email or password");
+    }
+  };
+  
+  const handleDirectLogin = async () => {
+    try {
+      console.log("Using direct API login");
+      
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          username: "admin", 
+          password: "admin123" 
+        }),
+        credentials: "include"
+      });
+      
+      console.log("Direct login response:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Direct login failed:", errorText);
+        setError("Direct login failed");
+        return;
+      }
+      
+      const data = await response.json();
+      console.log("Login success:", data);
+      
+      // Manually store token and redirect
+      localStorage.setItem("token", data.token);
+      setLocation("/dashboard");
+      
+    } catch (error) {
+      console.error("Direct login error:", error);
+      setError("Failed to login directly");
     }
   };
 
@@ -77,6 +115,23 @@ const Login = () => {
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+            
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or</span>
+              </div>
+            </div>
+            
+            <Button 
+              type="button" 
+              className="w-full bg-green-600 hover:bg-green-700"
+              onClick={handleDirectLogin}
+            >
+              Quick Login (Admin Demo)
             </Button>
           </form>
         </CardContent>
