@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { verifyToken, verifyAdmin, AuthenticatedRequest, generateToken } from "./middleware/auth";
@@ -9,6 +9,7 @@ import { db } from "./db";
 import { compare } from "bcrypt";
 import { users, insertUserSchema, products, insertProductSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -329,9 +330,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Add special route to serve static HTML for direct login
+  // Add special routes to serve static HTML for direct login options
   app.get("/admin-login", (req, res) => {
-    res.sendFile("login-direct.html", { root: "./client/src" });
+    res.sendFile(path.resolve(import.meta.dirname, "../client/src/login-direct.html"));
+  });
+  
+  app.get("/direct-login", (req, res) => {
+    res.sendFile(path.resolve(import.meta.dirname, "../client/direct-login.html"));
   });
   
   // Initialize the server
