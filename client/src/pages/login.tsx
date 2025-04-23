@@ -37,8 +37,13 @@ const Login = () => {
   };
   
   const handleDirectLogin = async () => {
+    setError("");
+    
     try {
-      console.log("Using direct API login");
+      // First, clear any existing tokens
+      localStorage.removeItem("token");
+      
+      console.log("Using direct API login (hardcoded admin credentials)");
       
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -64,11 +69,25 @@ const Login = () => {
       const data = await response.json();
       console.log("Login success:", data);
       
-      // Manually store token and redirect
+      // Manually store token 
       localStorage.setItem("token", data.token);
       
-      // Force a hard redirect instead of using the router
-      window.location.href = "/dashboard";
+      // Create a temporary loading state
+      document.body.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
+          <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="margin-top: 20px; font-size: 24px;">Login successful! Redirecting to dashboard...</div>
+          <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        </div>
+      `;
+      
+      // Give a short delay to ensure token is stored
+      setTimeout(() => {
+        // Then do a full page reload to the dashboard
+        window.location.href = "/dashboard";
+      }, 1000);
       
     } catch (error) {
       console.error("Direct login error:", error);

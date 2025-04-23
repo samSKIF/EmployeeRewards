@@ -55,15 +55,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const fetchUserProfile = async () => {
     try {
       setIsLoading(true);
+      
+      const token = localStorage.getItem("token");
+      console.log("Fetching user profile with token:", token ? token.substring(0, 20) + "..." : "none");
+      
+      if (!token) {
+        console.log("No token found in localStorage");
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      
       const response = await fetch("/api/users/me", {
         credentials: "include",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${token}`
         }
       });
       
+      console.log("User profile response status:", response.status);
+      
       if (response.ok) {
         const userData = await response.json();
+        console.log("User profile data:", userData);
+        
         setUser({
           id: userData.id,
           name: userData.name,
@@ -71,8 +86,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           isAdmin: userData.isAdmin || false,
           department: userData.department
         });
+        
+        console.log("User profile set successfully");
       } else {
         // Token is invalid, clear it
+        console.error("Failed to fetch user profile, clearing token");
         localStorage.removeItem("token");
         setUser(null);
       }

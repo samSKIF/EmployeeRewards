@@ -31,18 +31,41 @@ function ProtectedRoute({ component: Component, adminOnly = false }: { component
 }
 
 function RouterLogic() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
+
+  console.log("App routing state:", { isAuthenticated, isLoading, location, user });
 
   useEffect(() => {
     if (isAuthenticated && location === "/login") {
+      console.log("User is authenticated and on login page, redirecting to dashboard");
       window.location.href = "/dashboard";
     }
   }, [isAuthenticated, location]);
 
+  // Simple loading indicator while checking authentication
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="text-xl font-medium">Loading your profile...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Switch>
-      <Route path="/login" component={Login} />
+      <Route path="/login">
+        {isAuthenticated ? 
+          <div className="h-screen flex items-center justify-center">
+            <div className="text-xl">Already logged in. Redirecting...</div>
+            {setTimeout(() => { window.location.href = "/dashboard"; }, 1000)}
+          </div> 
+          : <Login />
+        }
+      </Route>
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
       </Route>
