@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -8,33 +8,70 @@ import Transactions from "@/pages/transactions";
 import Admin from "@/pages/admin";
 import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
+import FirebaseAuthPage from "@/pages/firebase-auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
-import { AuthProvider } from "./hooks/use-auth";
+import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
+import { FirebaseProtectedRoute } from "./lib/firebase-protected-route";
+import { useFirebaseAuth } from "./hooks/use-firebase-auth";
 
 function Router() {
+  // Get authentication state from both systems during migration
+  const authContext = useAuth();
+  const firebaseAuthContext = useFirebaseAuth();
+  
+  const user = authContext?.user;
+  const firebaseUser = firebaseAuthContext?.firebaseUser;
+  
+  // Use either authentication system (prioritize Firebase)
+  const isAuthenticated = !!firebaseUser || !!user;
+  
   return (
     <Switch>
       {/* Protected dashboard routes */}
-      <ProtectedRoute path="/dashboard" component={Dashboard} />
-      <ProtectedRoute path="/shop" component={Shop} />
-      <ProtectedRoute path="/transactions" component={Transactions} />
-      <ProtectedRoute path="/admin" component={Admin} />
-      <ProtectedRoute path="/admin/employees" component={AdminEmployees} />
-      <ProtectedRoute path="/seller" component={Seller} />
+      <FirebaseProtectedRoute path="/dashboard" component={Dashboard} />
+      <FirebaseProtectedRoute path="/shop" component={Shop} />
+      <FirebaseProtectedRoute path="/transactions" component={Transactions} />
+      <FirebaseProtectedRoute path="/admin" component={Admin} adminOnly={true} />
+      <FirebaseProtectedRoute path="/admin/employees" component={AdminEmployees} adminOnly={true} />
+      <FirebaseProtectedRoute path="/seller" component={Seller} />
       
       {/* Protected social platform routes */}
-      <ProtectedRoute path="/social" component={SocialPage} />
-      <ProtectedRoute path="/social/:tab" component={SocialPage} />
+      <FirebaseProtectedRoute path="/social" component={SocialPage} />
+      <FirebaseProtectedRoute path="/social/:tab" component={SocialPage} />
       
-      {/* Authentication route */}
-      <Route path="/auth" component={AuthPage} />
+      {/* Firebase Authentication route */}
+      <Route path="/firebase-auth">
+        {() => {
+          if (isAuthenticated) {
+            return <Redirect to="/social" />;
+          }
+          return <FirebaseAuthPage />;
+        }}
+      </Route>
       
-      {/* Default route - redirect to dashboard */}
-      <ProtectedRoute path="/" component={Dashboard} />
+      {/* Legacy Authentication route */}
+      <Route path="/auth">
+        {() => {
+          if (isAuthenticated) {
+            return <Redirect to="/social" />;
+          }
+          return <AuthPage />;
+        }}
+      </Route>
+      
+      {/* Default route - redirect to firebase-auth if not logged in, dashboard if logged in */}
+      <Route path="/">
+        {() => {
+          if (!isAuthenticated) {
+            return <Redirect to="/firebase-auth" />;
+          }
+          return <Dashboard />;
+        }}
+      </Route>
       
       {/* Not found route */}
       <Route component={NotFound} />
@@ -44,14 +81,11 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    // Note: AuthProvider and QueryClientProvider are already provided in main.tsx
+    <TooltipProvider>
+      <Toaster />
+      <Router />
+    </TooltipProvider>
   );
 }
 

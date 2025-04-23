@@ -26,9 +26,28 @@ async function startServer() {
 
   server.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
-      log(`Port ${port} is already in use.`);
-      // Process will exit with code 0 (success) to allow restart
-      process.exit(0);
+      log(`Port ${port} is already in use. Attempting to kill process and retry...`);
+      
+      // For Replit environment - try a different approach to handle port conflicts
+      try {
+        // Try using a different port if the default one is in use
+        const newPort = port + 1;
+        log(`Trying to use port ${newPort} instead...`);
+        server.listen(newPort, "0.0.0.0", () => {
+          log(`Server listening on alternative port ${newPort}`);
+          
+          // Start full initialization in background with a longer timeout
+          setTimeout(() => {
+            import("./full-init").catch(err => {
+              console.error("Error loading full initialization:", err);
+            });
+          }, 50); 
+        });
+      } catch (retryError) {
+        log(`Failed to use alternative port. Exiting.`);
+        // Process will exit with code 0 (success) to allow restart
+        process.exit(0);
+      }
     } else {
       console.error("Server error:", error);
       process.exit(1);
