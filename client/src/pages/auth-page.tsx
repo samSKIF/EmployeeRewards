@@ -1,135 +1,79 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { insertUserSchema } from "@shared/schema";
+
+type InsertUser = z.infer<typeof insertUserSchema>;
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginData = z.infer<typeof loginSchema>;
+
+const registerSchema = insertUserSchema.pick({
+  name: true,
+  username: true,
+  password: true,
+  email: true,
+  department: true,
+});
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { user, loginMutation, registerMutation } = useAuth();
   
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  
-  // Register form state
-  const [registerName, setRegisterName] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerUsername, setRegisterUsername] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [registerDepartment, setRegisterDepartment] = useState("");
-  
-  // Check if already logged in
+  // Redirect if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Verify token
-      fetch("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then(res => {
-        if (res.ok) {
-          // Token is valid, redirect to main social page
-          window.location.href = "/social";
-        }
-      })
-      .catch(err => {
-        // Token is invalid, clear it
-        localStorage.removeItem("token");
-      });
+    if (user) {
+      setLocation("/social");
     }
-  }, []);
+  }, [user, setLocation]);
   
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!loginEmail || !loginPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        username: loginEmail,
-        password: loginPassword
-      });
-      
-      const data = await response.json();
-      
-      localStorage.setItem("token", data.token);
-      
-      toast({
-        title: "Success",
-        description: "You have successfully logged in",
-      });
-      
-      window.location.href = "/social";
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to login",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  // Login form
+  const loginForm = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  // Register form
+  const registerForm = useForm<InsertUser>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      username: "",
+      password: "",
+      department: "",
+    },
+  });
+  
+  const handleLogin = (data: LoginData) => {
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        setLocation("/social");
+      }
+    });
   };
   
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!registerName || !registerEmail || !registerUsername || !registerPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await apiRequest("POST", "/api/auth/register", {
-        name: registerName,
-        email: registerEmail,
-        username: registerUsername,
-        password: registerPassword,
-        department: registerDepartment || undefined
-      });
-      
-      const data = await response.json();
-      
-      localStorage.setItem("token", data.token);
-      
-      toast({
-        title: "Success",
-        description: "Account created successfully",
-      });
-      
-      window.location.href = "/social";
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRegister = (data: InsertUser) => {
+    registerMutation.mutate(data, {
+      onSuccess: () => {
+        setLocation("/social");
+      }
+    });
   };
   
   return (
@@ -158,115 +102,172 @@ export default function AuthPage() {
               </TabsList>
               
               <TabsContent value="login">
-                <form onSubmit={handleLogin}>
-                  <CardContent className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm text-gray-600">Email or Username</Label>
-                      <Input 
-                        id="email" 
-                        type="text" 
-                        placeholder="Enter your email or username"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)}>
+                    <CardContent className="space-y-4 pt-2">
+                      <FormField
+                        control={loginForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Email or Username</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="text" 
+                                placeholder="Enter your email or username"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="password" className="text-sm text-gray-600">Password</Label>
-                        <a href="#" className="text-sm text-green-600 hover:text-green-700">Forgot password?</a>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <FormField
+                            control={loginForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem className="w-full">
+                                <div className="flex justify-between">
+                                  <FormLabel className="text-sm text-gray-600">Password</FormLabel>
+                                  <a href="#" className="text-sm text-green-600 hover:text-green-700">Forgot password?</a>
+                                </div>
+                                <FormControl>
+                                  <Input 
+                                    type="password" 
+                                    placeholder="Enter your password"
+                                    className="focus:border-green-500 focus:ring-green-500"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="Enter your password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-4 pt-2">
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Signing in..." : "Sign In"}
-                    </Button>
-                  </CardFooter>
-                </form>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-4 pt-2">
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled={loginMutation.isPending}
+                      >
+                        {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </Form>
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={handleRegister}>
-                  <CardContent className="space-y-3 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm text-gray-600">Full Name</Label>
-                      <Input 
-                        id="name" 
-                        placeholder="Enter your full name"
-                        value={registerName}
-                        onChange={(e) => setRegisterName(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(handleRegister)}>
+                    <CardContent className="space-y-3 pt-2">
+                      <FormField
+                        control={registerForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Full Name</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your full name"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email" className="text-sm text-gray-600">Email</Label>
-                      <Input 
-                        id="register-email" 
-                        type="email" 
-                        placeholder="Enter your email"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                      <FormField
+                        control={registerForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Email</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="email" 
+                                placeholder="Enter your email"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="username" className="text-sm text-gray-600">Username</Label>
-                      <Input 
-                        id="username" 
-                        placeholder="Choose a username"
-                        value={registerUsername}
-                        onChange={(e) => setRegisterUsername(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                      <FormField
+                        control={registerForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Username</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Choose a username"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-sm text-gray-600">Password</Label>
-                      <Input 
-                        id="register-password" 
-                        type="password" 
-                        placeholder="Create a password"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
+                      <FormField
+                        control={registerForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Password</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="password" 
+                                placeholder="Create a password"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department" className="text-sm text-gray-600">Department</Label>
-                      <Input 
-                        id="department" 
-                        placeholder="Your department (Optional)"
-                        value={registerDepartment}
-                        onChange={(e) => setRegisterDepartment(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
+                      <FormField
+                        control={registerForm.control}
+                        name="department"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-gray-600">Department</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Your department (Optional)"
+                                className="focus:border-green-500 focus:ring-green-500"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-4 pt-2">
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Creating Account..." : "Create Account"}
-                    </Button>
-                    <p className="text-xs text-gray-500 text-center">
-                      By creating an account, you agree to our Terms of Service and Privacy Policy
-                    </p>
-                  </CardFooter>
-                </form>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-4 pt-2">
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled={registerMutation.isPending}
+                      >
+                        {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+                      </Button>
+                      <p className="text-xs text-gray-500 text-center">
+                        By creating an account, you agree to our Terms of Service and Privacy Policy
+                      </p>
+                    </CardFooter>
+                  </form>
+                </Form>
               </TabsContent>
             </Tabs>
           </Card>

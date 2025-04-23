@@ -33,9 +33,16 @@ import {
 } from "@shared/types";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+
 export interface IStorage {
+  // Session store
+  sessionStore: session.Store;
+
   // User methods
   getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUserWithBalance(id: number): Promise<UserWithBalance | undefined>;
@@ -117,9 +124,26 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    const PostgresSessionStore = connectPg(session);
+    this.sessionStore = new PostgresSessionStore({
+      conObject: {
+        connectionString: process.env.DATABASE_URL,
+      },
+      createTableIfMissing: true,
+    });
+  }
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
   

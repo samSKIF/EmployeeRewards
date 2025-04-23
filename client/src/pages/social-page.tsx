@@ -42,6 +42,12 @@ export default function SocialPage() {
     retry: false,
   });
   
+  // Get user points balance
+  const { data: pointsData } = useQuery<{ balance: number, userId: number }>({
+    queryKey: ["/api/points/balance"],
+    enabled: !!user?.id,
+  });
+  
   // Redirect if not logged in
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -457,7 +463,7 @@ export default function SocialPage() {
           <div>
             <div className="font-medium text-sm">{user?.name || 'User'}</div>
             <div className="text-xs text-gray-500 flex items-center gap-1">
-              <span className="flex items-center text-amber-500"><span className="text-xs mr-0.5">★</span> 580</span>
+              <span className="flex items-center text-amber-500"><span className="text-xs mr-0.5">★</span> {pointsData?.balance || 0}</span>
               <span className="text-gray-300">|</span>
               <span className="text-green-600">Online</span>
             </div>

@@ -10,53 +10,48 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { AuthProvider } from "./hooks/use-auth";
+import { ProtectedRoute } from "./lib/protected-route";
+
+function Router() {
+  return (
+    <Switch>
+      {/* Protected dashboard routes */}
+      <ProtectedRoute path="/dashboard" component={Dashboard} />
+      <ProtectedRoute path="/shop" component={Shop} />
+      <ProtectedRoute path="/transactions" component={Transactions} />
+      <ProtectedRoute path="/admin" component={Admin} />
+      <ProtectedRoute path="/admin/employees" component={AdminEmployees} />
+      <ProtectedRoute path="/seller" component={Seller} />
+      
+      {/* Protected social platform routes */}
+      <ProtectedRoute path="/social" component={SocialPage} />
+      <ProtectedRoute path="/social/:tab" component={SocialPage} />
+      
+      {/* Authentication route */}
+      <Route path="/auth" component={AuthPage} />
+      
+      {/* Default route - redirect to dashboard */}
+      <ProtectedRoute path="/" component={Dashboard} />
+      
+      {/* Not found route */}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
 
 function App() {
-
-  // Main application
   return (
-    <TooltipProvider>
-      <Toaster />
-      <Switch>
-        {/* Main dashboard routes */}
-        <Route path="/dashboard">
-          <Dashboard />
-        </Route>
-        <Route path="/shop">
-          <Shop />
-        </Route>
-        <Route path="/transactions">
-          <Transactions />
-        </Route>
-        <Route path="/admin">
-          <Admin />
-        </Route>
-        <Route path="/admin/employees">
-          <AdminEmployees />
-        </Route>
-        <Route path="/seller">
-          <Seller />
-        </Route>
-        
-        {/* Empulse Social Platform routes (manual login) */}
-        <Route path="/auth">
-          <AuthPage />
-        </Route>
-        <Route path="/social">
-          <SocialPage />
-        </Route>
-        <Route path="/social/:tab">
-          <SocialPage />
-        </Route>
-        
-        <Route path="/">
-          <Dashboard />
-        </Route>
-        <Route>
-          <NotFound />
-        </Route>
-      </Switch>
-    </TooltipProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

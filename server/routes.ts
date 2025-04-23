@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { verifyToken, requireAdmin as verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
@@ -10,9 +10,13 @@ import { compare, hash } from "bcrypt";
 import { users, insertUserSchema, products, insertProductSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import path from "path";
+import { setupAuth } from "./auth";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Registration endpoint
+export async function registerRoutes(app: Express): Promise<void> {
+  // Set up session-based authentication
+  setupAuth(app);
+  
+  // Keep the existing API routes
   app.post("/api/auth/register", async (req, res) => {
     try {
       console.log("REGISTRATION ATTEMPT - Raw body:", req.body);
@@ -1168,13 +1172,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize the server
   const httpServer = createServer(app);
   
-  // Seed initial data if needed
-  await seedInitialData();
-  
   // Start the birthday rewards scheduler
   scheduleBirthdayRewards();
   
-  return httpServer;
+  // Start server first, then seed data in the background
+  const server = httpServer;
+  
+  // Run data seeding in the background after server starts
+  setTimeout(() => {
+    seedInitialData().catch(err => console.error("Background seeding error:", err));
+  }, 1000);
+  
+  return server;
 }
 
 // Helper function to seed initial data
