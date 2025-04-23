@@ -86,12 +86,12 @@ export default function AuthPage() {
               <rect width="24" height="24" rx="4" fill="#00A389" />
               <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="text-2xl font-bold text-gray-800">piedpiper</span>
+            <span className="text-2xl font-bold text-gray-800">ThrivioHR</span>
           </div>
           
           <Card className="border-none shadow-lg">
             <CardHeader className="pb-3">
-              <h1 className="text-2xl font-bold text-gray-800">Welcome to Empulse</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Welcome to ThrivioHR</h1>
               <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
             </CardHeader>
             
