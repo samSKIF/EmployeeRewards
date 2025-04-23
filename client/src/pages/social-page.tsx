@@ -14,7 +14,8 @@ import {
   MessageCircle, Heart, Gift, BarChart3, Users, Settings, 
   ChevronRight, ThumbsUp, Award, FileText, Share2, Smile,
   Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
-  Cake, Trophy, Target, Sparkles, Zap
+  Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
+  Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash
 } from "lucide-react";
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ export default function SocialPage() {
   const [recipientId, setRecipientId] = useState<number | null>(null);
   const [recognitionMessage, setRecognitionMessage] = useState("");
   const [recognitionPoints, setRecognitionPoints] = useState<number>(50);
+  const [showOrgSettings, setShowOrgSettings] = useState(false);
   
   // Get user profile
   const { data: user } = useQuery({
@@ -636,7 +638,10 @@ export default function SocialPage() {
                 <Gift size={16} className="mr-2" />
                 <span>Send Gifts</span>
               </div>
-              <div className="px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md">
+              <div 
+                className={`px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md cursor-pointer ${showOrgSettings ? 'bg-blue-50 text-blue-600' : ''}`}
+                onClick={() => setShowOrgSettings(!showOrgSettings)}
+              >
                 <Settings size={16} className="mr-2" />
                 <span>Org. Settings</span>
               </div>
@@ -648,6 +653,217 @@ export default function SocialPage() {
       {/* Main content */}
       <div className="flex-1 md:ml-64 px-4 py-4">
         <div className="max-w-3xl mx-auto">
+          {/* Organization Settings Panel */}
+          {showOrgSettings && user?.isAdmin && (
+            <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+              <div className="border-b border-gray-200">
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-gray-800">Organization Settings</h2>
+                    <button 
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowOrgSettings(false)}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+                <div className="px-4 py-2 bg-gray-50">
+                  <Tabs defaultValue="employees">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="employees" className="text-sm">Employees</TabsTrigger>
+                      <TabsTrigger value="recognition" className="text-sm">Recognition</TabsTrigger>
+                      <TabsTrigger value="branding" className="text-sm">Branding</TabsTrigger>
+                      <TabsTrigger value="gamification" className="text-sm">Gamification</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="employees" className="p-4">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium">Employee Management</h3>
+                          <Button 
+                            onClick={() => window.open('/admin-employees', '_blank')}
+                            className="text-sm bg-blue-600 hover:bg-blue-700"
+                          >
+                            <UserCog className="w-4 h-4 mr-2" />
+                            Manage Employees
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                            <div className="flex items-center mb-2">
+                              <UserPlus className="w-5 h-5 text-blue-600 mr-2" />
+                              <h4 className="font-medium">Add Employees</h4>
+                            </div>
+                            <p className="text-sm text-gray-600">Add new team members to the platform</p>
+                          </div>
+                          
+                          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                            <div className="flex items-center mb-2">
+                              <FileSpreadsheet className="w-5 h-5 text-green-600 mr-2" />
+                              <h4 className="font-medium">Bulk Import</h4>
+                            </div>
+                            <p className="text-sm text-gray-600">Import multiple employees from CSV</p>
+                          </div>
+                          
+                          <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+                            <div className="flex items-center mb-2">
+                              <Building className="w-5 h-5 text-purple-600 mr-2" />
+                              <h4 className="font-medium">Departments</h4>
+                            </div>
+                            <p className="text-sm text-gray-600">Manage organization structure</p>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="recognition" className="p-4">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium">Recognition Settings</h3>
+                          <Button 
+                            className="text-sm bg-amber-600 hover:bg-amber-700"
+                          >
+                            <Award className="w-4 h-4 mr-2" />
+                            Configure Programs
+                          </Button>
+                        </div>
+                        
+                        <div className="bg-white border rounded-lg divide-y">
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Recognition Points</h4>
+                              <p className="text-sm text-gray-500">Default points allocated for recognition</p>
+                            </div>
+                            <Input 
+                              type="number" 
+                              defaultValue="50" 
+                              min="0" 
+                              className="w-24"
+                            />
+                          </div>
+                          
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Monthly Budget</h4>
+                              <p className="text-sm text-gray-500">Points budget per employee monthly</p>
+                            </div>
+                            <Input 
+                              type="number" 
+                              defaultValue="500" 
+                              min="0" 
+                              className="w-24"
+                            />
+                          </div>
+                          
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Custom Badges</h4>
+                              <p className="text-sm text-gray-500">Allow custom badge creation</p>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-10 h-5 bg-blue-600 rounded-full relative p-1">
+                                <div className="w-3 h-3 bg-white rounded-full absolute right-1 top-1"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="branding" className="p-4">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium">Branding & Customization</h3>
+                          <Button 
+                            className="text-sm bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Logo
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-medium mb-2">Platform Name</h4>
+                            <Input defaultValue="Empulse" className="mb-2" />
+                            <p className="text-sm text-gray-500">Your platform's custom name</p>
+                          </div>
+                          
+                          <div className="p-4 border rounded-lg">
+                            <h4 className="font-medium mb-2">Theme Color</h4>
+                            <div className="grid grid-cols-5 gap-2 mb-2">
+                              {['#2563eb', '#10b981', '#ef4444', '#8b5cf6', '#f59e0b'].map(color => (
+                                <div 
+                                  key={color}
+                                  className="w-8 h-8 rounded-full cursor-pointer"
+                                  style={{ backgroundColor: color }}
+                                ></div>
+                              ))}
+                            </div>
+                            <p className="text-sm text-gray-500">Primary color for buttons & UI</p>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="gamification" className="p-4">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium">Gamification Settings</h3>
+                          <Button 
+                            className="text-sm bg-green-600 hover:bg-green-700"
+                          >
+                            <Trophy className="w-4 h-4 mr-2" />
+                            Create Challenge
+                          </Button>
+                        </div>
+                        
+                        <div className="bg-white border rounded-lg divide-y">
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Leaderboards</h4>
+                              <p className="text-sm text-gray-500">Enable public leaderboards</p>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-10 h-5 bg-blue-600 rounded-full relative p-1">
+                                <div className="w-3 h-3 bg-white rounded-full absolute right-1 top-1"></div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Achievements</h4>
+                              <p className="text-sm text-gray-500">Unlock badges for activities</p>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-10 h-5 bg-blue-600 rounded-full relative p-1">
+                                <div className="w-3 h-3 bg-white rounded-full absolute right-1 top-1"></div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">Challenges</h4>
+                              <p className="text-sm text-gray-500">Time-based team challenges</p>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-10 h-5 bg-gray-300 rounded-full relative p-1">
+                                <div className="w-3 h-3 bg-white rounded-full absolute left-1 top-1"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center mb-6">
             <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
