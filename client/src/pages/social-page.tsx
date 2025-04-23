@@ -451,7 +451,7 @@ export default function SocialPage() {
             <rect width="24" height="24" rx="4" fill="#00A389" />
             <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span className="text-xl font-bold text-gray-800">piedpiper</span>
+          <span className="text-xl font-bold text-gray-800">ThrivioHR</span>
         </div>
         
         <div className="flex items-center gap-2 mb-4">
@@ -706,7 +706,7 @@ export default function SocialPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="p-4 border rounded-lg">
                             <h4 className="font-medium mb-2">Platform Name</h4>
-                            <Input defaultValue="Empulse" className="mb-2" />
+                            <Input defaultValue="ThrivioHR" className="mb-2" />
                             <p className="text-sm text-gray-500">Your platform's custom name</p>
                           </div>
                           
