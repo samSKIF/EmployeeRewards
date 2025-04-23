@@ -71,7 +71,8 @@ function Router() {
           if (!isAuthenticated) {
             return <Redirect to="/firebase-auth" />;
           }
-          return <Dashboard />;
+          // Admin users to admin dashboard, regular users to regular dashboard
+          return firebaseUser?.isAdmin ? <Redirect to="/admin" /> : <Dashboard />;
         }}
       </Route>
       
