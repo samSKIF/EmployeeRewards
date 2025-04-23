@@ -59,10 +59,15 @@ function RouterLogic() {
     <Switch>
       <Route path="/login">
         {isAuthenticated ? 
-          <div className="h-screen flex items-center justify-center">
-            <div className="text-xl">Already logged in. Redirecting...</div>
-            {setTimeout(() => { window.location.href = "/dashboard"; }, 1000)}
-          </div> 
+          (() => {
+            // This is a immediately-invoked function expression (IIFE) to handle the redirect
+            setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
+            return (
+              <div className="h-screen flex items-center justify-center">
+                <div className="text-xl">Already logged in. Redirecting...</div>
+              </div>
+            );
+          })()
           : <Login />
         }
       </Route>

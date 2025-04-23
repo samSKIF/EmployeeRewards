@@ -329,6 +329,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Add special route to serve static HTML for direct login
+  app.get("/admin-login", (req, res) => {
+    res.sendFile("login-direct.html", { root: "./client/src" });
+  });
+  
   // Initialize the server
   const httpServer = createServer(app);
   
