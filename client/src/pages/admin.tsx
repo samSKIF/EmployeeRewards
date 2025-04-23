@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import MainLayout from "@/components/layout/MainLayout";
 import PointsForm from "@/components/admin/PointsForm";
 import TransactionTable from "@/components/admin/TransactionTable";
@@ -6,6 +7,8 @@ import ScheduledRewards from "@/components/admin/ScheduledRewards";
 import UserTable from "@/components/admin/UserTable";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Users } from "lucide-react";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("transactions");
@@ -15,7 +18,13 @@ const Admin = () => {
     <MainLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-        <div className="mt-3 md:mt-0">
+        <div className="mt-3 md:mt-0 flex items-center gap-4">
+          <Link href="/admin/employees">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Users size={16} />
+              <span>Employee Management</span>
+            </Button>
+          </Link>
           <span className="text-sm text-gray-500">Logged in as: {user?.email}</span>
         </div>
       </div>
