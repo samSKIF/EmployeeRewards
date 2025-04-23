@@ -101,10 +101,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error("Auth endpoint test failed:", err);
       }
       
-      // Try with admin/admin123 to see if username is the issue
-      const loginData = email === "admin@demo.io" 
-        ? { username: "admin", password: "admin123" } 
-        : { email, password };
+      const loginData = { email, password };
       
       console.log("Sending login data:", loginData);
       
