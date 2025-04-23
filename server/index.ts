@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { log } from "./vite";
 
-import { createViteDevServer } from "./vite";
+import { setupVite } from "./vite";
 
 async function startServer() {
   const app = express();
@@ -14,8 +14,7 @@ async function startServer() {
 
   // In development, set up Vite middleware
   if (process.env.NODE_ENV === 'development') {
-    const vite = await createViteDevServer();
-    app.use(vite.middlewares);
+    await setupVite(app, server);
   }
 
   // Health check route
