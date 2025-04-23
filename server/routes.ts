@@ -14,24 +14,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("Login attempt received:", req.body);
       const { email, password } = req.body;
       
       if (!email || !password) {
+        console.log("Missing email or password");
         return res.status(400).json({ message: "Email and password are required" });
       }
       
+      console.log(`Looking up user with email: ${email}`);
       const user = await storage.getUserByEmail(email);
       
       if (!user) {
+        console.log(`No user found with email: ${email}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
+      console.log(`User found: ${user.username}, verifying password`);
       const passwordMatch = await storage.verifyPassword(password, user.password);
       
       if (!passwordMatch) {
+        console.log("Password verification failed");
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
+      console.log("Password verified, generating token");
       // Create JWT token
       const token = generateToken({
         id: user.id,
@@ -47,11 +54,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Don't send the password back to the client
       const { password: _, ...userWithoutPassword } = user;
       
+      console.log("Login successful for:", userWithoutPassword);
       res.json({
         token,
         user: userWithoutPassword
       });
     } catch (error: any) {
+      console.error("Login error:", error);
       res.status(500).json({ message: error.message || "An error occurred during login" });
     }
   });

@@ -90,8 +90,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoading(true);
       
       console.log("Attempting login with:", { email, password });
-      const response = await apiRequest("POST", "/api/auth/login", { email, password });
+      
+      // Using fetch directly for debugging purposes
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include"
+      });
+      
+      console.log("Login response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Login error response:", errorText);
+        throw new Error(`Login failed: ${response.status} ${errorText}`);
+      }
+      
       const data = await response.json();
+      console.log("Login success response:", data);
       
       localStorage.setItem("token", data.token);
       
