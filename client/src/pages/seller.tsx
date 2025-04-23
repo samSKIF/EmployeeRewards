@@ -248,6 +248,9 @@ const Seller = () => {
                     <SelectContent>
                       <SelectItem value="tillo">Tillo (Gift Cards)</SelectItem>
                       <SelectItem value="carlton">Carlton (Physical Products)</SelectItem>
+                      <SelectItem value="amazon">Amazon (Gift Cards)</SelectItem>
+                      <SelectItem value="deliveroo">Deliveroo (Food Vouchers)</SelectItem>
+                      <SelectItem value="wellbeing">Wellbeing Partners (Experiences)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

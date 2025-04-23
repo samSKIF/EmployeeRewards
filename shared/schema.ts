@@ -55,7 +55,7 @@ export const products = pgTable("products", {
   points: integer("points").notNull(),
   imageUrl: text("image_url").notNull(),
   isActive: boolean("is_active").default(true),
-  supplier: text("supplier").notNull(), // 'tillo', 'carlton'
+  supplier: text("supplier").notNull(), // 'tillo', 'carlton', 'amazon', 'deliveroo', 'wellbeing'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),
 });

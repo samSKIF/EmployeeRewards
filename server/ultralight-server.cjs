@@ -6,6 +6,21 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
+
+// Import Firebase Admin SDK utilities
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin SDK
+try {
+  admin.initializeApp({
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  });
+  console.log('Firebase Admin SDK initialized successfully');
+} catch (error) {
+  console.error('Firebase Admin SDK initialization error:', error);
+  // Continue with server startup even if Firebase Admin fails
+}
 
 // Create Express app
 const app = express();
@@ -13,6 +28,7 @@ const PORT = process.env.PORT || 5000;
 
 // Basic middleware
 app.use(express.json());
+app.use(cors());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -38,6 +54,78 @@ app.get('/api/firebase-config', (req, res) => {
     apiKey: process.env.VITE_FIREBASE_API_KEY || '',
     projectId: process.env.VITE_FIREBASE_PROJECT_ID || '',
     appId: process.env.VITE_FIREBASE_APP_ID || '',
+  });
+});
+
+// Import Firebase authentication middleware
+const { authenticateFirebase, requireAdmin } = require('./firebase-middleware');
+
+// Protected API endpoint requiring Firebase authentication
+app.get('/api/user-profile', authenticateFirebase, (req, res) => {
+  // req.user is set by the middleware
+  res.json({
+    message: 'You are authenticated!',
+    user: req.user
+  });
+});
+
+// Points and rewards API endpoints
+app.get('/api/points/balance', authenticateFirebase, (req, res) => {
+  const userId = req.user.uid;
+  // In a real app, this would fetch from Firestore
+  res.json({
+    userId,
+    balance: 500 // Example value
+  });
+});
+
+app.post('/api/points/earn', authenticateFirebase, requireAdmin, (req, res) => {
+  const { userId, amount, reason } = req.body;
+  
+  if (!userId || !amount || !reason) {
+    return res.status(400).json({ error: 'UserId, amount, and reason are required' });
+  }
+  
+  // In a real app, this would update Firestore
+  res.json({
+    success: true,
+    transaction: {
+      id: Date.now().toString(),
+      userId,
+      amount,
+      reason,
+      type: 'credit',
+      createdAt: new Date().toISOString()
+    }
+  });
+});
+
+app.post('/api/points/redeem', authenticateFirebase, (req, res) => {
+  const { amount, productId } = req.body;
+  const userId = req.user.uid;
+  
+  if (!amount || !productId) {
+    return res.status(400).json({ error: 'Amount and productId are required' });
+  }
+  
+  // In a real app, this would validate points balance and update Firestore
+  res.json({
+    success: true,
+    transaction: {
+      id: Date.now().toString(),
+      userId,
+      amount: -amount,
+      reason: `Product redemption: ${productId}`,
+      type: 'debit',
+      createdAt: new Date().toISOString()
+    },
+    order: {
+      id: Date.now().toString(),
+      userId,
+      productId,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }
   });
 });
 
@@ -137,6 +225,12 @@ app.get('/', (req, res) => {
           <a href="/direct-login" class="btn">Firebase Direct Login</a>
           <a href="/api/hello" class="btn">API Test Endpoint</a>
           <a href="/api/firebase-config" class="btn">Firebase Config</a>
+        </div>
+        
+        <div class="actions" style="margin-top: 1rem;">
+          <span class="btn" style="background: rgba(0,0,0,0.1); cursor: default;">Protected APIs:</span>
+          <a href="/api/user-profile" class="btn">User Profile</a>
+          <a href="/api/points/balance" class="btn">Points Balance</a>
         </div>
         
         <div class="status">

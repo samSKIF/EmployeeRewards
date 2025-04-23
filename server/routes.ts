@@ -3,7 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { verifyToken, verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
-import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
+import { 
+  tilloSupplier, 
+  carltonSupplier, 
+  amazonGiftCardSupplier, 
+  deliverooSupplier, 
+  wellbeingPartnerSupplier 
+} from "./middleware/suppliers";
 import { z } from "zod";
 import { db } from "./db";
 import { compare, hash } from "bcrypt";
@@ -440,6 +446,63 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
   
+  // HR Analytics endpoints
+  app.get("/api/analytics/points-distribution", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const distribution = await storage.getPointsDistribution();
+      res.json(distribution);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get points distribution" });
+    }
+  });
+  
+  app.get("/api/analytics/redemption-trends", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const trends = await storage.getRedemptionTrends();
+      res.json(trends);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get redemption trends" });
+    }
+  });
+  
+  app.get("/api/analytics/department-engagement", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const engagement = await storage.getDepartmentEngagement();
+      res.json(engagement);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get department engagement" });
+    }
+  });
+  
+  app.get("/api/analytics/top-performers", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const topPerformers = await storage.getTopPerformers(limit);
+      res.json(topPerformers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get top performers" });
+    }
+  });
+  
+  app.get("/api/analytics/popular-rewards", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const popularRewards = await storage.getPopularRewards(limit);
+      res.json(popularRewards);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get popular rewards" });
+    }
+  });
+  
+  app.get("/api/analytics/summary", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const summary = await storage.getAnalyticsSummary();
+      res.json(summary);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get analytics summary" });
+    }
+  });
+  
   // Mock supplier endpoints
   app.post("/api/supplier/tillo", verifyToken, verifyAdmin, async (req, res) => {
     try {
@@ -468,6 +531,68 @@ export async function registerRoutes(app: Express): Promise<void> {
       res.json(response);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to process with Carlton supplier" });
+    }
+  });
+  
+  // Amazon Gift Card supplier endpoint
+  app.post("/api/supplier/amazon", verifyToken, verifyAdmin, async (req, res) => {
+    try {
+      const { productName, userId, amount, currency } = req.body;
+      
+      if (!productName || !userId) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const response = await amazonGiftCardSupplier(
+        productName, 
+        userId, 
+        amount || 25, 
+        currency || 'USD'
+      );
+      res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to process with Amazon supplier" });
+    }
+  });
+  
+  // Deliveroo supplier endpoint
+  app.post("/api/supplier/deliveroo", verifyToken, verifyAdmin, async (req, res) => {
+    try {
+      const { productName, userId, amount, currency } = req.body;
+      
+      if (!productName || !userId) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const response = await deliverooSupplier(
+        productName, 
+        userId, 
+        amount || 25, 
+        currency || 'GBP'
+      );
+      res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to process with Deliveroo supplier" });
+    }
+  });
+  
+  // Wellbeing Partner supplier endpoint
+  app.post("/api/supplier/wellbeing", verifyToken, verifyAdmin, async (req, res) => {
+    try {
+      const { productName, userId, sessionType } = req.body;
+      
+      if (!productName || !userId) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const response = await wellbeingPartnerSupplier(
+        productName, 
+        userId, 
+        sessionType || 'meditation'
+      );
+      res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to process with Wellbeing Partner supplier" });
     }
   });
   

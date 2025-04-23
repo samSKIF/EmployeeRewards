@@ -11,6 +11,7 @@ import AuthPage from "@/pages/auth-page";
 import FirebaseAuthPage from "@/pages/firebase-auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import AnalyticsDashboard from "@/pages/analytics";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
@@ -37,6 +38,7 @@ function Router() {
       <FirebaseProtectedRoute path="/transactions" component={Transactions} />
       <FirebaseProtectedRoute path="/admin" component={Admin} adminOnly={true} />
       <FirebaseProtectedRoute path="/admin/employees" component={AdminEmployees} adminOnly={true} />
+      <FirebaseProtectedRoute path="/admin/analytics" component={AnalyticsDashboard} adminOnly={true} />
       <FirebaseProtectedRoute path="/seller" component={Seller} />
       
       {/* Protected social platform routes */}

@@ -15,7 +15,7 @@ import {
   conversationParticipants, ConversationParticipant, InsertConversationParticipant,
   messages, Message, InsertMessage
 } from "@shared/schema";
-import { eq, ne, desc, and, or, isNull, sql, count, sum, gt, lt, asc, inArray } from "drizzle-orm";
+import { eq, ne, desc, and, or, isNull, isNotNull, sql, count, sum, gt, lt, gte, asc, inArray } from "drizzle-orm";
 import { hash, compare } from "bcrypt";
 import { 
   UserWithBalance,
@@ -29,7 +29,13 @@ import {
   PollWithVotes,
   MessageWithSender,
   ConversationWithDetails,
-  SocialStats
+  SocialStats,
+  PointsDistribution,
+  RedemptionTrend,
+  DepartmentEngagement,
+  TopPerformer,
+  PopularReward,
+  AnalyticsSummary
 } from "@shared/types";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 
@@ -121,6 +127,14 @@ export interface IStorage {
   
   // Social methods - Stats
   getUserSocialStats(userId: number): Promise<SocialStats>;
+  
+  // Analytics methods
+  getPointsDistribution(): Promise<PointsDistribution>;
+  getRedemptionTrends(): Promise<RedemptionTrend[]>;
+  getDepartmentEngagement(): Promise<DepartmentEngagement[]>;
+  getTopPerformers(limit?: number): Promise<TopPerformer[]>;
+  getPopularRewards(limit?: number): Promise<PopularReward[]>;
+  getAnalyticsSummary(): Promise<AnalyticsSummary>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -389,6 +403,38 @@ export class DatabaseStorage implements IStorage {
         const response = await carltonSupplier(product.name, userId);
         if (response.success && response.orderId) {
           externalRef = response.orderId;
+        }
+      } else if (product.supplier === 'amazon') {
+        // For Amazon gift cards, determine gift card amount based on points
+        const giftCardAmount = Math.floor(amount / 100);  // Example: 1 point = $0.01
+        const response = await amazonGiftCardSupplier(product.name, userId, giftCardAmount, 'USD');
+        if (response.success) {
+          // Use both code and link in the external reference for Amazon
+          externalRef = response.giftCardCode 
+            ? `${response.giftCardCode}|${response.giftCardLink || ''}`
+            : response.giftCardLink;
+        }
+      } else if (product.supplier === 'deliveroo') {
+        // For Deliveroo vouchers, determine voucher amount based on points
+        const voucherAmount = Math.floor(amount / 100);  // Example: 1 point = £0.01
+        const response = await deliverooSupplier(product.name, userId, voucherAmount, 'GBP');
+        if (response.success) {
+          // Use the voucher code in the external reference for Deliveroo
+          externalRef = response.voucherCode 
+            ? `${response.voucherCode}|${response.voucherLink || ''}`
+            : response.voucherLink;
+        }
+      } else if (product.supplier === 'wellbeing') {
+        // Extract session type from the product name if needed
+        const sessionType = product.name.toLowerCase().includes('yoga') ? 'yoga' : 
+                          product.name.toLowerCase().includes('therapy') ? 'therapy' :
+                          'meditation';
+        const response = await wellbeingPartnerSupplier(product.name, userId, sessionType);
+        if (response.success) {
+          // Store booking details in the external reference for Wellbeing Partners
+          externalRef = response.bookingId 
+            ? `${response.bookingId}|${response.partnerName || ''}|${response.appointmentDate || ''}`
+            : response.bookingLink;
         }
       }
       
@@ -1722,6 +1768,577 @@ export class DatabaseStorage implements IStorage {
       recognitionsGiven,
       unreadMessages: unreadMessagesCount,
       engagementScore,
+    };
+  }
+  
+  // HR Analytics methods
+  async getPointsDistribution(): Promise<PointsDistribution> {
+    // Get all user accounts with their balance
+    const userAccounts = await db.select({
+      account: accounts,
+      user: users,
+    })
+    .from(accounts)
+    .where(eq(accounts.accountType, 'user'))
+    .leftJoin(users, eq(accounts.userId, users.id));
+    
+    const balances = userAccounts.map(ua => ua.account.balance);
+    const totalUsers = balances.length;
+    
+    if (totalUsers === 0) {
+      return {
+        ranges: [],
+        totalUsers: 0,
+        averagePoints: 0,
+        medianPoints: 0,
+      };
+    }
+    
+    // Calculate average points
+    const totalPoints = balances.reduce((sum, balance) => sum + balance, 0);
+    const averagePoints = totalPoints / totalUsers;
+    
+    // Calculate median points
+    const sortedBalances = [...balances].sort((a, b) => a - b);
+    const mid = Math.floor(sortedBalances.length / 2);
+    const medianPoints = sortedBalances.length % 2 === 0
+      ? (sortedBalances[mid - 1] + sortedBalances[mid]) / 2
+      : sortedBalances[mid];
+    
+    // Define range buckets
+    const rangeDefinitions = [
+      { min: 0, max: 99, label: '0-99' },
+      { min: 100, max: 499, label: '100-499' },
+      { min: 500, max: 999, label: '500-999' },
+      { min: 1000, max: 2499, label: '1,000-2,499' },
+      { min: 2500, max: 4999, label: '2,500-4,999' },
+      { min: 5000, max: 9999, label: '5,000-9,999' },
+      { min: 10000, max: Infinity, label: '10,000+' },
+    ];
+    
+    // Count users in each range
+    const ranges = rangeDefinitions.map(range => {
+      const count = balances.filter(
+        balance => balance >= range.min && balance <= range.max
+      ).length;
+      
+      return {
+        range: range.label,
+        count,
+        percentage: Math.round((count / totalUsers) * 100),
+      };
+    });
+    
+    return {
+      ranges,
+      totalUsers,
+      averagePoints,
+      medianPoints,
+    };
+  }
+  
+  async getRedemptionTrends(): Promise<RedemptionTrend[]> {
+    // Get current date
+    const now = new Date();
+    const trends: RedemptionTrend[] = [];
+    
+    // Last 6 months data
+    for (let i = 0; i < 6; i++) {
+      const endDate = new Date(now.getFullYear(), now.getMonth() - i, 0);
+      const startDate = new Date(now.getFullYear(), now.getMonth() - i - 1, 1);
+      
+      // Format the period label (e.g., "Jan 2023")
+      const periodLabel = startDate.toLocaleDateString('en-US', { 
+        month: 'short',
+        year: 'numeric' 
+      });
+      
+      // Get redemption count for the month
+      const [redemptionCountResult] = await db.select({
+        count: count(orders.id),
+        totalPoints: sql<number>`sum(${transactions.amount})`,
+      })
+      .from(orders)
+      .leftJoin(transactions, eq(orders.transactionId, transactions.id))
+      .where(
+        and(
+          gte(orders.createdAt, startDate),
+          lt(orders.createdAt, endDate)
+        )
+      );
+      
+      const count = Number(redemptionCountResult.count) || 0;
+      const totalPoints = Number(redemptionCountResult.totalPoints) || 0;
+      
+      trends.push({
+        period: periodLabel,
+        count,
+        totalPoints,
+        avgPointsPerRedemption: count > 0 ? Math.round(totalPoints / count) : 0,
+      });
+    }
+    
+    // Return in chronological order (oldest first)
+    return trends.reverse();
+  }
+  
+  async getDepartmentEngagement(): Promise<DepartmentEngagement[]> {
+    // Get all departments
+    const departmentsResults = await db.select({
+      department: users.department,
+    })
+    .from(users)
+    .where(
+      and(
+        isNotNull(users.department),
+        ne(users.department, '')
+      )
+    )
+    .groupBy(users.department);
+    
+    // If no departments, return empty array
+    if (!departmentsResults.length) {
+      return [];
+    }
+    
+    const departments = departmentsResults.map(d => d.department);
+    const result: DepartmentEngagement[] = [];
+    
+    // For each department, calculate metrics
+    for (const department of departments) {
+      if (!department) continue;
+      
+      // Get department employee count
+      const [employeeCountResult] = await db.select({
+        count: count(users.id),
+      })
+      .from(users)
+      .where(eq(users.department, department));
+      
+      const employeeCount = Number(employeeCountResult.count);
+      
+      // Get user IDs in the department
+      const departmentUsers = await db.select({
+        id: users.id,
+      })
+      .from(users)
+      .where(eq(users.department, department));
+      
+      const userIds = departmentUsers.map(u => u.id);
+      
+      // Get total points for department users
+      const userAccountsResult = await db.select({
+        userId: accounts.userId,
+        balance: accounts.balance,
+      })
+      .from(accounts)
+      .where(
+        and(
+          eq(accounts.accountType, 'user'),
+          inArray(accounts.userId, userIds)
+        )
+      );
+      
+      const totalPoints = userAccountsResult.reduce((sum, acc) => sum + acc.balance, 0);
+      
+      // Get redemption count for department
+      const [redemptionCountResult] = await db.select({
+        count: count(orders.id),
+      })
+      .from(orders)
+      .where(inArray(orders.userId, userIds));
+      
+      const redemptionCount = Number(redemptionCountResult.count);
+      
+      // Get users who have participated (posted, commented, or gave recognition)
+      const [activeUsersResult] = await db.select({
+        count: sql<number>`count(distinct ${posts.userId})`,
+      })
+      .from(posts)
+      .where(inArray(posts.userId, userIds));
+      
+      const [activeCommentersResult] = await db.select({
+        count: sql<number>`count(distinct ${comments.userId})`,
+      })
+      .from(comments)
+      .where(inArray(comments.userId, userIds));
+      
+      const [activeRecognizersResult] = await db.select({
+        count: sql<number>`count(distinct ${recognitions.recognizerId})`,
+      })
+      .from(recognitions)
+      .where(inArray(recognitions.recognizerId, userIds));
+      
+      // Count unique active users
+      const activePostersCount = Number(activeUsersResult.count);
+      const activeCommentersCount = Number(activeCommentersResult.count);
+      const activeRecognizersCount = Number(activeRecognizersResult.count);
+      
+      // Assume user is active if they've done any of these activities
+      const estimatedActiveUsers = Math.min(
+        employeeCount,
+        activePostersCount + activeCommentersCount + activeRecognizersCount
+      );
+      
+      // Calculate participation rate
+      const participationRate = employeeCount > 0 
+        ? Math.round((estimatedActiveUsers / employeeCount) * 100)
+        : 0;
+      
+      result.push({
+        department,
+        employeeCount,
+        totalPoints,
+        avgPointsPerEmployee: employeeCount > 0 ? Math.round(totalPoints / employeeCount) : 0,
+        redemptionCount,
+        participationRate,
+      });
+    }
+    
+    // Sort by participation rate descending
+    return result.sort((a, b) => b.participationRate - a.participationRate);
+  }
+  
+  async getTopPerformers(limit: number = 10): Promise<TopPerformer[]> {
+    // Get all user accounts
+    const userAccounts = await db.select({
+      account: accounts,
+      user: users,
+    })
+    .from(accounts)
+    .where(eq(accounts.accountType, 'user'))
+    .leftJoin(users, eq(accounts.userId, users.id));
+    
+    const topPerformers: TopPerformer[] = [];
+    
+    // For each user, get metrics
+    for (const { user, account } of userAccounts) {
+      if (!user) continue;
+      
+      // Get points earned (incoming transactions)
+      const [pointsEarnedResult] = await db.select({
+        sum: sql<number>`sum(${transactions.amount})`,
+      })
+      .from(transactions)
+      .where(eq(transactions.toAccountId, account.id));
+      
+      const pointsEarned = Number(pointsEarnedResult.sum) || 0;
+      
+      // Get recognitions received
+      const [recognitionsResult] = await db.select({
+        count: count(recognitions.id),
+      })
+      .from(recognitions)
+      .where(eq(recognitions.recipientId, user.id));
+      
+      const recognitionsReceived = Number(recognitionsResult.count);
+      
+      topPerformers.push({
+        id: user.id,
+        name: user.name,
+        surname: user.surname || '',
+        email: user.email,
+        department: user.department || '',
+        pointsEarned,
+        recognitionsReceived,
+        avatarUrl: user.avatarUrl,
+      });
+    }
+    
+    // Sort by points earned descending and limit
+    return topPerformers
+      .sort((a, b) => b.pointsEarned - a.pointsEarned)
+      .slice(0, limit);
+  }
+  
+  async getPopularRewards(limit: number = 10): Promise<PopularReward[]> {
+    // Get all products
+    const allProducts = await db.select().from(products);
+    
+    const rewardStats: PopularReward[] = [];
+    
+    // For each product, get metrics
+    for (const product of allProducts) {
+      // Get redemption count
+      const [redemptionCountResult] = await db.select({
+        count: count(orders.id),
+        totalPoints: sql<number>`sum(${transactions.amount})`,
+      })
+      .from(orders)
+      .leftJoin(transactions, eq(orders.transactionId, transactions.id))
+      .where(eq(orders.productId, product.id));
+      
+      const redeemCount = Number(redemptionCountResult.count);
+      const totalPointsSpent = Number(redemptionCountResult.totalPoints) || 0;
+      
+      rewardStats.push({
+        id: product.id,
+        name: product.name,
+        points: product.points,
+        redeemCount,
+        totalPointsSpent,
+        category: product.category,
+        supplier: product.supplier,
+      });
+    }
+    
+    // Sort by redemption count descending and limit
+    return rewardStats
+      .sort((a, b) => b.redeemCount - a.redeemCount)
+      .slice(0, limit);
+  }
+  
+  async getAnalyticsSummary(): Promise<AnalyticsSummary> {
+    // Get total users
+    const [userCountResult] = await db.select({
+      count: count(users.id),
+    })
+    .from(users);
+    
+    const totalUsers = Number(userCountResult.count);
+    
+    // Get active users (made a post, comment, or recognition in last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const [activePostersResult] = await db.select({
+      count: sql<number>`count(distinct ${posts.userId})`,
+    })
+    .from(posts)
+    .where(gte(posts.createdAt, thirtyDaysAgo));
+    
+    const [activeCommentersResult] = await db.select({
+      count: sql<number>`count(distinct ${comments.userId})`,
+    })
+    .from(comments)
+    .where(gte(comments.createdAt, thirtyDaysAgo));
+    
+    const [activeRecognizersResult] = await db.select({
+      count: sql<number>`count(distinct ${recognitions.recognizerId})`,
+    })
+    .from(recognitions)
+    .where(gte(recognitions.createdAt, thirtyDaysAgo));
+    
+    // Estimate active users (unique users across activities)
+    const activeUsers = Math.min(
+      totalUsers,
+      Number(activePostersResult.count) +
+      Number(activeCommentersResult.count) +
+      Number(activeRecognizersResult.count)
+    );
+    
+    // Get total points awarded and redeemed
+    const [totalPointsResult] = await db.select({
+      awarded: sql<number>`sum(case when ${transactions.fromAccountId} = 1 then ${transactions.amount} else 0 end)`,
+      redeemed: sql<number>`sum(case when ${transactions.toAccountId} = 1 then ${transactions.amount} else 0 end)`,
+    })
+    .from(transactions);
+    
+    const totalPointsAwarded = Number(totalPointsResult.awarded) || 0;
+    const totalPointsRedeemed = Number(totalPointsResult.redeemed) || 0;
+    
+    // Get total redemptions
+    const [totalRedemptionsResult] = await db.select({
+      count: count(orders.id),
+    })
+    .from(orders);
+    
+    const totalRedemptions = Number(totalRedemptionsResult.count);
+    
+    // Get top departments by points earned
+    const departmentsResults = await db.select({
+      department: users.department,
+    })
+    .from(users)
+    .where(
+      and(
+        isNotNull(users.department),
+        ne(users.department, '')
+      )
+    )
+    .groupBy(users.department);
+    
+    const departments = departmentsResults.map(d => d.department).filter(Boolean);
+    
+    const topDepartments: Array<{ name: string; pointsEarned: number }> = [];
+    
+    for (const department of departments) {
+      if (!department) continue;
+      
+      // Get user IDs in the department
+      const departmentUsers = await db.select({
+        id: users.id,
+      })
+      .from(users)
+      .where(eq(users.department, department));
+      
+      const userIds = departmentUsers.map(u => u.id);
+      
+      // Get department accounts
+      const departmentAccounts = await db.select({
+        id: accounts.id,
+      })
+      .from(accounts)
+      .where(
+        and(
+          eq(accounts.accountType, 'user'),
+          inArray(accounts.userId, userIds)
+        )
+      );
+      
+      const accountIds = departmentAccounts.map(a => a.id);
+      
+      // Get points earned
+      const [pointsEarnedResult] = await db.select({
+        sum: sql<number>`sum(${transactions.amount})`,
+      })
+      .from(transactions)
+      .where(
+        and(
+          inArray(transactions.toAccountId, accountIds),
+          eq(transactions.fromAccountId, 1) // System account
+        )
+      );
+      
+      const pointsEarned = Number(pointsEarnedResult.sum) || 0;
+      
+      topDepartments.push({
+        name: department,
+        pointsEarned,
+      });
+    }
+    
+    // Sort by points earned and take top 5
+    const sortedTopDepartments = topDepartments
+      .sort((a, b) => b.pointsEarned - a.pointsEarned)
+      .slice(0, 5);
+    
+    // Get last month's data for trends
+    const lastMonthStart = new Date();
+    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+    lastMonthStart.setDate(1);
+    
+    const lastMonthEnd = new Date();
+    lastMonthEnd.setDate(0);
+    
+    // Points awarded last month
+    const [lastMonthAwardedResult] = await db.select({
+      sum: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.fromAccountId, 1), // System account
+        gte(transactions.createdAt, lastMonthStart),
+        lt(transactions.createdAt, lastMonthEnd)
+      )
+    );
+    
+    const pointsAwardedLastMonth = Number(lastMonthAwardedResult.sum) || 0;
+    
+    // Points redeemed last month
+    const [lastMonthRedeemedResult] = await db.select({
+      sum: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.toAccountId, 1), // System account
+        gte(transactions.createdAt, lastMonthStart),
+        lt(transactions.createdAt, lastMonthEnd)
+      )
+    );
+    
+    const pointsRedeemedLastMonth = Number(lastMonthRedeemedResult.sum) || 0;
+    
+    // New users last month
+    const [newUsersLastMonthResult] = await db.select({
+      count: count(users.id),
+    })
+    .from(users)
+    .where(
+      and(
+        gte(users.createdAt, lastMonthStart),
+        lt(users.createdAt, lastMonthEnd)
+      )
+    );
+    
+    const newUsersLastMonth = Number(newUsersLastMonthResult.count);
+    
+    // Calculate percentage changes (compared to previous month)
+    const twoMonthsAgoStart = new Date(lastMonthStart);
+    twoMonthsAgoStart.setMonth(twoMonthsAgoStart.getMonth() - 1);
+    
+    const twoMonthsAgoEnd = new Date(lastMonthStart);
+    twoMonthsAgoEnd.setDate(0);
+    
+    // Points awarded two months ago
+    const [twoMonthsAgoAwardedResult] = await db.select({
+      sum: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.fromAccountId, 1), // System account
+        gte(transactions.createdAt, twoMonthsAgoStart),
+        lt(transactions.createdAt, twoMonthsAgoEnd)
+      )
+    );
+    
+    const pointsAwardedTwoMonthsAgo = Number(twoMonthsAgoAwardedResult.sum) || 0;
+    
+    // Points redeemed two months ago
+    const [twoMonthsAgoRedeemedResult] = await db.select({
+      sum: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.toAccountId, 1), // System account
+        gte(transactions.createdAt, twoMonthsAgoStart),
+        lt(transactions.createdAt, twoMonthsAgoEnd)
+      )
+    );
+    
+    const pointsRedeemedTwoMonthsAgo = Number(twoMonthsAgoRedeemedResult.sum) || 0;
+    
+    // New users two months ago
+    const [newUsersTwoMonthsAgoResult] = await db.select({
+      count: count(users.id),
+    })
+    .from(users)
+    .where(
+      and(
+        gte(users.createdAt, twoMonthsAgoStart),
+        lt(users.createdAt, twoMonthsAgoEnd)
+      )
+    );
+    
+    const newUsersTwoMonthsAgo = Number(newUsersTwoMonthsAgoResult.count);
+    
+    // Calculate percentage changes
+    const getPercentageChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
+    };
+    
+    return {
+      totalUsers,
+      activeUsers,
+      totalPointsAwarded,
+      totalPointsRedeemed,
+      totalRedemptions,
+      topDepartments: sortedTopDepartments,
+      recentTrends: {
+        pointsAwardedLastMonth,
+        pointsRedeemedLastMonth,
+        newUsersLastMonth,
+        percentageChange: {
+          pointsAwarded: getPercentageChange(pointsAwardedLastMonth, pointsAwardedTwoMonthsAgo),
+          pointsRedeemed: getPercentageChange(pointsRedeemedLastMonth, pointsRedeemedTwoMonthsAgo),
+          newUsers: getPercentageChange(newUsersLastMonth, newUsersTwoMonthsAgo),
+        }
+      }
     };
   }
 }
