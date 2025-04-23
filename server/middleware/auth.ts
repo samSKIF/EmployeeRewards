@@ -39,7 +39,7 @@ export const verifyToken = (req: AuthenticatedRequest, res: Response, next: Next
   }
 };
 
-export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const verifyAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user?.isAdmin) {
     return res.status(403).json({ message: "Admin access required" });
   }

@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { verifyToken, requireAdmin as verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
+import { verifyToken, verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
