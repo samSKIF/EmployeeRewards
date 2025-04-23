@@ -37,7 +37,7 @@ export default function AuthPage() {
       .then(res => {
         if (res.ok) {
           // Token is valid, redirect to main social page
-          setLocation("/social");
+          window.location.href = "/social";
         }
       })
       .catch(err => {
@@ -45,7 +45,7 @@ export default function AuthPage() {
         localStorage.removeItem("token");
       });
     }
-  }, [setLocation]);
+  }, []);
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +76,7 @@ export default function AuthPage() {
         description: "You have successfully logged in",
       });
       
-      setLocation("/social");
+      window.location.href = "/social";
     } catch (error: any) {
       toast({
         title: "Error",
@@ -120,7 +120,7 @@ export default function AuthPage() {
         description: "Account created successfully",
       });
       
-      setLocation("/social");
+      window.location.href = "/social";
     } catch (error: any) {
       toast({
         title: "Error",

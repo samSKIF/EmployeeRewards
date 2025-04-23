@@ -35,7 +35,7 @@ export default function SocialPage() {
   const [showOrgSettings, setShowOrgSettings] = useState(false);
   
   // Get user profile
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: ["/api/users/me"],
     retry: false,
   });

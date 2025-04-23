@@ -37,15 +37,13 @@ const Sidebar = () => {
     }
   };
   
-  // Function to open social platform in a new window
+  // Function to open social platform in a new tab
   const openSocialPlatform = () => {
-    // Open social platform in a new window
-    const socialWindow = window.open('/auth', 'SocialPlatform', 'width=1200,height=800');
-      
+    // Open social platform in a new browser tab
+    window.open('/auth', '_blank');
+    
     // Close mobile menu if applicable
-    if (socialWindow) {
-      closeMobileMenu();
-    }
+    closeMobileMenu();
   };
 
   const navItems = [
