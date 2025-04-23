@@ -89,7 +89,7 @@ const Sidebar = () => {
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Award className="text-amber-500 h-6 w-6" />
-          <h1 className="text-xl font-bold">RewardHub</h1>
+          <h1 className="text-xl font-bold">ThrivioHR</h1>
         </div>
         {isMobile && (
           <button 
