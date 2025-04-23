@@ -159,10 +159,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error("Auth endpoint test failed:", err);
       }
       
-      // ALWAYS use username for the seeded admin user - this is critical
-      const loginData = { 
-        username: "admin", 
-        password: "admin123" 
+      const loginData = {
+        email: email,
+        password: password
       };
       
       console.log("Sending login data:", loginData);

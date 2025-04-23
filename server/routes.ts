@@ -1118,10 +1118,10 @@ async function seedInitialData() {
       
       // Create admin user
       await storage.createUser({
-        username: "admin",
-        password: "admin123",
+        username: "skif.samir",
+        password: "123456789",
         name: "Admin User",
-        email: "admin@demo.io",
+        email: "skif.samir@gmail.com",
         department: "HR",
         isAdmin: true
       });
