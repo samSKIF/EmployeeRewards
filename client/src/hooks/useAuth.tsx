@@ -42,13 +42,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Only check for existing token
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setIsLoading(false);
-    }
+    // Clear any existing tokens on mount
+    localStorage.removeItem("token");
+    setIsLoading(false);
   }, []);
 
   const fetchUserProfile = async () => {
