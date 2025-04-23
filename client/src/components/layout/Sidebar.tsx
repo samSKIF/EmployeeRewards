@@ -10,7 +10,8 @@ import {
   Store, 
   LogOut, 
   Menu, 
-  Award
+  Award,
+  MessageSquare
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 
@@ -21,7 +22,7 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Fetch user balance
-  const { data: balanceData } = useQuery({
+  const { data: balanceData } = useQuery<{ balance: number }>({
     queryKey: ["/api/points/balance"],
     enabled: !!user
   });
@@ -33,6 +34,17 @@ const Sidebar = () => {
   const closeMobileMenu = () => {
     if (isMobile) {
       setIsOpen(false);
+    }
+  };
+  
+  // Function to open social platform in a new window
+  const openSocialPlatform = () => {
+    // Open social platform in a new window
+    const socialWindow = window.open('/auth', 'SocialPlatform', 'width=1200,height=800');
+      
+    // Close mobile menu if applicable
+    if (socialWindow) {
+      closeMobileMenu();
     }
   };
 
@@ -139,7 +151,15 @@ const Sidebar = () => {
         </nav>
       </div>
       
-      <div className="mt-auto p-4 border-t border-gray-700">
+      <div className="mt-auto p-4 border-t border-gray-700 space-y-2">
+        <button
+          onClick={openSocialPlatform}
+          className="flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600"
+        >
+          <MessageSquare className="w-5 h-5 mr-3" />
+          <span>Open Social Platform</span>
+        </button>
+        
         <button
           onClick={logout}
           className="flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full"
