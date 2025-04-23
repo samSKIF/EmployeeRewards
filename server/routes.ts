@@ -6,12 +6,62 @@ import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
 import { db } from "./db";
-import { compare } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { users, insertUserSchema, products, insertProductSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Registration endpoint
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      console.log("REGISTRATION ATTEMPT - Raw body:", req.body);
+      
+      // Validate user data using the insertUserSchema
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if email already exists
+      const existingEmailUser = await storage.getUserByEmail(userData.email);
+      if (existingEmailUser) {
+        return res.status(409).json({ message: "Email already registered" });
+      }
+      
+      // Check if username already exists
+      const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, userData.username));
+      if (existingUsernameUser) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+      
+      // Create the user
+      const user = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      
+      // Generate JWT token for automatic login
+      const token = generateToken({
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        department: user.department,
+        isAdmin: user.isAdmin,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt
+      });
+      
+      console.log("Registration successful for:", userWithoutPassword);
+      
+      res.status(201).json({
+        token,
+        user: userWithoutPassword
+      });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      res.status(400).json({ message: error.message || "Registration failed" });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {

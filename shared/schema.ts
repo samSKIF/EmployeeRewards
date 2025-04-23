@@ -8,13 +8,19 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  name: text("name").notNull(),
+  name: text("name").notNull(),          // First name
+  surname: text("surname"),              // Last name
   email: text("email").notNull().unique(),
-  department: text("department"),
-  isAdmin: boolean("is_admin").default(false),
-  birthDate: date("birth_date"),
-  avatarUrl: text("avatar_url"),
-  jobTitle: text("job_title"),
+  phoneNumber: text("phone_number"),     // Phone number
+  jobTitle: text("job_title"),           // Job name/title
+  department: text("department"),        // Department
+  sex: text("sex"),                      // Gender
+  nationality: text("nationality"),      // Nationality
+  birthDate: date("birth_date"),         // Date of birth
+  isAdmin: boolean("is_admin").default(false), // Role: admin or user
+  status: text("status").default("active"), // Status: active/inactive
+  avatarUrl: text("avatar_url"),         // Profile photo
+  hireDate: date("hire_date"),           // Work anniversary date
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
