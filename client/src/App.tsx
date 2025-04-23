@@ -7,6 +7,8 @@ import Shop from "@/pages/shop";
 import Transactions from "@/pages/transactions";
 import Admin from "@/pages/admin";
 import Seller from "@/pages/seller";
+import AuthPage from "@/pages/auth-page";
+import SocialPage from "@/pages/social-page";
 import { useEffect, useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -20,7 +22,13 @@ function App() {
   useEffect(() => {
     async function autoLogin() {
       try {
-        // Clear any existing token
+        // Check if we're on auth page or social page
+        if (location === "/auth" || location.startsWith("/social")) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // Clear any existing token for reward dashboard auto-login
         localStorage.removeItem("token");
 
         console.log("Starting auto-login process...");
@@ -93,8 +101,8 @@ function App() {
     );
   }
 
-  // Display error message
-  if (error) {
+  // Display error message (only for auto-login)
+  if (error && location !== "/auth" && !location.startsWith("/social")) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="flex flex-col items-center bg-white p-8 rounded-lg shadow-md max-w-md w-full">
@@ -121,6 +129,7 @@ function App() {
     <TooltipProvider>
       <Toaster />
       <Switch>
+        {/* Main dashboard routes (auto login) */}
         <Route path="/dashboard">
           <Dashboard />
         </Route>
@@ -136,6 +145,18 @@ function App() {
         <Route path="/seller">
           {user?.isAdmin ? <Seller /> : <Dashboard />}
         </Route>
+        
+        {/* Empulse Social Platform routes (manual login) */}
+        <Route path="/auth">
+          <AuthPage />
+        </Route>
+        <Route path="/social">
+          <SocialPage />
+        </Route>
+        <Route path="/social/:tab">
+          <SocialPage />
+        </Route>
+        
         <Route path="/">
           <Dashboard />
         </Route>

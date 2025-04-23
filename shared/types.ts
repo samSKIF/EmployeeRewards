@@ -1,183 +1,220 @@
-import { User, Product, Transaction, Order, Post, Comment, Poll, Recognition, Reaction, Message, Conversation } from "./schema";
-
-// Authentication types
-export type AuthResponse = {
-  user: Omit<User, "password">;
-  token: string;
-};
-
-export type LoginRequest = {
-  email: string;
-  password: string;
-};
-
-// Reward system types
-export type BalanceResponse = {
-  balance: number;
-  userId: number;
-};
-
-export type EarnRequest = {
-  userId: number;
-  amount: number;
-  reason: string;
-  description: string;
-};
-
-export type RedeemRequest = {
-  userId: number;
-  amount: number;
-  productId: number;
-  description: string;
-};
-
-export type TransactionResponse = {
-  transaction: Transaction;
-  balance: number;
-};
-
-export type ProductWithAvailable = Product & {
-  available: boolean;
-};
-
-export type UserWithBalance = {
+// User types
+export interface User {
   id: number;
+  username: string;
   name: string;
   email: string;
   department?: string;
-  birthDate?: Date;
-  balance: number;
+  isAdmin?: boolean;
+  birthDate?: string;
   avatarUrl?: string;
   jobTitle?: string;
-};
+  createdAt: Date;
+}
 
-export type TransactionWithDetails = Transaction & {
-  userName: string;
-  creatorName?: string;
+export interface UserWithBalance extends User {
+  balance: number;
+}
+
+// Account types
+export interface Account {
+  id: number;
+  userId: number;
   accountType: string;
-  isDebit: boolean;
-};
+  balance: number;
+  createdAt: Date;
+}
 
-export type OrderWithDetails = Order & {
-  productName: string;
-  userName: string;
+// Transaction types
+export interface Transaction {
+  id: number;
+  fromAccountId: number;
+  toAccountId: number;
+  amount: number;
+  type: string;
+  description: string;
+  status: string;
+  createdBy?: number;
+  createdAt: Date;
+}
+
+export interface TransactionWithDetails extends Transaction {
+  fromAccount: Account;
+  toAccount: Account;
+  user?: User;
+  admin?: User;
+}
+
+// Product types
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
   points: number;
-};
+  imageUrl?: string;
+  supplier: string;
+  createdBy?: number;
+  isActive: boolean;
+  createdAt: Date;
+}
 
-// Supplier responses
-export type TilloResponse = {
-  success: boolean;
-  giftCardLink?: string;
-  error?: string;
-};
+export interface ProductWithAvailable extends Product {
+  isAvailable: boolean;
+}
 
-export type CarltonResponse = {
-  success: boolean;
-  orderId?: string;
-  error?: string;
-};
+// Order types
+export interface Order {
+  id: number;
+  userId: number;
+  productId: number;
+  transactionId: number;
+  status: string;
+  externalRef?: string;
+  createdAt: Date;
+}
 
-// Stats
-export type DashboardStats = {
+export interface OrderWithDetails extends Order {
+  user: User;
+  product: Product;
+  transaction: Transaction;
+}
+
+// Dashboard stats
+export interface DashboardStats {
   totalPoints: number;
   pointsEarned: number;
   pointsUsed: number;
   redemptions: number;
-  recognitionsGiven?: number;
-  recognitionsReceived?: number;
-};
+}
 
-// Social platform types
-export type PostWithDetails = Post & {
-  user: Omit<User, "password">;
-  commentCount: number;
-  reactionCounts: {
-    [type: string]: number;
-  };
-  poll?: Poll;
-  recognition?: RecognitionWithDetails;
-  userReaction?: string; // The logged-in user's reaction type if any
-};
-
-export type CommentWithUser = Comment & {
-  user: Omit<User, "password">;
-};
-
-export type RecognitionWithDetails = Recognition & {
-  recognizer: Omit<User, "password">;
-  recipient: Omit<User, "password">;
-};
-
-export type PollWithVotes = Poll & {
-  totalVotes: number;
-  voteCounts: number[];
-  userVote?: number; // The logged-in user's vote index if any
-  votePercentages: number[]; // For each option, percentage of total votes
-};
-
-export type MessageWithSender = Message & {
-  sender: Omit<User, "password">;
-};
-
-export type ConversationWithDetails = Conversation & {
-  participants: Omit<User, "password">[];
-  lastMessage?: MessageWithSender;
-  unreadCount: number; // For the current user
-};
-
-export type CreatePostRequest = {
+// Social types - Posts
+export interface Post {
+  id: number;
+  userId: number;
   content: string;
   imageUrl?: string;
-  type: "standard" | "recognition" | "poll";
+  type: 'standard' | 'poll' | 'recognition';
   tags?: string[];
-  
-  // For recognition posts
-  recognitionData?: {
-    recipientId: number;
-    badgeType: string;
-    points: number;
-    message: string;
-  };
-  
-  // For poll posts
-  pollData?: {
-    question: string;
-    options: string[];
-    expiresAt?: string; // ISO date string
-  };
-};
+  isPinned?: boolean;
+  createdAt: Date;
+  updatedAt?: Date;
+}
 
-export type CreateCommentRequest = {
+export interface PostWithDetails extends Post {
+  user: User;
+  commentCount: number;
+  reactionCounts: Record<string, number>;
+  userReaction?: string;
+  poll?: PollWithVotes;
+  recognition?: RecognitionWithDetails;
+}
+
+// Social types - Comments
+export interface Comment {
+  id: number;
   postId: number;
+  userId: number;
   content: string;
-};
+  createdAt: Date;
+}
 
-export type AddReactionRequest = {
+export interface CommentWithUser extends Comment {
+  user: User;
+}
+
+// Social types - Reactions
+export interface Reaction {
+  id: number;
   postId: number;
-  type: string; // like, celebrate, etc.
-};
+  userId: number;
+  type: string;
+  createdAt: Date;
+}
 
-export type VotePollRequest = {
+// Social types - Polls
+export interface Poll {
+  id: number;
+  postId: number;
+  question: string;
+  options: string[];
+  expiresAt?: Date;
+  createdAt: Date;
+}
+
+export interface PollVote {
+  id: number;
   pollId: number;
+  userId: number;
   optionIndex: number;
-};
+  createdAt: Date;
+}
 
-export type CreateConversationRequest = {
-  participantIds: number[];
+export interface PollWithVotes extends Poll {
+  totalVotes: number;
+  voteCounts: number[];
+  votePercentages: number[];
+  userVote?: number;
+}
+
+// Social types - Recognitions
+export interface Recognition {
+  id: number;
+  recognizerId: number;
+  recipientId: number;
+  postId?: number;
+  badgeType: string;
+  message: string;
+  points: number;
+  transactionId?: number;
+  createdAt: Date;
+}
+
+export interface RecognitionWithDetails extends Recognition {
+  recognizer: User;
+  recipient: User;
+}
+
+// Social types - Chat
+export interface Conversation {
+  id: number;
   name?: string;
   isGroup: boolean;
-};
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export type SendMessageRequest = {
+export interface ConversationParticipant {
+  id: number;
   conversationId: number;
-  content: string;
-};
+  userId: number;
+}
 
-export type SocialStats = {
+export interface Message {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  content: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export interface MessageWithSender extends Message {
+  sender: User;
+}
+
+export interface ConversationWithDetails extends Conversation {
+  participants: User[];
+  lastMessage?: MessageWithSender;
+  unreadCount: number;
+}
+
+// Social stats
+export interface SocialStats {
   postsCount: number;
   commentsCount: number;
   recognitionsReceived: number;
   recognitionsGiven: number;
   unreadMessages: number;
-  engagementScore: number; // A calculated score based on activity
-};
+  engagementScore: number;
+}
