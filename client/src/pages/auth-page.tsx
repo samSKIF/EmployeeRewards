@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,154 +133,210 @@ export default function AuthPage() {
   };
   
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left side - Auth form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-3xl font-bold">Empulse</CardTitle>
-            <CardDescription>
-              Connect with your colleagues and stay engaged
-            </CardDescription>
-          </CardHeader>
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+      {/* Left side - Logo and branding */}
+      <div className="md:w-1/2 bg-white p-8 flex flex-col justify-center items-center">
+        <div className="max-w-md mx-auto w-full">
+          <div className="flex items-center gap-3 mb-8">
+            <svg viewBox="0 0 24 24" width="42" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="24" height="24" rx="4" fill="#00A389" />
+              <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span className="text-2xl font-bold text-gray-800">piedpiper</span>
+          </div>
           
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
+          <Card className="border-none shadow-lg">
+            <CardHeader className="pb-3">
+              <h1 className="text-2xl font-bold text-gray-800">Welcome to Empulse</h1>
+              <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
+            </CardHeader>
             
-            <TabsContent value="login">
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4 pt-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email or Username</Label>
-                    <Input 
-                      id="email" 
-                      type="text" 
-                      placeholder="Enter your email or username"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="Enter your password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Logging in..." : "Login"}
-                  </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={handleRegister}>
-                <CardContent className="space-y-4 pt-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input 
-                      id="name" 
-                      placeholder="Enter your full name"
-                      value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value)} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
-                    <Input 
-                      id="register-email" 
-                      type="email" 
-                      placeholder="Enter your email"
-                      value={registerEmail}
-                      onChange={(e) => setRegisterEmail(e.target.value)} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input 
-                      id="username" 
-                      placeholder="Choose a username"
-                      value={registerUsername}
-                      onChange={(e) => setRegisterUsername(e.target.value)} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
-                    <Input 
-                      id="register-password" 
-                      type="password" 
-                      placeholder="Create a password"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department (Optional)</Label>
-                    <Input 
-                      id="department" 
-                      placeholder="Your department"
-                      value={registerDepartment}
-                      onChange={(e) => setRegisterDepartment(e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating Account..." : "Create Account"}
-                  </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </Card>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login" className="text-sm">Sign In</TabsTrigger>
+                <TabsTrigger value="register" className="text-sm">Create Account</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <form onSubmit={handleLogin}>
+                  <CardContent className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm text-gray-600">Email or Username</Label>
+                      <Input 
+                        id="email" 
+                        type="text" 
+                        placeholder="Enter your email or username"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)} 
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label htmlFor="password" className="text-sm text-gray-600">Password</Label>
+                        <a href="#" className="text-sm text-green-600 hover:text-green-700">Forgot password?</a>
+                      </div>
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex flex-col space-y-4 pt-2">
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <form onSubmit={handleRegister}>
+                  <CardContent className="space-y-3 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm text-gray-600">Full Name</Label>
+                      <Input 
+                        id="name" 
+                        placeholder="Enter your full name"
+                        value={registerName}
+                        onChange={(e) => setRegisterName(e.target.value)} 
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email" className="text-sm text-gray-600">Email</Label>
+                      <Input 
+                        id="register-email" 
+                        type="email" 
+                        placeholder="Enter your email"
+                        value={registerEmail}
+                        onChange={(e) => setRegisterEmail(e.target.value)} 
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="username" className="text-sm text-gray-600">Username</Label>
+                      <Input 
+                        id="username" 
+                        placeholder="Choose a username"
+                        value={registerUsername}
+                        onChange={(e) => setRegisterUsername(e.target.value)} 
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password" className="text-sm text-gray-600">Password</Label>
+                      <Input 
+                        id="register-password" 
+                        type="password" 
+                        placeholder="Create a password"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="department" className="text-sm text-gray-600">Department</Label>
+                      <Input 
+                        id="department" 
+                        placeholder="Your department (Optional)"
+                        value={registerDepartment}
+                        onChange={(e) => setRegisterDepartment(e.target.value)}
+                        className="focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex flex-col space-y-4 pt-2">
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Creating Account..." : "Create Account"}
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">
+                      By creating an account, you agree to our Terms of Service and Privacy Policy
+                    </p>
+                  </CardFooter>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </Card>
+        </div>
       </div>
       
-      {/* Right side - Hero section */}
-      <div className="flex-1 bg-gradient-to-br from-blue-500 to-purple-600 p-8 flex items-center justify-center text-white hidden md:flex">
-        <div className="max-w-lg space-y-6">
-          <h1 className="text-4xl font-bold">Welcome to Empulse</h1>
-          <p className="text-xl">
-            A comprehensive employee engagement platform where you can connect with colleagues, participate in polls, receive peer recognition, and earn rewards.
+      {/* Right side - Hero image and features */}
+      <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-green-50 to-green-100 p-8">
+        <div className="max-w-md mx-auto h-full flex flex-col">
+          <div className="mb-8 text-center">
+            <div className="inline-block p-4 bg-white rounded-2xl shadow-md mb-4">
+              <img 
+                src="https://img.freepik.com/free-vector/people-celebrating-achievement-award-ceremony-winners-competition-company-managers-achievement-announcement-award-receiving-ceremony-concept-illustration_335657-2378.jpg?w=700" 
+                alt="Employee Recognition" 
+                className="h-64 w-auto rounded-xl"
+              />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Empower Your Workplace</h2>
+            <p className="text-gray-600">
+              Connect, engage and recognize your colleagues with our comprehensive employee engagement platform
+            </p>
+          </div>
+          
+          <div className="space-y-4 mt-auto">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-3 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Peer Recognition</h3>
+                <p className="text-sm text-gray-500">Celebrate achievements and milestones with colleagues</p>
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+                  <path d="M2 7h20" />
+                  <path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Rewards & Redemption</h3>
+                <p className="text-sm text-gray-500">Earn and redeem points for real-world rewards</p>
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-3 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" />
+                  <path d="M7 10h10" />
+                  <path d="M7 14h10" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Polls & Surveys</h3>
+                <p className="text-sm text-gray-500">Voice your opinion and participate in company decisions</p>
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-center text-sm text-gray-500 mt-8">
+            © 2025 Empulse. All rights reserved.
           </p>
-          <ul className="space-y-3">
-            <li className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-white text-blue-600 flex items-center justify-center">✓</div>
-              <span>Social feed with posts and updates</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-white text-blue-600 flex items-center justify-center">✓</div>
-              <span>Peer-to-peer recognition system</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-white text-blue-600 flex items-center justify-center">✓</div>
-              <span>Interactive polls and surveys</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-white text-blue-600 flex items-center justify-center">✓</div>
-              <span>Real-time messaging and chat</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-white text-blue-600 flex items-center justify-center">✓</div>
-              <span>Redeemable reward points system</span>
-            </li>
-          </ul>
         </div>
       </div>
     </div>

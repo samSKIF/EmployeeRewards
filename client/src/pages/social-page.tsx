@@ -6,13 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
-  UserRound, Users, PlusCircle, BarChart3, Award, MessageSquare, 
-  Heart, ThumbsUp, MessageCircle, Share2, Smile 
+  MessageCircle, Heart, Gift, BarChart3, Users, Settings, 
+  ChevronRight, ThumbsUp, Award, FileText, Share2, Smile,
+  Home, 
 } from "lucide-react";
 import { PostWithDetails, SocialStats } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +23,7 @@ export default function SocialPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [postContent, setPostContent] = useState("");
-  const [activeTab, setActiveTab] = useState("feed");
+  const [currentSection, setCurrentSection] = useState("townhall");
   
   // Get user profile
   const { data: user } = useQuery({
@@ -242,18 +243,29 @@ export default function SocialPage() {
         {post.type === 'recognition' && post.recognition && (
           <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <Award className="text-amber-500" />
-              <span className="font-semibold">Recognition for {post.recognition.recipient.name}</span>
-              <Badge className="bg-amber-500">
-                {post.recognition.badgeType}
-              </Badge>
+              <div className="rounded-full bg-amber-500 text-white p-1.5">
+                <Award size={16} />
+              </div>
+              <span className="font-medium text-amber-900">{post.recognition.badgeType}</span>
               {post.recognition.points > 0 && (
-                <Badge variant="outline" className="border-amber-500 text-amber-600">
-                  +{post.recognition.points} points
-                </Badge>
+                <div className="ml-auto px-3 py-1 bg-amber-500 text-white rounded-full font-bold text-sm">
+                  {post.recognition.points} Points
+                </div>
               )}
             </div>
-            <p className="text-amber-900 italic">"{post.recognition.message}"</p>
+            <p className="text-amber-900 text-sm">{post.recognition.message}</p>
+            
+            <div className="mt-3 flex items-center">
+              <Avatar className="h-8 w-8 border-2 border-white">
+                <AvatarFallback className="bg-amber-200 text-amber-700">
+                  {post.recognition.recipient.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="ml-2">
+                <div className="text-sm font-medium">{post.recognition.recipient.name}</div>
+                <div className="text-xs text-gray-500">{post.recognition.recipient.jobTitle || 'Team Member'}</div>
+              </div>
+            </div>
           </div>
         )}
         
@@ -264,8 +276,8 @@ export default function SocialPage() {
             }`}
             onClick={() => handleReaction(post, 'like')}
           >
-            <ThumbsUp size={18} />
-            <span>{post.reactionCounts['like'] || 0}</span>
+            <ThumbsUp size={16} />
+            <span className="text-sm">{post.reactionCounts['like'] || 0}</span>
           </button>
           
           <button 
@@ -274,17 +286,13 @@ export default function SocialPage() {
             }`}
             onClick={() => handleReaction(post, 'celebrate')}
           >
-            <Award size={18} />
-            <span>{post.reactionCounts['celebrate'] || 0}</span>
+            <Award size={16} />
+            <span className="text-sm">{post.reactionCounts['celebrate'] || 0}</span>
           </button>
           
           <button className="flex items-center gap-1 text-gray-500">
-            <MessageCircle size={18} />
-            <span>{post.commentCount}</span>
-          </button>
-          
-          <button className="flex items-center gap-1 text-gray-500">
-            <Share2 size={18} />
+            <MessageCircle size={16} />
+            <span className="text-sm">{post.commentCount}</span>
           </button>
         </div>
       </div>
@@ -294,402 +302,477 @@ export default function SocialPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Left sidebar */}
-      <div className="w-64 hidden md:block bg-white border-r px-6 py-8 space-y-8 fixed h-screen overflow-y-auto">
-        <div className="flex items-center gap-2 text-2xl font-bold text-blue-600">
-          <Heart size={28} className="fill-blue-600" />
-          <span>Empulse</span>
+      <div className="w-64 hidden md:block bg-white border-r px-4 py-6 space-y-6 fixed h-screen overflow-y-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#00A389" />
+            <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span className="text-xl font-bold text-gray-800">piedpiper</span>
         </div>
         
-        <div className="space-y-2">
-          <button 
-            className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg ${
-              activeTab === 'feed' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveTab('feed')}
-          >
-            <UserRound size={20} />
-            <span>Home</span>
-          </button>
+        <div className="space-y-1">
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'home' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <Home size={18} className="mr-3" />
+            <span className="text-sm font-medium">Home</span>
+          </div>
           
-          <button 
-            className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg ${
-              activeTab === 'people' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveTab('people')}
-          >
-            <Users size={20} />
-            <span>People</span>
-          </button>
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'recognize' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <Award size={18} className="mr-3" />
+            <span className="text-sm font-medium">Recognize & Reward</span>
+          </div>
           
-          <button 
-            className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg ${
-              activeTab === 'recognitions' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveTab('recognitions')}
-          >
-            <Award size={20} />
-            <span>Recognitions</span>
-          </button>
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'budgets' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <Gift size={18} className="mr-3" />
+            <span className="text-sm font-medium">Reward Budgets</span>
+          </div>
           
-          <button 
-            className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg ${
-              activeTab === 'messages' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveTab('messages')}
-          >
-            <MessageSquare size={20} />
-            <span>Messages</span>
-            {socialStats?.unreadMessages > 0 && (
-              <Badge className="ml-auto">{socialStats.unreadMessages}</Badge>
-            )}
-          </button>
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'leaderboard' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <BarChart3 size={18} className="mr-3" />
+            <span className="text-sm font-medium">Leaderboard</span>
+          </div>
           
-          <button 
-            className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg ${
-              activeTab === 'polls' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveTab('polls')}
-          >
-            <BarChart3 size={20} />
-            <span>Polls</span>
-          </button>
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'surveys' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <FileText size={18} className="mr-3" />
+            <span className="text-sm font-medium">Surveys</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'groups' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+          }`}>
+            <Users size={18} className="mr-3" />
+            <span className="text-sm font-medium">Groups</span>
+          </div>
         </div>
         
-        <Separator />
-        
-        <div className="space-y-1 pt-4">
-          <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-2">
-            My Groups
-          </h3>
-          <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 text-left">
-            <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-              OT
-            </span>
-            <span>Outdoor Together</span>
-          </button>
-          <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 text-left">
-            <span className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
-              TC
-            </span>
-            <span>Tech Champions</span>
-          </button>
-          <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100">
-            <PlusCircle size={20} className="text-gray-400" />
-            <span className="text-gray-600">Create Group</span>
-          </button>
+        <div className="pt-2">
+          <div className="px-3 py-2 mt-1">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Groups
+            </div>
+            <div className="flex items-center mt-2 space-y-2">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">
+                OT
+              </div>
+              <span className="text-sm text-gray-700">Outdoor Together</span>
+              <span className="ml-auto rounded-full bg-gray-200 text-xs px-1.5 py-0.5">8</span>
+            </div>
+          </div>
         </div>
         
-        <div className="pt-4">
-          <button 
-            className="flex items-center gap-2 text-red-600"
-            onClick={() => {
-              localStorage.removeItem("token");
-              setLocation("/auth");
-            }}
-          >
-            Logout
-          </button>
+        <div className="pt-2 mt-auto">
+          <div className="px-3 py-2 text-sm font-medium text-gray-600 border-t">
+            <div className="mt-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Admin
+            </div>
+            <div className="space-y-1">
+              <div className="px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md">
+                <FileText size={16} className="mr-2" />
+                <span>Reports</span>
+              </div>
+              <div className="px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md">
+                <Gift size={16} className="mr-2" />
+                <span>Send Gifts</span>
+              </div>
+              <div className="px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md">
+                <Settings size={16} className="mr-2" />
+                <span>Org. Settings</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
       {/* Main content */}
-      <div className="flex-1 md:ml-64 px-4 py-6">
+      <div className="flex-1 md:ml-64 px-4 py-4">
         <div className="max-w-3xl mx-auto">
-          <Tabs 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-            className="mb-6 md:hidden"
-          >
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="feed">Feed</TabsTrigger>
-              <TabsTrigger value="people">People</TabsTrigger>
-              <TabsTrigger value="recognitions">Recognitions</TabsTrigger>
-              <TabsTrigger value="messages">
-                Messages
-                {socialStats?.unreadMessages > 0 && (
-                  <Badge className="ml-1" variant="secondary">{socialStats.unreadMessages}</Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="polls">Polls</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center mb-6">
+            <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
+              <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
+            </div>
+          </div>
           
-          {activeTab === 'feed' && (
+          {/* Post composer */}
+          <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
+            <div className="flex">
+              <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                <span className="text-xl">
+                  {user?.name?.charAt(0) || 'U'}
+                </span>
+              </div>
+              <div className="ml-4 flex-1">
+                <div className="rounded-xl bg-gray-100 px-4 py-3 text-gray-600">
+                  <p>Who are you rewarding today? Use @ to tag a teammate.</p>
+                </div>
+                <div className="mt-3 flex space-x-2 items-center">
+                  <button className="flex items-center rounded-lg text-red-600 border border-red-100 bg-red-50 px-3 py-1 text-sm">
+                    <div className="mr-1">🏆</div>
+                    <span>Reward</span>
+                  </button>
+                  <button className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm">
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Example post */}
+          <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                    JP
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">James Park</div>
+                    <div className="text-xs text-gray-500">Mar 5</div>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <p className="text-gray-700">
+                  Congratulations <span className="text-blue-500">@Thresa</span> on 2 years with the company and here's to many more. Here is <span className="text-green-600 font-medium">500 Points</span> to celebrate this joyous occasion!
+                </p>
+              </div>
+              
+              <div className="bg-amber-50 rounded-xl p-4 mb-3">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center mr-2">
+                    <div className="text-amber-700">🎉</div>
+                  </div>
+                  <div className="text-amber-800 font-medium">Work Anniversary</div>
+                </div>
+                
+                <div className="rounded-xl overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&h=400&auto=format&fit=crop"
+                    alt="Celebration" 
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+                
+                <div className="mt-3 flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border shadow-sm">
+                      <div className="text-xs">TW</div>
+                    </div>
+                    <div className="ml-2">
+                      <div className="text-sm font-medium">Theresa Webb</div>
+                      <div className="text-xs text-gray-500">Manager, Marketing</div>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full px-3 py-1.5 font-bold text-sm">
+                    500 Points
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-gray-500 text-sm">
+                <div className="flex space-x-4">
+                  <div className="flex items-center space-x-1">
+                    <ThumbsUp size={16} />
+                    <span>24</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <MessageCircle size={16} />
+                    <span>15</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Award size={16} />
+                    <span>8</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-3 border-t pt-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="text-xs">MD</div>
+                  </div>
+                  <div>
+                    <div className="flex items-center">
+                      <div className="font-medium text-sm">Max Dixon</div>
+                      <div className="ml-2 text-xs text-gray-500">15m</div>
+                    </div>
+                    <div className="text-sm text-gray-600">Happy Anniversary 🎉</div>
+                  </div>
+                </div>
+                
+                <div className="mt-3 flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="text-xs">
+                      {user?.name?.charAt(0) || 'U'}
+                    </div>
+                  </div>
+                  <div className="ml-3 flex-1 relative">
+                    <input 
+                      type="text" 
+                      placeholder="Add a comment..." 
+                      className="w-full py-2 px-3 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2 text-gray-400">
+                      <button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15.182 15.182C13.4246 16.9393 10.5754 16.9393 8.81802 15.182M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM9.75 9.75C9.75 10.1642 9.41421 10.5 9 10.5C8.58579 10.5 8.25 10.1642 8.25 9.75C8.25 9.33579 8.58579 9 9 9C9.41421 9 9.75 9.33579 9.75 9.75ZM15.75 9.75C15.75 10.1642 15.4142 10.5 15 10.5C14.5858 10.5 14.25 10.1642 14.25 9.75C14.25 9.33579 14.5858 9 15 9C15.4142 9 15.75 9.33579 15.75 9.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      <button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M2 20L2.75916 17.2351C3.57588 14.2499 4 12.7572 4.81716 11.8118C5.63433 10.8665 6.82943 10.4335 9.21964 9.56766L11 9L13.5 10L15.2107 9.57748C17.2148 8.95517 18.2169 8.64402 19.1085 9.03229C20 9.42057 20 10.5103 20 12.6896V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M4 14C4 14 5 14 6.5 17.5C6.5 17.5 9.33333 11.6667 14 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="17.5" cy="17.5" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Posts from the API */}
+          {postsLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                    <div className="ml-3 space-y-1">
+                      <div className="h-4 w-24 bg-gray-200 rounded" />
+                      <div className="h-3 w-16 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-gray-200 rounded" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
             <div className="space-y-6">
-              {/* Create post card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create Post</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleCreatePost}>
-                    <div className="space-y-4">
-                      <div className="flex gap-3">
-                        <Avatar>
-                          <AvatarFallback>
+              {posts.map((post: PostWithDetails) => (
+                <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center">
+                        <Avatar className="w-10 h-10 mr-3">
+                          <AvatarFallback className="bg-blue-100 text-blue-700">
+                            {post.user.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-gray-900">{post.user.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5 10H5.01M10 10H10.01M15 10H15.01M5.2 5.2L5.2 5.2M5.2 14.8L5.2 14.8M14.8 5.2L14.8 5.2M14.8 14.8L14.8 14.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {renderPostContent(post)}
+                    
+                    <div className="mt-4 border-t pt-3">
+                      {post.commentCount > 0 ? (
+                        <div className="text-sm text-blue-600 mb-3">
+                          View all {post.commentCount} comments
+                        </div>
+                      ) : null}
+                      
+                      <div className="flex items-center">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
                             {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <Textarea 
-                          placeholder={`What's on your mind, ${user?.name?.split(' ')[0]}?`}
-                          value={postContent}
-                          onChange={(e) => setPostContent(e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="flex gap-2">
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setActiveTab('polls')}
-                          >
-                            <BarChart3 size={18} className="mr-1" />
-                            Poll
-                          </Button>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setActiveTab('recognitions')}
-                          >
-                            <Award size={18} className="mr-1" />
-                            Recognition
-                          </Button>
+                        <div className="ml-3 flex-1 relative">
+                          <Input 
+                            placeholder="Add a comment..." 
+                            className="w-full py-2 px-3 text-sm focus:ring-0"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                handleAddComment(post.id, e.currentTarget.value);
+                                e.currentTarget.value = '';
+                              }
+                            }}
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2 text-gray-400">
+                            <Smile 
+                              size={16} 
+                              className="cursor-pointer" 
+                            />
+                          </div>
                         </div>
-                        <Button 
-                          type="submit"
-                          disabled={createPostMutation.isPending}
-                        >
-                          {createPostMutation.isPending ? "Posting..." : "Post"}
-                        </Button>
                       </div>
                     </div>
-                  </form>
-                </CardContent>
-              </Card>
-              
-              {/* Posts feed */}
-              {postsLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardHeader>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-200" />
-                          <div className="space-y-2">
-                            <div className="h-4 w-40 bg-gray-200 rounded" />
-                            <div className="h-3 w-24 bg-gray-200 rounded" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="h-4 w-full bg-gray-200 rounded" />
-                          <div className="h-4 w-full bg-gray-200 rounded" />
-                          <div className="h-4 w-2/3 bg-gray-200 rounded" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  {posts.map((post: PostWithDetails) => (
-                    <Card key={post.id} className="overflow-hidden">
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarFallback>
-                                {post.user.name.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-semibold">{post.user.name}</div>
-                              <div className="text-sm text-gray-500">
-                                {new Date(post.createdAt).toLocaleDateString()} · {post.user.department}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {post.isPinned && (
-                            <Badge variant="outline">Pinned</Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="pb-3">
-                        {renderPostContent(post)}
-                      </CardContent>
-                      
-                      {post.commentCount > 0 && (
-                        <div className="px-6 py-2 bg-gray-50 text-sm text-blue-600 cursor-pointer hover:bg-gray-100">
-                          View all {post.commentCount} comments
-                        </div>
-                      )}
-                      
-                      <CardFooter className="pt-3 pb-4">
-                        <div className="flex items-center gap-3 w-full">
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback>
-                              {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="relative w-full">
-                            <Input 
-                              placeholder="Write a comment..."
-                              className="pr-10"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                  handleAddComment(post.id, e.currentTarget.value);
-                                  e.currentTarget.value = '';
-                                }
-                              }}
-                            />
-                            <Smile 
-                              size={18} 
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" 
-                            />
-                          </div>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                  
-                  {posts.length === 0 && (
-                    <Card className="p-8 text-center">
-                      <div className="flex flex-col items-center gap-2 text-gray-500">
-                        <MessageCircle size={48} strokeWidth={1} />
-                        <h3 className="text-lg font-semibold">No posts yet</h3>
-                        <p>Be the first to post something!</p>
-                      </div>
-                    </Card>
-                  )}
+              ))}
+              
+              {posts.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                  <div className="flex flex-col items-center gap-3 text-gray-500">
+                    <MessageCircle size={48} strokeWidth={1} />
+                    <h3 className="text-lg font-semibold">No posts yet</h3>
+                    <p>Be the first to post something!</p>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
-          
-          {activeTab === 'people' && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">People Directory</h2>
-              <p className="text-gray-500 mb-4">This section is under development.</p>
-            </div>
-          )}
-          
-          {activeTab === 'recognitions' && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Recognitions</h2>
-              <p className="text-gray-500 mb-4">This section is under development.</p>
-            </div>
-          )}
-          
-          {activeTab === 'messages' && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Messages</h2>
-              <p className="text-gray-500 mb-4">This section is under development.</p>
-            </div>
-          )}
-          
-          {activeTab === 'polls' && (
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Polls</h2>
-              <p className="text-gray-500 mb-4">This section is under development.</p>
             </div>
           )}
         </div>
       </div>
       
       {/* Right sidebar */}
-      <div className="w-80 hidden lg:block bg-white border-l px-6 py-8 fixed right-0 h-screen overflow-y-auto">
-        {/* User profile summary */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="h-14 w-14">
-              <AvatarFallback className="text-lg">
-                {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-semibold text-lg">{user?.name}</div>
-              <div className="text-sm text-gray-500">{user?.department}</div>
+      <div className="w-72 hidden lg:block bg-white border-l px-4 py-6 fixed right-0 h-screen overflow-y-auto">
+        {/* Celebrations section */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-900 mb-3">Celebrations</h3>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 mr-2">
+                🎂
+              </div>
+              <div>
+                <div className="text-sm">
+                  <span className="font-medium text-pink-600">Monica & 3 others</span>
+                  <span className="text-gray-600"> birthday is today</span>
+                </div>
+              </div>
             </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mr-2">
+                🏆
+              </div>
+              <div>
+                <div className="text-sm">
+                  <span className="font-medium text-blue-600">Ted & 1 other</span>
+                  <span className="text-gray-600"> work anniversary is today</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-2">
+                👋
+              </div>
+              <div>
+                <div className="text-sm">
+                  <span className="font-medium text-green-600">Tim & 2 other</span>
+                  <span className="text-gray-600"> joined the team today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Leaderboard section */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-gray-900">Leaderboard</h3>
+            <button className="text-xs text-blue-500">see all</button>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <div className="text-xl font-semibold">{socialStats?.postsCount || 0}</div>
-              <div className="text-sm text-gray-600">Posts</div>
-            </div>
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <div className="text-xl font-semibold">{socialStats?.recognitionsReceived || 0}</div>
-              <div className="text-sm text-gray-600">Recognitions</div>
-            </div>
-          </div>
-        </div>
-        
-        <Separator className="mb-6" />
-        
-        {/* Upcoming celebrations */}
-        <div className="mb-8">
-          <h3 className="font-semibold mb-4">Celebrations</h3>
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
-                <span>🎂</span>
+            <div className="flex items-center">
+              <div className="w-6 text-center text-gray-500 text-sm mr-2">
+                1
               </div>
-              <div>
-                <div className="font-medium">Monica & 3 others</div>
-                <div className="text-sm text-gray-500">birthday is today</div>
+              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mr-2">
+                🥇
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium">Theresa Webb</div>
+              </div>
+              <div className="font-semibold text-sm flex items-center">
+                <span className="text-amber-500 mr-1">★</span>
+                5310
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                <span>🏆</span>
+            <div className="flex items-center">
+              <div className="w-6 text-center text-gray-500 text-sm mr-2">
+                2
               </div>
-              <div>
-                <div className="font-medium">Ted & 1 other</div>
-                <div className="text-sm text-gray-500">work anniversary is today</div>
+              <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center mr-2">
+                🥈
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium">Bessie Cooper</div>
+              </div>
+              <div className="font-semibold text-sm flex items-center">
+                <span className="text-amber-500 mr-1">★</span>
+                4791
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="w-6 text-center text-gray-500 text-sm mr-2">
+                3
+              </div>
+              <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center mr-2">
+                🥉
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium">Dianne Russell</div>
+              </div>
+              <div className="font-semibold text-sm flex items-center">
+                <span className="text-amber-500 mr-1">★</span>
+                4315
               </div>
             </div>
           </div>
         </div>
         
-        <Separator className="mb-6" />
-        
-        {/* Leaderboard */}
+        {/* Redeem points section */}
         <div>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Leaderboard</h3>
-            <button className="text-sm text-blue-600">see all</button>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-gray-900">Redeem Your Points</h3>
+            <button className="text-xs text-blue-500">see all</button>
           </div>
           
-          <div className="space-y-3">
-            {[
-              { name: "Theresa Webb", points: 5310, position: 1 },
-              { name: "Bessie Cooper", points: 4791, position: 2 },
-              { name: "Dianne Russell", points: 4315, position: 3 },
-            ].map((leader, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="w-8 text-center font-medium text-gray-500">
-                  {leader.position}
-                </div>
-                <Avatar>
-                  <AvatarFallback>
-                    {leader.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="font-medium">{leader.name}</div>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-amber-500 mr-1">★</span>
-                  <span className="font-medium">{leader.points}</span>
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+              <img src="https://logo.clearbit.com/airbnb.com" alt="Airbnb" className="h-8 w-auto" />
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+              <img src="https://logo.clearbit.com/americanredcross.org" alt="Red Cross" className="h-6 w-auto" />
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+              <img src="https://logo.clearbit.com/walmart.com" alt="Walmart" className="h-6 w-auto" />
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+              <img src="https://logo.clearbit.com/nike.com" alt="Nike" className="h-6 w-auto" />
+            </div>
           </div>
         </div>
       </div>
