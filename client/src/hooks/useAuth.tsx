@@ -91,26 +91,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       console.log("Attempting login with:", { email, password });
       
+      try {
+        // Direct attempt to the auth endpoint to check if it's valid
+        const testResponse = await fetch("/api/auth/login", {
+          method: "HEAD"
+        });
+        console.log("Auth endpoint check:", testResponse.status, testResponse.statusText);
+      } catch (err) {
+        console.error("Auth endpoint test failed:", err);
+      }
+      
+      // Try with admin/admin123 to see if username is the issue
+      const loginData = email === "admin@demo.io" 
+        ? { username: "admin", password: "admin123" } 
+        : { email, password };
+      
+      console.log("Sending login data:", loginData);
+      
       // Using fetch directly for debugging purposes
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(loginData),
         credentials: "include"
       });
       
-      console.log("Login response status:", response.status);
+      console.log("Login response status:", response.status, response.statusText);
+      console.log("Login response headers:", Object.fromEntries([...response.headers]));
+      
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Login error response:", errorText);
-        throw new Error(`Login failed: ${response.status} ${errorText}`);
+        console.error("Login error response:", responseText);
+        throw new Error(`Login failed: ${response.status} ${responseText}`);
       }
       
-      const data = await response.json();
-      console.log("Login success response:", data);
+      // Try to parse the response as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log("Login success response:", data);
+      } catch (err) {
+        console.error("Failed to parse JSON response:", err);
+        throw new Error("Invalid response format from server");
+      }
+      
+      if (!data.token || !data.user) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Server response missing required fields");
+      }
       
       localStorage.setItem("token", data.token);
       
