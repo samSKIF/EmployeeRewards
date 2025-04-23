@@ -13,10 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import { 
   MessageCircle, Heart, Gift, BarChart3, Users, Settings, 
   ChevronRight, ThumbsUp, Award, FileText, Share2, Smile,
-  Home, 
+  Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
+  Cake, Trophy, Target, Sparkles, Zap
 } from "lucide-react";
-import { PostWithDetails, SocialStats } from "@shared/types";
+import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
@@ -24,6 +26,11 @@ export default function SocialPage() {
   const { toast } = useToast();
   const [postContent, setPostContent] = useState("");
   const [currentSection, setCurrentSection] = useState("townhall");
+  const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<string>("");
+  const [recipientId, setRecipientId] = useState<number | null>(null);
+  const [recognitionMessage, setRecognitionMessage] = useState("");
+  const [recognitionPoints, setRecognitionPoints] = useState<number>(50);
   
   // Get user profile
   const { data: user } = useQuery({
@@ -53,6 +60,16 @@ export default function SocialPage() {
     queryKey: ["/api/social/posts"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/social/posts");
+      return res.json();
+    },
+    enabled: !!user,
+  });
+  
+  // Get users for recognition
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/users");
       return res.json();
     },
     enabled: !!user,
@@ -121,6 +138,49 @@ export default function SocialPage() {
       toast({
         title: "Error",
         description: error.message || "Failed to add reaction",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Create recognition mutation
+  const createRecognitionMutation = useMutation({
+    mutationFn: async ({ recipientId, badgeType, message, points }: { 
+      recipientId: number; 
+      badgeType: string; 
+      message: string;
+      points: number;
+    }) => {
+      const content = `Congratulations @${users.find(u => u.id === recipientId)?.name?.split(' ')[0] || 'teammate'} for ${message}`;
+      
+      const res = await apiRequest("POST", "/api/social/posts", {
+        content,
+        type: "recognition",
+        recognition: {
+          recipientId,
+          badgeType,
+          message,
+          points
+        }
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
+      setIsRecognitionModalOpen(false);
+      setSelectedBadge("");
+      setRecipientId(null);
+      setRecognitionMessage("");
+      setRecognitionPoints(50);
+      toast({
+        title: "Recognition sent!",
+        description: "Your recognition has been successfully sent.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send recognition",
         variant: "destructive"
       });
     }
@@ -299,8 +359,169 @@ export default function SocialPage() {
     );
   };
   
+  // Handler for submitting recognition
+  const handleCreateRecognition = () => {
+    if (!recipientId) {
+      toast({
+        title: "Error",
+        description: "Please select a teammate to recognize",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!selectedBadge) {
+      toast({
+        title: "Error",
+        description: "Please select a badge type",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!recognitionMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a recognition message",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    createRecognitionMutation.mutate({
+      recipientId,
+      badgeType: selectedBadge,
+      message: recognitionMessage,
+      points: recognitionPoints
+    });
+  };
+  
+  // Badge options for recognition
+  const badges = [
+    { type: "Outstanding Work", icon: <Star className="h-5 w-5" />, color: "bg-amber-500" },
+    { type: "Team Player", icon: <Users className="h-5 w-5" />, color: "bg-blue-500" },
+    { type: "Problem Solver", icon: <Zap className="h-5 w-5" />, color: "bg-purple-500" },
+    { type: "Innovation Award", icon: <Sparkles className="h-5 w-5" />, color: "bg-emerald-500" },
+    { type: "Leadership", icon: <Target className="h-5 w-5" />, color: "bg-red-500" },
+    { type: "Work Anniversary", icon: <Cake className="h-5 w-5" />, color: "bg-pink-500" },
+    { type: "Top Performer", icon: <Trophy className="h-5 w-5" />, color: "bg-indigo-500" },
+    { type: "Milestone", icon: <Medal className="h-5 w-5" />, color: "bg-cyan-500" }
+  ];
+  
   return (
     <div className="flex min-h-screen bg-gray-50">
+      {/* Recognition Modal */}
+      {isRecognitionModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Recognize a Teammate</h2>
+                <button 
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setIsRecognitionModalOpen(false)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Recipient Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Select Teammate</label>
+                  <Select value={recipientId?.toString()} onValueChange={(value) => setRecipientId(Number(value))}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a teammate" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.filter(u => u.id !== user?.id).map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Badge Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Select Badge</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {badges.map((badge) => (
+                      <div 
+                        key={badge.type}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                          selectedBadge === badge.type 
+                            ? `border-${badge.color.split('-')[1]}-500 bg-${badge.color.split('-')[1]}-50` 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedBadge(badge.type)}
+                      >
+                        <div className={`${badge.color} text-white p-2 rounded-full mb-2`}>
+                          {badge.icon}
+                        </div>
+                        <span className="text-xs text-center font-medium">{badge.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Message */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recognition Message</label>
+                  <Textarea 
+                    value={recognitionMessage}
+                    onChange={(e) => setRecognitionMessage(e.target.value)}
+                    placeholder="What are you recognizing them for?"
+                    className="w-full resize-none"
+                    rows={3}
+                  />
+                </div>
+                
+                {/* Points */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Points <span className="text-xs text-gray-500">(Optional)</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <Button 
+                      variant="outline" size="sm"
+                      onClick={() => setRecognitionPoints(Math.max(0, recognitionPoints - 50))}
+                      disabled={recognitionPoints <= 0}
+                    >
+                      -
+                    </Button>
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full px-4 py-2 font-bold text-sm min-w-[100px] text-center">
+                      {recognitionPoints} Points
+                    </div>
+                    <Button 
+                      variant="outline" size="sm"
+                      onClick={() => setRecognitionPoints(recognitionPoints + 50)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">These points will be awarded to the recipient</p>
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6">
+                  <Button variant="outline" onClick={() => setIsRecognitionModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="bg-green-600 text-white hover:bg-green-700"
+                    onClick={handleCreateRecognition}
+                    disabled={createRecognitionMutation.isPending}
+                  >
+                    {createRecognitionMutation.isPending ? "Sending..." : "Send Recognition"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Left sidebar */}
       <div className="w-64 hidden md:block bg-white border-r px-4 py-6 space-y-6 fixed h-screen overflow-y-auto">
         <div className="flex items-center gap-2 mb-6">
@@ -311,45 +532,76 @@ export default function SocialPage() {
           <span className="text-xl font-bold text-gray-800">piedpiper</span>
         </div>
         
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <span className="font-medium text-green-700">
+              {user?.name?.charAt(0) || 'U'}
+            </span>
+          </div>
+          <div>
+            <div className="font-medium text-sm">{user?.name || 'User'}</div>
+            <div className="text-xs text-gray-500 flex items-center gap-1">
+              <span className="flex items-center text-amber-500"><span className="text-xs mr-0.5">★</span> 580</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-green-600">Online</span>
+            </div>
+          </div>
+        </div>
+        
         <div className="space-y-1">
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'home' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => setCurrentSection('home')}
+          >
             <Home size={18} className="mr-3" />
             <span className="text-sm font-medium">Home</span>
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'recognize' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => {
+              setCurrentSection('recognize');
+              setIsRecognitionModalOpen(true);
+            }}
+          >
             <Award size={18} className="mr-3" />
             <span className="text-sm font-medium">Recognize & Reward</span>
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'budgets' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => setCurrentSection('budgets')}  
+          >
             <Gift size={18} className="mr-3" />
             <span className="text-sm font-medium">Reward Budgets</span>
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'leaderboard' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => setCurrentSection('leaderboard')}
+          >
             <BarChart3 size={18} className="mr-3" />
             <span className="text-sm font-medium">Leaderboard</span>
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'surveys' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => setCurrentSection('surveys')}
+          >
             <FileText size={18} className="mr-3" />
             <span className="text-sm font-medium">Surveys</span>
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
             currentSection === 'groups' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
-          }`}>
+          }`}
+            onClick={() => setCurrentSection('groups')}
+          >
             <Users size={18} className="mr-3" />
             <span className="text-sm font-medium">Groups</span>
           </div>
@@ -421,12 +673,19 @@ export default function SocialPage() {
                   <p>Who are you rewarding today? Use @ to tag a teammate.</p>
                 </div>
                 <div className="mt-3 flex space-x-2 items-center">
-                  <button className="flex items-center rounded-lg text-red-600 border border-red-100 bg-red-50 px-3 py-1 text-sm">
+                  <button 
+                    className="flex items-center rounded-lg text-red-600 border border-red-100 bg-red-50 px-3 py-1 text-sm"
+                    onClick={() => setIsRecognitionModalOpen(true)}
+                  >
                     <div className="mr-1">🏆</div>
-                    <span>Reward</span>
+                    <span>Recognize</span>
                   </button>
-                  <button className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm">
-                    Post
+                  <button 
+                    className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm"
+                    onClick={handleCreatePost}
+                    disabled={createPostMutation.isPending}
+                  >
+                    {createPostMutation.isPending ? "Posting..." : "Post"}
                   </button>
                 </div>
               </div>
