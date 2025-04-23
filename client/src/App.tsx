@@ -9,6 +9,7 @@ import Admin from "@/pages/admin";
 import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
+import AdminEmployees from "@/pages/admin-employees";
 import { useEffect, useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -141,6 +142,9 @@ function App() {
         </Route>
         <Route path="/admin">
           {user?.isAdmin ? <Admin /> : <Dashboard />}
+        </Route>
+        <Route path="/admin/employees">
+          {user?.isAdmin ? <AdminEmployees /> : <Dashboard />}
         </Route>
         <Route path="/seller">
           {user?.isAdmin ? <Seller /> : <Dashboard />}

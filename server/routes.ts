@@ -43,10 +43,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         username: user.username,
         name: user.name,
+        surname: user.surname,
         email: user.email,
+        phoneNumber: user.phoneNumber,
+        jobTitle: user.jobTitle,
         department: user.department,
-        isAdmin: user.isAdmin,
+        sex: user.sex,
+        nationality: user.nationality,
         birthDate: user.birthDate,
+        isAdmin: user.isAdmin,
+        status: user.status,
+        avatarUrl: user.avatarUrl,
+        hireDate: user.hireDate,
         createdAt: user.createdAt
       });
       
@@ -120,10 +128,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         username: user.username,
         name: user.name,
+        surname: user.surname,
         email: user.email,
+        phoneNumber: user.phoneNumber,
+        jobTitle: user.jobTitle,
         department: user.department,
-        isAdmin: user.isAdmin,
+        sex: user.sex,
+        nationality: user.nationality,
         birthDate: user.birthDate,
+        isAdmin: user.isAdmin,
+        status: user.status,
+        avatarUrl: user.avatarUrl,
+        hireDate: user.hireDate,
         createdAt: user.createdAt
       });
       
@@ -387,6 +403,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get("/direct-login", (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, "../client/direct-login.html"));
+  });
+  
+  // Admin API - Employee Management
+  app.get("/api/admin/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const allUsers = await db.select().from(users);
+      res.json(allUsers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get employees" });
+    }
+  });
+  
+  app.patch("/api/admin/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const userId = parseInt(id);
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      const updateData = { ...req.body };
+      
+      // If password is provided, hash it
+      if (updateData.password) {
+        updateData.password = await hash(updateData.password, 10);
+      } else {
+        delete updateData.password; // Don't update password if not provided
+      }
+      
+      // Update user
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update employee" });
+    }
+  });
+  
+  app.delete("/api/admin/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const userId = parseInt(id);
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      // Don't allow deleting the admin user (id=1)
+      if (userId === 1) {
+        return res.status(403).json({ message: "Cannot delete the primary admin user" });
+      }
+      
+      // Delete user
+      await db.delete(users).where(eq(users.id, userId));
+      
+      res.json({ success: true, message: "Employee deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to delete employee" });
+    }
+  });
+  
+  // File upload handler for employee bulk upload
+  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Note: This is a placeholder. In a real implementation, you would:
+      // 1. Use multer or another middleware to handle file uploads
+      // 2. Parse the CSV file
+      // 3. Validate each record
+      // 4. Create users in a transaction
+      
+      res.status(501).json({ 
+        message: "Bulk upload functionality not yet implemented",
+        count: 0
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to process bulk upload" });
+    }
   });
   
   // Social API - Posts
