@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import JSZip from "jszip";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -566,30 +567,44 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download CSV template using the new utility function
+  // Function to download CSV template as ZIP file
   const downloadTemplate = () => {
     // Use the UTF-8 BOM to help Excel interpret the encoding correctly
     const utf8BOM = "\uFEFF";
-    const blob = new Blob([utf8BOM + templateCSVContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    // Create URL and click a temporary anchor
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "employee_template.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    // Release memory
-    URL.revokeObjectURL(url);
+    const csvContent = utf8BOM + templateCSVContent;
     
-    toast({
-      title: "Template Downloaded",
-      description: "The template has been downloaded to your device"
-    });
+    // Initialize JSZip and add the CSV content as a file
+    const zip = new JSZip();
+    zip.file("employee_template.csv", csvContent);
+    
+    // Generate the ZIP file
+    zip.generateAsync({ type: "blob" })
+      .then((zipBlob) => {
+        // Create URL and click a temporary anchor
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "employee_template.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Release memory
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Template Downloaded",
+          description: "The template has been downloaded as a ZIP file"
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating ZIP file:", error);
+        toast({
+          title: "Download Failed",
+          description: "Could not create ZIP file. Please try again.",
+          variant: "destructive"
+        });
+      });
   };
   
   // Function to show template content as fallback
@@ -731,7 +746,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
             <div className="flex flex-col items-center gap-4">
               <div className="flex gap-2">
                 <Button variant="outline" onClick={downloadTemplate}>
-                  <FileDown className="mr-2 h-4 w-4" /> Download Template
+                  <FileDown className="mr-2 h-4 w-4" /> Download Template (ZIP)
                 </Button>
                 <Button variant="outline" onClick={showTemplate}>
                   <FileDown className="mr-2 h-4 w-4" /> View Template
@@ -814,7 +829,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                 onClick={downloadTemplate}
                 variant="outline"
               >
-                <FileDown className="h-4 w-4 mr-2" /> Download as CSV
+                <FileDown className="h-4 w-4 mr-2" /> Download as ZIP
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">
