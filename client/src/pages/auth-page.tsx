@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
@@ -24,28 +25,15 @@ export default function AuthPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerDepartment, setRegisterDepartment] = useState("");
   
-  // Check if already logged in
+  // Check if already logged in with Firebase
+  const { currentUser, loading, signIn, signInWithGooglePopup } = useFirebaseAuth();
+  
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Verify token
-      fetch("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then(res => {
-        if (res.ok) {
-          // Token is valid, redirect to main social page
-          window.location.href = "/social";
-        }
-      })
-      .catch(err => {
-        // Token is invalid, clear it
-        localStorage.removeItem("token");
-      });
+    if (!loading && currentUser) {
+      // User is logged in with Firebase, redirect to social page
+      window.location.href = "/social";
     }
-  }, []);
+  }, [currentUser, loading]);
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +50,8 @@ export default function AuthPage() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        username: loginEmail,
-        password: loginPassword
-      });
-      
-      const data = await response.json();
-      
-      localStorage.setItem("token", data.token);
+      // Use Firebase for authentication
+      await signIn(loginEmail, loginPassword);
       
       toast({
         title: "Success",
@@ -91,7 +73,7 @@ export default function AuthPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!registerName || !registerEmail || !registerUsername || !registerPassword) {
+    if (!registerName || !registerEmail || !registerPassword) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -103,17 +85,21 @@ export default function AuthPage() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/auth/register", {
-        name: registerName,
-        email: registerEmail,
-        username: registerUsername,
-        password: registerPassword,
-        department: registerDepartment || undefined
-      });
+      // Use Firebase for registration
+      await register(registerEmail, registerPassword, registerName);
       
-      const data = await response.json();
-      
-      localStorage.setItem("token", data.token);
+      // Also save user metadata to our database for additional info
+      try {
+        await apiRequest("POST", "/api/users/metadata", {
+          name: registerName,
+          email: registerEmail,
+          username: registerUsername || registerEmail.split('@')[0],
+          department: registerDepartment || undefined
+        });
+      } catch (metadataError) {
+        console.error("Failed to save user metadata:", metadataError);
+        // Continue even if metadata save fails
+      }
       
       toast({
         title: "Success",

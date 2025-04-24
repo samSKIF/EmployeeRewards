@@ -10,53 +10,56 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 
 function App() {
 
   // Main application
   return (
-    <TooltipProvider>
-      <Toaster />
-      <Switch>
-        {/* Main dashboard routes */}
-        <Route path="/dashboard">
-          <Dashboard />
-        </Route>
-        <Route path="/shop">
-          <Shop />
-        </Route>
-        <Route path="/transactions">
-          <Transactions />
-        </Route>
-        <Route path="/admin">
-          <Admin />
-        </Route>
-        <Route path="/admin/employees">
-          <AdminEmployees />
-        </Route>
-        <Route path="/seller">
-          <Seller />
-        </Route>
-        
-        {/* Empulse Social Platform routes (manual login) */}
-        <Route path="/auth">
-          <AuthPage />
-        </Route>
-        <Route path="/social">
-          <SocialPage />
-        </Route>
-        <Route path="/social/:tab">
-          <SocialPage />
-        </Route>
-        
-        <Route path="/">
-          <AuthPage />
-        </Route>
-        <Route>
-          <NotFound />
-        </Route>
-      </Switch>
-    </TooltipProvider>
+    <FirebaseAuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Switch>
+          {/* Main dashboard routes */}
+          <Route path="/dashboard">
+            <Dashboard />
+          </Route>
+          <Route path="/shop">
+            <Shop />
+          </Route>
+          <Route path="/transactions">
+            <Transactions />
+          </Route>
+          <Route path="/admin">
+            <Admin />
+          </Route>
+          <Route path="/admin/employees">
+            <AdminEmployees />
+          </Route>
+          <Route path="/seller">
+            <Seller />
+          </Route>
+          
+          {/* Empulse Social Platform routes (manual login) */}
+          <Route path="/auth">
+            <AuthPage />
+          </Route>
+          <Route path="/social">
+            <SocialPage />
+          </Route>
+          <Route path="/social/:tab">
+            <SocialPage />
+          </Route>
+          
+          <Route path="/">
+            <AuthPage />
+          </Route>
+          <Route>
+            <NotFound />
+          </Route>
+        </Switch>
+      </TooltipProvider>
+    </FirebaseAuthProvider>
   );
 }
 
