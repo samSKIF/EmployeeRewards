@@ -324,9 +324,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingUser) {
         console.log("User already exists, updating Firebase UID", existingUser.id);
         
-        // Update the user's firebaseUid in the database
+        // Update the user's firebaseUid in the database and set admin status if needed
+        const isAdmin = email === 'admin@demo.io';
+        
         await db.update(users)
-          .set({ firebaseUid: firebaseUid || null })
+          .set({ 
+            firebaseUid: firebaseUid || null,
+            // Only set to true for admin email, never change existing admins to false
+            ...(isAdmin ? { isAdmin: true } : {})
+          })
           .where(eq(users.id, existingUser.id));
           
         return res.status(200).json({ 
@@ -339,13 +345,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating new user from Firebase auth");
       const defaultPassword = await hash(Math.random().toString(36).slice(2), 10);
       
+      // Special case: Consider admin@demo.io to be an admin user
+      const isAdmin = email === 'admin@demo.io';
+      
       const userData = {
         email,
         name: name || email.split('@')[0],
         username: username || email.split('@')[0],
         department: department || null,
         password: defaultPassword,
-        firebaseUid: firebaseUid || null
+        firebaseUid: firebaseUid || null,
+        isAdmin: isAdmin // Set isAdmin flag based on email check
       };
       
       const newUser = await storage.createUser(userData);

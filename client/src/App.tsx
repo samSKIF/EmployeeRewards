@@ -23,10 +23,34 @@ function App() {
     setAppReady(true);
   }, []);
 
-  // Redirect to auth page if at root
+  // Role-based redirect from root based on user type
   useEffect(() => {
     if (location === "/") {
-      setLocation("/auth");
+      // Check if user is logged in via Firebase
+      const token = localStorage.getItem("firebaseToken");
+      
+      if (token) {
+        try {
+          // Attempt to decode the token to determine user role
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          
+          // Check if user is admin
+          if (payload && payload.claims && payload.claims.isAdmin === true) {
+            // Admin users go to dashboard
+            setLocation("/dashboard");
+          } else {
+            // Regular employees go to shop
+            setLocation("/shop");
+          }
+        } catch (e) {
+          console.error("Error decoding token:", e);
+          // If there's an error decoding, go to auth page
+          setLocation("/auth");
+        }
+      } else {
+        // No token found, redirect to auth page
+        setLocation("/auth");
+      }
     }
   }, [location, setLocation]);
 
