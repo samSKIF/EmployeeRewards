@@ -40,8 +40,8 @@ function App() {
             // Admin users go to dashboard
             setLocation("/dashboard");
           } else {
-            // Regular employees go to shop
-            setLocation("/shop");
+            // Regular employees go to social platform
+            setLocation("/social");
           }
         } catch (e) {
           console.error("Error decoding token:", e);

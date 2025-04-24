@@ -118,15 +118,15 @@ export default function AuthPage() {
           return '/dashboard'; // Admin users go to dashboard
         }
         
-        // Default to shop for regular employees
-        return '/shop';
+        // Direct regular employees to social platform
+        return '/social';
       } catch (e) {
         console.error("Error decoding token:", e);
       }
     }
     
-    // If we can't determine role or no token, default to shop
-    return '/shop';
+    // If we can't determine role or no token, default to social
+    return '/social';
   };
   
   // Login form state
