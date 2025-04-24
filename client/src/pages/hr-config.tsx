@@ -499,7 +499,7 @@ const EmployeeManagement = () => {
     }
   };
   
-  // Function to read Excel file
+  // Function to read Excel or CSV file
   const readExcelFile = (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -511,12 +511,13 @@ const EmployeeManagement = () => {
             return;
           }
           
+          // XLSX.read can parse both Excel and CSV formats
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const json = XLSX.utils.sheet_to_json(worksheet);
           
-          // Map Excel columns to employee fields
+          // Map columns to employee fields
           const employees = json.map((row: any) => {
             // Generate unique email if not provided
             let email = row.email;
@@ -558,30 +559,35 @@ const EmployeeManagement = () => {
     });
   };
   
-  // Function to download template
+  // Function to download template as CSV which is safer
   const downloadTemplate = () => {
-    const template = [
-      {
-        name: 'John',
-        surname: 'Doe',
-        email: 'john.doe@company.com',
-        password: 'password123',
-        dateOfBirth: '1990-01-01',
-        dateJoined: '2023-01-01',
-        jobTitle: 'Software Engineer',
-        isManager: 'No',
-        managerEmail: 'manager@company.com',
-        status: 'active',
-        sex: 'male',
-        nationality: 'American',
-        phoneNumber: '+1 (555) 123-4567'
-      }
-    ];
+    // Create CSV header row
+    const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
     
-    const worksheet = XLSX.utils.json_to_sheet(template);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
-    XLSX.writeFile(workbook, 'employee_template.xlsx');
+    // Create sample data row
+    const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
+    
+    // Combine into CSV content
+    const csvContent = `${headers}\n${sampleData}`;
+    
+    // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create a download link
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    // Set up the download
+    link.href = url;
+    link.setAttribute('download', 'employee_template.csv');
+    document.body.appendChild(link);
+    
+    // Trigger the download
+    link.click();
+    
+    // Clean up
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (isError) {
@@ -612,7 +618,7 @@ const EmployeeManagement = () => {
               id="fileUpload"
               ref={fileInputRef}
               className="hidden"
-              accept=".xlsx, .xls"
+              accept=".xlsx, .xls, .csv"
               onChange={handleFileChange}
             />
             <Button 
@@ -711,7 +717,7 @@ const EmployeeManagement = () => {
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Upload multiple employees at once using an Excel file
+              Upload multiple employees at once using a CSV or Excel file
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -730,7 +736,7 @@ const EmployeeManagement = () => {
                   disabled={bulkUploadMutation.isPending}
                 >
                   <FileUp className="mr-2 h-4 w-4" />
-                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose Excel File"}
+                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose File (.csv or Excel)"}
                 </Button>
               </div>
               
