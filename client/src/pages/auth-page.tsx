@@ -104,7 +104,7 @@ export default function AuthPage() {
         description: "You have successfully logged in",
       });
       
-      setLocation("/social");
+      setLocation("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -159,7 +159,7 @@ export default function AuthPage() {
         description: "Account created successfully",
       });
       
-      setLocation("/social");
+      setLocation("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
