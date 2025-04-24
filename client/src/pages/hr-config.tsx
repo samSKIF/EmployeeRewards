@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Award, BadgeCheck, Gift, Medal, Star, TrendingUp } from "lucide-react";
 import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { Employee, BrandingSetting } from "@shared/schema";
@@ -925,20 +926,25 @@ const HRConfig = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="branding" className="w-full">
-        <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-2' : 'grid-cols-1'} mb-8`}>
+      <Tabs defaultValue="team" className="w-full">
+        <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-3' : 'grid-cols-1'} mb-8`}>
           {user?.isAdmin && (
-            <TabsTrigger value="employees" className="text-base py-3">
-              <Users className="mr-2 h-5 w-5" /> Employee Management
+            <TabsTrigger value="team" className="text-base py-3">
+              <Users className="mr-2 h-5 w-5" /> Team Management
             </TabsTrigger>
           )}
           <TabsTrigger value="branding" className="text-base py-3">
-            <Palette className="mr-2 h-5 w-5" /> Branding Settings
+            <Palette className="mr-2 h-5 w-5" /> Branding
           </TabsTrigger>
+          {user?.isAdmin && (
+            <TabsTrigger value="peer" className="text-base py-3">
+              <RefreshCw className="mr-2 h-5 w-5" /> Peer to Peer Config
+            </TabsTrigger>
+          )}
         </TabsList>
         
         {user?.isAdmin && (
-          <TabsContent value="employees">
+          <TabsContent value="team">
             <EmployeeManagement />
           </TabsContent>
         )}
@@ -946,7 +952,193 @@ const HRConfig = () => {
         <TabsContent value="branding">
           <BrandingSettings readOnly={!user?.isAdmin} />
         </TabsContent>
+        
+        {user?.isAdmin && (
+          <TabsContent value="peer">
+            <PeerToPeerConfig />
+          </TabsContent>
+        )}
       </Tabs>
+    </div>
+  );
+};
+
+const PeerToPeerConfig = ({ readOnly = false }: { readOnly?: boolean }) => {
+  const { toast } = useToast();
+  const [badgeSettings, setBadgeSettings] = useState({
+    enablePeerRecognition: true,
+    defaultBadgePoints: 50,
+    maxPointsPerMonth: 1000,
+    requireManagerApproval: false,
+    enableCustomBadges: true
+  });
+  
+  const badgeTypes = [
+    { id: "teamwork", name: "Team Player", icon: <Users className="h-5 w-5 text-blue-500" />, points: 50 },
+    { id: "innovation", name: "Innovator", icon: <TrendingUp className="h-5 w-5 text-purple-500" />, points: 100 },
+    { id: "excellence", name: "Excellence", icon: <Star className="h-5 w-5 text-yellow-500" />, points: 75 },
+    { id: "leadership", name: "Leadership", icon: <Award className="h-5 w-5 text-red-500" />, points: 150 },
+    { id: "achievement", name: "Achievement", icon: <Medal className="h-5 w-5 text-green-500" />, points: 125 },
+    { id: "helpfulness", name: "Helper", icon: <Gift className="h-5 w-5 text-indigo-500" />, points: 50 }
+  ];
+  
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  
+  const handleSaveSettings = () => {
+    setSaveStatus("saving");
+    
+    // Simulate API call
+    setTimeout(() => {
+      setSaveStatus("success");
+      toast({
+        title: "Success",
+        description: "Peer to peer settings saved successfully",
+      });
+      
+      // Reset status after a delay
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    }, 1000);
+  };
+  
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Peer Recognition Settings</CardTitle>
+          <CardDescription>Configure how employees can recognize each other</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="enablePeerRecognition" className="text-base">Enable Peer Recognition</Label>
+                  <p className="text-sm text-muted-foreground">Allow employees to recognize each other</p>
+                </div>
+                <Switch 
+                  id="enablePeerRecognition" 
+                  checked={badgeSettings.enablePeerRecognition}
+                  onCheckedChange={(checked) => setBadgeSettings(prev => ({ ...prev, enablePeerRecognition: checked }))}
+                  disabled={readOnly}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="requireManagerApproval" className="text-base">Require Manager Approval</Label>
+                  <p className="text-sm text-muted-foreground">Recognitions need manager approval before points are awarded</p>
+                </div>
+                <Switch 
+                  id="requireManagerApproval" 
+                  checked={badgeSettings.requireManagerApproval}
+                  onCheckedChange={(checked) => setBadgeSettings(prev => ({ ...prev, requireManagerApproval: checked }))}
+                  disabled={readOnly}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="enableCustomBadges" className="text-base">Enable Custom Badges</Label>
+                  <p className="text-sm text-muted-foreground">Allow employees to create custom badges</p>
+                </div>
+                <Switch 
+                  id="enableCustomBadges" 
+                  checked={badgeSettings.enableCustomBadges}
+                  onCheckedChange={(checked) => setBadgeSettings(prev => ({ ...prev, enableCustomBadges: checked }))}
+                  disabled={readOnly}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="defaultBadgePoints">Default Badge Points</Label>
+                <Input
+                  id="defaultBadgePoints"
+                  type="number"
+                  value={badgeSettings.defaultBadgePoints}
+                  onChange={(e) => setBadgeSettings(prev => ({ ...prev, defaultBadgePoints: parseInt(e.target.value) || 0 }))}
+                  min={0}
+                  max={1000}
+                  disabled={readOnly}
+                />
+                <p className="text-xs text-muted-foreground">Default points awarded for new badges</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="maxPointsPerMonth">Maximum Points Per Month</Label>
+                <Input
+                  id="maxPointsPerMonth"
+                  type="number"
+                  value={badgeSettings.maxPointsPerMonth}
+                  onChange={(e) => setBadgeSettings(prev => ({ ...prev, maxPointsPerMonth: parseInt(e.target.value) || 0 }))}
+                  min={0}
+                  disabled={readOnly}
+                />
+                <p className="text-xs text-muted-foreground">Maximum points an employee can award per month</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        {!readOnly && (
+          <CardFooter>
+            <Button 
+              onClick={handleSaveSettings}
+              disabled={saveStatus === "saving"}
+              className="ml-auto"
+            >
+              {saveStatus === "saving" ? (
+                <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+              ) : (
+                <>Save Settings</>
+              )}
+            </Button>
+          </CardFooter>
+        )}
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Recognition Badges</CardTitle>
+          <CardDescription>Manage the badges that employees can award to each other</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {badgeTypes.map(badge => (
+              <Card key={badge.id} className="border-2 hover:border-primary/50 transition-all">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      {badge.icon}
+                      <CardTitle className="ml-2 text-lg">{badge.name}</CardTitle>
+                    </div>
+                    <Badge variant="outline">{badge.points} pts</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <p className="text-sm text-muted-foreground">
+                    Award this badge to recognize colleagues for their {badge.name.toLowerCase()} skills and contributions.
+                  </p>
+                </CardContent>
+                {!readOnly && (
+                  <CardFooter className="border-t pt-3 flex justify-end">
+                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                )}
+              </Card>
+            ))}
+            
+            {!readOnly && (
+              <Card className="border-2 border-dashed hover:border-primary transition-all flex flex-col items-center justify-center h-40 cursor-pointer">
+                <Plus className="h-10 w-10 text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">Add New Badge</p>
+              </Card>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
