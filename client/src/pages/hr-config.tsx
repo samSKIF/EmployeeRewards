@@ -566,7 +566,28 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to show template content
+  // Function to download CSV template directly from the server
+  const downloadTemplate = () => {
+    const token = localStorage.getItem("firebaseToken");
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "You need to be logged in to download the template",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Create a temporary link to download the file
+    const link = document.createElement('a');
+    link.href = `/api/hr/template/download?token=${token}`;
+    link.setAttribute('download', 'employee_template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  // Function to show template content as fallback
   const showTemplate = () => {
     setShowTemplateDialog(true);
   };
@@ -703,9 +724,14 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex flex-col items-center gap-4">
-              <Button variant="outline" onClick={showTemplate}>
-                <FileDown className="mr-2 h-4 w-4" /> View Template
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={downloadTemplate}>
+                  <FileDown className="mr-2 h-4 w-4" /> Download Template
+                </Button>
+                <Button variant="outline" onClick={showTemplate}>
+                  <FileDown className="mr-2 h-4 w-4" /> View Template
+                </Button>
+              </div>
               
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
@@ -767,18 +793,25 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
             <div className="bg-muted p-3 rounded-md overflow-auto max-h-[300px]">
               <pre className="text-xs whitespace-pre-wrap">{templateCSVContent}</pre>
             </div>
-            <Button 
-              onClick={() => {
-                navigator.clipboard.writeText(templateCSVContent);
-                toast({
-                  title: "Template copied",
-                  description: "The template has been copied to your clipboard"
-                });
-              }}
-              className="w-full"
-            >
-              <FileUp className="h-4 w-4 mr-2" /> Copy to Clipboard
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                onClick={() => {
+                  navigator.clipboard.writeText(templateCSVContent);
+                  toast({
+                    title: "Template copied",
+                    description: "The template has been copied to your clipboard"
+                  });
+                }}
+              >
+                <FileUp className="h-4 w-4 mr-2" /> Copy to Clipboard
+              </Button>
+              <Button 
+                onClick={downloadTemplate}
+                variant="outline"
+              >
+                <FileDown className="h-4 w-4 mr-2" /> Download as CSV
+              </Button>
+            </div>
             <div className="text-sm text-muted-foreground">
               <p>Instructions:</p>
               <ol className="list-decimal pl-4 mt-2 space-y-1">

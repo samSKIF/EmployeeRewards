@@ -685,6 +685,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Endpoint for downloading employee template CSV
+  app.get("/api/hr/template/download", verifyToken, verifyAdmin, (req: AuthenticatedRequest, res) => {
+    try {
+      // Create CSV header row
+      const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
+      
+      // Create sample data row
+      const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
+      
+      // Combine into CSV content
+      const csvContent = `${headers}\n${sampleData}`;
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=employee_template.csv');
+      
+      // Send the CSV file
+      res.send(csvContent);
+    } catch (error: any) {
+      console.error("Error generating template:", error);
+      res.status(500).json({ message: "Failed to generate template" });
+    }
+  });
+  
   app.patch("/api/hr/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
