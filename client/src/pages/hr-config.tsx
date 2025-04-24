@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -512,7 +513,7 @@ const EmployeeManagement = () => {
   );
 };
 
-const BrandingSettings = () => {
+const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
   const { toast } = useToast();
   const [selectedPreset, setSelectedPreset] = useState<string>("default");
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -883,33 +884,42 @@ const BrandingSettings = () => {
 };
 
 const HRConfig = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="container mx-auto py-6 space-y-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">HR Configuration</h1>
           <p className="text-muted-foreground">
-            Manage employee accounts and customize your organization's branding
+            {user?.isAdmin 
+              ? "Manage employee accounts and customize your organization's branding" 
+              : "View company information and branding"
+            }
           </p>
         </div>
       </div>
       
-      <Tabs defaultValue="employees" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="employees" className="text-base py-3">
-            <Users className="mr-2 h-5 w-5" /> Employee Management
-          </TabsTrigger>
+      <Tabs defaultValue="branding" className="w-full">
+        <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-2' : 'grid-cols-1'} mb-8`}>
+          {user?.isAdmin && (
+            <TabsTrigger value="employees" className="text-base py-3">
+              <Users className="mr-2 h-5 w-5" /> Employee Management
+            </TabsTrigger>
+          )}
           <TabsTrigger value="branding" className="text-base py-3">
             <Palette className="mr-2 h-5 w-5" /> Branding Settings
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="employees">
-          <EmployeeManagement />
-        </TabsContent>
+        {user?.isAdmin && (
+          <TabsContent value="employees">
+            <EmployeeManagement />
+          </TabsContent>
+        )}
         
         <TabsContent value="branding">
-          <BrandingSettings />
+          <BrandingSettings readOnly={!user?.isAdmin} />
         </TabsContent>
       </Tabs>
     </div>
