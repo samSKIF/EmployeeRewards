@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 export type AuthUser = {
   id: number;
@@ -180,17 +181,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    
-    // Clear all cached queries
-    queryClient.clear();
-    
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
-    });
+  const { signOut: firebaseSignOut } = useFirebaseAuth();
+
+  const logout = async () => {
+    try {
+      console.log("Dashboard: Starting logout process");
+      
+      // Remove traditional token
+      localStorage.removeItem("token");
+
+      // Remove Firebase token
+      localStorage.removeItem("firebaseToken");
+      
+      // Set sessionStorage to prevent auto-login on auth page
+      sessionStorage.setItem("skipAutoLogin", "true");
+      
+      // Clear all cached queries
+      queryClient.clear();
+      
+      // Sign out from Firebase
+      await firebaseSignOut();
+      
+      // Reset local state
+      setUser(null);
+      
+      console.log("Dashboard: Logout completed successfully");
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+      
+      // Redirect to auth page
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: "There was a problem logging out. Please try again.",
+      });
+    }
   };
 
   const contextValue = {
