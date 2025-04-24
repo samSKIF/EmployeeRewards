@@ -12,6 +12,19 @@ const DEFAULT_BRANDING = {
   logoUrl: ""
 };
 
+// Load branding from localStorage
+const getStoredBranding = (): BrandingSetting => {
+  try {
+    const storedBranding = localStorage.getItem('appBranding');
+    if (storedBranding) {
+      return JSON.parse(storedBranding) as BrandingSetting;
+    }
+  } catch (error) {
+    console.error("Failed to load branding from localStorage:", error);
+  }
+  return DEFAULT_BRANDING as BrandingSetting;
+};
+
 type BrandingContextType = {
   branding: BrandingSetting;
   isLoading: boolean;
@@ -19,22 +32,24 @@ type BrandingContextType = {
 };
 
 const BrandingContext = createContext<BrandingContextType>({
-  branding: DEFAULT_BRANDING as BrandingSetting,
+  branding: getStoredBranding(),
   isLoading: false,
   error: null
 });
 
 export function BrandingProvider({ children }: { children: ReactNode }) {
   const [cssApplied, setCssApplied] = useState(false);
+  const [localBranding] = useState(getStoredBranding());
   
-  // Fetch branding settings
+  // Fetch branding settings - use stored branding as initial data
   const { 
-    data: branding = DEFAULT_BRANDING as BrandingSetting, 
+    data: branding = localBranding, 
     isLoading, 
     error 
   } = useQuery<BrandingSetting>({
     queryKey: ["/api/hr/branding"],
     staleTime: 5 * 60 * 1000, // 5 minutes
+    initialData: localBranding
   });
   
   // Convert hex color to HSL format for Tailwind
@@ -87,6 +102,19 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     
     return `${h} ${s}% ${l}%`;
   };
+
+  // Store branding in localStorage when it changes
+  useEffect(() => {
+    if (!branding || isLoading) return;
+    
+    // Store for persistence between sessions
+    try {
+      localStorage.setItem('appBranding', JSON.stringify(branding));
+      console.log("Branding stored in localStorage:", branding);
+    } catch (error) {
+      console.error("Failed to store branding in localStorage:", error);
+    }
+  }, [branding, isLoading]);
 
   // Apply branding to the entire app via CSS variables
   useEffect(() => {
