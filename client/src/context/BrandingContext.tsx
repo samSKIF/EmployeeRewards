@@ -121,6 +121,9 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     if (!branding || isLoading) return;
     
     const root = document.documentElement;
+    let primaryColor = "#00A389";
+    let secondaryColor = "#232E3E";
+    let accentColor = "#FFA500";
     
     // Use preset colors if they're set
     if (branding.colorScheme && branding.colorScheme !== "custom") {
@@ -135,31 +138,43 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
       
       const preset = COLOR_PRESETS.find(p => p.id === branding.colorScheme);
       if (preset) {
-        root.style.setProperty('--primary', hexToHSL(preset.primary));
-        root.style.setProperty('--secondary', hexToHSL(preset.secondary));
-        root.style.setProperty('--accent', hexToHSL(preset.accent));
+        primaryColor = preset.primary;
+        secondaryColor = preset.secondary;
+        accentColor = preset.accent;
+        
+        root.style.setProperty('--primary', hexToHSL(primaryColor));
+        root.style.setProperty('--secondary', hexToHSL(secondaryColor));
+        root.style.setProperty('--accent', hexToHSL(accentColor));
       }
     } 
     // Otherwise use the custom colors
     else {
       // Apply primary colors
       if (branding.primaryColor) {
-        root.style.setProperty('--primary', hexToHSL(branding.primaryColor));
+        primaryColor = branding.primaryColor;
+        root.style.setProperty('--primary', hexToHSL(primaryColor));
         root.style.setProperty('--primary-foreground', '0 0% 100%');
       }
       
       // Apply secondary colors
       if (branding.secondaryColor) {
-        root.style.setProperty('--secondary', hexToHSL(branding.secondaryColor));
+        secondaryColor = branding.secondaryColor;
+        root.style.setProperty('--secondary', hexToHSL(secondaryColor));
         root.style.setProperty('--secondary-foreground', '0 0% 100%');
       }
       
       // Apply accent colors
       if (branding.accentColor) {
-        root.style.setProperty('--accent', hexToHSL(branding.accentColor));
+        accentColor = branding.accentColor;
+        root.style.setProperty('--accent', hexToHSL(accentColor));
         root.style.setProperty('--accent-foreground', '0 0% 0%');
       }
     }
+    
+    // Also set the raw color values as CSS variables for SVGs and other direct usage
+    root.style.setProperty('--primary-color', primaryColor);
+    root.style.setProperty('--secondary-color', secondaryColor);
+    root.style.setProperty('--accent-color', accentColor);
     
     document.title = branding.organizationName || "Empulse";
     setCssApplied(true);

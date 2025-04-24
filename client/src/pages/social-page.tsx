@@ -561,7 +561,7 @@ export default function SocialPage() {
         
         <div className="space-y-1">
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'home' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'home' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => setCurrentSection('home')}
           >
@@ -570,7 +570,7 @@ export default function SocialPage() {
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'recognize' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'recognize' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => {
               setCurrentSection('recognize');
@@ -582,7 +582,7 @@ export default function SocialPage() {
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'budgets' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'budgets' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => setCurrentSection('budgets')}  
           >
@@ -591,7 +591,7 @@ export default function SocialPage() {
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'leaderboard' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'leaderboard' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => setCurrentSection('leaderboard')}
           >
@@ -600,7 +600,7 @@ export default function SocialPage() {
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'surveys' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'surveys' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => setCurrentSection('surveys')}
           >
@@ -609,7 +609,7 @@ export default function SocialPage() {
           </div>
           
           <div className={`flex items-center px-3 py-2 rounded-md ${
-            currentSection === 'groups' ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+            currentSection === 'groups' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
           }`}
             onClick={() => setCurrentSection('groups')}
           >
@@ -648,7 +648,7 @@ export default function SocialPage() {
                 <span>Send Gifts</span>
               </div>
               <div 
-                className={`px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md cursor-pointer ${showOrgSettings ? 'bg-blue-50 text-blue-600' : ''}`}
+                className={`px-2 py-1.5 flex items-center hover:bg-gray-100 rounded-md cursor-pointer ${showOrgSettings ? 'bg-primary/10 text-primary-color' : ''}`}
                 onClick={() => setShowOrgSettings(!showOrgSettings)}
               >
                 <Settings size={16} className="mr-2" />
@@ -691,7 +691,7 @@ export default function SocialPage() {
                           <h3 className="text-lg font-medium">Employee Management</h3>
                           <Button 
                             onClick={() => window.open('/admin-employees', '_blank')}
-                            className="text-sm bg-blue-600 hover:bg-blue-700"
+                            className="text-sm bg-primary hover:bg-primary/90"
                           >
                             <UserCog className="w-4 h-4 mr-2" />
                             Manage Employees
@@ -731,7 +731,7 @@ export default function SocialPage() {
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-medium">Recognition Settings</h3>
                           <Button 
-                            className="text-sm bg-amber-600 hover:bg-amber-700"
+                            className="text-sm bg-primary hover:bg-primary/90"
                           >
                             <Award className="w-4 h-4 mr-2" />
                             Configure Programs
@@ -785,7 +785,7 @@ export default function SocialPage() {
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-medium">Branding & Customization</h3>
                           <Button 
-                            className="text-sm bg-indigo-600 hover:bg-indigo-700"
+                            className="text-sm bg-primary hover:bg-primary/90"
                           >
                             <Upload className="w-4 h-4 mr-2" />
                             Upload Logo
@@ -821,7 +821,7 @@ export default function SocialPage() {
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-medium">Gamification Settings</h3>
                           <Button 
-                            className="text-sm bg-green-600 hover:bg-green-700"
+                            className="text-sm bg-primary hover:bg-primary/90"
                           >
                             <Trophy className="w-4 h-4 mr-2" />
                             Create Challenge
