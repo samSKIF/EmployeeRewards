@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   status: text("status").default("active"), // Status: active/inactive
   avatarUrl: text("avatar_url"),         // Profile photo
   hireDate: date("hire_date"),           // Work anniversary date
+  firebaseUid: text("firebase_uid"),     // Firebase User ID for authentication
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -17,53 +17,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("REGISTRATION ATTEMPT - Raw body:", req.body);
       
-      // Validate user data using the insertUserSchema
-      const userData = insertUserSchema.parse(req.body);
+      // Check if this is a Firebase user registration
+      const { firebaseUid, firebaseUser, ...userData } = req.body;
       
-      // Check if email already exists
-      const existingEmailUser = await storage.getUserByEmail(userData.email);
-      if (existingEmailUser) {
-        return res.status(409).json({ message: "Email already registered" });
+      // Validate user data using the insertUserSchema (or a subset for Firebase users)
+      if (firebaseUid && firebaseUser) {
+        // This is a Firebase user registration
+        console.log("Processing Firebase user registration", firebaseUser);
+        
+        // Check if email already exists
+        const existingEmailUser = await storage.getUserByEmail(firebaseUser.email);
+        if (existingEmailUser) {
+          return res.status(409).json({ message: "Email already registered" });
+        }
+        
+        // Create username from email if not provided
+        const username = userData.username || firebaseUser.email.split('@')[0];
+        
+        // Check if username already exists
+        const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
+        if (existingUsernameUser) {
+          return res.status(409).json({ message: "Username already taken" });
+        }
+        
+        // Create user with data from Firebase and form
+        const user = await storage.createUser({
+          ...userData,
+          email: firebaseUser.email,
+          username: username,
+          name: firebaseUser.displayName?.split(' ')[0] || username,
+          surname: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+          // Set a random password since Firebase handles auth
+          password: await hash(Math.random().toString(36).substring(2, 15), 10),
+          isAdmin: false, // Firebase users can't be admins by default
+          status: 'active',
+          firebaseUid // Store the Firebase UID for future reference
+        });
+        
+        // Remove password from response
+        const { password: _, ...userWithoutPassword } = user;
+        
+        console.log("Firebase user registration successful for:", userWithoutPassword);
+        
+        res.status(201).json({
+          user: userWithoutPassword
+        });
+      } else {
+        // This is a regular user registration
+        // Validate user data
+        const validatedUserData = insertUserSchema.parse(userData);
+        
+        // Check if email already exists
+        const existingEmailUser = await storage.getUserByEmail(validatedUserData.email);
+        if (existingEmailUser) {
+          return res.status(409).json({ message: "Email already registered" });
+        }
+        
+        // Check if username already exists
+        const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, validatedUserData.username));
+        if (existingUsernameUser) {
+          return res.status(409).json({ message: "Username already taken" });
+        }
+        
+        // Create the user
+        const user = await storage.createUser(validatedUserData);
+        
+        // Remove password from response
+        const { password: _, ...userWithoutPassword } = user;
+        
+        // Generate JWT token for automatic login (for backward compatibility)
+        const token = generateToken({
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          surname: user.surname,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          jobTitle: user.jobTitle,
+          department: user.department,
+          sex: user.sex,
+          nationality: user.nationality,
+          birthDate: user.birthDate,
+          isAdmin: user.isAdmin,
+          status: user.status,
+          avatarUrl: user.avatarUrl,
+          hireDate: user.hireDate,
+          createdAt: user.createdAt
+        });
+        
+        console.log("Standard registration successful for:", userWithoutPassword);
+        
+        res.status(201).json({
+          token,
+          user: userWithoutPassword
+        });
       }
-      
-      // Check if username already exists
-      const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, userData.username));
-      if (existingUsernameUser) {
-        return res.status(409).json({ message: "Username already taken" });
-      }
-      
-      // Create the user
-      const user = await storage.createUser(userData);
-      
-      // Remove password from response
-      const { password: _, ...userWithoutPassword } = user;
-      
-      // Generate JWT token for automatic login
-      const token = generateToken({
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        surname: user.surname,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        jobTitle: user.jobTitle,
-        department: user.department,
-        sex: user.sex,
-        nationality: user.nationality,
-        birthDate: user.birthDate,
-        isAdmin: user.isAdmin,
-        status: user.status,
-        avatarUrl: user.avatarUrl,
-        hireDate: user.hireDate,
-        createdAt: user.createdAt
-      });
-      
-      console.log("Registration successful for:", userWithoutPassword);
-      
-      res.status(201).json({
-        token,
-        user: userWithoutPassword
-      });
     } catch (error: any) {
       console.error("Registration error:", error);
       res.status(400).json({ message: error.message || "Registration failed" });

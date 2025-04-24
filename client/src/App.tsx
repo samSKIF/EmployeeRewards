@@ -16,9 +16,9 @@ function App() {
 
   // Main application
   return (
-    <FirebaseAuthProvider>
-      <TooltipProvider>
-        <Toaster />
+    <TooltipProvider>
+      <Toaster />
+      <FirebaseAuthProvider>
         <Switch>
           {/* Main dashboard routes */}
           <Route path="/dashboard">
@@ -58,8 +58,8 @@ function App() {
             <NotFound />
           </Route>
         </Switch>
-      </TooltipProvider>
-    </FirebaseAuthProvider>
+      </FirebaseAuthProvider>
+    </TooltipProvider>
   );
 }
 
