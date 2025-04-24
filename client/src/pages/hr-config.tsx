@@ -1033,46 +1033,35 @@ const HRConfig = () => {
           <div>
             <h1 className="text-3xl font-bold">HR Configuration</h1>
             <p className="text-muted-foreground">
-              {user?.isAdmin 
-                ? "Manage employee accounts and customize your organization's branding" 
-                : "View company information and branding"
-              }
+              Manage employee accounts and customize your organization's branding
             </p>
           </div>
         </div>
         
         <Tabs defaultValue="team" className="w-full">
-          <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-3' : 'grid-cols-1'} mb-8`}>
-            {user?.isAdmin && (
-              <TabsTrigger value="team" className="text-base py-3">
-                <Users className="mr-2 h-5 w-5" /> Team Management
-              </TabsTrigger>
-            )}
+          <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsTrigger value="team" className="text-base py-3">
+              <Users className="mr-2 h-5 w-5" /> Team Management
+            </TabsTrigger>
             <TabsTrigger value="branding" className="text-base py-3">
               <Palette className="mr-2 h-5 w-5" /> Branding
             </TabsTrigger>
-            {user?.isAdmin && (
-              <TabsTrigger value="peer" className="text-base py-3">
-                <RefreshCw className="mr-2 h-5 w-5" /> Peer to Peer Config
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="peer" className="text-base py-3">
+              <RefreshCw className="mr-2 h-5 w-5" /> Peer to Peer Config
+            </TabsTrigger>
           </TabsList>
           
-          {user?.isAdmin && (
-            <TabsContent value="team">
-              <EmployeeManagement />
-            </TabsContent>
-          )}
+          <TabsContent value="team">
+            <EmployeeManagement />
+          </TabsContent>
           
           <TabsContent value="branding">
             <BrandingSettings readOnly={!user?.isAdmin} />
           </TabsContent>
           
-          {user?.isAdmin && (
-            <TabsContent value="peer">
-              <PeerToPeerConfig />
-            </TabsContent>
-          )}
+          <TabsContent value="peer">
+            <PeerToPeerConfig readOnly={!user?.isAdmin} />
+          </TabsContent>
         </Tabs>
       </div>
     </MainLayout>
