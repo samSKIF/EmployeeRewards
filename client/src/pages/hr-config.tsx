@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
@@ -38,9 +38,10 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Award, BadgeCheck, Gift, Medal, Star, TrendingUp } from "lucide-react";
-import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette } from "lucide-react";
+import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette, FileDown, FileUp } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { Employee, BrandingSetting } from "@shared/schema";
+import * as XLSX from "xlsx";
 
 // Color theme presets
 const COLOR_PRESETS = [
@@ -282,6 +283,9 @@ const EmployeeDialog = ({
 const EmployeeManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [bulkUploadStatus, setBulkUploadStatus] = useState<{total: number; processed: number; success: number; errors: number} | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Fetch employees
@@ -423,6 +427,162 @@ const EmployeeManagement = () => {
       createMutation.mutate(data);
     }
   };
+  
+  // Bulk upload mutation
+  const bulkUploadMutation = useMutation({
+    mutationFn: async (employees: any[]) => {
+      const res = await fetch("/api/admin/employees/bulk-upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+        },
+        body: JSON.stringify({ employees })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to upload employees");
+      }
+      
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: `${data.success} employees created successfully`,
+      });
+      setIsBulkUploadOpen(false);
+      setBulkUploadStatus(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/employees"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload employees",
+        variant: "destructive"
+      });
+      setBulkUploadStatus(null);
+    }
+  });
+  
+  // Handle Excel file upload
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const data = await readExcelFile(file);
+      if (data && data.length > 0) {
+        setBulkUploadStatus({
+          total: data.length,
+          processed: 0,
+          success: 0,
+          errors: 0
+        });
+        
+        // Process the data and create employees
+        bulkUploadMutation.mutate(data);
+      } else {
+        toast({
+          title: "Error",
+          description: "No valid data found in the Excel file",
+          variant: "destructive"
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to read Excel file",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Function to read Excel file
+  const readExcelFile = (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          if (!data) {
+            reject(new Error("Failed to read file"));
+            return;
+          }
+          
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          
+          // Map Excel columns to employee fields
+          const employees = json.map((row: any) => {
+            // Generate unique email if not provided
+            let email = row.email;
+            if (!email) {
+              const name = row.name || '';
+              const surname = row.surname || '';
+              const cleanName = name.toLowerCase().replace(/\s+/g, '');
+              const cleanSurname = surname.toLowerCase().replace(/\s+/g, '');
+              const timestamp = Date.now().toString().slice(-4);
+              email = `${cleanName}.${cleanSurname}${timestamp}@company.com`;
+            }
+            
+            return {
+              name: row.name || '',
+              surname: row.surname || '',
+              email: email,
+              password: row.password || 'password123', // Default password
+              dateOfBirth: row.dateOfBirth || null,
+              dateJoined: row.dateJoined || new Date().toISOString().split('T')[0],
+              jobTitle: row.jobTitle || '',
+              isManager: row.isManager === 'Yes' || row.isManager === true || false,
+              managerEmail: row.managerEmail || '',
+              status: row.status || 'active',
+              sex: row.sex || '',
+              nationality: row.nationality || '',
+              phoneNumber: row.phoneNumber || ''
+            };
+          });
+          
+          resolve(employees);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => {
+        reject(err);
+      };
+      reader.readAsBinaryString(file);
+    });
+  };
+  
+  // Function to download template
+  const downloadTemplate = () => {
+    const template = [
+      {
+        name: 'John',
+        surname: 'Doe',
+        email: 'john.doe@company.com',
+        password: 'password123',
+        dateOfBirth: '1990-01-01',
+        dateJoined: '2023-01-01',
+        jobTitle: 'Software Engineer',
+        isManager: 'No',
+        managerEmail: 'manager@company.com',
+        status: 'active',
+        sex: 'male',
+        nationality: 'American',
+        phoneNumber: '+1 (555) 123-4567'
+      }
+    ];
+    
+    const worksheet = XLSX.utils.json_to_sheet(template);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+    XLSX.writeFile(workbook, 'employee_template.xlsx');
+  };
 
   if (isError) {
     return (
@@ -446,6 +606,22 @@ const EmployeeManagement = () => {
           <Button onClick={handleAddEmployee}>
             <Plus className="mr-2 h-4 w-4" /> Add Employee
           </Button>
+          <div className="relative">
+            <input
+              type="file"
+              id="fileUpload"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".xlsx, .xls"
+              onChange={handleFileChange}
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => setIsBulkUploadOpen(true)}
+            >
+              <Upload className="mr-2 h-4 w-4" /> Bulk Upload
+            </Button>
+          </div>
         </div>
       </div>
       
@@ -527,6 +703,68 @@ const EmployeeManagement = () => {
           onClose={() => setIsDialogOpen(false)}
           onSave={handleSaveEmployee}
         />
+      </Dialog>
+
+      {/* Bulk Upload Dialog */}
+      <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bulk Upload Employees</DialogTitle>
+            <DialogDescription>
+              Upload multiple employees at once using an Excel file
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center gap-4">
+              <Button variant="outline" onClick={downloadTemplate}>
+                <FileDown className="mr-2 h-4 w-4" /> Download Template
+              </Button>
+              
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Fill in the template with your employee data and upload it here
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={bulkUploadMutation.isPending}
+                >
+                  <FileUp className="mr-2 h-4 w-4" />
+                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose Excel File"}
+                </Button>
+              </div>
+              
+              {bulkUploadStatus && (
+                <div className="w-full bg-muted rounded-md p-4">
+                  <h4 className="font-medium mb-2">Upload Status</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Total:</span>
+                      <span>{bulkUploadStatus.total}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Processed:</span>
+                      <span>{bulkUploadStatus.processed}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Success:</span>
+                      <span className="text-green-600">{bulkUploadStatus.success}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Errors:</span>
+                      <span className="text-red-600">{bulkUploadStatus.errors}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBulkUploadOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   );
