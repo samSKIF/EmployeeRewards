@@ -41,8 +41,23 @@ export default function AuthPage() {
           const token = await currentUser.getIdToken();
           console.log("Got Firebase ID token");
           
+          // Log token details for debugging (without exposing the full token)
+          console.log("Token prefix:", token.substring(0, 10) + "...");
+          
           // Store token in localStorage for API authentication
           localStorage.setItem("firebaseToken", token);
+          
+          // Test if token works
+          try {
+            const response = await fetch("/api/users/me", {
+              headers: {
+                "Authorization": `Bearer ${token}`
+              }
+            });
+            console.log("Token test response:", response.status, await response.text());
+          } catch (error) {
+            console.error("Token test failed:", error);
+          }
           
           // Save user data to our backend
           await apiRequest("POST", "/api/users/metadata", {

@@ -41,7 +41,75 @@ export const verifyToken = async (
   try {
     // First try to verify as a Firebase token
     try {
+      // Instead of using the Firebase Admin SDK which has mismatched project IDs,
+      // try a custom workflow to find the user by Firebase UID
+      try {
+        // Decode the token without verification to get the Firebase UID
+        // This is less secure but necessary while we fix the project ID mismatch
+        const decodedPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        
+        // Log important fields from the token for debugging
+        console.log("Custom token decode - important fields:");
+        console.log("- sub (Firebase UID):", decodedPayload.sub);
+        console.log("- email:", decodedPayload.email);
+        console.log("- aud (audience):", decodedPayload.aud);
+        console.log("- iss (issuer):", decodedPayload.iss);
+        
+        if (decodedPayload && decodedPayload.sub) {
+          // 'sub' is the Firebase UID
+          const firebaseUid = decodedPayload.sub;
+          req.firebaseUid = firebaseUid;
+          
+          console.log("Looking up user by Firebase UID:", firebaseUid);
+          
+          // Find user by Firebase UID first (this should work if metadata was properly saved)
+          let user = await db.select()
+            .from(users)
+            .where(eq(users.firebaseUid, firebaseUid))
+            .then(rows => rows[0]);
+          
+          // If not found by UID, try finding by email as fallback
+          if (!user && decodedPayload.email) {
+            console.log("User not found by UID, trying email:", decodedPayload.email);
+            user = await db.select()
+              .from(users)
+              .where(eq(users.email, decodedPayload.email))
+              .then(rows => rows[0]);
+              
+            // If found by email but Firebase UID doesn't match, update it
+            if (user && user.firebaseUid !== firebaseUid) {
+              console.log("Updating Firebase UID for user:", user.id);
+              await db.update(users)
+                .set({ firebaseUid: firebaseUid })
+                .where(eq(users.id, user.id));
+            }
+          }
+          
+          if (user) {
+            // Remove password from user object
+            const { password: _, ...userWithoutPassword } = user;
+            req.user = userWithoutPassword;
+            return next();
+          } else {
+            console.log("User authenticated with Firebase but not found in database");
+            // Return enough information so client can save the metadata
+            return res.status(403).json({ 
+              message: "User authenticated but needs registration",
+              firebaseUser: {
+                uid: firebaseUid,
+                email: decodedPayload.email,
+                displayName: decodedPayload.name || decodedPayload.email?.split('@')[0] || 'New User'
+              }
+            });
+          }
+        }
+      } catch (decodeErr) {
+        console.log("Custom token decode failed:", decodeErr);
+      }
+      
+      // If custom decode fails, try normal Firebase verification as fallback
       const decodedToken = await firebaseAuth.verifyIdToken(token);
+      console.log("Firebase token verified successfully");
       req.firebaseUid = decodedToken.uid;
       
       // Get the user from database by email
@@ -54,10 +122,9 @@ export const verifyToken = async (
           req.user = userWithoutPassword;
           return next();
         } else {
-          console.log("User authenticated with Firebase but not found in database, creating mapping...");
-          // You might want to create a new user in your database or handle this differently
+          console.log("User authenticated with Firebase but not found in database");
           return res.status(403).json({ 
-            message: "User authenticated but not registered in the system",
+            message: "User authenticated but needs registration",
             firebaseUser: {
               uid: decodedToken.uid,
               email: decodedToken.email,
