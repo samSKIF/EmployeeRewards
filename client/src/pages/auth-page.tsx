@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
@@ -13,13 +14,26 @@ export default function AuthPage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showAdminSetup, setShowAdminSetup] = useState(false);
+  
+  // Admin account setup form fields
+  const [adminEmail, setAdminEmail] = useState("admin@demo.io");
+  const [adminPassword, setAdminPassword] = useState("admin123");
+  const [adminCompanyName, setAdminCompanyName] = useState("");
+  const [adminCountry, setAdminCountry] = useState("");
+  const [adminAddress, setAdminAddress] = useState("");
+  const [adminPhone, setAdminPhone] = useState("");
+  
+  // Function to show admin setup dialog
+  const openAdminSetupDialog = () => {
+    setShowAdminSetup(true);
+  };
   
   // Function to create admin account in Firebase
-  const createAdminAccount = async () => {
+  const createAdminAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     const { register } = useFirebaseAuth();
-    const adminEmail = "admin@demo.io";
-    const adminPassword = "admin123";
-    const adminName = "Admin User";
     
     try {
       setIsLoading(true);
@@ -37,6 +51,7 @@ export default function AuthPage() {
           description: "Admin account already exists in Firebase",
         });
         
+        setShowAdminSetup(false);
         return;
       } catch (signInError) {
         // If login failed with auth/user-not-found, it means we need to create the account
@@ -45,16 +60,20 @@ export default function AuthPage() {
       
       // Create admin account in Firebase
       console.log("Creating admin account in Firebase");
-      const firebaseUser = await register(adminEmail, adminPassword, adminName);
+      const firebaseUser = await register(adminEmail, adminPassword, adminCompanyName || "Admin User");
       
       // Save user metadata to our database
       await apiRequest("POST", "/api/users/metadata", {
-        name: adminName,
+        name: adminCompanyName || "Admin User",
         email: adminEmail,
         username: "admin",
         department: "Administration",
         firebaseUid: firebaseUser.uid,
-        isAdmin: true  // Ensure this is set to true
+        isAdmin: true,  // Ensure this is set to true
+        companyName: adminCompanyName,
+        country: adminCountry, 
+        address: adminAddress,
+        phone: adminPhone
       });
       
       console.log("Admin account created successfully");
@@ -63,6 +82,9 @@ export default function AuthPage() {
         title: "Success",
         description: "Admin account created successfully",
       });
+      
+      // Close the dialog after successful creation
+      setShowAdminSetup(false);
     } catch (error: any) {
       console.error("Admin account creation error:", error);
       toast({
@@ -305,6 +327,104 @@ export default function AuthPage() {
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+      {/* Admin setup dialog */}
+      <Dialog open={showAdminSetup} onOpenChange={setShowAdminSetup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Admin Account</DialogTitle>
+            <DialogDescription>
+              Enter company information to create an admin account with full privileges.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={createAdminAccount} className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="admin-email">Email</Label>
+              <Input
+                id="admin-email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="admin@example.com"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="admin-password">Password</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="********"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="company-name">Company Name</Label>
+              <Input
+                id="company-name"
+                value={adminCompanyName}
+                onChange={(e) => setAdminCompanyName(e.target.value)}
+                placeholder="Your Company"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                value={adminCountry}
+                onChange={(e) => setAdminCountry(e.target.value)}
+                placeholder="Your Country"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={adminAddress}
+                onChange={(e) => setAdminAddress(e.target.value)}
+                placeholder="Company Address"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={adminPhone}
+                onChange={(e) => setAdminPhone(e.target.value)}
+                placeholder="+1234567890"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <DialogFooter className="mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAdminSetup(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating..." : "Create Admin Account"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
       {/* Left side - Logo and branding */}
       <div className="md:w-1/2 bg-white p-8 flex flex-col justify-center items-center">
         <div className="max-w-md mx-auto w-full">
@@ -424,10 +544,10 @@ export default function AuthPage() {
                       type="button"
                       variant="secondary"
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2"
-                      onClick={createAdminAccount}
+                      onClick={openAdminSetupDialog}
                       disabled={isLoading}
                     >
-                      Create Admin Account (admin@demo.io)
+                      Create Admin Account
                     </Button>
                   </CardFooter>
                 </form>
