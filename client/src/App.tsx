@@ -26,9 +26,14 @@ function Router() {
   
   const user = authContext?.user;
   const firebaseUser = firebaseAuthContext?.firebaseUser;
+  const userData = firebaseAuthContext?.userData;
   
   // Use either authentication system (prioritize Firebase)
   const isAuthenticated = !!firebaseUser || !!user;
+  const isAdmin = userData?.isAdmin || user?.isAdmin;
+  
+  // Log authentication state for debugging
+  console.log("User is", isAuthenticated ? "logged in" : "logged out");
   
   return (
     <Switch>
@@ -45,11 +50,12 @@ function Router() {
       <FirebaseProtectedRoute path="/social" component={SocialPage} />
       <FirebaseProtectedRoute path="/social/:tab" component={SocialPage} />
       
-      {/* Firebase Authentication route */}
+      {/* Firebase Authentication route - this is the default landing page for unauthenticated users */}
       <Route path="/firebase-auth">
         {() => {
           if (isAuthenticated) {
-            return <Redirect to="/social" />;
+            // Admin users go to admin dashboard, regular users to regular dashboard
+            return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
           }
           return <FirebaseAuthPage />;
         }}
@@ -59,20 +65,21 @@ function Router() {
       <Route path="/auth">
         {() => {
           if (isAuthenticated) {
-            return <Redirect to="/social" />;
+            // Admin users go to admin dashboard, regular users to regular dashboard
+            return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
           }
           return <AuthPage />;
         }}
       </Route>
       
-      {/* Default route - redirect to firebase-auth if not logged in, dashboard if logged in */}
+      {/* Default route - redirect to firebase-auth if not logged in, appropriate dashboard if logged in */}
       <Route path="/">
         {() => {
           if (!isAuthenticated) {
             return <Redirect to="/firebase-auth" />;
           }
           // Admin users to admin dashboard, regular users to regular dashboard
-          return firebaseUser?.isAdmin ? <Redirect to="/admin" /> : <Dashboard />;
+          return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
         }}
       </Route>
       
