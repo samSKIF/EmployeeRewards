@@ -784,43 +784,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/hr/branding", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/hr/branding", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
+      console.log("Saving branding settings for user ID:", req.user.id, "Data:", req.body);
+      
       // Check if settings already exist for this organization
       const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
       
       if (existingSettings) {
+        console.log("Updating existing branding settings:", existingSettings.id);
+        
         // Update existing settings instead of creating new ones
+        const updateData = {
+          ...req.body,
+          updatedAt: new Date(),
+          updatedById: req.user.id
+        };
+        
+        console.log("Update data:", updateData);
+        
         const [updatedSettings] = await db.update(brandingSettings)
-          .set({
-            ...req.body,
-            updatedAt: new Date(),
-            updatedById: req.user.id
-          })
+          .set(updateData)
           .where(eq(brandingSettings.id, existingSettings.id))
           .returning();
           
+        console.log("Updated settings:", updatedSettings);
         return res.json(updatedSettings);
       }
       
-      // Validate branding data
-      const validatedData = insertBrandingSettingsSchema.parse({
-        ...req.body,
+      console.log("Creating new branding settings");
+      
+      // Create new branding settings with minimal validation
+      const insertData = {
         organizationId: req.user.id,
+        organizationName: req.body.organizationName || "Empulse",
+        logoUrl: req.body.logoUrl || null,
+        colorScheme: req.body.colorScheme || "default",
+        primaryColor: req.body.primaryColor || null,
+        secondaryColor: req.body.secondaryColor || null,
+        accentColor: req.body.accentColor || null,
+        updatedAt: new Date(),
         updatedById: req.user.id
-      });
+      };
+      
+      console.log("Insert data:", insertData);
       
       // Create new branding settings
       const [newSettings] = await db.insert(brandingSettings)
-        .values(validatedData)
+        .values(insertData)
         .returning();
       
+      console.log("Created new settings:", newSettings);
       res.status(201).json(newSettings);
     } catch (error: any) {
+      console.error("Error saving branding settings:", error);
       res.status(500).json({ message: error.message || "Failed to save branding settings" });
     }
   });
