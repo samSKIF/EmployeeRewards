@@ -43,8 +43,10 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Get auth token from localStorage
-    const token = localStorage.getItem("token");
+    // Get auth token from localStorage - try Firebase token first, then fallback to JWT token
+    const firebaseToken = localStorage.getItem("firebaseToken");
+    const jwtToken = localStorage.getItem("token");
+    const token = firebaseToken || jwtToken;
     
     // Prepare headers
     const headers: Record<string, string> = {};
