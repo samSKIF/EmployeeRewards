@@ -600,6 +600,238 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // HR Configuration routes for employee management
+  app.get("/api/hr/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const allEmployees = await db.select().from(employees).orderBy(desc(employees.createdAt));
+      
+      res.json(allEmployees);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch employees" });
+    }
+  });
+  
+  app.post("/api/hr/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Validate employee data
+      const validatedData = insertEmployeeSchema.parse(req.body);
+      
+      // Check if email already exists
+      const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, validatedData.email));
+      if (existingEmployee) {
+        return res.status(409).json({ message: "Email already registered for another employee" });
+      }
+      
+      // Hash the password
+      const hashedPassword = await hash(validatedData.password, 10);
+      
+      // Create employee record
+      const [newEmployee] = await db.insert(employees)
+        .values({
+          ...validatedData,
+          password: hashedPassword,
+          createdById: req.user.id,
+          createdAt: new Date()
+        })
+        .returning();
+      
+      // Remove password from response
+      const { password: _, ...employeeWithoutPassword } = newEmployee;
+      
+      res.status(201).json(employeeWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to create employee" });
+    }
+  });
+  
+  app.get("/api/hr/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { id } = req.params;
+      
+      const [employee] = await db.select().from(employees).where(eq(employees.id, parseInt(id)));
+      
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      // Remove password from response
+      const { password: _, ...employeeWithoutPassword } = employee;
+      
+      res.json(employeeWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch employee" });
+    }
+  });
+  
+  app.patch("/api/hr/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { id } = req.params;
+      const { password, ...updateData } = req.body;
+      
+      // Find employee
+      const [employee] = await db.select().from(employees).where(eq(employees.id, parseInt(id)));
+      
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      // If email is being changed, check it's not already in use
+      if (updateData.email && updateData.email !== employee.email) {
+        const [existingEmail] = await db.select().from(employees).where(eq(employees.email, updateData.email));
+        if (existingEmail) {
+          return res.status(409).json({ message: "Email already registered for another employee" });
+        }
+      }
+      
+      // Prepare update data
+      const dataToUpdate: any = { ...updateData };
+      
+      // Hash new password if provided
+      if (password) {
+        dataToUpdate.password = await hash(password, 10);
+      }
+      
+      // Update employee record
+      const [updatedEmployee] = await db.update(employees)
+        .set(dataToUpdate)
+        .where(eq(employees.id, parseInt(id)))
+        .returning();
+      
+      // Remove password from response
+      const { password: _, ...employeeWithoutPassword } = updatedEmployee;
+      
+      res.json(employeeWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update employee" });
+    }
+  });
+  
+  app.delete("/api/hr/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { id } = req.params;
+      
+      // Find employee
+      const [employee] = await db.select().from(employees).where(eq(employees.id, parseInt(id)));
+      
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      // Delete employee record
+      await db.delete(employees).where(eq(employees.id, parseInt(id)));
+      
+      res.json({ message: "Employee deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to delete employee" });
+    }
+  });
+  
+  // Branding settings routes
+  app.get("/api/hr/branding", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Get branding settings for the organization (assuming admin belongs to an organization)
+      const [settings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      
+      if (!settings) {
+        // Return default settings if none are found
+        return res.json({
+          organizationName: "Empulse",
+          colorScheme: "default",
+          logoUrl: null,
+          primaryColor: null,
+          secondaryColor: null,
+          accentColor: null
+        });
+      }
+      
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch branding settings" });
+    }
+  });
+  
+  app.post("/api/hr/branding", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Check if settings already exist for this organization
+      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      
+      if (existingSettings) {
+        // Update existing settings instead of creating new ones
+        const [updatedSettings] = await db.update(brandingSettings)
+          .set({
+            ...req.body,
+            updatedAt: new Date(),
+            updatedById: req.user.id
+          })
+          .where(eq(brandingSettings.id, existingSettings.id))
+          .returning();
+          
+        return res.json(updatedSettings);
+      }
+      
+      // Validate branding data
+      const validatedData = insertBrandingSettingsSchema.parse({
+        ...req.body,
+        organizationId: req.user.id,
+        updatedById: req.user.id
+      });
+      
+      // Create new branding settings
+      const [newSettings] = await db.insert(brandingSettings)
+        .values(validatedData)
+        .returning();
+      
+      res.status(201).json(newSettings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to save branding settings" });
+    }
+  });
+  
+  // Logo upload endpoint (this would use a storage service in production)
+  app.post("/api/hr/branding/logo", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      // This is a placeholder. In a real implementation, you would:
+      // 1. Use multer or another middleware to handle file uploads
+      // 2. Upload the file to cloud storage like S3 or Firebase Storage
+      // 3. Store the URL in the brandingSettings table
+      
+      res.status(501).json({ 
+        message: "Logo upload not yet implemented",
+        logoUrl: "https://picsum.photos/200" // Placeholder image URL for testing
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to upload logo" });
+    }
+  });
+  
   // Social API - Posts
   app.get("/api/social/posts", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {

@@ -10,6 +10,7 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { useState, useEffect } from "react";
 
@@ -51,6 +52,9 @@ function App() {
             </Route>
             <Route path="/admin/employees">
               <AdminEmployees />
+            </Route>
+            <Route path="/hr/config">
+              <HRConfig />
             </Route>
             <Route path="/seller">
               <Seller />

@@ -11,7 +11,9 @@ import {
   LogOut, 
   Menu, 
   Award,
-  MessageSquare
+  MessageSquare,
+  Settings,
+  Users
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
