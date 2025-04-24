@@ -711,28 +711,36 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
         <CardContent>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1">
-              <div className="mb-4">
-                <Label htmlFor="logo">Logo Image</Label>
-                <Input 
-                  id="logo" 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleLogoChange}
-                  className="mt-1"
-                />
-              </div>
-              
-              <Button 
-                onClick={handleUploadLogo} 
-                disabled={!logoFile || uploadLogoMutation.isPending}
-                className="w-full"
-              >
-                {uploadLogoMutation.isPending ? (
-                  <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
-                ) : (
-                  <><Upload className="mr-2 h-4 w-4" /> Upload Logo</>
-                )}
-              </Button>
+              {!readOnly ? (
+                <>
+                  <div className="mb-4">
+                    <Label htmlFor="logo">Logo Image</Label>
+                    <Input 
+                      id="logo" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleLogoChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleUploadLogo} 
+                    disabled={!logoFile || uploadLogoMutation.isPending}
+                    className="w-full"
+                  >
+                    {uploadLogoMutation.isPending ? (
+                      <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                    ) : (
+                      <><Upload className="mr-2 h-4 w-4" /> Upload Logo</>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <div className="mb-4">
+                  <p className="text-muted-foreground">Current company logo is displayed in the preview section.</p>
+                </div>
+              )}
             </div>
             
             <div className="flex-1">
@@ -767,10 +775,10 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
               {COLOR_PRESETS.map((preset) => (
                 <div 
                   key={preset.id} 
-                  className={`border rounded-md p-4 cursor-pointer transition-all ${
-                    selectedPreset === preset.id ? 'ring-2 ring-green-500' : 'hover:border-green-200'
+                  className={`border rounded-md p-4 ${!readOnly ? 'cursor-pointer' : ''} transition-all ${
+                    selectedPreset === preset.id ? 'ring-2 ring-green-500' : !readOnly ? 'hover:border-green-200' : ''
                   }`}
-                  onClick={() => handlePresetChange(preset.id)}
+                  onClick={() => !readOnly && handlePresetChange(preset.id)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium">{preset.name}</span>
@@ -821,8 +829,9 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
                         id="primaryColor"
                         type="text"
                         value={customColors.primary}
-                        onChange={(e) => handleCustomColorChange("primary", e.target.value)}
+                        onChange={(e) => !readOnly && handleCustomColorChange("primary", e.target.value)}
                         placeholder="#00A389"
+                        disabled={readOnly}
                       />
                     </div>
                   </div>
@@ -838,8 +847,9 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
                         id="secondaryColor"
                         type="text"
                         value={customColors.secondary}
-                        onChange={(e) => handleCustomColorChange("secondary", e.target.value)}
+                        onChange={(e) => !readOnly && handleCustomColorChange("secondary", e.target.value)}
                         placeholder="#232E3E"
+                        disabled={readOnly}
                       />
                     </div>
                   </div>
@@ -855,8 +865,9 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
                         id="accentColor"
                         type="text"
                         value={customColors.accent}
-                        onChange={(e) => handleCustomColorChange("accent", e.target.value)}
+                        onChange={(e) => !readOnly && handleCustomColorChange("accent", e.target.value)}
                         placeholder="#FFA500"
+                        disabled={readOnly}
                       />
                     </div>
                   </div>
@@ -866,17 +877,19 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
           </div>
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={handleSaveBranding}
-            disabled={updateBrandingMutation.isPending}
-            className="ml-auto"
-          >
-            {updateBrandingMutation.isPending ? (
-              <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
-            ) : (
-              <>Save Branding Settings</>
-            )}
-          </Button>
+          {!readOnly && (
+            <Button 
+              onClick={handleSaveBranding}
+              disabled={updateBrandingMutation.isPending}
+              className="ml-auto"
+            >
+              {updateBrandingMutation.isPending ? (
+                <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+              ) : (
+                <>Save Branding Settings</>
+              )}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

@@ -746,14 +746,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Branding settings routes
-  app.get("/api/hr/branding", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  // Branding settings routes - view accessible to all users
+  app.get("/api/hr/branding", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      // Get branding settings for the organization (assuming admin belongs to an organization)
+      // Get branding settings for the organization
       const [settings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
       
       if (!settings) {
