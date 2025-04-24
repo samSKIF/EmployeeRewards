@@ -80,6 +80,20 @@ const EmployeeDialog = ({
     phoneNumber: employee?.phoneNumber || ""
   });
 
+  // Add effect to make emails unique for new employees
+  useEffect(() => {
+    if (isNewEmployee && formData.name && formData.surname) {
+      // If creating a new employee, generate a unique email based on name and timestamp
+      if (!formData.email || formData.email === "") {
+        const cleanName = formData.name.toLowerCase().replace(/\s+/g, '');
+        const cleanSurname = formData.surname.toLowerCase().replace(/\s+/g, '');
+        const timestamp = Date.now().toString().slice(-4);
+        const uniqueEmail = `${cleanName}.${cleanSurname}${timestamp}@company.com`;
+        setFormData(prev => ({ ...prev, email: uniqueEmail }));
+      }
+    }
+  }, [isNewEmployee, formData.name, formData.surname]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
