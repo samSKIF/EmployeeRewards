@@ -98,7 +98,8 @@ export default function AuthPage() {
   };
   
   // Parse the redirectTo parameter from the URL query and check user role
-  const getRedirectPath = () => {
+  // This now returns a Promise since we need to check with the server
+  const getRedirectPath = async () => {
     const params = new URLSearchParams(window.location.search);
     const redirectTo = params.get('redirectTo');
     
@@ -110,18 +111,54 @@ export default function AuthPage() {
     const token = localStorage.getItem("firebaseToken");
     if (token) {
       try {
-        // Decode Firebase token to check user data (without verification)
+        // First try to determine admin status from token claims
         const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // Check payload data
+        console.log("Token payload for role determination:", { 
+          email: payload.email,
+          hasAdminClaim: payload.claims?.isAdmin === true 
+        });
         
         // If we have custom claims for admin role, use them
         if (payload && payload.claims && payload.claims.isAdmin === true) {
+          console.log("Admin detected from token claims");
           return '/dashboard'; // Admin users go to dashboard
+        }
+        
+        // For the admin@demo.io special case
+        if (payload.email === "admin@demo.io") {
+          console.log("Admin email detected (admin@demo.io), redirecting to dashboard");
+          return '/dashboard';
+        }
+        
+        // Make a request to the server to verify user's admin status
+        try {
+          const response = await fetch("/api/users/me", {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            console.log("User data from API for admin check:", userData);
+            
+            // Check if user is admin based on server response
+            if (userData && userData.isAdmin) {
+              console.log("Admin status confirmed by server");
+              return '/dashboard';
+            }
+          }
+        } catch (serverError) {
+          console.error("Error checking admin status with server:", serverError);
+          // Continue with client-side checks if server check fails
         }
         
         // Direct regular employees to social platform
         return '/social';
       } catch (e) {
-        console.error("Error decoding token:", e);
+        console.error("Error during redirect path determination:", e);
       }
     }
     
@@ -225,7 +262,7 @@ export default function AuthPage() {
           console.error("Failed to save auto-detected user metadata:", error);
         } finally {
           // Use the redirect path from URL query parameter if available
-          const redirectPath = getRedirectPath();
+          const redirectPath = await getRedirectPath();
           console.log(`Redirecting to ${redirectPath} after authentication`);
           setLocation(redirectPath);
         }
