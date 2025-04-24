@@ -34,9 +34,23 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     // Listen for auth state changes
+    console.log("Setting up Firebase auth state listener");
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Firebase auth state changed:", user ? `User: ${user.displayName} (${user.email})` : "No user");
       setCurrentUser(user);
       setLoading(false);
+      
+      // Save firebase auth token to localStorage for future API calls
+      if (user) {
+        // When we have a user, get their ID token to use for API calls
+        user.getIdToken().then(token => {
+          console.log("Firebase ID token obtained");
+          localStorage.setItem("firebaseToken", token);
+        });
+      } else {
+        // Clear any saved token
+        localStorage.removeItem("firebaseToken");
+      }
     });
 
     // Cleanup subscription on unmount

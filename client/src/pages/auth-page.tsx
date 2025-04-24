@@ -31,8 +31,8 @@ export default function AuthPage() {
   useEffect(() => {
     if (!loading && currentUser) {
       console.log("User already logged in with Firebase:", currentUser);
-      // Don't redirect automatically for now
-      // window.location.href = "/social";
+      // Now we want to redirect to social page after authentication is confirmed
+      window.location.href = "/social";
     }
   }, [currentUser, loading]);
   
@@ -87,16 +87,23 @@ export default function AuthPage() {
     
     try {
       // Use Firebase for registration
-      await register(registerEmail, registerPassword, registerName);
+      const firebaseUser = await register(registerEmail, registerPassword, registerName);
+      console.log("Firebase registration successful:", firebaseUser);
       
       // Also save user metadata to our database for additional info
       try {
+        // Get the Firebase UID to link accounts
+        const firebaseUid = firebaseUser.uid;
+        
+        console.log("Saving user metadata with Firebase UID:", firebaseUid);
         await apiRequest("POST", "/api/users/metadata", {
           name: registerName,
           email: registerEmail,
           username: registerUsername || registerEmail.split('@')[0],
-          department: registerDepartment || undefined
+          department: registerDepartment || undefined,
+          firebaseUid: firebaseUid // Include the Firebase UID
         });
+        console.log("User metadata saved successfully");
       } catch (metadataError) {
         console.error("Failed to save user metadata:", metadataError);
         // Continue even if metadata save fails

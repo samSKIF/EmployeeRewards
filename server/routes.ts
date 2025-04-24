@@ -302,6 +302,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Save user metadata from Firebase auth
+  app.post("/api/users/metadata", async (req, res) => {
+    try {
+      console.log("Received user metadata:", req.body);
+      const { email, name, username, department, firebaseUid } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Check if user already exists with this email
+      const existingUser = await storage.getUserByEmail(email);
+      
+      // If user exists, just update the Firebase UID
+      if (existingUser) {
+        console.log("User already exists, updating Firebase UID", existingUser.id);
+        
+        // Update the user's firebaseUid in the database
+        await db.update(users)
+          .set({ firebaseUid: firebaseUid || null })
+          .where(eq(users.id, existingUser.id));
+          
+        return res.status(200).json({ 
+          message: "User updated with Firebase UID", 
+          user: existingUser 
+        });
+      }
+      
+      // Otherwise create a new user
+      console.log("Creating new user from Firebase auth");
+      const defaultPassword = await hash(Math.random().toString(36).slice(2), 10);
+      
+      const userData = {
+        email,
+        name: name || email.split('@')[0],
+        username: username || email.split('@')[0],
+        department: department || null,
+        password: defaultPassword,
+        firebaseUid: firebaseUid || null
+      };
+      
+      const newUser = await storage.createUser(userData);
+      
+      res.status(201).json({ 
+        message: "User metadata saved", 
+        user: newUser 
+      });
+    } catch (error: any) {
+      console.error("Error saving user metadata:", error);
+      res.status(500).json({ message: error.message || "Failed to save user metadata" });
+    }
+  });
+  
   app.get("/api/users", verifyToken, verifyAdmin, async (req, res) => {
     try {
       const users = await storage.getAllUsersWithBalance();
