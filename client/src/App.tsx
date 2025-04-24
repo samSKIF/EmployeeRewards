@@ -50,7 +50,7 @@ function App() {
         </Route>
         
         <Route path="/">
-          <Dashboard />
+          <AuthPage />
         </Route>
         <Route>
           <NotFound />
