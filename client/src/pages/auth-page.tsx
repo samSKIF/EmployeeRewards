@@ -9,10 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+import { useBranding } from "@/context/BrandingContext";
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const { branding } = useBranding();
   const [isLoading, setIsLoading] = useState(false);
   const [showAdminSetup, setShowAdminSetup] = useState(false);
   
@@ -428,10 +430,10 @@ export default function AuthPage() {
         <div className="max-w-md mx-auto w-full">
           <div className="flex items-center gap-3 mb-8">
             <svg viewBox="0 0 24 24" width="42" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="24" height="24" rx="4" fill="#00A389" />
+              <rect width="24" height="24" rx="4" fill="var(--primary-color, #00A389)" />
               <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="text-2xl font-bold text-gray-800">piedpiper</span>
+            <span className="text-2xl font-bold text-gray-800">{branding?.organizationName || "Empulse"}</span>
           </div>
           
           <Card className="border-none shadow-lg">
