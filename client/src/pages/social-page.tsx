@@ -20,11 +20,13 @@ import {
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useBranding } from "@/context/BrandingContext";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { branding } = useBranding();
   const [postContent, setPostContent] = useState("");
   const [currentSection, setCurrentSection] = useState("townhall");
   const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
