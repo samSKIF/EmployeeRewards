@@ -26,7 +26,10 @@ export default function AuthPage() {
   const [registerDepartment, setRegisterDepartment] = useState("");
   
   // Add a state to track if we should skip auto-login
-  const [skipAutoLogin, setSkipAutoLogin] = useState(false);
+  // Initialize from sessionStorage to persist across page refreshes
+  const [skipAutoLogin, setSkipAutoLogin] = useState(() => {
+    return sessionStorage.getItem("skipAutoLogin") === "true";
+  });
   
   // Check if already logged in with Firebase
   const { currentUser, loading, signIn, register, signInWithGooglePopup, signOut } = useFirebaseAuth();
@@ -34,15 +37,31 @@ export default function AuthPage() {
   // Add a button handler to log out
   const handleLogout = async () => {
     try {
-      await signOut();
-      localStorage.removeItem("firebaseToken");
+      console.log("Attempting to sign out from Firebase");
+      // Set the flag first to prevent auto redirection
       setSkipAutoLogin(true);
+      // Store in sessionStorage to persist across page refreshes
+      sessionStorage.setItem("skipAutoLogin", "true");
+      
+      // Remove the token from localStorage
+      localStorage.removeItem("firebaseToken");
+      
+      // Call Firebase signOut
+      await signOut();
+      
+      console.log("Sign out successful");
+      
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
     } catch (error) {
       console.error("Logout failed:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
     }
   };
   

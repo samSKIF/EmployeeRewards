@@ -103,7 +103,18 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   // Sign out
   const signOut = async () => {
     try {
+      console.log("FirebaseAuthContext: Starting sign out");
+      
+      // Set user to null first to avoid redirect attempts during sign out
+      setCurrentUser(null);
+      
+      // Clear token from localStorage
+      localStorage.removeItem("firebaseToken");
+      
+      // Then sign out from Firebase
       await firebaseSignOut(auth);
+      
+      console.log("FirebaseAuthContext: Sign out completed");
     } catch (error) {
       console.error("Sign out error:", error);
       throw error;
