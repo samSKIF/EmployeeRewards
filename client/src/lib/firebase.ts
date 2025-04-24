@@ -49,7 +49,7 @@ export const signInWithGoogle = async () => {
   }
 };
 
-export const registerWithEmail = async (email: string, password: string, name: string, username: string, department?: string) => {
+export const registerWithEmail = async (email: string, password: string, name: string, username: string, department?: string, isAdmin?: boolean) => {
   try {
     // Create user in Firebase Authentication
     const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -67,7 +67,7 @@ export const registerWithEmail = async (email: string, password: string, name: s
       name: name,
       username: username,
       department: department || null,
-      isAdmin: false,
+      isAdmin: isAdmin || false,
       createdAt: Timestamp.now(),
       points: 0
     });

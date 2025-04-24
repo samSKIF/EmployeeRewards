@@ -44,10 +44,11 @@ export default function FirebaseAuthPage() {
   
   // Redirect if user is already logged in
   useEffect(() => {
-    if (firebaseUser) {
-      setLocation("/social");
+    if (firebaseUser && userData) {
+      // Redirect admin users to admin dashboard, regular users to dashboard
+      setLocation(userData.isAdmin ? "/admin" : "/dashboard");
     }
-  }, [firebaseUser, setLocation]);
+  }, [firebaseUser, userData, setLocation]);
   
   // Login form
   const loginForm = useForm<LoginData>({
@@ -75,6 +76,7 @@ export default function FirebaseAuthPage() {
       email: "",
       password: "",
       department: "",
+      isAdmin: false,
     },
   });
   

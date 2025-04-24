@@ -30,6 +30,7 @@ type RegisterData = {
   name: string;
   email: string;
   department?: string;
+  isAdmin?: boolean;
 };
 
 type LoginData = {
@@ -144,7 +145,8 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
         credentials.password,
         credentials.name,
         credentials.username,
-        credentials.department
+        credentials.department,
+        credentials.isAdmin
       );
     },
     onSuccess: () => {
