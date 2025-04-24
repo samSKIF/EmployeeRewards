@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, doublePrecision, boolean, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, doublePrecision, boolean, date, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -161,6 +161,42 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Employee accounts table - separate from admin users
+export const employees = pgTable("employees", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),                    // First name
+  surname: text("surname").notNull(),              // Last name
+  email: text("email").notNull().unique(),         // Email address (login)
+  password: text("password").notNull(),            // Hashed password
+  dateOfBirth: date("date_of_birth"),              // Date of birth
+  dateJoined: date("date_joined"),                 // Date joining company
+  jobTitle: text("job_title"),                     // Role name
+  status: text("status").default("active"),        // active/inactive
+  isManager: boolean("is_manager").default(false), // Manager status
+  managerEmail: text("manager_email"),             // Direct manager's email
+  sex: text("sex"),                                // Gender (optional)
+  nationality: text("nationality"),                // Nationality (optional)
+  phoneNumber: text("phone_number"),               // Contact phone (optional)
+  photoUrl: text("photo_url"),                     // Profile photo URL
+  firebaseUid: text("firebase_uid"),               // Firebase User ID
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdById: integer("created_by_id").references(() => users.id), // Admin who created this employee
+});
+
+// Organization branding and settings
+export const brandingSettings = pgTable("branding_settings", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => users.id), // Reference to admin user
+  organizationName: text("organization_name").notNull(),
+  logoUrl: text("logo_url"),                       // Company logo URL
+  colorScheme: text("color_scheme").default("default"), // "default", "blue", "green", "purple", "custom"
+  primaryColor: text("primary_color"),             // Custom primary color (hex)
+  secondaryColor: text("secondary_color"),         // Custom secondary color (hex)
+  accentColor: text("accent_color"),               // Custom accent color (hex)
+  updatedAt: timestamp("updated_at"),
+  updatedById: integer("updated_by_id").references(() => users.id),
+});
+
 // Define relationships
 export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions, { relationName: "userTransactions" }),
@@ -316,6 +352,26 @@ export const conversationsRelations = relations(conversations, ({ many }) => ({
   messages: many(messages),
 }));
 
+// Employees relations
+export const employeesRelations = relations(employees, ({ one }) => ({
+  creator: one(users, {
+    fields: [employees.createdById],
+    references: [users.id],
+  }),
+}));
+
+// Branding settings relations
+export const brandingSettingsRelations = relations(brandingSettings, ({ one }) => ({
+  organization: one(users, {
+    fields: [brandingSettings.organizationId],
+    references: [users.id],
+  }),
+  updatedBy: one(users, {
+    fields: [brandingSettings.updatedById],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas for validating API inputs
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
@@ -331,6 +387,8 @@ export const insertRecognitionSchema = createInsertSchema(recognitions).omit({ i
 export const insertConversationSchema = createInsertSchema(conversations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertConversationParticipantSchema = createInsertSchema(conversationParticipants).omit({ id: true, joinedAt: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
+export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true });
+export const insertBrandingSettingsSchema = createInsertSchema(brandingSettings).omit({ id: true });
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -374,3 +432,9 @@ export type InsertConversationParticipant = z.infer<typeof insertConversationPar
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
+export type BrandingSetting = typeof brandingSettings.$inferSelect;
+export type InsertBrandingSetting = z.infer<typeof insertBrandingSettingsSchema>;
