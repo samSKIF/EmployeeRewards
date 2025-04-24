@@ -295,7 +295,9 @@ export default function AuthPage() {
         description: "You have successfully logged in",
       });
       
-      setLocation(getRedirectPath());
+      const redirectPath = await getRedirectPath();
+      console.log(`Login successful, redirecting to ${redirectPath}`);
+      setLocation(redirectPath);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -350,7 +352,9 @@ export default function AuthPage() {
         description: "Account created successfully",
       });
       
-      setLocation(getRedirectPath());
+      const redirectPath = await getRedirectPath();
+      console.log(`Registration successful, redirecting to ${redirectPath}`);
+      setLocation(redirectPath);
     } catch (error: any) {
       toast({
         title: "Error",
