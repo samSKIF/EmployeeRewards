@@ -7,8 +7,13 @@ import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
 import { db } from "./db";
 import { compare, hash } from "bcrypt";
-import { users, insertUserSchema, products, insertProductSchema } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { 
+  users, insertUserSchema, 
+  products, insertProductSchema,
+  employees, insertEmployeeSchema,
+  brandingSettings, insertBrandingSettingsSchema
+} from "@shared/schema";
+import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
