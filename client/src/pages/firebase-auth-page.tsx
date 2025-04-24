@@ -36,7 +36,8 @@ export default function FirebaseAuthPage() {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
   const { 
-    firebaseUser, 
+    firebaseUser,
+    userData,
     loginMutation, 
     registerMutation, 
     googleLoginMutation 
