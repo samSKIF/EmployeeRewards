@@ -14,7 +14,7 @@ export default function AuthPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Parse the redirectTo parameter from the URL query
+  // Parse the redirectTo parameter from the URL query and check user role
   const getRedirectPath = () => {
     const params = new URLSearchParams(window.location.search);
     const redirectTo = params.get('redirectTo');
@@ -23,7 +23,27 @@ export default function AuthPage() {
       return '/social'; // Corrected path to match the route in App.tsx
     }
     
-    return '/dashboard'; // Default redirect
+    // Check Firebase token to see if user is registered in our system
+    const token = localStorage.getItem("firebaseToken");
+    if (token) {
+      try {
+        // Decode Firebase token to check user data (without verification)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // If we have custom claims for admin role, use them
+        if (payload && payload.claims && payload.claims.isAdmin === true) {
+          return '/dashboard'; // Admin users go to dashboard
+        }
+        
+        // Default to shop for regular employees
+        return '/shop';
+      } catch (e) {
+        console.error("Error decoding token:", e);
+      }
+    }
+    
+    // If we can't determine role or no token, default to shop
+    return '/shop';
   };
   
   // Login form state
