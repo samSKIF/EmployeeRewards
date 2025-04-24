@@ -52,43 +52,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (token) {
           console.log("Token found, fetching user profile");
           fetchUserProfile();
-          return;
+        } else {
+          // Just set loading to false instead of auto-login
+          console.log("No token found, skipping auto-login");
+          setIsLoading(false);
         }
-        
-        // Otherwise perform auto-login
-        console.log("No token found, performing automatic admin login");
-        
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ 
-            username: "admin", 
-            password: "admin123" 
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Auto login failed: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Auto-login successful, token received");
-        
-        // Store token
-        localStorage.setItem("token", data.token);
-        
-        // Get user profile
-        await fetchUserProfile();
-        
       } catch (error) {
-        console.error("Auto-login failed:", error);
+        console.error("Auth initialization failed:", error);
         setIsLoading(false);
       }
     };
     
-    // Perform auto-login on initial load
+    // Perform initialization on load
     performAutoLogin();
   }, []);
 
@@ -96,46 +71,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setIsLoading(true);
       
-      const token = localStorage.getItem("token");
-      console.log("Fetching user profile with token:", token ? token.substring(0, 20) + "..." : "none");
+      // For now, let's skip the fetchUserProfile since we're transitioning to Firebase auth
+      console.log("Skipping user profile fetch during migration to Firebase auth");
+      setUser(null);
       
-      if (!token) {
-        console.log("No token found in localStorage");
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
+      // Remove any existing token to prevent future API calls
+      localStorage.removeItem("token");
       
-      const response = await fetch("/api/users/me", {
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      console.log("User profile response status:", response.status);
-      
-      if (response.ok) {
-        const userData = await response.json();
-        console.log("User profile data:", userData);
-        
-        setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          isAdmin: userData.isAdmin || false,
-          department: userData.department
-        });
-        
-        console.log("User profile set successfully");
-      } else {
-        // Token is invalid, clear it
-        console.error("Failed to fetch user profile, clearing token");
-        localStorage.removeItem("token");
-        setUser(null);
-      }
     } catch (error) {
-      console.error("Failed to fetch user profile:", error);
+      console.error("Failed in fetchUserProfile:", error);
       localStorage.removeItem("token");
       setUser(null);
     } finally {

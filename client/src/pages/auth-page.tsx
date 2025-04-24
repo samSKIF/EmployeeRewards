@@ -30,8 +30,9 @@ export default function AuthPage() {
   
   useEffect(() => {
     if (!loading && currentUser) {
-      // User is logged in with Firebase, redirect to social page
-      window.location.href = "/social";
+      console.log("User already logged in with Firebase:", currentUser);
+      // Don't redirect automatically for now
+      // window.location.href = "/social";
     }
   }, [currentUser, loading]);
   
