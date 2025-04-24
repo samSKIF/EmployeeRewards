@@ -42,31 +42,76 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
+  const { currentUser, loading: firebaseLoading } = useFirebaseAuth();
+  
+  // Listen for Firebase auth changes
   useEffect(() => {
-    // Auto-login function that automatically logs in as admin
-    const performAutoLogin = async () => {
+    const fetchUserMetadata = async () => {
       try {
-        console.log("AuthProvider initializing, checking token");
+        setIsLoading(true);
         
-        // First check if we have a token already
-        const token = localStorage.getItem("token");
-        if (token) {
-          console.log("Token found, fetching user profile");
-          fetchUserProfile();
+        if (currentUser) {
+          console.log("Firebase user detected, fetching user metadata");
+          
+          // Try to get user metadata from our API
+          try {
+            const response = await fetch("/api/users/me", {
+              headers: {
+                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              console.log("User metadata from API:", userData);
+              
+              // Set user with data from our database
+              setUser({
+                id: userData.id,
+                name: userData.name || currentUser.displayName || "User",
+                email: userData.email || currentUser.email || "",
+                isAdmin: userData.isAdmin || (userData.email === "admin@demo.io"),
+                department: userData.department
+              });
+            } else {
+              console.log("User metadata not found in DB, using Firebase data only");
+              // Use Firebase data only
+              setUser({
+                id: 0, // Temporary ID
+                name: currentUser.displayName || "User",
+                email: currentUser.email || "",
+                isAdmin: currentUser.email === "admin@demo.io", // Admin if email is admin@demo.io
+                department: ""
+              });
+            }
+          } catch (error) {
+            console.error("Error fetching user metadata:", error);
+            // Fallback to Firebase data
+            setUser({
+              id: 0,
+              name: currentUser.displayName || "User",
+              email: currentUser.email || "",
+              isAdmin: currentUser.email === "admin@demo.io",
+              department: ""
+            });
+          }
         } else {
-          // Just set loading to false instead of auto-login
-          console.log("No token found, skipping auto-login");
-          setIsLoading(false);
+          console.log("No Firebase user, clearing local user state");
+          setUser(null);
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);
+        setUser(null);
+      } finally {
         setIsLoading(false);
       }
     };
     
-    // Perform initialization on load
-    performAutoLogin();
-  }, []);
+    // Only fetch user metadata when Firebase loading is done
+    if (!firebaseLoading) {
+      fetchUserMetadata();
+    }
+  }, [currentUser, firebaseLoading]);
 
   const fetchUserProfile = async () => {
     try {
