@@ -474,13 +474,13 @@ export default function AuthPage() {
                         placeholder="Enter your email or username"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <Label htmlFor="password" className="text-sm text-gray-600">Password</Label>
-                        <a href="#" className="text-sm text-green-600 hover:text-green-700">Forgot password?</a>
+                        <a href="#" className="text-sm text-primary-color hover:text-primary-color/80">Forgot password?</a>
                       </div>
                       <Input 
                         id="password" 
@@ -495,7 +495,7 @@ export default function AuthPage() {
                   <CardFooter className="flex flex-col space-y-4 pt-2">
                     <Button 
                       type="submit" 
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      className="w-full bg-primary-color hover:bg-primary-color/80 text-white"
                       disabled={isLoading}
                     >
                       {isLoading ? "Signing in..." : "Sign In"}
@@ -612,7 +612,7 @@ export default function AuthPage() {
                   <CardFooter className="flex flex-col space-y-4 pt-2">
                     <Button 
                       type="submit" 
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      className="w-full bg-primary-color hover:bg-primary-color/80 text-white"
                       disabled={isLoading}
                     >
                       {isLoading ? "Creating Account..." : "Create Account"}
@@ -669,7 +669,7 @@ export default function AuthPage() {
       </div>
       
       {/* Right side - Hero image and features */}
-      <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-green-50 to-green-100 p-8">
+      <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-primary-color/5 to-primary-color/10 p-8">
         <div className="max-w-md mx-auto h-full flex flex-col">
           <div className="mb-8 text-center">
             <div className="inline-block p-4 bg-white rounded-2xl shadow-md mb-4">
@@ -687,7 +687,7 @@ export default function AuthPage() {
           
           <div className="space-y-4 mt-auto">
             <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-3 flex-shrink-0">
+              <div className="w-10 h-10 bg-primary-color/10 rounded-full flex items-center justify-center text-primary-color mr-3 flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                 </svg>
