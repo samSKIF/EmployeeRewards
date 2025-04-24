@@ -122,7 +122,7 @@ function App() {
               <Route path="/admin/employees">
                 <AdminEmployees />
               </Route>
-              <Route path="/hr/config">
+              <Route path="/hr-config">
                 <HRConfig />
               </Route>
               <Route path="/seller">
