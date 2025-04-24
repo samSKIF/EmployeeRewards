@@ -20,7 +20,7 @@ export default function AuthPage() {
     const redirectTo = params.get('redirectTo');
     
     if (redirectTo === 'social') {
-      return '/social-page';
+      return '/social'; // Corrected path to match the route in App.tsx
     }
     
     return '/dashboard'; // Default redirect
