@@ -537,10 +537,10 @@ export default function SocialPage() {
       <div className="w-64 hidden md:block bg-white border-r px-4 py-6 space-y-6 fixed h-screen overflow-y-auto">
         <div className="flex items-center gap-2 mb-6">
           <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="24" height="24" rx="4" fill="#00A389" />
+            <rect width="24" height="24" rx="4" fill="var(--primary-color, #00A389)" />
             <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span className="text-xl font-bold text-gray-800">piedpiper</span>
+          <span className="text-xl font-bold text-gray-800">{branding?.organizationName || 'Empulse'}</span>
         </div>
         
         <div className="flex items-center gap-2 mb-4">
