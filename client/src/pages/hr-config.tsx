@@ -566,25 +566,30 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download CSV template directly from the server
+  // Function to download CSV template using the new utility function
   const downloadTemplate = () => {
-    const token = localStorage.getItem("firebaseToken");
-    if (!token) {
-      toast({
-        title: "Error",
-        description: "You need to be logged in to download the template",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Use the UTF-8 BOM to help Excel interpret the encoding correctly
+    const utf8BOM = "\uFEFF";
+    const blob = new Blob([utf8BOM + templateCSVContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    // Create URL and click a temporary anchor
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "employee_template.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Release memory
+    URL.revokeObjectURL(url);
     
-    // Create a temporary link to download the file
-    const link = document.createElement('a');
-    link.href = `/api/hr/template/download?token=${token}`;
-    link.setAttribute('download', 'employee_template.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    toast({
+      title: "Template Downloaded",
+      description: "The template has been downloaded to your device"
+    });
   };
   
   // Function to show template content as fallback
