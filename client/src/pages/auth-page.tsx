@@ -71,9 +71,9 @@ export default function AuthPage() {
         } catch (error) {
           console.error("Failed to save auto-detected user metadata:", error);
         } finally {
-          // Always redirect to social page after authentication is confirmed
-          console.log("Redirecting to social page");
-          setLocation("/social");
+          // Always redirect to dashboard after authentication is confirmed
+          console.log("Redirecting to dashboard after authentication");
+          setLocation("/dashboard");
         }
       };
       

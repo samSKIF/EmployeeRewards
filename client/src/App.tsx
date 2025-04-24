@@ -10,30 +10,8 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
-import { FirebaseAuthProvider, useFirebaseAuth } from "@/context/FirebaseAuthContext";
+import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { useState, useEffect } from "react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Loader2 } from "lucide-react";
-
-// Root redirect component
-function RootRedirect() {
-  const { currentUser } = useFirebaseAuth();
-  const [, setLocation] = useLocation();
-  
-  useEffect(() => {
-    if (currentUser) {
-      setLocation("/dashboard");
-    } else {
-      setLocation("/auth");
-    }
-  }, [currentUser, setLocation]);
-  
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-border" />
-    </div>
-  );
-}
 
 function App() {
   const [location] = useLocation();
@@ -51,24 +29,39 @@ function App() {
       {appReady && (
         <FirebaseAuthProvider>
           <Switch>
-            {/* Main dashboard routes - All protected */}
-            <ProtectedRoute path="/dashboard" component={Dashboard} />
-            <ProtectedRoute path="/shop" component={Shop} />
-            <ProtectedRoute path="/transactions" component={Transactions} />
-            <ProtectedRoute path="/admin" component={Admin} />
-            <ProtectedRoute path="/admin/employees" component={AdminEmployees} />
-            <ProtectedRoute path="/seller" component={Seller} />
+            {/* Main dashboard routes */}
+            <Route path="/dashboard">
+              <Dashboard />
+            </Route>
+            <Route path="/shop">
+              <Shop />
+            </Route>
+            <Route path="/transactions">
+              <Transactions />
+            </Route>
+            <Route path="/admin">
+              <Admin />
+            </Route>
+            <Route path="/admin/employees">
+              <AdminEmployees />
+            </Route>
+            <Route path="/seller">
+              <Seller />
+            </Route>
             
             {/* Empulse Social Platform routes */}
             <Route path="/auth">
               <AuthPage />
             </Route>
-            <ProtectedRoute path="/social" component={SocialPage} />
-            <ProtectedRoute path="/social/:tab" component={SocialPage} />
+            <Route path="/social">
+              <SocialPage />
+            </Route>
+            <Route path="/social/:tab">
+              <SocialPage />
+            </Route>
             
-            {/* Default route - redirects to dashboard if authenticated, otherwise to auth page */}
             <Route path="/">
-              <RootRedirect />
+              <AuthPage />
             </Route>
             <Route>
               <NotFound />
