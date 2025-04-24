@@ -1,71 +1,70 @@
-import express from "express";
-import { createServer } from "http";
-import { log } from "./vite";
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
-import { setupVite } from "./vite";
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-async function startServer() {
-  const app = express();
-  (global as any).expressApp = app;
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  // Create HTTP server
-  const server = createServer(app);
-  (global as any).httpServer = server;
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
 
-  // In development, set up Vite middleware
-  if (process.env.NODE_ENV === 'development') {
-    await setupVite(app, server);
-  }
-
-  // Health check route
-  app.get("/health", (req, res) => {
-    res.status(200).send("OK");
-  });
-
-  const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
-
-  server.on('error', (error: NodeJS.ErrnoException) => {
-    if (error.code === 'EADDRINUSE') {
-      log(`Port ${port} is already in use. Attempting to kill process and retry...`);
-      
-      // For Replit environment - try a different approach to handle port conflicts
-      try {
-        // Try using a different port if the default one is in use
-        const newPort = port + 1;
-        log(`Trying to use port ${newPort} instead...`);
-        server.listen(newPort, "0.0.0.0", () => {
-          log(`Server listening on alternative port ${newPort}`);
-          
-          // Start full initialization in background with a longer timeout
-          setTimeout(() => {
-            import("./full-init").catch(err => {
-              console.error("Error loading full initialization:", err);
-            });
-          }, 50); 
-        });
-      } catch (retryError) {
-        log(`Failed to use alternative port. Exiting.`);
-        // Process will exit with code 0 (success) to allow restart
-        process.exit(0);
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-    } else {
-      console.error("Server error:", error);
-      process.exit(1);
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
     }
   });
 
-  // Immediately start listening on the port to satisfy Replit's workflow timeout
-  server.listen(port, "0.0.0.0", () => {
-    log(`Server listening on port ${port}`);
+  next();
+});
 
-    // Start full initialization in background with a longer timeout
-    // This helps with the Replit workflow 20-second timeout constraint
-    setTimeout(() => {
-      import("./full-init").catch(err => {
-        console.error("Error loading full initialization:", err);
-      });
-    }, 50); // Reduced timeout for faster initialization
+(async () => {
+  const server = await registerRoutes(app);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    res.status(status).json({ message });
+    throw err;
   });
-}
 
-startServer().catch(console.error);
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();

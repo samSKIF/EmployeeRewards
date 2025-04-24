@@ -1,28 +1,18 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { verifyToken, verifyAdmin, AuthRequest as AuthenticatedRequest, generateToken } from "./middleware/auth";
+import { verifyToken, verifyAdmin, AuthenticatedRequest, generateToken } from "./middleware/auth";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
-import { 
-  tilloSupplier, 
-  carltonSupplier, 
-  amazonGiftCardSupplier, 
-  deliverooSupplier, 
-  wellbeingPartnerSupplier 
-} from "./middleware/suppliers";
+import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
 import { db } from "./db";
 import { compare, hash } from "bcrypt";
 import { users, insertUserSchema, products, insertProductSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import path from "path";
-import { setupAuth } from "./auth";
 
-export async function registerRoutes(app: Express): Promise<void> {
-  // Set up session-based authentication
-  setupAuth(app);
-  
-  // Keep the existing API routes
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Registration endpoint
   app.post("/api/auth/register", async (req, res) => {
     try {
       console.log("REGISTRATION ATTEMPT - Raw body:", req.body);
@@ -195,53 +185,6 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
   
-  // Peer-to-peer rewards endpoint
-  app.post("/api/points/peer-reward", verifyToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      
-      const { recipientId, amount, reason, message } = req.body;
-      
-      if (!recipientId || !amount || !reason || !message) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-      
-      // Check if sending to self
-      if (recipientId === req.user.id) {
-        return res.status(400).json({ message: "You cannot send rewards to yourself" });
-      }
-      
-      // Verify that amount is positive
-      if (amount <= 0) {
-        return res.status(400).json({ message: "Reward amount must be greater than zero" });
-      }
-      
-      // Process the peer-to-peer reward
-      const result = await storage.processPeerReward(
-        req.user.id,
-        recipientId,
-        amount,
-        reason,
-        message
-      );
-      
-      // Get updated balances
-      const senderBalance = await storage.getUserBalance(req.user.id);
-      const recipientBalance = await storage.getUserBalance(recipientId);
-      
-      res.json({
-        transaction: result.transaction,
-        recognition: result.recognition,
-        senderBalance,
-        recipientBalance
-      });
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to process peer reward" });
-    }
-  });
-  
   app.post("/api/points/redeem", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
@@ -311,36 +254,12 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
   
-  // Admin endpoint to get all users with balance
   app.get("/api/users", verifyToken, verifyAdmin, async (req, res) => {
     try {
       const users = await storage.getAllUsersWithBalance();
       res.json(users);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get users" });
-    }
-  });
-  
-  // Regular users endpoint to get employees for peer rewards
-  app.get("/api/employees", verifyToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      
-      const users = await storage.getAllUsersWithBalance();
-      
-      // Filter out sensitive information and the current user
-      const filteredUsers = users
-        .filter(user => user.id !== req.user!.id) // Exclude current user
-        .map(user => {
-          const { password, ...userWithoutPassword } = user;
-          return userWithoutPassword;
-        });
-      
-      res.json(filteredUsers);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get employees" });
     }
   });
   
@@ -446,63 +365,6 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
   
-  // HR Analytics endpoints
-  app.get("/api/analytics/points-distribution", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const distribution = await storage.getPointsDistribution();
-      res.json(distribution);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get points distribution" });
-    }
-  });
-  
-  app.get("/api/analytics/redemption-trends", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const trends = await storage.getRedemptionTrends();
-      res.json(trends);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get redemption trends" });
-    }
-  });
-  
-  app.get("/api/analytics/department-engagement", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const engagement = await storage.getDepartmentEngagement();
-      res.json(engagement);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get department engagement" });
-    }
-  });
-  
-  app.get("/api/analytics/top-performers", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      const topPerformers = await storage.getTopPerformers(limit);
-      res.json(topPerformers);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get top performers" });
-    }
-  });
-  
-  app.get("/api/analytics/popular-rewards", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      const popularRewards = await storage.getPopularRewards(limit);
-      res.json(popularRewards);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get popular rewards" });
-    }
-  });
-  
-  app.get("/api/analytics/summary", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
-    try {
-      const summary = await storage.getAnalyticsSummary();
-      res.json(summary);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to get analytics summary" });
-    }
-  });
-  
   // Mock supplier endpoints
   app.post("/api/supplier/tillo", verifyToken, verifyAdmin, async (req, res) => {
     try {
@@ -531,68 +393,6 @@ export async function registerRoutes(app: Express): Promise<void> {
       res.json(response);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to process with Carlton supplier" });
-    }
-  });
-  
-  // Amazon Gift Card supplier endpoint
-  app.post("/api/supplier/amazon", verifyToken, verifyAdmin, async (req, res) => {
-    try {
-      const { productName, userId, amount, currency } = req.body;
-      
-      if (!productName || !userId) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-      
-      const response = await amazonGiftCardSupplier(
-        productName, 
-        userId, 
-        amount || 25, 
-        currency || 'USD'
-      );
-      res.json(response);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to process with Amazon supplier" });
-    }
-  });
-  
-  // Deliveroo supplier endpoint
-  app.post("/api/supplier/deliveroo", verifyToken, verifyAdmin, async (req, res) => {
-    try {
-      const { productName, userId, amount, currency } = req.body;
-      
-      if (!productName || !userId) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-      
-      const response = await deliverooSupplier(
-        productName, 
-        userId, 
-        amount || 25, 
-        currency || 'GBP'
-      );
-      res.json(response);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to process with Deliveroo supplier" });
-    }
-  });
-  
-  // Wellbeing Partner supplier endpoint
-  app.post("/api/supplier/wellbeing", verifyToken, verifyAdmin, async (req, res) => {
-    try {
-      const { productName, userId, sessionType } = req.body;
-      
-      if (!productName || !userId) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-      
-      const response = await wellbeingPartnerSupplier(
-        productName, 
-        userId, 
-        sessionType || 'meditation'
-      );
-      res.json(response);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "Failed to process with Wellbeing Partner supplier" });
     }
   });
   
@@ -1297,15 +1097,13 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Initialize the server
   const httpServer = createServer(app);
   
-  // Start server first, then seed data in the background
-  const server = httpServer;
+  // Seed initial data if needed
+  await seedInitialData();
   
-  // Run data seeding in the background after server starts
-  setTimeout(() => {
-    seedInitialData().catch(err => console.error("Background seeding error:", err));
-  }, 1000);
+  // Start the birthday rewards scheduler
+  scheduleBirthdayRewards();
   
-  return server;
+  return httpServer;
 }
 
 // Helper function to seed initial data
@@ -1320,10 +1118,10 @@ async function seedInitialData() {
       
       // Create admin user
       await storage.createUser({
-        username: "skif.samir",
-        password: "123456789",
+        username: "admin",
+        password: "admin123",
         name: "Admin User",
-        email: "skif.samir@gmail.com",
+        email: "admin@demo.io",
         department: "HR",
         isAdmin: true
       });

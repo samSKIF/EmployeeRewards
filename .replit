@@ -1,29 +1,42 @@
-run = "node server/ultralight-server.js"
-hidden = [".config", "package-lock.json"]
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "web", "postgresql-16"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
-[packager]
-language = "nodejs"
-[packager.features]
-packageSearch = true
-guessImports = true
-
-[languages.javascript]
-pattern = "**/*.{js,jsx,ts,tsx}"
-[languages.javascript.languageServer]
-start = ["typescript-language-server", "--stdio"]
+[nix]
+channel = "stable-24_05"
 
 [deployment]
-run = ["node", "server/ultralight-server.js"]
-deploymentTarget = "cloudrun"
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
 
-[[ports]]
-localPort = 3000
-externalPort = 3000
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[nix]
-channel = "stable-24_05"
