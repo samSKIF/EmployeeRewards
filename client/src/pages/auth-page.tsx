@@ -14,6 +14,67 @@ export default function AuthPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
+  // Function to create admin account in Firebase
+  const createAdminAccount = async () => {
+    const { register } = useFirebaseAuth();
+    const adminEmail = "admin@demo.io";
+    const adminPassword = "admin123";
+    const adminName = "Admin User";
+    
+    try {
+      setIsLoading(true);
+      
+      // Check if admin already exists by trying to sign in
+      try {
+        await signIn(adminEmail, adminPassword);
+        console.log("Admin account already exists in Firebase");
+        
+        // If login succeeded, sign out to allow regular login
+        await signOut();
+        
+        toast({
+          title: "Admin Account Check",
+          description: "Admin account already exists in Firebase",
+        });
+        
+        return;
+      } catch (signInError) {
+        // If login failed with auth/user-not-found, it means we need to create the account
+        console.log("Admin sign-in failed, will create account:", signInError);
+      }
+      
+      // Create admin account in Firebase
+      console.log("Creating admin account in Firebase");
+      const firebaseUser = await register(adminEmail, adminPassword, adminName);
+      
+      // Save user metadata to our database
+      await apiRequest("POST", "/api/users/metadata", {
+        name: adminName,
+        email: adminEmail,
+        username: "admin",
+        department: "Administration",
+        firebaseUid: firebaseUser.uid,
+        isAdmin: true  // Ensure this is set to true
+      });
+      
+      console.log("Admin account created successfully");
+      
+      toast({
+        title: "Success",
+        description: "Admin account created successfully",
+      });
+    } catch (error: any) {
+      console.error("Admin account creation error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create admin account",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // Parse the redirectTo parameter from the URL query and check user role
   const getRedirectPath = () => {
     const params = new URLSearchParams(window.location.search);
@@ -357,6 +418,16 @@ export default function AuthPage() {
                         />
                       </svg>
                       Sign in with Google
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      variant="secondary"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2"
+                      onClick={createAdminAccount}
+                      disabled={isLoading}
+                    >
+                      Create Admin Account (admin@demo.io)
                     </Button>
                   </CardFooter>
                 </form>
