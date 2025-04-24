@@ -42,8 +42,15 @@ export default function SocialPage() {
   
   // Redirect if not logged in
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    // Check for either Firebase token or old JWT token
+    const firebaseToken = localStorage.getItem("firebaseToken");
+    const jwtToken = localStorage.getItem("token");
+    
+    if (!firebaseToken && !jwtToken) {
+      console.log("No authentication token found, redirecting to auth page");
       setLocation("/auth");
+    } else {
+      console.log("Authentication token found, allowing access to social page");
     }
   }, [setLocation]);
   

@@ -73,7 +73,7 @@ export default function AuthPage() {
         } finally {
           // Always redirect to social page after authentication is confirmed
           console.log("Redirecting to social page");
-          window.location.href = "/social";
+          setLocation("/social");
         }
       };
       
