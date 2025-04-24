@@ -31,8 +31,29 @@ export default function AuthPage() {
   useEffect(() => {
     if (!loading && currentUser) {
       console.log("User already logged in with Firebase:", currentUser);
-      // Now we want to redirect to social page after authentication is confirmed
-      window.location.href = "/social";
+      
+      // For Google login, make sure we save the user metadata to our backend
+      const saveUserMetadata = async () => {
+        try {
+          console.log("Saving Firebase user metadata on auto-detection");
+          await apiRequest("POST", "/api/users/metadata", {
+            name: currentUser.displayName,
+            email: currentUser.email,
+            username: currentUser.email?.split('@')[0],
+            department: null,
+            firebaseUid: currentUser.uid
+          });
+          console.log("Auto-detected user metadata saved successfully");
+        } catch (error) {
+          console.error("Failed to save auto-detected user metadata:", error);
+        } finally {
+          // Always redirect to social page after authentication is confirmed
+          console.log("Redirecting to social page");
+          window.location.href = "/social";
+        }
+      };
+      
+      saveUserMetadata();
     }
   }, [currentUser, loading]);
   

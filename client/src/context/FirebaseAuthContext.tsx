@@ -85,7 +85,19 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   // Sign in with Google
   const signInWithGooglePopup = async () => {
-    return signInWithGoogle();
+    try {
+      console.log("Starting Google sign-in with popup");
+      const user = await signInWithGoogle();
+      console.log("Google sign-in successful, storing result in state");
+      
+      // Manually update our currentUser state since onAuthStateChanged might be delayed
+      setCurrentUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error("Google sign-in popup error:", error);
+      throw error;
+    }
   };
 
   // Sign out
