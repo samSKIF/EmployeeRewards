@@ -488,7 +488,7 @@ export default function AuthPage() {
                         placeholder="Enter your password"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                   </CardContent>
@@ -563,7 +563,7 @@ export default function AuthPage() {
                         placeholder="Enter your full name"
                         value={registerName}
                         onChange={(e) => setRegisterName(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                     <div className="space-y-2">
@@ -574,7 +574,7 @@ export default function AuthPage() {
                         placeholder="Enter your email"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                     <div className="space-y-2">
@@ -584,7 +584,7 @@ export default function AuthPage() {
                         placeholder="Choose a username"
                         value={registerUsername}
                         onChange={(e) => setRegisterUsername(e.target.value)} 
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                     <div className="space-y-2">
@@ -595,7 +595,7 @@ export default function AuthPage() {
                         placeholder="Create a password"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                     <div className="space-y-2">
@@ -605,7 +605,7 @@ export default function AuthPage() {
                         placeholder="Your department (Optional)"
                         value={registerDepartment}
                         onChange={(e) => setRegisterDepartment(e.target.value)}
-                        className="focus:border-green-500 focus:ring-green-500"
+                        className="focus:border-primary-color focus:ring-primary-color"
                       />
                     </div>
                   </CardContent>
@@ -699,7 +699,7 @@ export default function AuthPage() {
             </div>
             
             <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3 flex-shrink-0">
+              <div className="w-10 h-10 bg-primary-color/10 rounded-full flex items-center justify-center text-primary-color mr-3 flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
                   <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -715,7 +715,7 @@ export default function AuthPage() {
             </div>
             
             <div className="bg-white p-4 rounded-xl shadow-sm flex items-start">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-3 flex-shrink-0">
+              <div className="w-10 h-10 bg-primary-color/10 rounded-full flex items-center justify-center text-primary-color mr-3 flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="3" rx="2" />
                   <path d="M7 10h10" />
@@ -730,7 +730,7 @@ export default function AuthPage() {
           </div>
           
           <p className="text-center text-sm text-gray-500 mt-8">
-            © 2025 Empulse. All rights reserved.
+            © 2025 {branding.organizationName}. All rights reserved.
           </p>
         </div>
       </div>
