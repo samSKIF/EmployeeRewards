@@ -33,8 +33,6 @@ export default function AuthPage() {
   const createAdminAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { register } = useFirebaseAuth();
-    
     try {
       setIsLoading(true);
       
