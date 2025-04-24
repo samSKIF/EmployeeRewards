@@ -50,36 +50,14 @@ function Router() {
       <FirebaseProtectedRoute path="/social" component={SocialPage} />
       <FirebaseProtectedRoute path="/social/:tab" component={SocialPage} />
       
-      {/* Firebase Authentication route - this is the default landing page for unauthenticated users */}
-      <Route path="/firebase-auth">
+      {/* Default route AND root route - show firebase auth page if not logged in */}
+      <Route path="/">
         {() => {
           if (isAuthenticated) {
             // Admin users go to admin dashboard, regular users to regular dashboard
             return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
           }
           return <FirebaseAuthPage />;
-        }}
-      </Route>
-      
-      {/* Legacy Authentication route */}
-      <Route path="/auth">
-        {() => {
-          if (isAuthenticated) {
-            // Admin users go to admin dashboard, regular users to regular dashboard
-            return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
-          }
-          return <AuthPage />;
-        }}
-      </Route>
-      
-      {/* Default route - redirect to firebase-auth if not logged in, appropriate dashboard if logged in */}
-      <Route path="/">
-        {() => {
-          if (!isAuthenticated) {
-            return <Redirect to="/firebase-auth" />;
-          }
-          // Admin users to admin dashboard, regular users to regular dashboard
-          return isAdmin ? <Redirect to="/admin" /> : <Redirect to="/dashboard" />;
         }}
       </Route>
       

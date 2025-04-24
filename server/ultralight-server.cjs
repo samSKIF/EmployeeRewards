@@ -145,111 +145,46 @@ app.get('/direct-login', (req, res) => {
   }
 });
 
-// Root route with dashboard
+// Serve static files for development
+const currentDir = process.cwd();
+const clientDir = path.join(currentDir, 'client');
+const indexHtml = path.join(clientDir, 'index.html');
+
+// Check if client/index.html exists
+if (!fs.existsSync(indexHtml)) {
+  console.error('Error: client/index.html not found');
+}
+
+// Serve React app at root
 app.get('/', (req, res) => {
-  console.log('Root endpoint hit');
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Empulse - Employee Engagement Platform</title>
-      <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-            Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          background: linear-gradient(135deg, #5B21B6, #1D4ED8);
-          color: white;
-          text-align: center;
-        }
-        .container {
-          max-width: 800px;
-          padding: 2rem;
-        }
-        h1 {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-          background: linear-gradient(to right, #fff, #f0f0f0);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .actions {
-          margin-top: 2rem;
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-        .btn {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 0.75rem 1.5rem;
-          border-radius: 0.5rem;
-          font-size: 1rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          text-decoration: none;
-        }
-        .btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-        }
-        .status {
-          margin-top: 2rem;
-          padding: 1rem;
-          background: rgba(0, 0, 0, 0.1);
-          border-radius: 0.5rem;
-          max-width: 100%;
-          overflow-x: auto;
-        }
-        .status pre {
-          margin: 0;
-          text-align: left;
-          white-space: pre-wrap;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>Empulse</h1>
-        <p>Employee Engagement Platform</p>
-        
-        <div class="actions">
-          <a href="/direct-login" class="btn">Firebase Direct Login</a>
-          <a href="/api/hello" class="btn">API Test Endpoint</a>
-          <a href="/api/firebase-config" class="btn">Firebase Config</a>
-        </div>
-        
-        <div class="actions" style="margin-top: 1rem;">
-          <span class="btn" style="background: rgba(0,0,0,0.1); cursor: default;">Protected APIs:</span>
-          <a href="/api/user-profile" class="btn">User Profile</a>
-          <a href="/api/points/balance" class="btn">Points Balance</a>
-        </div>
-        
-        <div class="status">
-          <h3>Environment Status</h3>
-          <pre>Server: Running
-Firebase API Key: ${process.env.VITE_FIREBASE_API_KEY ? 'Available ✓' : 'Missing ✗'}
-Firebase Project ID: ${process.env.VITE_FIREBASE_PROJECT_ID ? 'Available ✓' : 'Missing ✗'}
-Firebase App ID: ${process.env.VITE_FIREBASE_APP_ID ? 'Available ✓' : 'Missing ✗'}</pre>
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
+  console.log('Root endpoint hit - serving React app');
+  if (fs.existsSync(indexHtml)) {
+    // Serve the index.html file for our React app
+    res.sendFile(indexHtml);
+  } else {
+    // If index.html doesn't exist, return an error
+    res.status(500).send('Error: client/index.html not found');
+  }
 });
 
-// Wildcard route
+// Serve static files in the client directory
+app.use(express.static(clientDir));
+
+// Wildcard route - serve the React app for client-side routing
 app.get('*', (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    console.log('API route not found:', req.path);
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
   console.log('Wildcard route hit for:', req.path);
-  res.redirect('/');
+  // Send the index.html file for client-side routing
+  if (fs.existsSync(indexHtml)) {
+    res.sendFile(indexHtml);
+  } else {
+    res.status(500).send('Error: client/index.html not found');
+  }
 });
 
 // Start server
