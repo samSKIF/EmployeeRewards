@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -489,7 +491,7 @@ const EmployeeManagement = () => {
                             variant="ghost"
                             onClick={() => handleDeleteEmployee(employee.id)}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -502,6 +504,7 @@ const EmployeeManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Employee Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <EmployeeDialog
           employee={selectedEmployee}
@@ -515,47 +518,27 @@ const EmployeeManagement = () => {
 };
 
 const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
-  const { toast } = useToast();
-  const [selectedPreset, setSelectedPreset] = useState<string>("default");
+  const [brandingData, setBrandingData] = useState({
+    organizationName: "",
+    colorScheme: "default",
+    primaryColor: COLOR_PRESETS[0].primary,
+    secondaryColor: COLOR_PRESETS[0].secondary,
+    accentColor: COLOR_PRESETS[0].accent,
+    logoUrl: ""
+  });
+  
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [customColors, setCustomColors] = useState({
-    primary: "",
-    secondary: "",
-    accent: ""
-  });
-  const [previewLogo, setPreviewLogo] = useState<string | null>(null);
-
-  // Fetch current branding settings
-  const { 
-    data: branding,
-    isLoading,
-    isError,
-    refetch 
-  } = useQuery<BrandingSetting>({
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  // Fetch branding settings
+  const { data: branding, isLoading, error } = useQuery<BrandingSetting>({
     queryKey: ["/api/hr/branding"],
-    retry: 1
   });
-
-  // Handle branding data when it's available
-  useEffect(() => {
-    if (branding) {
-      setSelectedPreset(branding.colorScheme || "default");
-      if (branding.colorScheme === "custom") {
-        setCustomColors({
-          primary: branding.primaryColor || "",
-          secondary: branding.secondaryColor || "",
-          accent: branding.accentColor || ""
-        });
-      }
-      if (branding.logoUrl) {
-        setPreviewLogo(branding.logoUrl);
-      }
-    }
-  }, [branding]);
-
-  // Update branding settings mutation
+  
+  // Update branding settings
   const updateBrandingMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Partial<BrandingSetting>) => {
       const res = await fetch("/api/hr/branding", {
         method: "POST",
         headers: {
@@ -588,15 +571,14 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
     }
   });
 
-  // Upload logo mutation
+  // Upload logo
   const uploadLogoMutation = useMutation({
     mutationFn: async (file: File) => {
-      // Convert image to base64 string instead of using FormData
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async () => {
+      const reader = new FileReader();
+      return new Promise<string>((resolve, reject) => {
+        reader.onloadend = async () => {
           try {
-            const base64 = reader.result;
+            const base64Data = reader.result as string;
             
             const res = await fetch("/api/hr/branding/logo", {
               method: "POST",
@@ -604,41 +586,33 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
               },
-              body: JSON.stringify({ logoUrl: base64 })
+              body: JSON.stringify({ logo: base64Data })
             });
             
             if (!res.ok) {
               const error = await res.json();
-              reject(new Error(error.message || "Failed to upload logo"));
-            } else {
-              resolve(await res.json());
+              throw new Error(error.message || "Failed to upload logo");
             }
-          } catch (err) {
-            reject(err);
+            
+            const data = await res.json();
+            resolve(data.logoUrl);
+          } catch (error: any) {
+            reject(error);
           }
         };
-        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.onerror = () => {
+          reject(new Error("Failed to read file"));
+        };
         reader.readAsDataURL(file);
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (logoUrl) => {
       toast({
         title: "Success",
         description: "Logo uploaded successfully",
       });
-      
-      // Update preview URL
-      if (data.logoUrl) {
-        setPreviewLogo(data.logoUrl);
-        
-        // Also update the branding settings with the new logo URL
-        if (branding) {
-          updateBrandingMutation.mutate({
-            ...branding,
-            logoUrl: data.logoUrl
-          });
-        }
-      }
+      setBrandingData(prev => ({ ...prev, logoUrl }));
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/branding"] });
     },
     onError: (error: any) => {
       toast({
@@ -648,245 +622,205 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
       });
     }
   });
-
+  
+  // Handle color scheme change
+  const handleColorSchemeChange = (value: string) => {
+    const preset = COLOR_PRESETS.find(p => p.id === value);
+    if (preset) {
+      setBrandingData(prev => ({
+        ...prev,
+        colorScheme: value,
+        primaryColor: preset.primary,
+        secondaryColor: preset.secondary,
+        accentColor: preset.accent
+      }));
+    }
+  };
+  
+  // Handle color input change
+  const handleColorChange = (field: string, value: string) => {
+    setBrandingData(prev => ({
+      ...prev,
+      [field]: value,
+      colorScheme: "custom" // Set to custom when any color is manually changed
+    }));
+  };
+  
+  // Handle logo upload
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
       setLogoFile(file);
-      
-      // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewLogo(reader.result as string);
+        setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
-
-  const handleUploadLogo = () => {
+  
+  // Handle save branding
+  const handleSaveBranding = () => {
+    updateBrandingMutation.mutate(brandingData);
+    
     if (logoFile) {
       uploadLogoMutation.mutate(logoFile);
     }
   };
-
-  const handlePresetChange = (preset: string) => {
-    setSelectedPreset(preset);
-    
-    // If selecting custom, keep current custom values
-    // If selecting a preset, set the colors from the preset
-    if (preset !== "custom") {
-      const presetColors = COLOR_PRESETS.find(p => p.id === preset);
-      if (presetColors) {
-        setCustomColors({
-          primary: presetColors.primary,
-          secondary: presetColors.secondary,
-          accent: presetColors.accent
-        });
+  
+  // Effect to update form data when branding data is loaded
+  useEffect(() => {
+    if (branding) {
+      setBrandingData({
+        organizationName: branding.organizationName || "",
+        colorScheme: branding.colorScheme || "default",
+        primaryColor: branding.primaryColor || COLOR_PRESETS[0].primary,
+        secondaryColor: branding.secondaryColor || COLOR_PRESETS[0].secondary,
+        accentColor: branding.accentColor || COLOR_PRESETS[0].accent,
+        logoUrl: branding.logoUrl || ""
+      });
+      
+      if (branding.logoUrl) {
+        setLogoPreview(branding.logoUrl);
       }
     }
-  };
-
-  const handleCustomColorChange = (colorKey: string, value: string) => {
-    setCustomColors(prev => ({
-      ...prev,
-      [colorKey]: value
-    }));
-  };
-
-  const handleSaveBranding = () => {
-    const colors = selectedPreset === "custom" ? customColors : 
-      COLOR_PRESETS.find(p => p.id === selectedPreset) || COLOR_PRESETS[0];
-    
-    const brandingData = {
-      organizationName: branding?.organizationName || "Empulse",
-      colorScheme: selectedPreset,
-      primaryColor: colors.primary,
-      secondaryColor: colors.secondary,
-      accentColor: colors.accent,
-      logoUrl: previewLogo
-    };
-    
-    updateBrandingMutation.mutate(brandingData);
-  };
-
+  }, [branding]);
+  
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold">Branding Settings</h2>
-        <p className="text-muted-foreground">Customize the appearance of your company's store and social platform</p>
-      </div>
-      
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Company Logo</CardTitle>
-          <CardDescription>Upload your company logo to personalize your platform</CardDescription>
+          <CardTitle>Company Branding</CardTitle>
+          <CardDescription>Customize your organization's appearance in the platform</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              {!readOnly ? (
-                <>
-                  <div className="mb-4">
-                    <Label htmlFor="logo">Logo Image</Label>
-                    <Input 
-                      id="logo" 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleLogoChange}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <Button 
-                    onClick={handleUploadLogo} 
-                    disabled={!logoFile || uploadLogoMutation.isPending}
-                    className="w-full"
-                  >
-                    {uploadLogoMutation.isPending ? (
-                      <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
-                    ) : (
-                      <><Upload className="mr-2 h-4 w-4" /> Upload Logo</>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <div className="mb-4">
-                  <p className="text-muted-foreground">Current company logo is displayed in the preview section.</p>
-                </div>
-              )}
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="organizationName">Organization Name</Label>
+              <Input
+                id="organizationName"
+                value={brandingData.organizationName}
+                onChange={(e) => setBrandingData(prev => ({ ...prev, organizationName: e.target.value }))}
+                placeholder="Company, Inc."
+                disabled={readOnly}
+              />
             </div>
             
-            <div className="flex-1">
-              <Label>Logo Preview</Label>
-              <div className="mt-2 border rounded-md p-4 flex items-center justify-center h-48 bg-gray-50">
-                {previewLogo ? (
-                  <img 
-                    src={previewLogo} 
-                    alt="Company Logo Preview" 
-                    className="max-h-full max-w-full object-contain"
+            <div className="space-y-2">
+              <Label htmlFor="colorScheme">Color Scheme</Label>
+              <Select 
+                value={brandingData.colorScheme} 
+                onValueChange={handleColorSchemeChange}
+                disabled={readOnly}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select color scheme" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COLOR_PRESETS.map(preset => (
+                    <SelectItem key={preset.id} value={preset.id}>
+                      {preset.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="primaryColor">Primary Color</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="primaryColor"
+                    type="color"
+                    className="w-12 p-1 h-10"
+                    value={brandingData.primaryColor}
+                    onChange={(e) => handleColorChange("primaryColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
                   />
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    <p>No logo uploaded</p>
-                    <p className="text-sm">Upload a logo to see the preview</p>
+                  <Input
+                    type="text"
+                    value={brandingData.primaryColor}
+                    onChange={(e) => handleColorChange("primaryColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="secondaryColor">Secondary Color</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="secondaryColor"
+                    type="color"
+                    className="w-12 p-1 h-10"
+                    value={brandingData.secondaryColor}
+                    onChange={(e) => handleColorChange("secondaryColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
+                  />
+                  <Input
+                    type="text"
+                    value={brandingData.secondaryColor}
+                    onChange={(e) => handleColorChange("secondaryColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="accentColor">Accent Color</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="accentColor"
+                    type="color"
+                    className="w-12 p-1 h-10"
+                    value={brandingData.accentColor}
+                    onChange={(e) => handleColorChange("accentColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
+                  />
+                  <Input
+                    type="text"
+                    value={brandingData.accentColor}
+                    onChange={(e) => handleColorChange("accentColor", e.target.value)}
+                    disabled={readOnly || brandingData.colorScheme !== "custom"}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="logo">Company Logo</Label>
+              <div className="flex flex-col space-y-4">
+                {(logoPreview || brandingData.logoUrl) && (
+                  <div className="flex justify-center p-4 bg-gray-50 rounded-md">
+                    <img 
+                      src={logoPreview || brandingData.logoUrl} 
+                      alt="Company Logo" 
+                      className="max-h-40 object-contain"
+                    />
+                  </div>
+                )}
+                
+                {!readOnly && (
+                  <div className="flex items-center">
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById("logo")?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" /> Upload Logo
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Color Theme</CardTitle>
-          <CardDescription>Choose a color scheme for your platform</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {COLOR_PRESETS.map((preset) => (
-                <div 
-                  key={preset.id} 
-                  className={`border rounded-md p-4 ${!readOnly ? 'cursor-pointer' : ''} transition-all ${
-                    selectedPreset === preset.id ? 'ring-2 ring-green-500' : !readOnly ? 'hover:border-green-200' : ''
-                  }`}
-                  onClick={() => !readOnly && handlePresetChange(preset.id)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{preset.name}</span>
-                    {selectedPreset === preset.id && (
-                      <div className="h-4 w-4 bg-green-500 rounded-full"></div>
-                    )}
-                  </div>
-                  
-                  {preset.id !== "custom" ? (
-                    <div className="flex space-x-2 mt-3">
-                      <div 
-                        className="h-8 w-8 rounded-full" 
-                        style={{ backgroundColor: preset.primary }}
-                        title="Primary Color"
-                      ></div>
-                      <div 
-                        className="h-8 w-8 rounded-full" 
-                        style={{ backgroundColor: preset.secondary }}
-                        title="Secondary Color"
-                      ></div>
-                      <div 
-                        className="h-8 w-8 rounded-full" 
-                        style={{ backgroundColor: preset.accent }}
-                        title="Accent Color"
-                      ></div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">
-                      Choose your own custom colors
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {selectedPreset === "custom" && (
-              <div className="pt-2">
-                <h3 className="text-lg font-medium mb-3">Custom Colors</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryColor">Primary Color</Label>
-                    <div className="flex items-center space-x-2">
-                      <div 
-                        className="h-8 w-8 rounded-full border"
-                        style={{ backgroundColor: customColors.primary || "#ffffff" }}
-                      ></div>
-                      <Input
-                        id="primaryColor"
-                        type="text"
-                        value={customColors.primary}
-                        onChange={(e) => !readOnly && handleCustomColorChange("primary", e.target.value)}
-                        placeholder="#00A389"
-                        disabled={readOnly}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="secondaryColor">Secondary Color</Label>
-                    <div className="flex items-center space-x-2">
-                      <div 
-                        className="h-8 w-8 rounded-full border"
-                        style={{ backgroundColor: customColors.secondary || "#ffffff" }}
-                      ></div>
-                      <Input
-                        id="secondaryColor"
-                        type="text"
-                        value={customColors.secondary}
-                        onChange={(e) => !readOnly && handleCustomColorChange("secondary", e.target.value)}
-                        placeholder="#232E3E"
-                        disabled={readOnly}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="accentColor">Accent Color</Label>
-                    <div className="flex items-center space-x-2">
-                      <div 
-                        className="h-8 w-8 rounded-full border"
-                        style={{ backgroundColor: customColors.accent || "#ffffff" }}
-                      ></div>
-                      <Input
-                        id="accentColor"
-                        type="text"
-                        value={customColors.accent}
-                        onChange={(e) => !readOnly && handleCustomColorChange("accent", e.target.value)}
-                        placeholder="#FFA500"
-                        disabled={readOnly}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
         <CardFooter>
@@ -905,60 +839,6 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
           )}
         </CardFooter>
       </Card>
-    </div>
-  );
-};
-
-const HRConfig = () => {
-  const { user } = useAuth();
-  
-  return (
-    <div className="container mx-auto py-6 space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">HR Configuration</h1>
-          <p className="text-muted-foreground">
-            {user?.isAdmin 
-              ? "Manage employee accounts and customize your organization's branding" 
-              : "View company information and branding"
-            }
-          </p>
-        </div>
-      </div>
-      
-      <Tabs defaultValue="team" className="w-full">
-        <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-3' : 'grid-cols-1'} mb-8`}>
-          {user?.isAdmin && (
-            <TabsTrigger value="team" className="text-base py-3">
-              <Users className="mr-2 h-5 w-5" /> Team Management
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="branding" className="text-base py-3">
-            <Palette className="mr-2 h-5 w-5" /> Branding
-          </TabsTrigger>
-          {user?.isAdmin && (
-            <TabsTrigger value="peer" className="text-base py-3">
-              <RefreshCw className="mr-2 h-5 w-5" /> Peer to Peer Config
-            </TabsTrigger>
-          )}
-        </TabsList>
-        
-        {user?.isAdmin && (
-          <TabsContent value="team">
-            <EmployeeManagement />
-          </TabsContent>
-        )}
-        
-        <TabsContent value="branding">
-          <BrandingSettings readOnly={!user?.isAdmin} />
-        </TabsContent>
-        
-        {user?.isAdmin && (
-          <TabsContent value="peer">
-            <PeerToPeerConfig />
-          </TabsContent>
-        )}
-      </Tabs>
     </div>
   );
 };
@@ -1140,6 +1020,62 @@ const PeerToPeerConfig = ({ readOnly = false }: { readOnly?: boolean }) => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const HRConfig = () => {
+  const { user } = useAuth();
+  
+  return (
+    <MainLayout>
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">HR Configuration</h1>
+            <p className="text-muted-foreground">
+              {user?.isAdmin 
+                ? "Manage employee accounts and customize your organization's branding" 
+                : "View company information and branding"
+              }
+            </p>
+          </div>
+        </div>
+        
+        <Tabs defaultValue="team" className="w-full">
+          <TabsList className={`grid w-full ${user?.isAdmin ? 'grid-cols-3' : 'grid-cols-1'} mb-8`}>
+            {user?.isAdmin && (
+              <TabsTrigger value="team" className="text-base py-3">
+                <Users className="mr-2 h-5 w-5" /> Team Management
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="branding" className="text-base py-3">
+              <Palette className="mr-2 h-5 w-5" /> Branding
+            </TabsTrigger>
+            {user?.isAdmin && (
+              <TabsTrigger value="peer" className="text-base py-3">
+                <RefreshCw className="mr-2 h-5 w-5" /> Peer to Peer Config
+              </TabsTrigger>
+            )}
+          </TabsList>
+          
+          {user?.isAdmin && (
+            <TabsContent value="team">
+              <EmployeeManagement />
+            </TabsContent>
+          )}
+          
+          <TabsContent value="branding">
+            <BrandingSettings readOnly={!user?.isAdmin} />
+          </TabsContent>
+          
+          {user?.isAdmin && (
+            <TabsContent value="peer">
+              <PeerToPeerConfig />
+            </TabsContent>
+          )}
+        </Tabs>
+      </div>
+    </MainLayout>
   );
 };
 
