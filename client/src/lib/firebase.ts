@@ -2,6 +2,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 
+// Log Firebase configuration for debugging
+console.log(`Client Firebase projectId: ${import.meta.env.VITE_FIREBASE_PROJECT_ID}`);
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

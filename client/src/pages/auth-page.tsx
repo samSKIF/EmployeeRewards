@@ -36,6 +36,15 @@ export default function AuthPage() {
       const saveUserMetadata = async () => {
         try {
           console.log("Saving Firebase user metadata on auto-detection");
+          
+          // Get the Firebase ID token for authentication
+          const token = await currentUser.getIdToken();
+          console.log("Got Firebase ID token");
+          
+          // Store token in localStorage for API authentication
+          localStorage.setItem("firebaseToken", token);
+          
+          // Save user data to our backend
           await apiRequest("POST", "/api/users/metadata", {
             name: currentUser.displayName,
             email: currentUser.email,
