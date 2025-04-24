@@ -25,11 +25,30 @@ export default function AuthPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerDepartment, setRegisterDepartment] = useState("");
   
+  // Add a state to track if we should skip auto-login
+  const [skipAutoLogin, setSkipAutoLogin] = useState(false);
+  
   // Check if already logged in with Firebase
-  const { currentUser, loading, signIn, register, signInWithGooglePopup } = useFirebaseAuth();
+  const { currentUser, loading, signIn, register, signInWithGooglePopup, signOut } = useFirebaseAuth();
+  
+  // Add a button handler to log out
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      localStorage.removeItem("firebaseToken");
+      setSkipAutoLogin(true);
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   
   useEffect(() => {
-    if (!loading && currentUser) {
+    // Only auto-login if not specifically canceled
+    if (!loading && currentUser && !skipAutoLogin) {
       console.log("User already logged in with Firebase:", currentUser);
       
       // For Google login, make sure we save the user metadata to our backend
@@ -79,7 +98,7 @@ export default function AuthPage() {
       
       saveUserMetadata();
     }
-  }, [currentUser, loading]);
+  }, [currentUser, loading, skipAutoLogin, setLocation]);
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,8 +205,23 @@ export default function AuthPage() {
           
           <Card className="border-none shadow-lg">
             <CardHeader className="pb-3">
-              <h1 className="text-2xl font-bold text-gray-800">Welcome to Empulse</h1>
-              <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">Welcome to Empulse</h1>
+                  <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
+                </div>
+                
+                {currentUser && (
+                  <Button 
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    Sign Out
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             
             <Tabs defaultValue="login" className="w-full">
