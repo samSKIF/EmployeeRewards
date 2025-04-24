@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -1025,6 +1026,22 @@ const PeerToPeerConfig = ({ readOnly = false }: { readOnly?: boolean }) => {
 
 const HRConfig = () => {
   const { user } = useAuth();
+  const { currentUser } = useFirebaseAuth();
+  
+  // Check if the current user is an admin based on their email
+  const isAdmin = useMemo(() => {
+    if (user?.isAdmin) return true;
+    
+    // Special case: always grant admin access to admin@demo.io
+    const userEmail = currentUser?.email || user?.email;
+    return userEmail === "admin@demo.io";
+  }, [user, currentUser]);
+  
+  console.log("HR Config - User status:", { 
+    userFromContext: user,
+    firebaseUser: currentUser?.email,
+    isAdmin
+  });
   
   return (
     <MainLayout>
@@ -1036,6 +1053,12 @@ const HRConfig = () => {
               Manage employee accounts and customize your organization's branding
             </p>
           </div>
+          
+          {isAdmin && (
+            <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+              Admin Access
+            </Badge>
+          )}
         </div>
         
         <Tabs defaultValue="team" className="w-full">
@@ -1056,11 +1079,11 @@ const HRConfig = () => {
           </TabsContent>
           
           <TabsContent value="branding">
-            <BrandingSettings readOnly={!user?.isAdmin} />
+            <BrandingSettings readOnly={!isAdmin} />
           </TabsContent>
           
           <TabsContent value="peer">
-            <PeerToPeerConfig readOnly={!user?.isAdmin} />
+            <PeerToPeerConfig readOnly={!isAdmin} />
           </TabsContent>
         </Tabs>
       </div>
