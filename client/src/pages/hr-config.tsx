@@ -561,6 +561,7 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
         title: "Success",
         description: "Branding settings updated successfully",
       });
+      // Invalidate the branding query to trigger a refresh of the theme
       queryClient.invalidateQueries({ queryKey: ["/api/hr/branding"] });
     },
     onError: (error: any) => {
