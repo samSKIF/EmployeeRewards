@@ -14,6 +14,18 @@ export default function AuthPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
+  // Parse the redirectTo parameter from the URL query
+  const getRedirectPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get('redirectTo');
+    
+    if (redirectTo === 'social') {
+      return '/social-page';
+    }
+    
+    return '/dashboard'; // Default redirect
+  };
+  
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -109,9 +121,10 @@ export default function AuthPage() {
         } catch (error) {
           console.error("Failed to save auto-detected user metadata:", error);
         } finally {
-          // Always redirect to dashboard after authentication is confirmed
-          console.log("Redirecting to dashboard after authentication");
-          setLocation("/dashboard");
+          // Use the redirect path from URL query parameter if available
+          const redirectPath = getRedirectPath();
+          console.log(`Redirecting to ${redirectPath} after authentication`);
+          setLocation(redirectPath);
         }
       };
       
@@ -142,7 +155,7 @@ export default function AuthPage() {
         description: "You have successfully logged in",
       });
       
-      setLocation("/dashboard");
+      setLocation(getRedirectPath());
     } catch (error: any) {
       toast({
         title: "Error",
@@ -197,7 +210,7 @@ export default function AuthPage() {
         description: "Account created successfully",
       });
       
-      setLocation("/dashboard");
+      setLocation(getRedirectPath());
     } catch (error: any) {
       toast({
         title: "Error",
