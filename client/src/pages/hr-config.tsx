@@ -559,35 +559,16 @@ const EmployeeManagement = () => {
     });
   };
   
-  // Function to download template as CSV which is safer
-  const downloadTemplate = () => {
-    // Create CSV header row
-    const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
-    
-    // Create sample data row
-    const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-    
-    // Combine into CSV content
-    const csvContent = `${headers}\n${sampleData}`;
-    
-    // Create a Blob with the CSV content
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    // Create a download link
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    // Set up the download
-    link.href = url;
-    link.setAttribute('download', 'employee_template.csv');
-    document.body.appendChild(link);
-    
-    // Trigger the download
-    link.click();
-    
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  // State for showing the template dialog
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  
+  // Template content display instead of download
+  const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
+John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
+
+  // Function to show template content
+  const showTemplate = () => {
+    setShowTemplateDialog(true);
   };
 
   if (isError) {
@@ -722,8 +703,8 @@ const EmployeeManagement = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex flex-col items-center gap-4">
-              <Button variant="outline" onClick={downloadTemplate}>
-                <FileDown className="mr-2 h-4 w-4" /> Download Template
+              <Button variant="outline" onClick={showTemplate}>
+                <FileDown className="mr-2 h-4 w-4" /> View Template
               </Button>
               
               <div className="text-center space-y-2">
@@ -768,6 +749,50 @@ const EmployeeManagement = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsBulkUploadOpen(false)}>
               Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Template Display Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Employee Template Format</DialogTitle>
+            <DialogDescription>
+              Copy this template and paste it into a spreadsheet application
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-muted p-3 rounded-md overflow-auto max-h-[300px]">
+              <pre className="text-xs whitespace-pre-wrap">{templateCSVContent}</pre>
+            </div>
+            <Button 
+              onClick={() => {
+                navigator.clipboard.writeText(templateCSVContent);
+                toast({
+                  title: "Template copied",
+                  description: "The template has been copied to your clipboard"
+                });
+              }}
+              className="w-full"
+            >
+              <FileUp className="h-4 w-4 mr-2" /> Copy to Clipboard
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              <p>Instructions:</p>
+              <ol className="list-decimal pl-4 mt-2 space-y-1">
+                <li>Copy the template above</li>
+                <li>Paste it into a spreadsheet application like Excel or Google Sheets</li>
+                <li>Fill in your employee data</li>
+                <li>Save as CSV file</li>
+                <li>Upload the file using the bulk upload button</li>
+              </ol>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
