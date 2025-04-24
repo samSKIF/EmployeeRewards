@@ -826,18 +826,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Logo upload endpoint (this would use a storage service in production)
-  app.post("/api/hr/branding/logo", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/hr/branding/logo", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      // This is a placeholder. In a real implementation, you would:
-      // 1. Use multer or another middleware to handle file uploads
-      // 2. Upload the file to cloud storage like S3 or Firebase Storage
-      // 3. Store the URL in the brandingSettings table
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       
-      res.status(501).json({ 
-        message: "Logo upload not yet implemented",
-        logoUrl: "https://picsum.photos/200" // Placeholder image URL for testing
-      });
+      // For demonstration, we'll accept a base64 image URL
+      // In a production environment, you would use proper file upload and storage
+      const { logoUrl } = req.body;
+      
+      if (!logoUrl) {
+        return res.status(400).json({ message: "No logo provided" });
+      }
+      
+      // Check if settings already exist for this organization
+      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      
+      if (existingSettings) {
+        // Update existing settings with new logo
+        const [updatedSettings] = await db.update(brandingSettings)
+          .set({
+            logoUrl,
+            updatedAt: new Date(),
+            updatedById: req.user.id
+          })
+          .where(eq(brandingSettings.id, existingSettings.id))
+          .returning();
+          
+        return res.json({
+          message: "Logo updated successfully",
+          logoUrl: updatedSettings.logoUrl
+        });
+      } else {
+        // Create new settings with logo
+        const [newSettings] = await db.insert(brandingSettings)
+          .values({
+            organizationId: req.user.id,
+            organizationName: "Empulse",
+            logoUrl,
+            colorScheme: "default",
+            updatedAt: new Date(),
+            updatedById: req.user.id
+          })
+          .returning();
+          
+        return res.json({
+          message: "Logo created successfully",
+          logoUrl: newSettings.logoUrl
+        });
+      }
     } catch (error: any) {
+      console.error("Failed to upload logo:", error);
       res.status(500).json({ message: error.message || "Failed to upload logo" });
     }
   });

@@ -590,23 +590,35 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
   // Upload logo mutation
   const uploadLogoMutation = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("logo", file);
-
-      const res = await fetch("/api/hr/branding/logo", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
-        },
-        body: formData
+      // Convert image to base64 string instead of using FormData
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const base64 = reader.result;
+            
+            const res = await fetch("/api/hr/branding/logo", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+              },
+              body: JSON.stringify({ logoUrl: base64 })
+            });
+            
+            if (!res.ok) {
+              const error = await res.json();
+              reject(new Error(error.message || "Failed to upload logo"));
+            } else {
+              resolve(await res.json());
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(file);
       });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to upload logo");
-      }
-      
-      return res.json();
     },
     onSuccess: (data) => {
       toast({
