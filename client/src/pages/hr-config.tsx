@@ -587,7 +587,7 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
               },
-              body: JSON.stringify({ logo: base64Data })
+              body: JSON.stringify({ logoUrl: base64Data })
             });
             
             if (!res.ok) {
