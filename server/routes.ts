@@ -691,28 +691,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template test download request received, user:", req.user?.email);
       
-      // Add UTF-8 BOM to help Excel interpret the encoding correctly
-      const utf8BOM = "\uFEFF";
-      
-      // Create CSV header row
+      // Create CSV header row (no BOM)
       const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
       
       // Create sample data row
       const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
       
-      // Combine into CSV content with BOM
-      const csvContent = `${utf8BOM}${headers}\n${sampleData}`;
+      // Combine into simple CSV content
+      const csvContent = `${headers}\n${sampleData}`;
       
-      // Set enhanced headers for file download to avoid antivirus detection
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
-      res.setHeader('Content-Length', Buffer.byteLength(csvContent));
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+      // Set simple headers for text file download
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.txt"');
       
-      // Send the CSV file with BOM
+      // Send the CSV file as text
       res.send(csvContent);
     } catch (error: any) {
       console.error("Error generating template:", error);

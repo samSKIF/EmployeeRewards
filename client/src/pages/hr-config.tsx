@@ -589,7 +589,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'employee_template.csv';
+      a.download = 'employee_template.txt';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -597,7 +597,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
       
       toast({
         title: "Template Downloaded",
-        description: "The CSV template has been downloaded to your device"
+        description: "The template has been downloaded as a TXT file to your device"
       });
     })
     .catch(error => {
@@ -749,7 +749,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
             <div className="flex flex-col items-center gap-4">
               <div className="flex gap-2">
                 <Button variant="outline" onClick={downloadTemplate}>
-                  <FileDown className="mr-2 h-4 w-4" /> Download Template (CSV)
+                  <FileDown className="mr-2 h-4 w-4" /> Download Template (TXT)
                 </Button>
                 <Button variant="outline" onClick={showTemplate}>
                   <FileDown className="mr-2 h-4 w-4" /> View Template
@@ -832,14 +832,14 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                 onClick={downloadTemplate}
                 variant="outline"
               >
-                <FileDown className="h-4 w-4 mr-2" /> Download as CSV
+                <FileDown className="h-4 w-4 mr-2" /> Download as TXT
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">
               <p>Instructions:</p>
               <ol className="list-decimal pl-4 mt-2 space-y-1">
-                <li>Copy the template above</li>
-                <li>Paste it into a spreadsheet application like Excel or Google Sheets</li>
+                <li>Download the TXT file template</li>
+                <li>Open the TXT file in a spreadsheet application like Excel or Google Sheets</li>
                 <li>Fill in your employee data</li>
                 <li>Save as CSV file</li>
                 <li>Upload the file using the bulk upload button</li>
