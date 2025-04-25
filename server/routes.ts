@@ -835,6 +835,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name } = req.params;
       
+      // Special case for employee_import template
+      if (name === 'employee_import') {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Employee Template');
+        
+        // Define the headers
+        const headers = [
+          'name', 'surname', 'email', 'password', 'dateOfBirth', 'dateJoined', 
+          'jobTitle', 'isManager', 'managerEmail', 'status', 'sex', 
+          'nationality', 'phoneNumber'
+        ];
+        
+        // Add headers to the worksheet
+        worksheet.addRow(headers);
+        
+        // Format header row
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE0E0E0' }
+        };
+        
+        // Add a sample row
+        const sampleData = [
+          'John', 'Doe', 'john.doe@company.com', 'password123', 
+          '1990-01-01', '2023-01-01', 'Software Engineer', 'No', 
+          'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
+        ];
+        worksheet.addRow(sampleData);
+        
+        // Auto-size columns for better readability
+        headers.forEach((header, i) => {
+          const column = worksheet.getColumn(i+1);
+          const dataCell = sampleData[i] || '';
+          const maxLength = Math.max(
+            (header.length || 0) + 2,
+            (dataCell.length || 0) + 2,
+            12 // Minimum width
+          );
+          column.width = maxLength;
+        });
+        
+        // Set proper content type and attachment headers for XLSX
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
+        
+        // Write the workbook directly to the response
+        await workbook.xlsx.write(res);
+        res.end();
+        return;
+      }
+      
       const [template] = await db
         .select()
         .from(fileTemplates)
@@ -844,11 +897,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
       
-      // Import ExcelJS for XLSX generation
-      
       // Create a new workbook and worksheet
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employee Template');
+      const worksheet = workbook.addWorksheet('Template');
       
       // Parse CSV content to extract headers and sample data
       const csvLines = template.content.split(/\r?\n/);
