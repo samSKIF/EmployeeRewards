@@ -1,16 +1,17 @@
 
 // Utility function to download CSV files
-export function downloadCsvFile(csvContent: string, filename = "export.csv") {
+export function downloadCsvFile(csvContent: string, filename = "employee_template.csv") {
   // Add BOM for Excel UTF-8 compatibility
   const utf8BOM = "\uFEFF";
   
-  // Create proper CSV MIME type and headers
+  // Add timestamp to filename
+  const timestamp = new Date().toISOString().split('T')[0];
+  const safeFilename = `employee_template_${timestamp}.csv`.replace(/[^a-z0-9.-]/gi, '_');
+  
+  // Create proper CSV MIME type and headers with additional metadata
   const blob = new Blob([utf8BOM + csvContent], {
-    type: "text/csv;charset=utf-8"
+    type: "application/vnd.ms-excel;charset=utf-8"
   });
-
-  // Use a safe filename format
-  const safeFilename = filename.replace(/[^a-z0-9.-]/gi, '_');
   
   // Create URL and temporary link
   const url = URL.createObjectURL(blob);

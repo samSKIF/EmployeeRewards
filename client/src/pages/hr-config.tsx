@@ -564,8 +564,13 @@ const EmployeeManagement = () => {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   
   // Template content display instead of download
-  const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
-John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
+  // CSV Template with metadata headers
+  const templateCSVContent = `"Employee Data Import Template"
+"Generated Date: ${new Date().toISOString()}"
+"Instructions: Please fill in the employee data following the format below. All dates should be in YYYY-MM-DD format."
+""
+name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
+"John","Doe","john.doe@company.com","password123","1990-01-01","2023-01-01","Software Engineer","No","manager@company.com","active","male","American","+1 (555) 123-4567"`;
 
   // Function to download CSV template directly
   const downloadTemplate = () => {
