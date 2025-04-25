@@ -574,34 +574,8 @@ name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEma
 
   // Function to download CSV template directly
   const downloadTemplate = () => {
-    // Use the UTF-8 BOM to help Excel interpret the encoding correctly
-    const utf8BOM = "\uFEFF";
-    const csvContent = utf8BOM + templateCSVContent;
-    
-    // Create blob with proper CSV MIME type
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8"
-    });
-    
-    // Create sanitized filename
-    const safeFilename = "employee_template.csv".replace(/[^a-z0-9.-]/gi, '_');
-    
-    // Create URL and temporary link with proper attributes
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", safeFilename);
-    link.setAttribute("type", "text/csv");
-    
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Cleanup URL after small delay
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 100);
+    // Download directly from server endpoint
+    window.location.href = '/api/hr/template/download';
     
     toast({
       title: "Template Downloaded",
