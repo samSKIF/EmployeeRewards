@@ -5,6 +5,7 @@ import { verifyToken, verifyAdmin, AuthenticatedRequest, generateToken } from ".
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
+import ExcelJS from 'exceljs';
 import { db } from "./db";
 import { compare, hash } from "bcrypt";
 import { 
@@ -844,7 +845,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import ExcelJS for XLSX generation
-      const ExcelJS = require('exceljs');
       
       // Create a new workbook and worksheet
       const workbook = new ExcelJS.Workbook();
