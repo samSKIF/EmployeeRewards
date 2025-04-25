@@ -40,7 +40,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Award, BadgeCheck, Gift, Medal, Star, TrendingUp } from "lucide-react";
-import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette, FileDown, FileUp } from "lucide-react";
+import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette, FileDown, FileUp, Eye } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { Employee, BrandingSetting, FileTemplate } from "@shared/schema";
 import * as XLSX from "xlsx";
