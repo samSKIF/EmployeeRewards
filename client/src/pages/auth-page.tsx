@@ -474,7 +474,7 @@ export default function AuthPage() {
               <rect width="24" height="24" rx="4" fill="var(--primary-color, #00A389)" />
               <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="text-2xl font-bold text-gray-800">{branding?.organizationName || "Empulse"}</span>
+            <span className="text-2xl font-bold text-gray-800">{branding?.organizationName || "ThrivioHR"}</span>
           </div>
           
           <Card className="border-none shadow-lg">

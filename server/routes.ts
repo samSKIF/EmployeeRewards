@@ -1025,7 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!settings) {
         // Return default settings if none are found
         return res.json({
-          organizationName: "Empulse",
+          organizationName: "ThrivioHR",
           colorScheme: "default",
           logoUrl: null,
           primaryColor: null,
@@ -1077,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create new branding settings with minimal validation
       const insertData = {
         organizationId: req.user.id,
-        organizationName: req.body.organizationName || "Empulse",
+        organizationName: req.body.organizationName || "ThrivioHR",
         logoUrl: req.body.logoUrl || null,
         colorScheme: req.body.colorScheme || "default",
         primaryColor: req.body.primaryColor || null,
@@ -1140,7 +1140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const [newSettings] = await db.insert(brandingSettings)
           .values({
             organizationId: req.user.id,
-            organizationName: "Empulse",
+            organizationName: "ThrivioHR",
             logoUrl,
             colorScheme: "default",
             updatedAt: new Date(),

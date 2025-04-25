@@ -4,7 +4,7 @@ import { BrandingSetting } from "@shared/schema";
 
 // Default branding values
 const DEFAULT_BRANDING = {
-  organizationName: "Empulse",
+  organizationName: "ThrivioHR",
   colorScheme: "default",
   primaryColor: "#00A389",
   secondaryColor: "#232E3E",
@@ -176,7 +176,7 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     root.style.setProperty('--secondary-color', secondaryColor);
     root.style.setProperty('--accent-color', accentColor);
     
-    document.title = branding.organizationName || "Empulse";
+    document.title = branding.organizationName || "ThrivioHR";
     setCssApplied(true);
     
     console.log("Branding applied:", branding);
