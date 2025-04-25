@@ -197,6 +197,19 @@ export const brandingSettings = pgTable("branding_settings", {
   updatedById: integer("updated_by_id").references(() => users.id),
 });
 
+// File templates for system-generated files
+export const fileTemplates = pgTable("file_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),           // Template identifier (e.g., "employee_import")
+  fileName: text("file_name").notNull(),           // Filename to use when downloading
+  contentType: text("content_type").notNull(),     // MIME type (e.g., "text/plain")
+  content: text("content").notNull(),              // The actual template content
+  description: text("description"),                // Optional description
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
 // Define relationships
 export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions, { relationName: "userTransactions" }),
@@ -372,6 +385,14 @@ export const brandingSettingsRelations = relations(brandingSettings, ({ one }) =
   }),
 }));
 
+// File template relations
+export const fileTemplateRelations = relations(fileTemplates, ({ one }) => ({
+  creator: one(users, {
+    fields: [fileTemplates.createdBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas for validating API inputs
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
@@ -389,6 +410,7 @@ export const insertConversationParticipantSchema = createInsertSchema(conversati
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
 export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true });
 export const insertBrandingSettingsSchema = createInsertSchema(brandingSettings).omit({ id: true });
+export const insertFileTemplateSchema = createInsertSchema(fileTemplates).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -438,3 +460,6 @@ export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
 
 export type BrandingSetting = typeof brandingSettings.$inferSelect;
 export type InsertBrandingSetting = z.infer<typeof insertBrandingSettingsSchema>;
+
+export type FileTemplate = typeof fileTemplates.$inferSelect;
+export type InsertFileTemplate = z.infer<typeof insertFileTemplateSchema>;
