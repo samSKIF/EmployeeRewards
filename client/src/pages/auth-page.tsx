@@ -481,7 +481,7 @@ export default function AuthPage() {
             <CardHeader className="pb-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">Welcome to Empulse</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">Welcome to ThrivioHR</h1>
                   <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
                 </div>
                 

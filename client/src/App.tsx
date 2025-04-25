@@ -129,7 +129,7 @@ function App() {
                 <Seller />
               </Route>
               
-              {/* Empulse Social Platform routes */}
+              {/* ThrivioHR Social Platform routes */}
               <Route path="/auth">
                 <AuthPage />
               </Route>
