@@ -5,7 +5,7 @@ import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import MainLayout from "@/components/layout/MainLayout";
-import { TemplateManager } from "@/components/hr/TemplateManager";
+import { TemplateManager as FileTemplateManager } from "@/components/hr/TemplateManager";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -857,7 +857,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
 
       {/* File Templates Management */}
       <div className="mt-8">
-        <TemplateManager readOnly={false} />
+        <FileTemplateManager readOnly={false} />
       </div>
     </div>
   );
