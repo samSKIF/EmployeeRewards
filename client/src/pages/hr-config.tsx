@@ -750,14 +750,23 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
             <div className="flex flex-col items-center gap-4">
               <div className="flex gap-2">
                 <Button variant="outline" onClick={downloadTemplate}>
-                  <FileDown className="mr-2 h-4 w-4" /> Download Template (TXT)
+                  <FileDown className="mr-2 h-4 w-4" /> Download CSV Template
                 </Button>
                 <Button variant="outline" onClick={showTemplate}>
-                  <FileDown className="mr-2 h-4 w-4" /> View Template
+                  <Eye className="mr-2 h-4 w-4" /> View Template Format
                 </Button>
               </div>
               
-              <div className="text-center space-y-2">
+              <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800 w-full">
+                <p className="font-medium">Note about the downloaded template:</p>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>The template is saved with a .txt extension to avoid virus detection</li>
+                  <li>The content is valid CSV format and can be opened with spreadsheet software</li>
+                  <li>You can rename it to .csv after downloading if needed</li>
+                </ul>
+              </div>
+              
+              <div className="text-center space-y-2 w-full">
                 <p className="text-sm text-muted-foreground">
                   Fill in the template with your employee data and upload it here
                 </p>
@@ -765,9 +774,10 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                   variant="secondary"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={bulkUploadMutation.isPending}
+                  className="w-full"
                 >
                   <FileUp className="mr-2 h-4 w-4" />
-                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose File (.csv or Excel)"}
+                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose File (.csv, .txt or Excel)"}
                 </Button>
               </div>
               
@@ -836,15 +846,16 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                 <FileDown className="h-4 w-4 mr-2" /> Download CSV Template
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground">
-              <p>Instructions:</p>
-              <ol className="list-decimal pl-4 mt-2 space-y-1">
-                <li>Download the TXT file template</li>
-                <li>Open the TXT file in a spreadsheet application like Excel or Google Sheets</li>
+            <div className="text-sm border-l-4 border-blue-200 pl-4 py-2 bg-blue-50 rounded-sm">
+              <p className="font-medium text-blue-900">Instructions:</p>
+              <ol className="list-decimal pl-5 mt-2 space-y-1 text-blue-800">
+                <li>Download the CSV template (it will have a .txt extension)</li>
+                <li>You can open the .txt file directly in Excel or Google Sheets</li>
                 <li>Fill in your employee data</li>
-                <li>Save as CSV file</li>
+                <li>Save the file (either .txt or .csv format)</li>
                 <li>Upload the file using the bulk upload button</li>
               </ol>
+              <p className="mt-2 text-blue-800 text-xs">Note: The file is saved with a .txt extension to avoid virus detection, but the content is valid CSV format and will work correctly.</p>
             </div>
           </div>
           <DialogFooter>
@@ -855,10 +866,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
         </DialogContent>
       </Dialog>
 
-      {/* File Templates Management */}
-      <div className="mt-8">
-        <FileTemplateManager readOnly={false} />
-      </div>
+
     </div>
   );
 };
