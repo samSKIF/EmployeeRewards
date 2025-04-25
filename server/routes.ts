@@ -835,13 +835,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name } = req.params;
       
-      // Special case for employee_import template - use hosted template
+      // Special case for employee_import template
       if (name === 'employee_import') {
-        // Hosted template on a public CDN
-        const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
+        // Create a super simple excel file that won't trigger virus detection
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Employee Import');
         
-        // Redirect to the hosted template
-        res.redirect(hostedTemplateUrl);
+        // Add a single row with basic headers
+        worksheet.addRow(['name', 'email']);
+        worksheet.addRow(['John Doe', 'john@example.com']);
+        
+        // Set content type and attachment headers 
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
+        
+        // Write directly to response
+        await workbook.xlsx.write(res);
+        res.end();
         return;
       }
       
@@ -914,11 +924,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template test download request received, user:", req.user?.email);
       
-      // Hosted template on a public CDN
-      const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
+      // Create a super simple excel file that won't trigger virus detection
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Import');
       
-      // Redirect to the hosted template
-      res.redirect(hostedTemplateUrl);
+      // Add a single row with basic headers
+      worksheet.addRow(['name', 'email']);
+      worksheet.addRow(['John Doe', 'john@example.com']);
+      
+      // Set content type and attachment headers 
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
+      
+      // Write directly to response
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
@@ -929,11 +949,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template download request received, user:", req.user?.email);
       
-      // Hosted template on a public CDN
-      const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
+      // Create a super simple excel file that won't trigger virus detection
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Import');
       
-      // Redirect to the hosted template
-      res.redirect(hostedTemplateUrl);
+      // Add a single row with basic headers
+      worksheet.addRow(['name', 'email']);
+      worksheet.addRow(['John Doe', 'john@example.com']);
+      
+      // Set content type and attachment headers 
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
+      
+      // Write directly to response
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
