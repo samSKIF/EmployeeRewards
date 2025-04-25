@@ -30,13 +30,24 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Get token from authorization header OR query parameter
+  let token: string | undefined;
+  
+  // Check for token in Authorization header
   const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  }
+  
+  // If no token in header, check query parameter (useful for direct downloads)
+  if (!token && req.query.token) {
+    token = req.query.token as string;
+  }
+  
+  // If still no token, return unauthorized
+  if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     // First try to verify as a Firebase token

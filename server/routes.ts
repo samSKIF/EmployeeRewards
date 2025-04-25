@@ -843,21 +843,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
       
-      let fileName = template.fileName;
-      let contentType = template.contentType;
-      
-      // If it's a CSV file, set content type to text/plain to avoid virus detection
-      if (contentType.includes("csv") || fileName.endsWith(".csv")) {
-        contentType = "text/plain";
-        // Make sure it has .txt extension to avoid virus detection
-        if (fileName.endsWith(".csv")) {
-          fileName = fileName.replace(".csv", ".txt");
-        }
-      }
-      
       // Set proper content type and attachment headers
       res.setHeader('Content-Type', template.contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
+      
+      // Basic security headers
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');

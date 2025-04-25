@@ -568,46 +568,26 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to generate and download CSV directly from client-side
+  // Function to download template using direct link with authenticated request
   const downloadTemplate = () => {
-    // Default employee template CSV content
-    const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
-    const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-    const csvContent = `${headers}\n${sampleData}`;
+    // Get the Firebase token for authentication
+    const token = localStorage.getItem("firebaseToken");
     
-    // Create CSV blob with proper encoding
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Create a temporary link element
+    const link = document.createElement('a');
     
-    // Check if browser supports download attribute
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, "employee_template.csv");
-    } else {
-      // Create a download link
-      const link = document.createElement('a');
-      
-      // Create object URL
-      const url = URL.createObjectURL(blob);
-      
-      // Setup link properties
-      link.href = url;
-      link.download = "employee_template.csv";
-      link.style.visibility = 'hidden';
-      
-      // Add link to DOM, click it, and remove it
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the URL object
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 100);
-    }
+    // Set the URL with authentication token as a query parameter
+    link.href = `/api/file-templates/employee_import/download?token=${token}`;
+    
+    // Add the element to the DOM and click it
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
     // Show success message
     toast({
-      title: "Template Downloaded",
-      description: "Employee CSV template has been downloaded to your device"
+      title: "Template Downloading",
+      description: "Employee CSV template is being downloaded to your device"
     });
   };
   
