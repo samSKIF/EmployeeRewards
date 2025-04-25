@@ -853,6 +853,11 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* File Templates Management */}
+      <div className="mt-8">
+        <TemplateManager readOnly={false} />
+      </div>
     </div>
   );
 };
