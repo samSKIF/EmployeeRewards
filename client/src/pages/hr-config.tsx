@@ -564,43 +564,47 @@ const EmployeeManagement = () => {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   
   // Template content display instead of download
-  // CSV Template with metadata headers
-  const templateCSVContent = `"Employee Data Import Template"
-"Generated Date: ${new Date().toISOString()}"
-"Instructions: Please fill in the employee data following the format below. All dates should be in YYYY-MM-DD format."
-""
-name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
-"John","Doe","john.doe@company.com","password123","1990-01-01","2023-01-01","Software Engineer","No","manager@company.com","active","male","American","+1 (555) 123-4567"`;
+  const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
+John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download CSV template directly
-  const downloadTemplate = async () => {
-    try {
-      // Get auth token
-      const token = localStorage.getItem('firebaseToken') || localStorage.getItem('token');
-      
-      const response = await fetch('/api/hr/template/download', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+  // Function to download CSV template as ZIP file
+  const downloadTemplate = () => {
+    // Use the UTF-8 BOM to help Excel interpret the encoding correctly
+    const utf8BOM = "\uFEFF";
+    const csvContent = utf8BOM + templateCSVContent;
+    
+    // Initialize JSZip and add the CSV content as a file
+    const zip = new JSZip();
+    zip.file("employee_template.csv", csvContent);
+    
+    // Generate the ZIP file
+    zip.generateAsync({ type: "blob" })
+      .then((zipBlob) => {
+        // Create URL and click a temporary anchor
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "employee_template.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Release memory
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Template Downloaded",
+          description: "The template has been downloaded as a ZIP file"
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating ZIP file:", error);
+        toast({
+          title: "Download Failed",
+          description: "Could not create ZIP file. Please try again.",
+          variant: "destructive"
+        });
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to download template');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'employee_template.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Template Downloaded",
-      description: "The template has been downloaded as a CSV file"
-    });
   };
   
   // Function to show template content as fallback

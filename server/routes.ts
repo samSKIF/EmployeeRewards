@@ -702,13 +702,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', 'attachment; filename=employee_template.csv');
       
       // Send the CSV file
-      // Set headers for safe CSV download
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename=employee_template.csv');
-      res.setHeader('Content-Security-Policy', "default-src 'none'");
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      
-      // Send the CSV content
       res.send(csvContent);
     } catch (error: any) {
       console.error("Error generating template:", error);
