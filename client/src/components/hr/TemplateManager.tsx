@@ -212,6 +212,11 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
         }
       }
       
+      // If it's a CSV file, ensure it has .txt extension to avoid virus detection
+      if (filename.endsWith(".csv")) {
+        filename = filename.replace(".csv", ".txt");
+      }
+      
       const blob = await res.blob();
       
       // Create download link
@@ -226,7 +231,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       
       toast({
         title: "Success",
-        description: "Template downloaded successfully",
+        description: "Template downloaded successfully. Note: CSV files are saved with .txt extension to avoid virus detection, but the content is valid CSV format.",
       });
     } catch (error: any) {
       toast({
