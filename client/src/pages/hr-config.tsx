@@ -758,11 +758,11 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
               </div>
               
               <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800 w-full">
-                <p className="font-medium">Note about the downloaded template:</p>
+                <p className="font-medium">About the CSV template:</p>
                 <ul className="list-disc pl-5 mt-1 space-y-1">
-                  <li>The template is saved with a .txt extension to avoid virus detection</li>
-                  <li>The content is valid CSV format and can be opened with spreadsheet software</li>
-                  <li>You can rename it to .csv after downloading if needed</li>
+                  <li>The template is a standard CSV file with employee data fields</li>
+                  <li>Open the file with Excel, Google Sheets or any spreadsheet software</li>
+                  <li>Fill in employee details following the format of the sample row</li>
                 </ul>
               </div>
               
@@ -849,13 +849,13 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
             <div className="text-sm border-l-4 border-blue-200 pl-4 py-2 bg-blue-50 rounded-sm">
               <p className="font-medium text-blue-900">Instructions:</p>
               <ol className="list-decimal pl-5 mt-2 space-y-1 text-blue-800">
-                <li>Download the CSV template (it will have a .txt extension)</li>
-                <li>You can open the .txt file directly in Excel or Google Sheets</li>
-                <li>Fill in your employee data</li>
-                <li>Save the file (either .txt or .csv format)</li>
+                <li>Download the CSV template</li>
+                <li>Open it in Excel, Google Sheets or any spreadsheet application</li>
+                <li>Fill in your employee data following the format in the example row</li>
+                <li>Save the file as CSV</li>
                 <li>Upload the file using the bulk upload button</li>
               </ol>
-              <p className="mt-2 text-blue-800 text-xs">Note: The file is saved with a .txt extension to avoid virus detection, but the content is valid CSV format and will work correctly.</p>
+              <p className="mt-2 text-blue-800 text-xs">Tip: For best results, ensure all dates are in YYYY-MM-DD format and leave the password field blank for existing employees.</p>
             </div>
           </div>
           <DialogFooter>

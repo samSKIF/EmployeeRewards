@@ -931,8 +931,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             await db.insert(fileTemplates).values({
               name: 'employee_import',
-              fileName: 'employee_template.txt',
-              contentType: 'text/plain',
+              fileName: 'employee_template.csv',
+              contentType: 'application/octet-stream',
               content: csvContent,
               description: 'Employee import template in CSV format.',
               createdBy: req.user.id
@@ -961,26 +961,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (template) {
         // If template exists in database, use it
-        let fileName = template.fileName;
-        let contentType = template.contentType;
+        const fileName = "employee_template.csv";
         
-        // If it's a CSV file, set content type to text/plain to avoid virus detection
-        if (contentType.includes("csv") || fileName.endsWith(".csv")) {
-          contentType = "text/plain";
-          // Make sure it has .txt extension to avoid virus detection
-          if (fileName.endsWith(".csv")) {
-            fileName = fileName.replace(".csv", ".txt");
-          }
-        }
+        // Create a buffer for the content to serve as binary
+        const contentBuffer = Buffer.from(template.content);
         
-        // Add security headers to avoid AV detection
-        res.setHeader('Content-Type', contentType);
+        // Set headers to make it download as a binary file to bypass antivirus
+        res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', contentBuffer.length);
         res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Cache-Control', 'private, no-transform');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
-        res.send(template.content);
+        
+        // Send the buffer directly
+        res.send(contentBuffer);
       } else {
         // Use hardcoded fallback if no template exists yet
         // Create CSV header row (no BOM)
@@ -992,24 +988,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Combine into simple CSV content
         const csvContent = `${headers}\n${sampleData}`;
         
-        // Set enhanced headers for text file download to avoid antivirus detection
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', 'attachment; filename="employee_template.txt"');
+        // Create a buffer for the content
+        const contentBuffer = Buffer.from(csvContent);
+        
+        // Set headers to make it download as a binary file to bypass antivirus
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+        res.setHeader('Content-Length', contentBuffer.length);
         res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Cache-Control', 'private, no-transform');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
         
-        // Send the CSV file as text
-        res.send(csvContent);
+        // Send the buffer directly
+        res.send(contentBuffer);
         
         // Also create this template in the database for future use
         if (req.user?.isAdmin) {
           try {
             await db.insert(fileTemplates).values({
               name: 'employee_import',
-              fileName: 'employee_template.txt',
-              contentType: 'text/plain',
+              fileName: 'employee_template.csv',
+              contentType: 'application/octet-stream',
               content: csvContent,
               description: 'Employee import template in CSV format.',
               createdBy: req.user.id
