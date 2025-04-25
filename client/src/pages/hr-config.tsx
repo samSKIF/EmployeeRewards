@@ -41,7 +41,7 @@ import {
 import { Award, BadgeCheck, Gift, Medal, Star, TrendingUp } from "lucide-react";
 import { Pencil, Trash2, Upload, Plus, RefreshCw, Users, Palette, FileDown, FileUp } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import { Employee, BrandingSetting } from "@shared/schema";
+import { Employee, BrandingSetting, FileTemplate } from "@shared/schema";
 import * as XLSX from "xlsx";
 
 // Color theme presets
@@ -1180,6 +1180,344 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
           )}
         </CardFooter>
       </Card>
+    </div>
+  );
+};
+
+const TemplateManager = ({ readOnly = false }: { readOnly?: boolean }) => {
+  const { toast } = useToast();
+  const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<FileTemplate | null>(null);
+  const [templateFormData, setTemplateFormData] = useState({
+    name: '',
+    fileName: '',
+    contentType: 'text/plain',
+    content: '',
+    description: ''
+  });
+  
+  // Fetch templates
+  const { 
+    data: templates = [], 
+    isLoading,
+    isError,
+    refetch 
+  } = useQuery<FileTemplate[]>({
+    queryKey: ["/api/file-templates"],
+    retry: 1
+  });
+  
+  // Create/update template mutation
+  const saveTemplateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch("/api/file-templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to save template");
+      }
+      
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Template saved successfully",
+      });
+      setIsCreateTemplateOpen(false);
+      setTemplateFormData({
+        name: '',
+        fileName: '',
+        contentType: 'text/plain',
+        content: '',
+        description: ''
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/file-templates"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save template",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Download template function
+  const downloadTemplate = (template: FileTemplate) => {
+    const token = localStorage.getItem("firebaseToken");
+    
+    fetch(`/api/file-templates/${template.name}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      // Create a download link for the blob
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = template.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Template Downloaded",
+        description: `${template.fileName} has been downloaded to your device`
+      });
+    })
+    .catch(error => {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not download the template. Please try again.",
+        variant: "destructive"
+      });
+    });
+  };
+  
+  // Handle form change
+  const handleTemplateFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTemplateFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Handle content type change
+  const handleContentTypeChange = (value: string) => {
+    setTemplateFormData(prev => ({
+      ...prev,
+      contentType: value
+    }));
+  };
+  
+  // Handle edit template
+  const handleEditTemplate = (template: FileTemplate) => {
+    setSelectedTemplate(template);
+    setTemplateFormData({
+      name: template.name,
+      fileName: template.fileName,
+      contentType: template.contentType,
+      content: template.content,
+      description: template.description || ''
+    });
+    setIsCreateTemplateOpen(true);
+  };
+  
+  // Handle save template
+  const handleSaveTemplate = () => {
+    saveTemplateMutation.mutate(templateFormData);
+  };
+  
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>File Templates</CardTitle>
+              <CardDescription>
+                Manage file templates for your organization. These templates can be used for data import/export operations.
+              </CardDescription>
+            </div>
+            {!readOnly && (
+              <Button onClick={() => {
+                setSelectedTemplate(null);
+                setTemplateFormData({
+                  name: '',
+                  fileName: '',
+                  contentType: 'text/plain',
+                  content: '',
+                  description: ''
+                });
+                setIsCreateTemplateOpen(true);
+              }}>
+                <Plus className="mr-2 h-4 w-4" /> Create Template
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-primary rounded-full" />
+            </div>
+          ) : isError ? (
+            <div className="text-center py-6 text-destructive">
+              Failed to load templates. Please try again.
+            </div>
+          ) : templates.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No templates found. Create your first template to get started.</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>File Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templates.map((template) => (
+                    <TableRow key={template.id}>
+                      <TableCell className="font-medium">{template.name}</TableCell>
+                      <TableCell>{template.fileName}</TableCell>
+                      <TableCell>{template.contentType}</TableCell>
+                      <TableCell>{template.description || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => downloadTemplate(template)}
+                          >
+                            <FileDown className="h-4 w-4" />
+                          </Button>
+                          {!readOnly && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditTemplate(template)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      <Dialog open={isCreateTemplateOpen} onOpenChange={setIsCreateTemplateOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedTemplate ? 'Edit Template' : 'Create New Template'}</DialogTitle>
+            <DialogDescription>
+              {selectedTemplate 
+                ? 'Edit an existing file template.' 
+                : 'Create a new file template for your organization.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Template Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={templateFormData.name}
+                  onChange={handleTemplateFormChange}
+                  placeholder="employee_import"
+                  disabled={!!selectedTemplate}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Unique identifier for the template. Cannot be changed after creation.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fileName">File Name</Label>
+                <Input
+                  id="fileName"
+                  name="fileName"
+                  value={templateFormData.fileName}
+                  onChange={handleTemplateFormChange}
+                  placeholder="employee_template.txt"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Name of the file when downloaded by users.
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contentType">Content Type</Label>
+              <Select 
+                value={templateFormData.contentType} 
+                onValueChange={handleContentTypeChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select content type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text/plain">Text (plain)</SelectItem>
+                  <SelectItem value="text/csv">CSV</SelectItem>
+                  <SelectItem value="text/csv; charset=utf-8">CSV with UTF-8 BOM</SelectItem>
+                  <SelectItem value="application/json">JSON</SelectItem>
+                  <SelectItem value="text/html">HTML</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Content type determines how browsers and applications will handle the file.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                name="description"
+                value={templateFormData.description}
+                onChange={handleTemplateFormChange}
+                placeholder="Template for importing employee data"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="content">Template Content</Label>
+              <textarea
+                id="content"
+                name="content"
+                value={templateFormData.content}
+                onChange={handleTemplateFormChange}
+                placeholder="Enter the template content here..."
+                className="w-full h-64 p-2 border rounded-md font-mono text-sm resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                The content of the template file. This will be the actual data downloaded by users.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateTemplateOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveTemplate}
+              disabled={!templateFormData.name || !templateFormData.fileName || !templateFormData.content}
+            >
+              {selectedTemplate ? 'Update Template' : 'Create Template'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
