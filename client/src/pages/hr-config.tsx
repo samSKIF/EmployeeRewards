@@ -568,21 +568,13 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download template using direct link with authenticated request
+  // Function to download template using direct window location approach
   const downloadTemplate = () => {
     // Get the Firebase token for authentication
     const token = localStorage.getItem("firebaseToken");
     
-    // Create a temporary link element
-    const link = document.createElement('a');
-    
-    // Set the URL with authentication token as a query parameter
-    link.href = `/api/file-templates/employee_import/download?token=${token}`;
-    
-    // Add the element to the DOM and click it
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Use direct window location navigation for the download
+    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
     
     // Show success message
     toast({
