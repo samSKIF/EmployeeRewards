@@ -571,17 +571,42 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
   const downloadTemplate = () => {
     const token = localStorage.getItem("firebaseToken");
     
-    // Create a download link to the server endpoint
-    const a = document.createElement("a");
-    a.href = `/api/hr/template/download?token=${token}`;
-    a.download = "employee_template.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    
-    toast({
-      title: "Template Downloaded",
-      description: "The CSV template has been downloaded to your device"
+    // Use fetch with proper authorization headers
+    fetch('/api/hr/template/download-test', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      // Create a download link for the blob
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'employee_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Template Downloaded",
+        description: "The CSV template has been downloaded to your device"
+      });
+    })
+    .catch(error => {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not download the template. Please try again.",
+        variant: "destructive"
+      });
     });
   };
   
