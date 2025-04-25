@@ -567,44 +567,41 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download CSV template as ZIP file
+  // Function to download CSV template directly
   const downloadTemplate = () => {
     // Use the UTF-8 BOM to help Excel interpret the encoding correctly
     const utf8BOM = "\uFEFF";
     const csvContent = utf8BOM + templateCSVContent;
     
-    // Initialize JSZip and add the CSV content as a file
-    const zip = new JSZip();
-    zip.file("employee_template.csv", csvContent);
+    // Create blob with proper CSV MIME type
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8"
+    });
     
-    // Generate the ZIP file
-    zip.generateAsync({ type: "blob" })
-      .then((zipBlob) => {
-        // Create URL and click a temporary anchor
-        const url = URL.createObjectURL(zipBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "employee_template.zip";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        // Release memory
-        URL.revokeObjectURL(url);
-        
-        toast({
-          title: "Template Downloaded",
-          description: "The template has been downloaded as a ZIP file"
-        });
-      })
-      .catch((error) => {
-        console.error("Error creating ZIP file:", error);
-        toast({
-          title: "Download Failed",
-          description: "Could not create ZIP file. Please try again.",
-          variant: "destructive"
-        });
-      });
+    // Create sanitized filename
+    const safeFilename = "employee_template.csv".replace(/[^a-z0-9.-]/gi, '_');
+    
+    // Create URL and temporary link with proper attributes
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", safeFilename);
+    link.setAttribute("type", "text/csv");
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Cleanup URL after small delay
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+    toast({
+      title: "Template Downloaded",
+      description: "The template has been downloaded as a CSV file"
+    });
   };
   
   // Function to show template content as fallback
