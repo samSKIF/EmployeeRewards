@@ -833,7 +833,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                 onClick={downloadTemplate}
                 variant="outline"
               >
-                <FileDown className="h-4 w-4 mr-2" /> Download as TXT
+                <FileDown className="h-4 w-4 mr-2" /> Download CSV Template
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">

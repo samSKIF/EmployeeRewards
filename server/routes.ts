@@ -855,10 +855,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Add security headers to avoid AV detection
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      // Set CSV content type and download headers
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
       res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Download-Options', 'noopen');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
