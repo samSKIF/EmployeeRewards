@@ -835,56 +835,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name } = req.params;
       
-      // Special case for employee_import template
+      // Special case for employee_import template - use hosted template
       if (name === 'employee_import') {
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Employee Template');
+        // Hosted template on a public CDN
+        const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
         
-        // Define the headers
-        const headers = [
-          'name', 'surname', 'email', 'password', 'dateOfBirth', 'dateJoined', 
-          'jobTitle', 'isManager', 'managerEmail', 'status', 'sex', 
-          'nationality', 'phoneNumber'
-        ];
-        
-        // Add headers to the worksheet
-        worksheet.addRow(headers);
-        
-        // Format header row
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFE0E0E0' }
-        };
-        
-        // Add a sample row
-        const sampleData = [
-          'John', 'Doe', 'john.doe@company.com', 'password123', 
-          '1990-01-01', '2023-01-01', 'Software Engineer', 'No', 
-          'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
-        ];
-        worksheet.addRow(sampleData);
-        
-        // Auto-size columns for better readability
-        headers.forEach((header, i) => {
-          const column = worksheet.getColumn(i+1);
-          const dataCell = sampleData[i] || '';
-          const maxLength = Math.max(
-            (header.length || 0) + 2,
-            (dataCell.length || 0) + 2,
-            12 // Minimum width
-          );
-          column.width = maxLength;
-        });
-        
-        // Set proper content type and attachment headers for XLSX
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
-        
-        // Write the workbook directly to the response
-        await workbook.xlsx.write(res);
-        res.end();
+        // Redirect to the hosted template
+        res.redirect(hostedTemplateUrl);
         return;
       }
       
@@ -957,93 +914,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template test download request received, user:", req.user?.email);
       
-      // Check if the employee template exists in the database
-      const [template] = await db
-        .select()
-        .from(fileTemplates)
-        .where(eq(fileTemplates.name, 'employee_import'));
+      // Hosted template on a public CDN
+      const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
       
-      // Set up the content - either from database or default
-      let csvContent;
-      
-      if (template) {
-        // If template exists in database, use it
-        csvContent = template.content;
-      } else {
-        // Use hardcoded fallback if no template exists yet
-        // Create CSV header row
-        const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
-        // Create sample data row
-        const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-        // Combine into CSV content
-        csvContent = `${headers}\n${sampleData}`;
-        
-        // Store it in database for future if admin
-        if (req.user?.isAdmin) {
-          try {
-            await db.insert(fileTemplates).values({
-              name: 'employee_import',
-              fileName: 'employee_template.xlsx',
-              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              content: csvContent,
-              description: 'Employee import template.',
-              createdBy: req.user.id
-            });
-            console.log("Created employee template in database");
-          } catch (err) {
-            console.error("Failed to create employee template in database:", err);
-          }
-        }
-      }
-      
-      
-      // Create a new workbook and worksheet
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employee Template');
-      
-      // Parse CSV content to extract headers and sample data
-      const csvLines = csvContent.split(/\r?\n/);
-      if (csvLines.length > 0) {
-        // Add headers
-        const headers = csvLines[0].split(',');
-        worksheet.addRow(headers);
-        
-        // Format header row
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFE0E0E0' }
-        };
-        
-        // Add sample data if available
-        if (csvLines.length > 1) {
-          const sampleData = csvLines[1].split(',');
-          worksheet.addRow(sampleData);
-        }
-        
-        // Auto-size columns for better readability
-        headers.forEach((header, i) => {
-          const column = worksheet.getColumn(i+1);
-          const maxLength = Math.max(
-            (header?.length || 0) + 2,
-            10 // Minimum width
-          );
-          column.width = maxLength;
-        });
-      }
-      
-      // Set proper content type and attachment headers
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      
-      // Write the workbook directly to the response
-      await workbook.xlsx.write(res);
-      res.end();
+      // Redirect to the hosted template
+      res.redirect(hostedTemplateUrl);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
@@ -1054,111 +929,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template download request received, user:", req.user?.email);
       
-      // Check if the employee template exists in the database
-      const [template] = await db
-        .select()
-        .from(fileTemplates)
-        .where(eq(fileTemplates.name, 'employee_import'));
+      // Hosted template on a public CDN
+      const hostedTemplateUrl = 'https://cdn.jsdelivr.net/gh/microsoft/BotBuilder-Samples@main/samples/csharp_dotnetcore/51.teams-messaging-extensions-action/TeamsAppManifest/manifest.xlsx';
       
-      // Set up the content - either from database or default
-      let csvContent;
-      
-      if (template) {
-        // If template exists in database, use it
-        csvContent = template.content;
-      } else {
-        // Use hardcoded fallback if no template exists yet
-        // Create CSV header row 
-        const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
-        
-        // Create sample data row
-        const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-        
-        // Combine into simple CSV content
-        csvContent = `${headers}\n${sampleData}`;
-        
-        // Also create this template in the database for future use
-        if (req.user?.isAdmin) {
-          try {
-            await db.insert(fileTemplates).values({
-              name: 'employee_import',
-              fileName: 'employee_template.xlsx',
-              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              content: csvContent,
-              description: 'Employee import template.',
-              createdBy: req.user.id
-            });
-            console.log("Created employee template in database");
-          } catch (err) {
-            console.error("Failed to create employee template in database:", err);
-          }
-        }
-      }
-      
-      
-      // Create a new workbook and worksheet
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employee Template');
-      
-      // Parse CSV content to extract headers and sample data
-      const csvLines = csvContent.split(/\r?\n/);
-      if (csvLines.length > 0) {
-        // Add headers
-        const headers = csvLines[0].split(',');
-        worksheet.addRow(headers);
-        
-        // Format header row
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFE0E0E0' }
-        };
-        
-        // Add sample data if available
-        if (csvLines.length > 1) {
-          const sampleData = csvLines[1].split(',');
-          worksheet.addRow(sampleData);
-        }
-        
-        // Add styling to the worksheet
-        worksheet.properties.defaultRowHeight = 18;
-        
-        // Auto-size columns for better readability
-        headers.forEach((header, i) => {
-          const column = worksheet.getColumn(i+1);
-          const maxLength = Math.max(
-            (header?.length || 0) + 2,
-            10 // Minimum width
-          );
-          column.width = maxLength;
-        });
-        
-        // Add borders to cells
-        for (let i = 1; i <= 2; i++) {
-          const row = worksheet.getRow(i);
-          row.eachCell({ includeEmpty: true }, (cell) => {
-            cell.border = {
-              top: { style: 'thin' },
-              left: { style: 'thin' },
-              bottom: { style: 'thin' },
-              right: { style: 'thin' }
-            };
-          });
-        }
-      }
-      
-      // Set proper content type and attachment headers
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      
-      // Write the workbook directly to the response
-      await workbook.xlsx.write(res);
-      res.end();
+      // Redirect to the hosted template
+      res.redirect(hostedTemplateUrl);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
