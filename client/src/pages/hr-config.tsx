@@ -804,42 +804,36 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
         </DialogContent>
       </Dialog>
       
-      {/* Template Display Dialog */}
-      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-        <DialogContent className="sm:max-w-md">
+      {/* Bulk Upload Dialog */}
+      <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Employee Template Format</DialogTitle>
+            <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Copy this template and paste it into a spreadsheet application
+              Upload multiple employees at once using a CSV file
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="bg-muted p-3 rounded-md overflow-auto max-h-[300px]">
-              <pre className="text-xs whitespace-pre-wrap">{templateCSVContent}</pre>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button 
-                onClick={() => {
-                  navigator.clipboard.writeText(templateCSVContent);
-                  toast({
-                    title: "Template copied",
-                    description: "The template has been copied to your clipboard"
-                  });
-                }}
-              >
-                <FileUp className="h-4 w-4 mr-2" /> Copy to Clipboard
-              </Button>
-              <Button 
-                onClick={downloadTemplate}
-                variant="outline"
-              >
-                <FileDown className="h-4 w-4 mr-2" /> Download CSV Template
-              </Button>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              <p>Instructions:</p>
-              <ol className="list-decimal pl-4 mt-2 space-y-1">
-                <li>Download the TXT file template</li>
+            <div className="flex flex-col items-center gap-4">
+              <div>
+                <Button variant="outline" onClick={downloadTemplate}>
+                  <FileDown className="mr-2 h-4 w-4" /> Download Template
+                </Button>
+              </div>
+              
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Fill in the template with your employee data and upload it here
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={bulkUploadMutation.isPending}
+                >
+                  <FileUp className="mr-2 h-4 w-4" />
+                  {bulkUploadMutation.isPending ? "Uploading..." : "Choose File (.csv)"}
+                </Button>
+              </div>
                 <li>Open the TXT file in a spreadsheet application like Excel or Google Sheets</li>
                 <li>Fill in your employee data</li>
                 <li>Save as CSV file</li>

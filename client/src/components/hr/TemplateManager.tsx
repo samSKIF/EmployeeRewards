@@ -189,14 +189,14 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
   };
 
   // Handle download template using native browser download
-  const handleDownloadTemplate = (templateName: string) => {
+  const handleDownloadTemplate = () => {
     const token = localStorage.getItem("firebaseToken");
-    const downloadUrl = `/api/file-templates/${templateName}/download?token=${encodeURIComponent(token)}`;
+    const downloadUrl = `/api/hr/template/download-test?token=${encodeURIComponent(token)}`;
     window.location.href = downloadUrl;
 
     toast({
       title: "Download Started",
-      description: `Download of ${templateName} initiated`
+      description: `Download of all templates initiated`
     });
   };
 
@@ -243,13 +243,6 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadTemplate(template.name)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
                         {!readOnly && (
                           <Button
                             variant="outline"
@@ -274,6 +267,9 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
             <Plus className="mr-2 h-4 w-4" /> Add Template
           </Button>
         )}
+        <Button onClick={handleDownloadTemplate}>
+          <Download className="mr-2 h-4 w-4" /> Download All
+        </Button>
       </CardFooter>
 
       {/* Add Template Dialog */}
