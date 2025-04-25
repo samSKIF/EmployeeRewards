@@ -815,7 +815,7 @@ John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Enginee
                 onClick={downloadTemplate}
                 variant="outline"
               >
-                <FileDown className="h-4 w-4 mr-2" /> Download CSV Template
+                <FileDown className="h-4 w-4 mr-2" /> Download Excel Template
               </Button>
             </div>
             <div className="text-sm border-l-4 border-blue-200 pl-4 py-2 bg-blue-50 rounded-sm">
