@@ -843,9 +843,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
       
-      // Set proper content type and attachment headers
-      res.setHeader('Content-Type', template.contentType);
+      // Add BOM and ensure clean content
+      const csvContent = `\uFEFF${template.content}`;
+      
+      // Set proper content type and attachment headers with charset
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
+      res.setHeader('Content-Length', Buffer.byteLength(csvContent));
       
       // Basic security headers
       res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -853,8 +857,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
       
-      // Send the template content
-      res.send(template.content);
+      // Send the template content with BOM
+      res.send(csvContent);
     } catch (error: any) {
       console.error("Error downloading file template:", error);
       res.status(500).json({ message: error.message || "Failed to download file template" });
@@ -905,9 +909,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Set headers for CSV download - using text/csv with special headers
-      res.setHeader('Content-Type', 'text/csv');
+      // Add BOM for UTF-8 encoding
+      const csvContentWithBOM = `\uFEFF${csvContent}`;
+      
+      // Set headers for CSV download with proper encoding and content length
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+      res.setHeader('Content-Length', Buffer.byteLength(csvContentWithBOM));
       res.setHeader('Content-Description', 'File Transfer');
       res.setHeader('Content-Transfer-Encoding', 'binary');
       res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -915,8 +923,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
       res.setHeader('Referrer-Policy', 'no-referrer');
       
-      // Send the CSV directly as text
-      res.send(csvContent);
+      // Send the CSV with BOM
+      res.send(csvContentWithBOM);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
@@ -962,20 +970,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Combine into simple CSV content
         const csvContent = `${headers}\n${sampleData}`;
         
-        // Create a buffer for the content
-        const contentBuffer = Buffer.from(csvContent);
+        // Add BOM for UTF-8 encoding and ensure clean content
+        const csvContentWithBOM = `\uFEFF${csvContent}`;
         
-        // Set headers to make it download as a binary file to bypass antivirus
-        res.setHeader('Content-Type', 'application/octet-stream');
+        // Set headers with proper encoding and content length
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
         res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
-        res.setHeader('Content-Length', contentBuffer.length);
+        res.setHeader('Content-Length', Buffer.byteLength(csvContentWithBOM));
         res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'private, no-transform');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
         
-        // Send the buffer directly
-        res.send(contentBuffer);
+        // Send the CSV with BOM
+        res.send(csvContentWithBOM);
         
         // Also create this template in the database for future use
         if (req.user?.isAdmin) {
@@ -983,7 +991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await db.insert(fileTemplates).values({
               name: 'employee_import',
               fileName: 'employee_template.csv',
-              contentType: 'application/octet-stream',
+              contentType: 'text/csv; charset=utf-8',
               content: csvContent,
               description: 'Employee import template in CSV format.',
               createdBy: req.user.id
