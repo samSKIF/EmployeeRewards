@@ -945,8 +945,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Import ExcelJS for XLSX generation
-      const ExcelJS = require('exceljs');
       
       // Create a new workbook and worksheet
       const workbook = new ExcelJS.Workbook();
@@ -1046,8 +1044,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Import ExcelJS for XLSX generation
-      const ExcelJS = require('exceljs');
       
       // Create a new workbook and worksheet
       const workbook = new ExcelJS.Workbook();
