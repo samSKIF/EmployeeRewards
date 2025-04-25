@@ -855,11 +855,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Set CSV content type and download headers
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+      // Set proper content type and attachment headers
+      res.setHeader('Content-Type', template.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-Download-Options', 'noopen');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');

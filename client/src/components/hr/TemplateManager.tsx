@@ -54,15 +54,15 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
     content: "",
     description: ""
   });
-  
+
   const { toast } = useToast();
-  
+
   // Fetch templates
   const { data: templates = [], isLoading } = useQuery<FileTemplate[]>({
     queryKey: ["/api/file-templates"],
     enabled: !readOnly, // Only fetch if not in read-only mode
   });
-  
+
   // Create template mutation
   const createTemplateMutation = useMutation({
     mutationFn: async (template: Omit<FileTemplate, "id" | "createdAt" | "updatedAt" | "createdBy">) => {
@@ -74,12 +74,12 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
         },
         body: JSON.stringify(template)
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to create template");
       }
-      
+
       return res.json();
     },
     onSuccess: () => {
@@ -99,7 +99,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       });
     }
   });
-  
+
   // Update template mutation
   const updateTemplateMutation = useMutation({
     mutationFn: async (template: Partial<FileTemplate> & { name: string }) => {
@@ -111,12 +111,12 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
         },
         body: JSON.stringify(template)
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to update template");
       }
-      
+
       return res.json();
     },
     onSuccess: () => {
@@ -137,7 +137,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       });
     }
   });
-  
+
   // Reset form
   const resetForm = () => {
     setTemplateForm({
@@ -148,7 +148,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       description: ""
     });
   };
-  
+
   // Handle form input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -157,13 +157,13 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       [name]: value
     }));
   };
-  
+
   // Handle form submission for creating a template
   const handleCreateTemplate = (e: React.FormEvent) => {
     e.preventDefault();
     createTemplateMutation.mutate(templateForm);
   };
-  
+
   // Handle form submission for updating a template
   const handleUpdateTemplate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,7 +174,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       });
     }
   };
-  
+
   // Handle edit template
   const handleEditTemplate = (template: FileTemplate) => {
     setCurrentTemplate(template);
@@ -187,61 +187,19 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
     });
     setIsEditDialogOpen(true);
   };
-  
-  // Handle download template
-  const handleDownloadTemplate = async (templateName: string) => {
-    try {
-      const res = await fetch(`/api/file-templates/${templateName}/download`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
-        }
-      });
-      
-      if (!res.ok) {
-        throw new Error("Failed to download template");
-      }
-      
-      // Get filename from Content-Disposition header or use default
-      const contentDisposition = res.headers.get("Content-Disposition");
-      let filename = "template.txt";
-      
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
-        }
-      }
-      
-      // If it's a CSV file, ensure it has .txt extension to avoid virus detection
-      if (filename.endsWith(".csv")) {
-        filename = filename.replace(".csv", ".txt");
-      }
-      
-      const blob = await res.blob();
-      
-      // Create download link
-      const downloadUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(downloadUrl);
-      
-      toast({
-        title: "Success",
-        description: "Template downloaded successfully. Note: CSV files are saved with .txt extension to avoid virus detection, but the content is valid CSV format.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to download template",
-        variant: "destructive"
-      });
-    }
+
+  // Handle download template using native browser download
+  const handleDownloadTemplate = (templateName: string) => {
+    const token = localStorage.getItem("firebaseToken");
+    const downloadUrl = `/api/file-templates/${templateName}/download?token=${encodeURIComponent(token)}`;
+    window.location.href = downloadUrl;
+
+    toast({
+      title: "Download Started",
+      description: `Download of ${templateName} initiated`
+    });
   };
-  
+
   return (
     <Card>
       <CardHeader>
