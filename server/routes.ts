@@ -829,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Download file template content
+  // Download file template content as Excel XLSX
   app.get("/api/file-templates/:name/download", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       const { name } = req.params;
@@ -843,13 +843,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Template not found" });
       }
       
-      // Add BOM and ensure clean content
-      const csvContent = `\uFEFF${template.content}`;
+      // Import ExcelJS for XLSX generation
+      const ExcelJS = require('exceljs');
       
-      // Set proper content type and attachment headers with charset
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
-      res.setHeader('Content-Length', Buffer.byteLength(csvContent));
+      // Create a new workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Template');
+      
+      // Parse CSV content to extract headers and sample data
+      const csvLines = template.content.split(/\r?\n/);
+      if (csvLines.length > 0) {
+        // Add headers
+        const headers = csvLines[0].split(',');
+        worksheet.addRow(headers);
+        
+        // Format header row
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE0E0E0' }
+        };
+        
+        // Add sample data if available
+        if (csvLines.length > 1) {
+          const sampleData = csvLines[1].split(',');
+          worksheet.addRow(sampleData);
+        }
+        
+        // Auto-size columns for better readability
+        headers.forEach((header, i) => {
+          const column = worksheet.getColumn(i+1);
+          const maxLength = Math.max(
+            (header?.length || 0) + 2,
+            10 // Minimum width
+          );
+          column.width = maxLength;
+        });
+      }
+      
+      // Set proper content type and attachment headers for XLSX
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${name}.xlsx"`);
       
       // Basic security headers
       res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -857,15 +892,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
       
-      // Send the template content with BOM
-      res.send(csvContent);
+      // Write the workbook directly to the response
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error: any) {
       console.error("Error downloading file template:", error);
       res.status(500).json({ message: error.message || "Failed to download file template" });
     }
   });
   
-  // Fallback for backwards compatibility
+  // Fallback for backwards compatibility using Excel
   app.get("/api/hr/template/download-test", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       console.log("Template test download request received, user:", req.user?.email);
@@ -876,7 +912,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(fileTemplates)
         .where(eq(fileTemplates.name, 'employee_import'));
       
-      // Set up the CSV content - either from database or default
+      // Set up the content - either from database or default
       let csvContent;
       
       if (template) {
@@ -884,7 +920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         csvContent = template.content;
       } else {
         // Use hardcoded fallback if no template exists yet
-        // Create CSV header row (no BOM)
+        // Create CSV header row
         const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
         // Create sample data row
         const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
@@ -896,10 +932,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             await db.insert(fileTemplates).values({
               name: 'employee_import',
-              fileName: 'employee_template.csv',
-              contentType: 'text/csv',
+              fileName: 'employee_template.xlsx',
+              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               content: csvContent,
-              description: 'Employee import template in CSV format.',
+              description: 'Employee import template.',
               createdBy: req.user.id
             });
             console.log("Created employee template in database");
@@ -909,22 +945,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Add BOM for UTF-8 encoding
-      const csvContentWithBOM = `\uFEFF${csvContent}`;
+      // Import ExcelJS for XLSX generation
+      const ExcelJS = require('exceljs');
       
-      // Set headers for CSV download with proper encoding and content length
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
-      res.setHeader('Content-Length', Buffer.byteLength(csvContentWithBOM));
-      res.setHeader('Content-Description', 'File Transfer');
-      res.setHeader('Content-Transfer-Encoding', 'binary');
+      // Create a new workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Template');
+      
+      // Parse CSV content to extract headers and sample data
+      const csvLines = csvContent.split(/\r?\n/);
+      if (csvLines.length > 0) {
+        // Add headers
+        const headers = csvLines[0].split(',');
+        worksheet.addRow(headers);
+        
+        // Format header row
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE0E0E0' }
+        };
+        
+        // Add sample data if available
+        if (csvLines.length > 1) {
+          const sampleData = csvLines[1].split(',');
+          worksheet.addRow(sampleData);
+        }
+        
+        // Auto-size columns for better readability
+        headers.forEach((header, i) => {
+          const column = worksheet.getColumn(i+1);
+          const maxLength = Math.max(
+            (header?.length || 0) + 2,
+            10 // Minimum width
+          );
+          column.width = maxLength;
+        });
+      }
+      
+      // Set proper content type and attachment headers
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-Download-Options', 'noopen');
-      res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-      res.setHeader('Referrer-Policy', 'no-referrer');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       
-      // Send the CSV with BOM
-      res.send(csvContentWithBOM);
+      // Write the workbook directly to the response
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
@@ -941,59 +1011,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(fileTemplates)
         .where(eq(fileTemplates.name, 'employee_import'));
       
+      // Set up the content - either from database or default
+      let csvContent;
+      
       if (template) {
         // If template exists in database, use it
-        const fileName = "employee_template.csv";
-        
-        // Create a buffer for the content to serve as binary
-        const contentBuffer = Buffer.from(template.content);
-        
-        // Set headers to make it download as a binary file to bypass antivirus
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-        res.setHeader('Content-Length', contentBuffer.length);
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'private, no-transform');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        
-        // Send the buffer directly
-        res.send(contentBuffer);
+        csvContent = template.content;
       } else {
         // Use hardcoded fallback if no template exists yet
-        // Create CSV header row (no BOM)
+        // Create CSV header row 
         const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
         
         // Create sample data row
         const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
         
         // Combine into simple CSV content
-        const csvContent = `${headers}\n${sampleData}`;
-        
-        // Add BOM for UTF-8 encoding and ensure clean content
-        const csvContentWithBOM = `\uFEFF${csvContent}`;
-        
-        // Set headers with proper encoding and content length
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
-        res.setHeader('Content-Length', Buffer.byteLength(csvContentWithBOM));
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        
-        // Send the CSV with BOM
-        res.send(csvContentWithBOM);
+        csvContent = `${headers}\n${sampleData}`;
         
         // Also create this template in the database for future use
         if (req.user?.isAdmin) {
           try {
             await db.insert(fileTemplates).values({
               name: 'employee_import',
-              fileName: 'employee_template.csv',
-              contentType: 'text/csv; charset=utf-8',
+              fileName: 'employee_template.xlsx',
+              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               content: csvContent,
-              description: 'Employee import template in CSV format.',
+              description: 'Employee import template.',
               createdBy: req.user.id
             });
             console.log("Created employee template in database");
@@ -1002,6 +1045,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
+      
+      // Import ExcelJS for XLSX generation
+      const ExcelJS = require('exceljs');
+      
+      // Create a new workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employee Template');
+      
+      // Parse CSV content to extract headers and sample data
+      const csvLines = csvContent.split(/\r?\n/);
+      if (csvLines.length > 0) {
+        // Add headers
+        const headers = csvLines[0].split(',');
+        worksheet.addRow(headers);
+        
+        // Format header row
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE0E0E0' }
+        };
+        
+        // Add sample data if available
+        if (csvLines.length > 1) {
+          const sampleData = csvLines[1].split(',');
+          worksheet.addRow(sampleData);
+        }
+        
+        // Add styling to the worksheet
+        worksheet.properties.defaultRowHeight = 18;
+        
+        // Auto-size columns for better readability
+        headers.forEach((header, i) => {
+          const column = worksheet.getColumn(i+1);
+          const maxLength = Math.max(
+            (header?.length || 0) + 2,
+            10 // Minimum width
+          );
+          column.width = maxLength;
+        });
+        
+        // Add borders to cells
+        for (let i = 1; i <= 2; i++) {
+          const row = worksheet.getRow(i);
+          row.eachCell({ includeEmpty: true }, (cell) => {
+            cell.border = {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            };
+          });
+        }
+      }
+      
+      // Set proper content type and attachment headers
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Write the workbook directly to the response
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
