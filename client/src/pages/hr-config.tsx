@@ -573,12 +573,32 @@ name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEma
 "John","Doe","john.doe@company.com","password123","1990-01-01","2023-01-01","Software Engineer","No","manager@company.com","active","male","American","+1 (555) 123-4567"`;
 
   // Function to download CSV template directly
-  const downloadTemplate = () => {
-    // Download directly from server endpoint
-    window.location.href = '/api/hr/template/download';
-    
-    toast({
-      title: "Template Downloaded",
+  const downloadTemplate = async () => {
+    try {
+      // Get auth token
+      const token = localStorage.getItem('firebaseToken') || localStorage.getItem('token');
+      
+      const response = await fetch('/api/hr/template/download', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to download template');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'employee_template.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Template Downloaded",
       description: "The template has been downloaded as a CSV file"
     });
   };
