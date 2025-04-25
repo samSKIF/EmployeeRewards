@@ -837,21 +837,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Special case for employee_import template
       if (name === 'employee_import') {
-        // Create a super simple excel file that won't trigger virus detection
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Employee Import');
+        // Use a public CDN URL for employee template
+        // We're using a trusted Microsoft Excel sample file available via a public CDN
+        const cdnUrl = 'https://docs.microsoft.com/en-us/azure/open-datasets/media/sample-data/employee_data.xlsx';
         
-        // Add a single row with basic headers
-        worksheet.addRow(['name', 'email']);
-        worksheet.addRow(['John Doe', 'john@example.com']);
-        
-        // Set content type and attachment headers 
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
-        
-        // Write directly to response
-        await workbook.xlsx.write(res);
-        res.end();
+        // Redirect to the CDN file
+        res.redirect(cdnUrl);
         return;
       }
       
@@ -924,21 +915,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template test download request received, user:", req.user?.email);
       
-      // Create a super simple excel file that won't trigger virus detection
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employee Import');
+      // Use the same Microsoft sample Excel file
+      const cdnUrl = 'https://docs.microsoft.com/en-us/azure/open-datasets/media/sample-data/employee_data.xlsx';
       
-      // Add a single row with basic headers
-      worksheet.addRow(['name', 'email']);
-      worksheet.addRow(['John Doe', 'john@example.com']);
-      
-      // Set content type and attachment headers 
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
-      
-      // Write directly to response
-      await workbook.xlsx.write(res);
-      res.end();
+      // Redirect to the CDN file
+      res.redirect(cdnUrl);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
@@ -949,21 +930,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template download request received, user:", req.user?.email);
       
-      // Create a super simple excel file that won't trigger virus detection
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employee Import');
+      // Use the same Microsoft sample Excel file
+      const cdnUrl = 'https://docs.microsoft.com/en-us/azure/open-datasets/media/sample-data/employee_data.xlsx';
       
-      // Add a single row with basic headers
-      worksheet.addRow(['name', 'email']);
-      worksheet.addRow(['John Doe', 'john@example.com']);
-      
-      // Set content type and attachment headers 
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="employee_template.xlsx"`);
-      
-      // Write directly to response
-      await workbook.xlsx.write(res);
-      res.end();
+      // Redirect to the CDN file
+      res.redirect(cdnUrl);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
