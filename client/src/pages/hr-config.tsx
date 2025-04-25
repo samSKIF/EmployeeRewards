@@ -568,46 +568,46 @@ const EmployeeManagement = () => {
   const templateCSVContent = `name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber
 John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567`;
 
-  // Function to download CSV template from server
+  // Function to generate and download CSV directly from client-side
   const downloadTemplate = () => {
-    const token = localStorage.getItem("firebaseToken");
+    // Default employee template CSV content
+    const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
+    const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
+    const csvContent = `${headers}\n${sampleData}`;
     
-    // Use fetch with proper authorization headers
-    fetch('/api/hr/template/download-test', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-      }
-      return response.blob();
-    })
-    .then(blob => {
-      // Create a download link for the blob
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'employee_template.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+    // Create CSV blob with proper encoding
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Check if browser supports download attribute
+    if (navigator.msSaveBlob) { // IE 10+
+      navigator.msSaveBlob(blob, "employee_template.csv");
+    } else {
+      // Create a download link
+      const link = document.createElement('a');
       
-      toast({
-        title: "Template Downloaded",
-        description: "The template has been downloaded as a TXT file to your device"
-      });
-    })
-    .catch(error => {
-      console.error('Download error:', error);
-      toast({
-        title: "Download Failed",
-        description: "Could not download the template. Please try again.",
-        variant: "destructive"
-      });
+      // Create object URL
+      const url = URL.createObjectURL(blob);
+      
+      // Setup link properties
+      link.href = url;
+      link.download = "employee_template.csv";
+      link.style.visibility = 'hidden';
+      
+      // Add link to DOM, click it, and remove it
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL object
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+    
+    // Show success message
+    toast({
+      title: "Template Downloaded",
+      description: "Employee CSV template has been downloaded to your device"
     });
   };
   
