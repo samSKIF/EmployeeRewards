@@ -11,7 +11,8 @@ import {
   users, insertUserSchema, 
   products, insertProductSchema,
   employees, insertEmployeeSchema,
-  brandingSettings, insertBrandingSettingsSchema
+  brandingSettings, insertBrandingSettingsSchema,
+  fileTemplates, insertFileTemplateSchema, FileTemplate
 } from "@shared/schema";
 import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
@@ -687,58 +688,248 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Endpoint for downloading employee template CSV
   // Alternative endpoint without admin check for testing purposes
-  app.get("/api/hr/template/download-test", verifyToken, (req: AuthenticatedRequest, res) => {
+  // Create or update file template
+  app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { name, fileName, contentType, content, description } = req.body;
+      
+      if (!name || !fileName || !contentType || !content) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Check if template with this name already exists
+      const [existingTemplate] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, name));
+      
+      let template;
+      
+      if (existingTemplate) {
+        // Update existing template
+        const [updatedTemplate] = await db
+          .update(fileTemplates)
+          .set({
+            fileName,
+            contentType,
+            content,
+            description,
+            updatedAt: new Date(),
+            createdBy: req.user.id
+          })
+          .where(eq(fileTemplates.name, name))
+          .returning();
+        
+        template = updatedTemplate;
+      } else {
+        // Create new template
+        const [newTemplate] = await db
+          .insert(fileTemplates)
+          .values({
+            name,
+            fileName,
+            contentType,
+            content,
+            description,
+            createdBy: req.user.id
+          })
+          .returning();
+        
+        template = newTemplate;
+      }
+      
+      res.status(200).json(template);
+    } catch (error: any) {
+      console.error("Error saving file template:", error);
+      res.status(500).json({ message: error.message || "Failed to save file template" });
+    }
+  });
+  
+  // Get file template by name
+  app.get("/api/file-templates/:name", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { name } = req.params;
+      
+      const [template] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, name));
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      res.status(200).json(template);
+    } catch (error: any) {
+      console.error("Error retrieving file template:", error);
+      res.status(500).json({ message: error.message || "Failed to retrieve file template" });
+    }
+  });
+  
+  // Get all file templates
+  app.get("/api/file-templates", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const templates = await db
+        .select()
+        .from(fileTemplates)
+        .orderBy(fileTemplates.name);
+      
+      res.status(200).json(templates);
+    } catch (error: any) {
+      console.error("Error retrieving file templates:", error);
+      res.status(500).json({ message: error.message || "Failed to retrieve file templates" });
+    }
+  });
+  
+  // Download file template content
+  app.get("/api/file-templates/:name/download", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { name } = req.params;
+      
+      const [template] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, name));
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', template.contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
+      
+      // Send the template content
+      res.send(template.content);
+    } catch (error: any) {
+      console.error("Error downloading file template:", error);
+      res.status(500).json({ message: error.message || "Failed to download file template" });
+    }
+  });
+  
+  // Fallback for backwards compatibility
+  app.get("/api/hr/template/download-test", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       console.log("Template test download request received, user:", req.user?.email);
       
-      // Create CSV header row (no BOM)
-      const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
+      // Check if the employee template exists in the database
+      const [template] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, 'employee_import'));
       
-      // Create sample data row
-      const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-      
-      // Combine into simple CSV content
-      const csvContent = `${headers}\n${sampleData}`;
-      
-      // Set simple headers for text file download
-      res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.txt"');
-      
-      // Send the CSV file as text
-      res.send(csvContent);
+      if (template) {
+        // If template exists in database, use it
+        res.setHeader('Content-Type', template.contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
+        res.send(template.content);
+      } else {
+        // Use hardcoded fallback if no template exists yet
+        // Create CSV header row (no BOM)
+        const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
+        
+        // Create sample data row
+        const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
+        
+        // Combine into simple CSV content
+        const csvContent = `${headers}\n${sampleData}`;
+        
+        // Set simple headers for text file download
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', 'attachment; filename="employee_template.txt"');
+        
+        // Send the CSV file as text
+        res.send(csvContent);
+        
+        // Also create this template in the database for future use if admin
+        if (req.user?.isAdmin) {
+          try {
+            await db.insert(fileTemplates).values({
+              name: 'employee_import',
+              fileName: 'employee_template.txt',
+              contentType: 'text/plain',
+              content: csvContent,
+              description: 'Employee import template in CSV format.',
+              createdBy: req.user.id
+            });
+            console.log("Created employee template in database");
+          } catch (err) {
+            console.error("Failed to create employee template in database:", err);
+          }
+        }
+      }
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
     }
   });
   
-  app.get("/api/hr/template/download", verifyToken, verifyAdmin, (req: AuthenticatedRequest, res) => {
+  app.get("/api/hr/template/download", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       console.log("Template download request received, user:", req.user?.email);
       
-      // Add UTF-8 BOM to help Excel interpret the encoding correctly
-      const utf8BOM = "\uFEFF";
+      // Check if the employee template exists in the database
+      const [template] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, 'employee_import'));
       
-      // Create CSV header row
-      const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
-      
-      // Create sample data row
-      const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
-      
-      // Combine into CSV content with BOM
-      const csvContent = `${utf8BOM}${headers}\n${sampleData}`;
-      
-      // Set enhanced headers for file download to avoid antivirus detection
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
-      res.setHeader('Content-Length', Buffer.byteLength(csvContent));
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      
-      // Send the CSV file with BOM
-      res.send(csvContent);
+      if (template) {
+        // If template exists in database, use it
+        res.setHeader('Content-Type', template.contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${template.fileName}"`);
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.send(template.content);
+      } else {
+        // Use hardcoded fallback if no template exists yet
+        // Add UTF-8 BOM to help Excel interpret the encoding correctly
+        const utf8BOM = "\uFEFF";
+        
+        // Create CSV header row
+        const headers = "name,surname,email,password,dateOfBirth,dateJoined,jobTitle,isManager,managerEmail,status,sex,nationality,phoneNumber";
+        
+        // Create sample data row
+        const sampleData = "John,Doe,john.doe@company.com,password123,1990-01-01,2023-01-01,Software Engineer,No,manager@company.com,active,male,American,+1 (555) 123-4567";
+        
+        // Combine into CSV content with BOM
+        const csvContent = `${utf8BOM}${headers}\n${sampleData}`;
+        
+        // Set enhanced headers for file download to avoid antivirus detection
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+        res.setHeader('Content-Length', Buffer.byteLength(csvContent));
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
+        // Send the CSV file with BOM
+        res.send(csvContent);
+        
+        // Also create this template in the database for future use
+        if (req.user?.isAdmin) {
+          try {
+            await db.insert(fileTemplates).values({
+              name: 'employee_import',
+              fileName: 'employee_template.csv',
+              contentType: 'text/csv; charset=utf-8',
+              content: csvContent,
+              description: 'Employee import template in CSV format with UTF-8 BOM for Excel.',
+              createdBy: req.user.id
+            });
+            console.log("Created employee template in database (CSV version)");
+          } catch (err) {
+            console.error("Failed to create employee template in database:", err);
+          }
+        }
+      }
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
