@@ -5,6 +5,7 @@ import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import MainLayout from "@/components/layout/MainLayout";
+import { TemplateManager } from "@/components/hr/TemplateManager";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1189,7 +1190,8 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
   );
 };
 
-const TemplateManager = ({ readOnly = false }: { readOnly?: boolean }) => {
+// Legacy template manager - keeping for reference
+const LegacyTemplateManager = ({ readOnly = false }: { readOnly?: boolean }) => {
   const { toast } = useToast();
   const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<FileTemplate | null>(null);

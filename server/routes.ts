@@ -785,6 +785,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Update existing file template
+  app.patch("/api/file-templates/:name", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { name } = req.params;
+      const { fileName, contentType, content, description } = req.body;
+      
+      // Check if template exists
+      const [existingTemplate] = await db
+        .select()
+        .from(fileTemplates)
+        .where(eq(fileTemplates.name, name));
+      
+      if (!existingTemplate) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      // Update only provided fields
+      const updateData: Partial<typeof fileTemplates.$inferInsert> = {
+        updatedAt: new Date()
+      };
+      
+      if (fileName !== undefined) updateData.fileName = fileName;
+      if (contentType !== undefined) updateData.contentType = contentType;
+      if (content !== undefined) updateData.content = content;
+      if (description !== undefined) updateData.description = description;
+      
+      // Update template
+      const [updatedTemplate] = await db
+        .update(fileTemplates)
+        .set(updateData)
+        .where(eq(fileTemplates.name, name))
+        .returning();
+      
+      res.status(200).json(updatedTemplate);
+    } catch (error: any) {
+      console.error("Error updating file template:", error);
+      res.status(500).json({ message: error.message || "Failed to update file template" });
+    }
+  });
+
   // Download file template content
   app.get("/api/file-templates/:name/download", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
