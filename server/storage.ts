@@ -13,7 +13,11 @@ import {
   recognitions, Recognition, InsertRecognition,
   conversations, Conversation, InsertConversation,
   conversationParticipants, ConversationParticipant, InsertConversationParticipant,
-  messages, Message, InsertMessage
+  messages, Message, InsertMessage,
+  surveys, Survey, InsertSurvey,
+  surveyQuestions, SurveyQuestion, InsertSurveyQuestion,
+  surveyResponses, SurveyResponse, InsertSurveyResponse,
+  surveyAnswers, SurveyAnswer, InsertSurveyAnswer
 } from "@shared/schema";
 import { eq, ne, desc, and, or, isNull, sql, count, sum, gt, lt, asc, inArray } from "drizzle-orm";
 import { hash, compare } from "bcrypt";

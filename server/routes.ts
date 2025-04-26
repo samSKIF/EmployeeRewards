@@ -1759,6 +1759,226 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Survey API routes
+  app.get("/api/surveys", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { status } = req.query;
+      const surveys = await storage.getSurveys(status as string);
+      res.json(surveys);
+    } catch (error) {
+      console.error("Error fetching surveys:", error);
+      res.status(500).json({ message: "Failed to fetch surveys" });
+    }
+  });
+
+  app.get("/api/surveys/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.getSurveyById(parseInt(id));
+      
+      if (!survey) {
+        return res.status(404).json({ message: "Survey not found" });
+      }
+      
+      res.json(survey);
+    } catch (error) {
+      console.error(`Error fetching survey ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to fetch survey" });
+    }
+  });
+
+  app.post("/api/surveys", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const surveyData = {
+        ...req.body,
+        createdBy: req.user?.id
+      };
+      
+      const survey = await storage.createSurvey(surveyData);
+      res.status(201).json(survey);
+    } catch (error) {
+      console.error("Error creating survey:", error);
+      res.status(500).json({ message: "Failed to create survey" });
+    }
+  });
+
+  app.put("/api/surveys/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.updateSurvey(parseInt(id), req.body);
+      res.json(survey);
+    } catch (error) {
+      console.error(`Error updating survey ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to update survey" });
+    }
+  });
+
+  app.delete("/api/surveys/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.deleteSurvey(parseInt(id));
+      
+      if (!result) {
+        return res.status(404).json({ message: "Survey not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error(`Error deleting survey ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to delete survey" });
+    }
+  });
+
+  app.post("/api/surveys/:id/publish", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.publishSurvey(parseInt(id));
+      res.json(survey);
+    } catch (error) {
+      console.error(`Error publishing survey ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to publish survey" });
+    }
+  });
+
+  // Survey questions API
+  app.get("/api/surveys/:surveyId/questions", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { surveyId } = req.params;
+      const questions = await storage.getSurveyQuestions(parseInt(surveyId));
+      res.json(questions);
+    } catch (error) {
+      console.error(`Error fetching questions for survey ${req.params.surveyId}:`, error);
+      res.status(500).json({ message: "Failed to fetch survey questions" });
+    }
+  });
+
+  app.post("/api/surveys/:surveyId/questions", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { surveyId } = req.params;
+      const questions = Array.isArray(req.body) ? req.body : [req.body];
+      
+      // Add surveyId to each question if not already present
+      const questionsWithSurveyId = questions.map(q => ({
+        ...q,
+        surveyId: parseInt(surveyId)
+      }));
+      
+      const savedQuestions = await storage.createSurveyQuestions(questionsWithSurveyId);
+      res.status(201).json(savedQuestions);
+    } catch (error) {
+      console.error(`Error creating questions for survey ${req.params.surveyId}:`, error);
+      res.status(500).json({ message: "Failed to create survey questions" });
+    }
+  });
+
+  app.put("/api/survey-questions/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const question = await storage.updateSurveyQuestion(parseInt(id), req.body);
+      res.json(question);
+    } catch (error) {
+      console.error(`Error updating question ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to update survey question" });
+    }
+  });
+
+  app.delete("/api/survey-questions/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.deleteSurveyQuestion(parseInt(id));
+      
+      if (!result) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error(`Error deleting question ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to delete survey question" });
+    }
+  });
+
+  // Survey responses API
+  app.get("/api/surveys/:surveyId/responses", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { surveyId } = req.params;
+      const responses = await storage.getSurveyResponses(parseInt(surveyId));
+      res.json(responses);
+    } catch (error) {
+      console.error(`Error fetching responses for survey ${req.params.surveyId}:`, error);
+      res.status(500).json({ message: "Failed to fetch survey responses" });
+    }
+  });
+
+  app.post("/api/surveys/:surveyId/responses", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { surveyId } = req.params;
+      const userId = req.user?.id; // Can be null for anonymous responses
+      const isAnonymous = req.body.isAnonymous === true;
+      
+      const response = await storage.createSurveyResponse(
+        isAnonymous ? null : userId, 
+        parseInt(surveyId)
+      );
+      
+      res.status(201).json(response);
+    } catch (error) {
+      console.error(`Error creating response for survey ${req.params.surveyId}:`, error);
+      res.status(500).json({ message: "Failed to create survey response" });
+    }
+  });
+
+  app.post("/api/survey-responses/:responseId/complete", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { responseId } = req.params;
+      const { timeToComplete } = req.body;
+      
+      const response = await storage.completeSurveyResponse(
+        parseInt(responseId), 
+        timeToComplete
+      );
+      
+      res.json(response);
+    } catch (error) {
+      console.error(`Error completing response ${req.params.responseId}:`, error);
+      res.status(500).json({ message: "Failed to complete survey response" });
+    }
+  });
+
+  // Survey answers API
+  app.get("/api/survey-responses/:responseId/answers", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { responseId } = req.params;
+      const answers = await storage.getSurveyAnswers(parseInt(responseId));
+      res.json(answers);
+    } catch (error) {
+      console.error(`Error fetching answers for response ${req.params.responseId}:`, error);
+      res.status(500).json({ message: "Failed to fetch survey answers" });
+    }
+  });
+
+  app.post("/api/survey-responses/:responseId/answers", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { responseId } = req.params;
+      const answers = Array.isArray(req.body) ? req.body : [req.body];
+      
+      // Process each answer individually to handle validation
+      const savedAnswers = [];
+      for (const answerData of answers) {
+        const answer = await storage.createSurveyAnswer({
+          ...answerData,
+          responseId: parseInt(responseId)
+        });
+        savedAnswers.push(answer);
+      }
+      
+      res.status(201).json(savedAnswers);
+    } catch (error) {
+      console.error(`Error creating answers for response ${req.params.responseId}:`, error);
+      res.status(500).json({ message: "Failed to create survey answers" });
+    }
+  });
+
   // Initialize the server
   const httpServer = createServer(app);
   
