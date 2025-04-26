@@ -442,7 +442,7 @@ export class DatabaseStorage implements IStorage {
         eq(transactions.fromAccountId, accounts.id)
       )
       .leftJoin(
-        accounts.as('toAccount'), 
+        accounts, 
         eq(transactions.toAccountId, accounts.id)
       )
       .leftJoin(
@@ -470,9 +470,9 @@ export class DatabaseStorage implements IStorage {
       .select({
         transaction: transactions,
         fromAccount: accounts,
-        toAccount: accounts.as('toAccount'),
-        fromUser: users.as('fromUser'),
-        toUser: users.as('toUser'),
+        toAccount: accounts,
+        fromUser: users,
+        toUser: users,
         creator: users,
       })
       .from(transactions)
@@ -481,16 +481,16 @@ export class DatabaseStorage implements IStorage {
         eq(transactions.fromAccountId, accounts.id)
       )
       .leftJoin(
-        accounts.as('toAccount'),
+        accounts,
         eq(transactions.toAccountId, accounts.id)
       )
       .leftJoin(
-        users.as('fromUser'),
+        users,
         eq(accounts.userId, users.id)
       )
       .leftJoin(
-        users.as('toUser'),
-        eq(accounts.as('toAccount').userId, users.id)
+        users,
+        eq(accounts.userId, users.id)
       )
       .leftJoin(
         users,
