@@ -1,0 +1,186 @@
+1. Functional Specifications
+1.1. Survey Creation (HR/Admin)
+Question Types
+
+Single-choice (radio buttons)
+
+Multiple-choice (checkboxes)
+
+Rating scales (1–5 stars or 1–10 numeric)
+
+Likert scales (Strongly Agree → Strongly Disagree)
+
+Open-ended text
+
+File upload (optional attachments)
+
+Survey Builder
+
+Drag-and-drop reordering
+
+“Branching” / skip-logic (e.g. if Q2 = “No,” skip to Q5)
+
+Preview mode (desktop + mobile)
+
+Distribution Settings
+
+Target audience (all employees, by department, by manager, custom group)
+
+Schedule: publish immediately or on a future date/time
+
+Anonymity toggle (anonymous vs tracked responses)
+
+Reminder cadence (e.g. nudge once after 3 days)
+
+Incentives
+
+Auto-award points/credits upon completion (connect to Reward Shop)
+
+Leaderboard or completion badges in the social feed
+
+1.2. Survey Deployment (Employee Social Platform)
+Notification & Feed Integration
+
+Banner or card in the social timeline (“New Survey: Q2 Engagement Pulse”)
+
+Email/push notification optional
+
+Survey Experience
+
+Full-screen modal or embedded page
+
+Progress indicator (e.g. “3 of 8 questions”)
+
+Auto-save answers as they go
+
+Accessible (WCAG AA) and responsive
+
+1.3. Reporting & Analytics (HR/Admin Dashboard)
+Real-time Dashboard
+
+Completion rate (%) vs target
+
+Time-to-complete distribution
+
+Question-by-question breakdown (bar charts for MCQs, word cloud for text responses)
+
+Export & Share
+
+CSV / Excel export of raw data
+
+PDF summary report
+
+Shareable report link (view or embed)
+
+Insights & Action Items
+
+Highlight flags (e.g. 30% “Strongly Disagree” on Q5)
+
+Auto-generate recommended next steps (e.g. “Follow up with Marketing Dept.”)
+
+2. Technical Specifications
+
+Area	Details
+Data Model	Tables: Surveys, Questions, Options, Responses, Employees, BranchingRules, SurveyTargets, Incentives
+API Endpoints	• POST /api/surveys (create)
+• GET /api/surveys/:id (details)	
+• PUT /api/surveys/:id (update)	
+• GET /api/surveys/:id/results (analytics)	
+• POST /api/surveys/:id/respond	
+Auth & Security	• Role-based access: only HR/Admin can CRUD surveys
+• Anonymized token flows for anonymous surveys	
+• CSRF protection on response submission	
+Integrations	• Reward Shop service to credit points
+• Notification service (email / in-app / push)	
+• Social feed API to post “New Survey” cards	
+Performance	• Paginated survey lists
+• Caching of analytics for high-traffic surveys	
+3. UI/UX Flow & Screen Concepts
+3.1. HR/Admin Dashboard
+Surveys Home
+
+List view: each survey as a card/table row showing title, status (Draft / Live / Closed), response rate
+
+“New Survey” button top-right
+
+Survey Builder Wizard
+
+Step 1: Details (Title, Description, Audience, Schedule)
+
+Step 2: Questions (drag-drop list, “+ Add Question”)
+
+Step 3: Settings (Anonymity, Incentives, Reminders)
+
+Step 4: Preview & Publish
+
+Analytics View
+
+Top: key metrics (Sent, Completed, Avg. Time)
+
+Mid: charts per question
+
+Bottom: verbatim responses (with word-cloud sidebar)
+
+UI Patterns:
+
+Use a stepper at the top of the wizard to orient the user
+
+Keep “Save Draft” and “Publish” sticky at the bottom
+
+Leverage card-based layout for question list
+
+3.2. Employee Social Platform
+Feed Card
+
+Thumbnail icon + survey title + brief description
+
+CTA button: “Take Survey”
+
+Survey Modal/Page
+
+Full screen on mobile; centered modal on desktop
+
+Left: progress bar & question list overview
+
+Right/main: current question with controls
+
+Footer: “Back” / “Next” / “Submit”
+
+Completion Confirmation
+
+Thank-you message + “You’ve earned 50 points!”
+
+Link to view Reward Shop or see survey results summary
+
+UX Tips:
+
+Show approximate time (“~2 mins to complete”)
+
+Provide “Save & continue later” for longer surveys
+
+Celebrate completion with micro-animation (e.g. confetti)
+
+4. Visual Style & Components
+Colors & Typography: align with your brand palette—use high-contrast headings and legible body text (16px+).
+
+Components:
+
+Cards for survey listings
+
+Modals or Panels for survey taking
+
+Wizard Stepper component for creation flow
+
+Charts (bar, pie, word cloud) in analytics
+
+Buttons: primary (Publish/Submit), secondary (Save/Back)
+
+Responsiveness: single-column on mobile, two-column on tablet+, floating action button (FAB) for “New Survey.”
+
+5. Example User Journey
+HR Admin logs into Dashboard → clicks New Survey → uses Wizard to build a 5-question pulse survey → schedules it for Monday at 9 AM → publishes.
+
+Employee opens Social feed Monday morning → sees a Survey Card → clicks Take Survey → answers questions (progress bar marches forward) → clicks Submit → sees “Thank you!” and receives Reward Points.
+
+HR Admin later that day checks Analytics → sees 40% response rate, flags low satisfaction on Q3 → exports data → shares with leadership.
+

@@ -210,6 +210,58 @@ export const fileTemplates = pgTable("file_templates", {
   createdBy: integer("created_by").references(() => users.id),
 });
 
+// Surveys table - stores main survey information
+export const surveys = pgTable("surveys", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),                  // Survey title
+  description: text("description"),                // Survey description
+  status: text("status").notNull().default("draft"), // draft, published, closed
+  isAnonymous: boolean("is_anonymous").default(false), // Whether responses are anonymous 
+  targetAudience: text("target_audience").default("all"), // all, department, custom
+  targetDepartment: text("target_department"),     // If audience is department-specific
+  targetUserIds: integer("target_user_ids").array(), // Custom list of user IDs if audience is custom
+  publishedAt: timestamp("published_at"),          // When survey was published
+  expiresAt: timestamp("expires_at"),              // Optional expiration date
+  pointsAwarded: integer("points_awarded").default(0), // Points awarded for completion
+  reminderDays: integer("reminder_days"),          // Days after which to send a reminder 
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
+// Survey questions table - stores individual questions for surveys
+export const surveyQuestions = pgTable("survey_questions", {
+  id: serial("id").primaryKey(),
+  surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
+  questionText: text("question_text").notNull(),   // The actual question
+  questionType: text("question_type").notNull(),   // single, multiple, rating, likert, text, file
+  isRequired: boolean("is_required").default(true),
+  options: jsonb("options"),                       // For choice questions: array of options
+  order: integer("order").notNull(),               // Ordering of questions
+  branchingLogic: jsonb("branching_logic"),        // Logic for skipping questions
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Survey responses table - tracks who has taken the survey
+export const surveyResponses = pgTable("survey_responses", {
+  id: serial("id").primaryKey(),
+  surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id),  // Null if anonymous
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),          // Null if not completed
+  timeToComplete: integer("time_to_complete"),     // Time in seconds
+  transactionId: integer("transaction_id").references(() => transactions.id), // Points transaction if awarded
+});
+
+// Survey answers table - individual answers to questions
+export const surveyAnswers = pgTable("survey_answers", {
+  id: serial("id").primaryKey(),
+  responseId: integer("response_id").references(() => surveyResponses.id, { onDelete: 'cascade' }).notNull(),
+  questionId: integer("question_id").references(() => surveyQuestions.id, { onDelete: 'cascade' }).notNull(),
+  answerValue: jsonb("answer_value").notNull(),    // Could be text, number, array of selected options, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Define relationships
 export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions, { relationName: "userTransactions" }),
@@ -222,6 +274,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   recognitionsReceived: many(recognitions, { relationName: "recipient" }),
   sentMessages: many(messages, { relationName: "sender" }),
   conversationParticipants: many(conversationParticipants),
+  surveys: many(surveys, { relationName: "createdSurveys" }),
+  surveyResponses: many(surveyResponses),
 }));
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
@@ -393,6 +447,52 @@ export const fileTemplateRelations = relations(fileTemplates, ({ one }) => ({
   }),
 }));
 
+// Survey relations
+export const surveysRelations = relations(surveys, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [surveys.createdBy],
+    references: [users.id],
+    relationName: "createdSurveys"
+  }),
+  questions: many(surveyQuestions),
+  responses: many(surveyResponses),
+}));
+
+export const surveyQuestionsRelations = relations(surveyQuestions, ({ one, many }) => ({
+  survey: one(surveys, {
+    fields: [surveyQuestions.surveyId],
+    references: [surveys.id],
+  }),
+  answers: many(surveyAnswers),
+}));
+
+export const surveyResponsesRelations = relations(surveyResponses, ({ one, many }) => ({
+  survey: one(surveys, {
+    fields: [surveyResponses.surveyId],
+    references: [surveys.id],
+  }),
+  user: one(users, {
+    fields: [surveyResponses.userId],
+    references: [users.id],
+  }),
+  answers: many(surveyAnswers),
+  transaction: one(transactions, {
+    fields: [surveyResponses.transactionId],
+    references: [transactions.id],
+  }),
+}));
+
+export const surveyAnswersRelations = relations(surveyAnswers, ({ one }) => ({
+  response: one(surveyResponses, {
+    fields: [surveyAnswers.responseId],
+    references: [surveyResponses.id],
+  }),
+  question: one(surveyQuestions, {
+    fields: [surveyAnswers.questionId],
+    references: [surveyQuestions.id],
+  }),
+}));
+
 // Insert schemas for validating API inputs
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
@@ -411,6 +511,10 @@ export const insertMessageSchema = createInsertSchema(messages).omit({ id: true,
 export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true });
 export const insertBrandingSettingsSchema = createInsertSchema(brandingSettings).omit({ id: true });
 export const insertFileTemplateSchema = createInsertSchema(fileTemplates).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
+export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, startedAt: true });
+export const insertSurveyAnswerSchema = createInsertSchema(surveyAnswers).omit({ id: true, createdAt: true });
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -463,3 +567,16 @@ export type InsertBrandingSetting = z.infer<typeof insertBrandingSettingsSchema>
 
 export type FileTemplate = typeof fileTemplates.$inferSelect;
 export type InsertFileTemplate = z.infer<typeof insertFileTemplateSchema>;
+
+// Survey Schema
+export type Survey = typeof surveys.$inferSelect;
+export type InsertSurvey = z.infer<typeof insertSurveySchema>;
+
+export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
+export type InsertSurveyQuestion = z.infer<typeof insertSurveyQuestionSchema>;
+
+export type SurveyResponse = typeof surveyResponses.$inferSelect;
+export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
+
+export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
+export type InsertSurveyAnswer = z.infer<typeof insertSurveyAnswerSchema>;
