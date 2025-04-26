@@ -73,6 +73,30 @@ export interface IStorage {
   // Scheduled methods
   awardBirthdayPoints(userId: number): Promise<Transaction>;
   
+  // Survey methods
+  getSurveys(status?: string): Promise<Survey[]>;
+  getSurveyById(id: number): Promise<Survey | undefined>;
+  createSurvey(surveyData: InsertSurvey): Promise<Survey>;
+  updateSurvey(id: number, surveyData: Partial<InsertSurvey>): Promise<Survey>;
+  deleteSurvey(id: number): Promise<boolean>;
+  publishSurvey(id: number): Promise<Survey>;
+  
+  // Survey questions methods
+  getSurveyQuestions(surveyId: number): Promise<SurveyQuestion[]>;
+  createSurveyQuestions(questions: InsertSurveyQuestion[]): Promise<SurveyQuestion[]>;
+  updateSurveyQuestion(id: number, questionData: Partial<InsertSurveyQuestion>): Promise<SurveyQuestion>;
+  deleteSurveyQuestion(id: number): Promise<boolean>;
+  
+  // Survey response methods
+  getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
+  getSurveyResponseById(id: number): Promise<SurveyResponse | undefined>;
+  createSurveyResponse(userId: number | null, surveyId: number, completedAt?: Date): Promise<SurveyResponse>;
+  completeSurveyResponse(responseId: number, timeToComplete: number): Promise<SurveyResponse>;
+  
+  // Survey answer methods
+  getSurveyAnswers(responseId: number): Promise<SurveyAnswer[]>;
+  createSurveyAnswer(answerData: InsertSurveyAnswer): Promise<SurveyAnswer>;
+  
   // Social methods - Posts
   createPost(userId: number, postData: InsertPost): Promise<Post>;
   createPollPost(userId: number, postData: InsertPost, pollData: InsertPoll): Promise<{ post: Post, poll: Poll }>;

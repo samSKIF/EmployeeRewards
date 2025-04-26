@@ -10,6 +10,8 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import AdminSurveys from "@/pages/admin-surveys";
+import AdminSurveyCreator from "@/pages/admin-survey-creator";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
@@ -121,6 +123,15 @@ function App() {
               </Route>
               <Route path="/admin/employees">
                 <AdminEmployees />
+              </Route>
+              <Route path="/admin/surveys">
+                <AdminSurveys />
+              </Route>
+              <Route path="/admin/surveys/new">
+                <AdminSurveyCreator />
+              </Route>
+              <Route path="/admin/surveys/:id/edit">
+                <AdminSurveyCreator />
               </Route>
               <Route path="/hr-config">
                 <HRConfig />

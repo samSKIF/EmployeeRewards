@@ -8,7 +8,7 @@ import UserTable from "@/components/admin/UserTable";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Users, ClipboardList } from "lucide-react";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("transactions");
@@ -23,6 +23,12 @@ const Admin = () => {
             <Button variant="outline" className="flex items-center gap-2">
               <Users size={16} />
               <span>Employee Management</span>
+            </Button>
+          </Link>
+          <Link href="/admin/surveys">
+            <Button variant="outline" className="flex items-center gap-2">
+              <ClipboardList size={16} />
+              <span>Surveys</span>
             </Button>
           </Link>
           <span className="text-sm text-gray-500">Logged in as: {user?.email}</span>
