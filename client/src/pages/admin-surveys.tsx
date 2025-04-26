@@ -1057,7 +1057,7 @@ function SurveyDetailsDialog({ surveyId, onClose }: { surveyId: number, onClose:
                                         ({question.stats.count} responses)
                                       </p>
                                       <div className="bg-gray-100 rounded-md p-3">
-                                        {Object.entries(question.stats.distribution).sort((a, b) => Number(a[0]) - Number(b[0])).map(([rating, count]: [string, any]) => (
+                                        {question.stats.distribution && Object.entries(question.stats.distribution).sort((a: any, b: any) => Number(a[0]) - Number(b[0])).map(([rating, count]: [string, any]) => (
                                           <div key={rating} className="flex items-center mb-1 text-sm">
                                             <div className="w-12">{rating}:</div>
                                             <div className="flex-1 mx-2">
@@ -1082,7 +1082,7 @@ function SurveyDetailsDialog({ surveyId, onClose }: { surveyId: number, onClose:
                               
                               {question.type === 'multiple_choice' && (
                                 <div>
-                                  {Object.keys(question.stats.options).length > 0 ? (
+                                  {question.stats.options && Object.keys(question.stats.options).length > 0 ? (
                                     <div className="bg-gray-100 rounded-md p-3">
                                       {Object.entries(question.stats.options).map(([option, count]: [string, any]) => (
                                         <div key={option} className="flex items-center mb-1 text-sm">
@@ -1091,7 +1091,7 @@ function SurveyDetailsDialog({ surveyId, onClose }: { surveyId: number, onClose:
                                             <div 
                                               className="bg-green-500 h-5 rounded-sm" 
                                               style={{ 
-                                                width: `${(count / Object.values(question.stats.options).reduce((sum: number, c: number) => sum + c, 0)) * 100}%`,
+                                                width: `${(count / Object.values(question.stats.options).reduce((sum: number, c: any) => sum + (typeof c === 'number' ? c : 0), 0)) * 100}%`,
                                                 minWidth: '1%' 
                                               }}
                                             />

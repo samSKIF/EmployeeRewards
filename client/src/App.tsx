@@ -15,6 +15,7 @@ import EmployeeSurveys from "@/pages/surveys";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
+import { AuthProvider } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
 
 function App() {
@@ -107,7 +108,8 @@ function App() {
       {appReady && (
         <FirebaseAuthProvider>
           <BrandingProvider>
-            <Switch>
+            <AuthProvider>
+              <Switch>
               {/* Main dashboard routes */}
               <Route path="/dashboard">
                 <Dashboard />
@@ -160,6 +162,7 @@ function App() {
                 <NotFound />
               </Route>
             </Switch>
+              </AuthProvider>
           </BrandingProvider>
         </FirebaseAuthProvider>
       )}
