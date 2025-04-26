@@ -15,6 +15,7 @@ import {
   brandingSettings, insertBrandingSettingsSchema,
   fileTemplates, insertFileTemplateSchema, FileTemplate
 } from "@shared/schema";
+import surveyRoutes from "./survey-routes";
 import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
 
@@ -1758,6 +1759,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to get social stats" });
     }
   });
+  
+  // Register survey routes
+  app.use('/api/surveys', surveyRoutes);
   
   // Initialize the server
   const httpServer = createServer(app);
