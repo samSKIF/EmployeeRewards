@@ -48,10 +48,10 @@ export default function AdminSurveysPage() {
   
   // Fetch surveys based on the active tab
   const { data: surveys = [], isLoading } = useQuery<SurveyWithStats[]>({
-    queryKey: ['/api/admin/surveys', activeTab],
+    queryKey: ['/api/surveys', activeTab],
     queryFn: async () => {
       const status = activeTab === 'all' ? '' : `?status=${activeTab}`;
-      const res = await apiRequest('GET', `/api/admin/surveys${status}`);
+      const res = await apiRequest('GET', `/api/surveys${status}`);
       return await res.json();
     }
   });
@@ -59,10 +59,10 @@ export default function AdminSurveysPage() {
   // Delete survey mutation
   const deleteSurveyMutation = useMutation({
     mutationFn: async (surveyId: number) => {
-      await apiRequest('DELETE', `/api/admin/surveys/${surveyId}`);
+      await apiRequest('DELETE', `/api/surveys/${surveyId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/surveys'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/surveys'] });
       toast({
         title: "Survey deleted",
         description: "The survey has been successfully deleted.",
@@ -179,7 +179,7 @@ export default function AdminSurveysPage() {
                           <span>Published: {new Date(survey.publishedAt).toLocaleDateString()}</span>
                         </div>
                       )}
-                      {survey.pointsAwarded > 0 && (
+                      {(survey.pointsAwarded ?? 0) > 0 && (
                         <div className="flex items-center">
                           <span className="text-amber-500 mr-1">★</span>
                           <span>{survey.pointsAwarded} Points reward</span>

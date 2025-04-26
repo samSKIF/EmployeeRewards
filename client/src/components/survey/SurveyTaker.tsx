@@ -373,7 +373,7 @@ export function SurveyTaker({ surveyId, onComplete }: SurveyTakerProps) {
           <p className="text-center text-gray-600 mb-4">
             We appreciate you taking the time to complete this survey.
           </p>
-          {survey.pointsAwarded > 0 && (
+          {(survey.pointsAwarded ?? 0) > 0 && (
             <div className="bg-amber-50 text-amber-800 px-4 py-3 rounded-lg border border-amber-200 flex items-center">
               <span className="text-amber-500 mr-2">★</span>
               <span>
@@ -449,7 +449,7 @@ export function SurveyTaker({ surveyId, onComplete }: SurveyTakerProps) {
               onClick={handleSubmit}
               disabled={
                 isSubmitting ||
-                (currentQuestion.isRequired && !answers[currentQuestion.id])
+                ((currentQuestion.isRequired ?? false) && !answers[currentQuestion.id])
               }
             >
               {isSubmitting ? "Submitting..." : "Submit Survey"}
@@ -458,7 +458,7 @@ export function SurveyTaker({ surveyId, onComplete }: SurveyTakerProps) {
             <Button
               onClick={nextQuestion}
               disabled={
-                currentQuestion.isRequired && !answers[currentQuestion.id]
+                (currentQuestion.isRequired ?? false) && !answers[currentQuestion.id]
               }
             >
               Next
