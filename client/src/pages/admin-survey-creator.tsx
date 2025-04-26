@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,6 +56,7 @@ import {
   Settings,
   CheckCircle2,
   Send,
+  Edit,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -129,62 +130,109 @@ export default function AdminSurveyCreator() {
 
   // Fetch survey if editing
   const { isLoading } = useQuery<Survey>({
-    queryKey: [`/api/admin/surveys/${id}`],
+    queryKey: [`/api/surveys/${id}`],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/admin/surveys/${id}`);
-      return await res.json();
+      try {
+        const res = await apiRequest("GET", `/api/surveys/${id}`);
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching survey:", error);
+        return null;
+      }
     },
     enabled: isEditing,
-    onSuccess: (data) => {
-      // Populate form with survey data
-      surveyForm.reset({
-        title: data.title,
-        description: data.description || "",
-        isAnonymous: data.isAnonymous,
-        targetAudience: data.targetAudience,
-        targetDepartment: data.targetDepartment || "",
-        pointsAwarded: data.pointsAwarded,
-        reminderDays: data.reminderDays || 0,
-        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-      });
-    },
   });
+
+  // Effect to populate form when survey data is loaded
+  useEffect(() => {
+    if (isLoading || !id) return;
+    
+    const fetchSurvey = async () => {
+      try {
+        const res = await apiRequest("GET", `/api/surveys/${id}`);
+        const data = await res.json();
+        
+        if (data) {
+          surveyForm.reset({
+            title: data.title || "",
+            description: data.description || "",
+            isAnonymous: data.isAnonymous || false,
+            targetAudience: data.targetAudience || "all",
+            targetDepartment: data.targetDepartment || "",
+            pointsAwarded: data.pointsAwarded || 0,
+            reminderDays: data.reminderDays || 0,
+            expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+          });
+        }
+      } catch (error) {
+        console.error("Error setting form data:", error);
+      }
+    };
+    
+    fetchSurvey();
+  }, [id, isLoading, surveyForm]);
 
   // Fetch questions if editing
   const { isLoading: isLoadingQuestions } = useQuery<any[]>({
-    queryKey: [`/api/admin/surveys/${id}/questions`],
+    queryKey: [`/api/surveys/${id}/questions`],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/admin/surveys/${id}/questions`);
-      return await res.json();
+      try {
+        const res = await apiRequest("GET", `/api/surveys/${id}/questions`);
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        return [];
+      }
     },
     enabled: isEditing,
-    onSuccess: (data) => {
-      // Transform API data to our format
-      const formattedQuestions = data.map((q, index) => ({
-        id: q.id.toString(),
-        questionText: q.questionText,
-        questionType: q.questionType,
-        isRequired: q.isRequired,
-        options: q.options ? q.options : [],
-        order: q.order || index,
-      }));
-      setQuestions(formattedQuestions);
-    },
   });
+  
+  // Effect to populate questions when data is loaded
+  useEffect(() => {
+    if (isLoadingQuestions || !id) return;
+    
+    const fetchQuestions = async () => {
+      try {
+        const res = await apiRequest("GET", `/api/surveys/${id}/questions`);
+        const data = await res.json();
+        
+        if (data && Array.isArray(data)) {
+          const formattedQuestions = data.map((q: any, index: number) => ({
+            id: q.id.toString(),
+            questionText: q.questionText || "",
+            questionType: q.questionType || "single",
+            isRequired: q.isRequired !== undefined ? q.isRequired : true,
+            options: q.options ? q.options : [],
+            order: q.order || index,
+          }));
+          setQuestions(formattedQuestions);
+        }
+      } catch (error) {
+        console.error("Error setting questions data:", error);
+      }
+    };
+    
+    fetchQuestions();
+  }, [id, isLoadingQuestions]);
 
   // Save survey mutation
   const saveSurveyMutation = useMutation({
     mutationFn: async (data: InsertSurvey) => {
-      if (isEditing) {
-        const res = await apiRequest("PUT", `/api/admin/surveys/${id}`, data);
-        return await res.json();
-      } else {
-        const res = await apiRequest("POST", "/api/admin/surveys", data);
-        return await res.json();
+      try {
+        if (isEditing) {
+          const res = await apiRequest("PUT", `/api/surveys/${id}`, data);
+          return await res.json();
+        } else {
+          const res = await apiRequest("POST", "/api/surveys", data);
+          return await res.json();
+        }
+      } catch (error) {
+        console.error("Error in saveSurveyMutation:", error);
+        throw error;
       }
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/surveys"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/surveys"] });
       toast({
         title: `Survey ${isEditing ? "updated" : "created"}`,
         description: `Your survey has been successfully ${
@@ -193,7 +241,7 @@ export default function AdminSurveyCreator() {
       });
 
       // If we're creating a new survey, redirect to the edit page
-      if (!isEditing) {
+      if (!isEditing && data?.id) {
         setLocation(`/admin/surveys/${data.id}/edit`);
       }
     },
@@ -212,16 +260,21 @@ export default function AdminSurveyCreator() {
       surveyId: number;
       questions: InsertSurveyQuestion[];
     }) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/surveys/${data.surveyId}/questions`,
-        { questions: data.questions }
-      );
-      return await res.json();
+      try {
+        const res = await apiRequest(
+          "POST",
+          `/api/surveys/${data.surveyId}/questions`,
+          { questions: data.questions }
+        );
+        return await res.json();
+      } catch (error) {
+        console.error("Error in saveQuestionsMutation:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [`/api/admin/surveys/${id}/questions`],
+        queryKey: [`/api/surveys/${id}/questions`],
       });
       toast({
         title: "Questions saved",
@@ -240,14 +293,19 @@ export default function AdminSurveyCreator() {
   // Publish survey mutation
   const publishSurveyMutation = useMutation({
     mutationFn: async (surveyId: number) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/surveys/${surveyId}/publish`
-      );
-      return await res.json();
+      try {
+        const res = await apiRequest(
+          "POST",
+          `/api/surveys/${surveyId}/publish`
+        );
+        return await res.json();
+      } catch (error) {
+        console.error("Error in publishSurveyMutation:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/surveys"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/surveys"] });
       toast({
         title: "Survey published",
         description:
@@ -880,11 +938,12 @@ export default function AdminSurveyCreator() {
                                     value !== "multiple"
                                   ) {
                                     questionForm.setValue("options", []);
-                                  } else if (
-                                    !questionForm.getValues("options") ||
-                                    questionForm.getValues("options").length === 0
-                                  ) {
-                                    questionForm.setValue("options", [""]);
+                                  } else {
+                                    // Check if options exists and set a default if missing
+                                    const currentOptions = questionForm.getValues("options");
+                                    if (!currentOptions || currentOptions.length === 0) {
+                                      questionForm.setValue("options", [""]);
+                                    }
                                   }
                                 }}
                                 defaultValue={field.value}
