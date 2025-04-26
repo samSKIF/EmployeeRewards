@@ -13,7 +13,8 @@ import {
   Award,
   MessageSquare,
   Settings,
-  Users
+  Users,
+  ClipboardList
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
@@ -115,6 +116,11 @@ const Sidebar = () => {
         path: "/admin", 
         label: "Admin", 
         icon: <Shield className="w-5 h-5 mr-3" /> 
+      },
+      { 
+        path: "/admin/surveys", 
+        label: "Surveys", 
+        icon: <ClipboardList className="w-5 h-5 mr-3" /> 
       },
       { 
         path: "/seller", 
