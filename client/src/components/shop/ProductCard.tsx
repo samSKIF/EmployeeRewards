@@ -126,7 +126,7 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
   // Badge component with custom styling
   const PointsBadge = () => (
     <div 
-      className={`text-white font-semibold px-3 py-1.5 rounded-full text-sm flex items-center shadow-sm ${
+      className={`text-white font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm flex items-center shadow-sm ${
         !product.isAvailable ? 'bg-red-500' :
         isLuxury ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
         isPremium ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
@@ -138,8 +138,8 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
         {}
       }
     >
-      <CreditCard className="h-3.5 w-3.5 mr-1" />
-      {product.points} points
+      <CreditCard className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-0.5 sm:mr-1" />
+      {product.points} <span className="hidden xs:inline">points</span>
     </div>
   );
 
@@ -147,33 +147,35 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
     <>
       <div className="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-lg transition-all duration-300 relative flex flex-col h-full">
         {/* Category badge */}
-        <div className="absolute top-3 left-3 z-10">
-          <Badge variant={getBadgeVariant()} className="text-xs px-2 py-0.5 capitalize">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
+          <Badge variant={getBadgeVariant()} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 capitalize">
             {getCategoryIcon()}
-            {product.category}
+            <span className="hidden xs:inline">{product.category}</span>
+            <span className="xs:hidden">{product.category?.split(' ')[0]}</span>
           </Badge>
         </div>
 
         {/* Points status */}
         {!product.isAvailable && (
-          <div className="absolute top-3 right-3 z-10">
-            <Badge variant="destructive" className="text-xs px-2 py-0.5">
-              {product.points - balance} more points needed
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+            <Badge variant="destructive" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
+              <span className="hidden xs:inline">{product.points - balance} more points</span>
+              <span className="xs:hidden">+{product.points - balance}</span>
             </Badge>
           </div>
         )}
 
         {/* Premium badge */}
         {isLuxury && (
-          <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-            <div className="absolute transform rotate-45 bg-amber-500 text-white text-xs font-bold py-1 right-[-35px] top-[9px] w-[120px] text-center">
+          <div className="absolute top-0 right-0 w-12 sm:w-16 h-12 sm:h-16 overflow-hidden">
+            <div className="absolute transform rotate-45 bg-amber-500 text-white text-[8px] sm:text-xs font-bold py-0.5 sm:py-1 right-[-35px] top-[6px] sm:top-[9px] w-[100px] sm:w-[120px] text-center">
               PREMIUM
             </div>
           </div>
         )}
 
         {/* Image with hover effect */}
-        <div className="relative overflow-hidden h-48">
+        <div className="relative overflow-hidden h-32 sm:h-40 md:h-48">
           <img
             src={product.imageUrl || "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Z2lmdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60"}
             alt={product.name}
@@ -183,8 +185,8 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
           {/* Overlay gradient for better text contrast */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
-          {/* Quick action button on hover */}
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Quick action button on hover - only show on desktop */}
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
             <Button 
               size="sm" 
               onClick={handleRedeem} 
@@ -202,17 +204,18 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
         </div>
         
         {/* Content */}
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="font-semibold text-gray-800 group-hover:text-gray-900 mb-2">{product.name}</h3>
-          <p className="text-sm text-gray-600 flex-grow">{product.description}</p>
+        <div className="p-3 sm:p-4 flex flex-col flex-grow">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-800 group-hover:text-gray-900 mb-1 sm:mb-2 line-clamp-1">{product.name}</h3>
+          <p className="text-xs sm:text-sm text-gray-600 flex-grow line-clamp-2 sm:line-clamp-3">{product.description}</p>
           
-          <div className="mt-4 flex justify-between items-center">
+          <div className="mt-3 sm:mt-4 flex justify-between items-center">
             <PointsBadge />
             <Button
               onClick={handleRedeem}
               disabled={!product.isAvailable}
               size="sm"
               className={`
+                text-xs sm:text-sm py-1 px-2 sm:px-3 h-7 sm:h-8
                 ${!product.isAvailable ? "opacity-50 cursor-not-allowed bg-gray-400" : ""}
               `}
               style={
@@ -221,7 +224,7 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
                 {}
               }
             >
-              {!product.isAvailable ? "Not Available" : "Redeem"}
+              {!product.isAvailable ? "Unavailable" : "Redeem"}
             </Button>
           </div>
         </div>
@@ -239,30 +242,30 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
               </DialogHeader>
               
               <div className="my-6">
-                <div className="flex items-center mb-4">
+                <div className="flex items-start mb-4">
                   <img 
                     src={product.imageUrl || "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Z2lmdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60"} 
                     alt={product.name} 
-                    className="w-16 h-16 object-cover rounded mr-4" 
+                    className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded mr-3 sm:mr-4 flex-shrink-0" 
                   />
                   <div>
-                    <h4 className="font-semibold text-gray-800">{product.name}</h4>
-                    <p className="text-sm text-gray-500">{product.category}</p>
+                    <h4 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-1">{product.name}</h4>
+                    <p className="text-xs sm:text-sm text-gray-500">{product.category}</p>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Your current balance:</span>
-                    <span className="font-semibold text-gray-800">{balance} points</span>
+                    <span className="text-xs sm:text-sm text-gray-600">Current balance:</span>
+                    <span className="font-semibold text-gray-800 text-xs sm:text-sm">{balance} points</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Cost:</span>
-                    <span className="font-semibold text-gray-800">-{product.points} points</span>
+                    <span className="text-xs sm:text-sm text-gray-600">Cost:</span>
+                    <span className="font-semibold text-gray-800 text-xs sm:text-sm">-{product.points} points</span>
                   </div>
                   <div className="pt-2 border-t border-gray-200 flex justify-between">
-                    <span className="text-sm font-medium text-gray-800">Remaining balance:</span>
-                    <span className="font-semibold text-gray-800">{balance - product.points} points</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-800">Remaining:</span>
+                    <span className="font-semibold text-gray-800 text-xs sm:text-sm">{balance - product.points} points</span>
                   </div>
                 </div>
               </div>
@@ -283,44 +286,50 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
           ) : (
             <>
               <DialogHeader>
-                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-green-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-2 bg-green-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <DialogTitle className="text-center">Redemption Successful!</DialogTitle>
-                <DialogDescription className="text-center">
+                <DialogTitle className="text-center text-base sm:text-lg">Redemption Successful!</DialogTitle>
+                <DialogDescription className="text-center text-xs sm:text-sm">
                   You have successfully redeemed {product.name}.
                 </DialogDescription>
               </DialogHeader>
               
               <div className="my-6 space-y-4">
                 <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
+                  <div className="bg-gray-50 p-2 sm:p-3 border-b flex justify-between items-center">
                     <div className="flex items-center">
-                      <div className="mr-2">
-                        {isGiftCard ? <Gift className="h-5 w-5 text-purple-500" /> : 
-                        isExperience ? <Ticket className="h-5 w-5 text-blue-500" /> : 
-                        <ShoppingBag className="h-5 w-5 text-indigo-500" />}
+                      <div className="mr-1.5 sm:mr-2">
+                        {isGiftCard ? <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" /> : 
+                        isExperience ? <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" /> : 
+                        <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />}
                       </div>
-                      <span className="font-medium text-gray-800">Order Summary</span>
+                      <span className="font-medium text-gray-800 text-xs sm:text-sm">Order Summary</span>
                     </div>
-                    <Badge>{product.category}</Badge>
+                    <Badge className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 h-5 sm:h-6">
+                      {product.category?.split(' ')[0]}
+                    </Badge>
                   </div>
                   
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     <div className="flex items-start mb-4">
-                      <img src={product.imageUrl || "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Z2lmdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60"} alt={product.name} className="w-16 h-16 object-cover rounded mr-3" />
+                      <img 
+                        src={product.imageUrl || "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Z2lmdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60"} 
+                        alt={product.name} 
+                        className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded mr-2 sm:mr-3 flex-shrink-0" 
+                      />
                       <div>
-                        <h4 className="font-medium text-gray-800">{product.name}</h4>
-                        <p className="text-sm text-gray-500 mt-1">{product.description}</p>
+                        <h4 className="font-medium text-gray-800 text-sm sm:text-base line-clamp-1">{product.name}</h4>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
                       </div>
                     </div>
                     
                     {isGiftCard && externalRef && (
                       <div className="mb-4">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Your gift card code:</p>
-                        <div className="p-3 bg-gray-100 rounded-md text-sm font-mono break-all border border-gray-200 select-all">
+                        <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Your gift card code:</p>
+                        <div className="p-2 sm:p-3 bg-gray-100 rounded-md text-xs sm:text-sm font-mono break-all border border-gray-200 select-all">
                           {externalRef}
                         </div>
                       </div>
@@ -328,39 +337,39 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
                     
                     {!isGiftCard && externalRef && (
                       <div className="mb-4">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Your order reference:</p>
-                        <div className="p-3 bg-gray-100 rounded-md text-sm font-mono border border-gray-200">
+                        <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Your order reference:</p>
+                        <div className="p-2 sm:p-3 bg-gray-100 rounded-md text-xs sm:text-sm font-mono border border-gray-200">
                           {externalRef}
                         </div>
                       </div>
                     )}
                     
-                    <div className="border-t pt-3 mt-3">
+                    <div className="border-t pt-2 sm:pt-3 mt-2 sm:mt-3">
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm text-gray-600">Previous balance:</span>
-                        <span className="text-sm font-medium">{balance} points</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Previous balance:</span>
+                        <span className="text-xs sm:text-sm font-medium">{balance} points</span>
                       </div>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm text-gray-600">Redemption cost:</span>
-                        <span className="text-sm font-medium text-red-500">-{product.points} points</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Redemption cost:</span>
+                        <span className="text-xs sm:text-sm font-medium text-red-500">-{product.points} points</span>
                       </div>
                       <div className="flex justify-between pt-2 border-t mt-2">
-                        <span className="text-sm font-medium">Current balance:</span>
-                        <span className="font-bold">{balance - product.points} points</span>
+                        <span className="text-xs sm:text-sm font-medium">Current balance:</span>
+                        <span className="text-xs sm:text-sm font-bold">{balance - product.points} points</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 {isGiftCard && (
-                  <div className="bg-blue-50 text-blue-800 p-3 rounded-md text-sm border border-blue-100">
+                  <div className="bg-blue-50 text-blue-800 p-2 sm:p-3 rounded-md text-xs sm:text-sm border border-blue-100">
                     <div className="font-medium mb-1">What's next?</div>
-                    <p>You can use your gift card code at the retailer's website or in-store. Copy the code above and follow the redemption instructions provided by the retailer.</p>
+                    <p>Use your gift card code at the retailer's website or in-store. Copy the code above and follow the redemption instructions.</p>
                   </div>
                 )}
                 
                 {isExperience && (
-                  <div className="bg-green-50 text-green-800 p-3 rounded-md text-sm border border-green-100">
+                  <div className="bg-green-50 text-green-800 p-2 sm:p-3 rounded-md text-xs sm:text-sm border border-green-100">
                     <div className="font-medium mb-1">What's next?</div>
                     <p>Details about your experience booking will be emailed to you. Save your order reference for future inquiries.</p>
                   </div>
