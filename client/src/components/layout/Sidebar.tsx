@@ -106,6 +106,11 @@ const Sidebar = () => {
       path: "/hr-config", 
       label: "HR Config", 
       icon: <Users className="w-5 h-5 mr-3" /> 
+    },
+    {
+      path: "/surveys",
+      label: "Surveys",
+      icon: <ClipboardList className="w-5 h-5 mr-3" />
     }
   ];
 
