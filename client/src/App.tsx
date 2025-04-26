@@ -10,6 +10,8 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
+import AdminSurveys from "@/pages/admin-surveys";
+import EmployeeSurveys from "@/pages/surveys";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
@@ -122,11 +124,17 @@ function App() {
               <Route path="/admin/employees">
                 <AdminEmployees />
               </Route>
+              <Route path="/admin/surveys">
+                <AdminSurveys />
+              </Route>
               <Route path="/hr-config">
                 <HRConfig />
               </Route>
               <Route path="/seller">
                 <Seller />
+              </Route>
+              <Route path="/surveys">
+                <EmployeeSurveys />
               </Route>
               
               {/* ThrivioHR Social Platform routes */}
