@@ -101,26 +101,27 @@ const Shop = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Top navigation */}
       <header 
-        className="sticky top-0 z-10 bg-white border-b shadow-sm p-4" 
+        className="sticky top-0 z-10 bg-white border-b shadow-sm p-3 sm:p-4" 
         style={{
           background: branding?.primaryColor || "#4F46E5",
           color: "#fff"
         }}
       >
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <ShoppingBag className="h-6 w-6" />
-            <h1 className="text-xl font-semibold">{branding?.organizationName || "ThrivioHR"} Reward Shop</h1>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-base sm:text-xl font-semibold truncate">{branding?.organizationName || "ThrivioHR"} <span className="hidden xs:inline">Reward</span> Shop</h1>
           </div>
           
-          <div className="flex items-center space-x-6">
-            <div className="bg-white/20 rounded-full px-4 py-2 flex items-center">
-              <CreditCard className="h-4 w-4 mr-2" />
-              <span className="font-bold">{balanceData?.balance || 0} Points</span>
+          <div className="flex items-center space-x-2 sm:space-x-6">
+            <div className="bg-white/20 rounded-full px-2 sm:px-4 py-1 sm:py-2 flex items-center">
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="font-bold text-xs sm:text-base">{balanceData?.balance || 0} <span className="hidden xs:inline">Points</span></span>
             </div>
             <Button 
               variant="ghost" 
-              className="text-white hover:bg-white/20"
+              size="sm"
+              className="text-white hover:bg-white/20 hidden sm:flex"
               onClick={() => window.close()}
             >
               <Home className="h-4 w-4 mr-2" />
@@ -128,34 +129,53 @@ const Shop = () => {
             </Button>
             <Button 
               variant="ghost" 
-              className="text-white hover:bg-white/20"
+              size="icon"
+              className="text-white hover:bg-white/20 sm:hidden" 
+              onClick={() => window.close()}
+            >
+              <Home className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-white hover:bg-white/20 hidden sm:flex"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="text-white hover:bg-white/20 sm:hidden"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Search and filter section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div className="relative w-full md:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search rewards..."
-                className="pl-10"
+                className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2 mt-2 md:mt-0">
               <Button
+                size="sm"
                 variant={selectedCategory === "all" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("all")}
+                className="text-xs sm:text-sm py-1 px-2 sm:px-3 h-7 sm:h-9"
                 style={selectedCategory === "all" && branding?.primaryColor ? 
                   { background: branding.primaryColor } : undefined}
               >
@@ -164,8 +184,10 @@ const Shop = () => {
               {categories.map(category => (
                 <Button
                   key={category}
+                  size="sm"
                   variant={selectedCategory === category ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category)}
+                  className="text-xs sm:text-sm py-1 px-2 sm:px-3 h-7 sm:h-9"
                   style={selectedCategory === category && branding?.primaryColor ? 
                     { background: branding.primaryColor } : undefined}
                 >
@@ -177,23 +199,26 @@ const Shop = () => {
         </div>
 
         {/* Main content */}
-        <Tabs defaultValue="all" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
-            <TabsTrigger value="all" className="py-3">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              All Rewards
+        <Tabs defaultValue="all" className="space-y-4 sm:space-y-8">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-0.5 sm:p-1">
+            <TabsTrigger value="all" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
+              <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">All</span> <span className="hidden sm:inline">Rewards</span>
             </TabsTrigger>
-            <TabsTrigger value="experiences" className="py-3">
-              <Ticket className="h-4 w-4 mr-2" />
-              Experiences
+            <TabsTrigger value="experiences" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
+              <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Experiences</span>
+              <span className="xs:hidden">Exp</span>
             </TabsTrigger>
-            <TabsTrigger value="giftcards" className="py-3">
-              <Gift className="h-4 w-4 mr-2" />
-              Gift Cards
+            <TabsTrigger value="giftcards" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
+              <Gift className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Gift Cards</span>
+              <span className="xs:hidden">Gifts</span>
             </TabsTrigger>
-            <TabsTrigger value="premium" className="py-3">
-              <Award className="h-4 w-4 mr-2" />
-              Premium Rewards
+            <TabsTrigger value="premium" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
+              <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Premium</span>
+              <span className="xs:hidden">Prem</span>
             </TabsTrigger>
           </TabsList>
 
@@ -202,18 +227,18 @@ const Shop = () => {
             {/* Featured Items Section */}
             {featuredItems.length > 0 && (
               <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3"
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mr-2 sm:mr-3"
                     style={{ 
                       background: `linear-gradient(to right, ${branding?.primaryColor || "#4F46E5"}, ${branding?.secondaryColor || "#A855F7"})`,
                       color: "#fff"
                      }}>
-                    <Award className="h-5 w-5" />
+                    <Award className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Featured Rewards</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Featured Rewards</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {featuredItems.map(product => (
                     <ProductCard 
                       key={product.id} 
@@ -228,14 +253,14 @@ const Shop = () => {
             {/* Regular Products */}
             {regularProducts.length > 0 && (
               <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                    <Tag className="h-5 w-5" />
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-2 sm:mr-3">
+                    <Tag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Popular Rewards</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Popular Rewards</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {isLoading ? (
                     // Skeleton loader
                     Array(8).fill(0).map((_, i) => (
@@ -268,14 +293,14 @@ const Shop = () => {
             {/* Luxury Items Section */}
             {luxuryItems.length > 0 && (
               <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-3">
-                    <Award className="h-5 w-5" />
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-2 sm:mr-3">
+                    <Award className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Premium Collection</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Premium Collection</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {luxuryItems.map(product => (
                     <ProductCard 
                       key={product.id} 
@@ -317,15 +342,15 @@ const Shop = () => {
           {/* Experiences Tab */}
           <TabsContent value="experiences">
             <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
-                  <Ticket className="h-5 w-5" />
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 sm:mr-3">
+                  <Ticket className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Experiences</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Experiences</h2>
               </div>
               
               {featuredCategoryProducts.experiences.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {featuredCategoryProducts.experiences.map(product => (
                     <ProductCard 
                       key={product.id} 
@@ -346,15 +371,15 @@ const Shop = () => {
           {/* Gift Cards Tab */}
           <TabsContent value="giftcards">
             <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-3">
-                  <Gift className="h-5 w-5" />
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-2 sm:mr-3">
+                  <Gift className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Gift Cards</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Gift Cards</h2>
               </div>
               
               {featuredCategoryProducts.giftCards.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {featuredCategoryProducts.giftCards.map(product => (
                     <ProductCard 
                       key={product.id} 
@@ -375,15 +400,15 @@ const Shop = () => {
           {/* Premium Rewards Tab */}
           <TabsContent value="premium">
             <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-3">
-                  <Award className="h-5 w-5" />
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-2 sm:mr-3">
+                  <Award className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Premium Rewards</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Premium Rewards</h2>
               </div>
               
               {[...featuredItems, ...luxuryItems].length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {[...featuredItems, ...luxuryItems].map(product => (
                     <ProductCard 
                       key={product.id} 
@@ -404,17 +429,17 @@ const Shop = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 py-6">
+      <footer className="bg-gray-800 text-gray-300 py-4 sm:py-6">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-semibold">{branding?.organizationName || "ThrivioHR"}</h3>
-              <p className="text-sm text-gray-400">© {new Date().getFullYear()} All rights reserved</p>
+            <div className="mb-4 md:mb-0 text-center md:text-left">
+              <h3 className="text-base sm:text-lg font-semibold">{branding?.organizationName || "ThrivioHR"}</h3>
+              <p className="text-xs sm:text-sm text-gray-400">© {new Date().getFullYear()} All rights reserved</p>
             </div>
-            <div className="flex gap-6">
-              <a href="#" className="text-sm hover:text-white">Terms &amp; Conditions</a>
-              <a href="#" className="text-sm hover:text-white">Privacy Policy</a>
-              <a href="#" className="text-sm hover:text-white">Contact Support</a>
+            <div className="flex flex-wrap justify-center md:justify-end gap-3 sm:gap-6">
+              <a href="#" className="text-xs sm:text-sm hover:text-white">Terms &amp; Conditions</a>
+              <a href="#" className="text-xs sm:text-sm hover:text-white">Privacy Policy</a>
+              <a href="#" className="text-xs sm:text-sm hover:text-white">Contact Support</a>
             </div>
           </div>
         </div>
