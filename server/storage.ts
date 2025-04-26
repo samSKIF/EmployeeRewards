@@ -1629,6 +1629,157 @@ export class DatabaseStorage implements IStorage {
       engagementScore,
     };
   }
+
+  // Survey methods
+  async getSurveys(status?: string): Promise<Survey[]> {
+    let query = db.select().from(surveys);
+    
+    if (status) {
+      query = query.where(eq(surveys.status, status));
+    }
+    
+    return await query.orderBy(desc(surveys.createdAt));
+  }
+
+  async getSurveyById(id: number): Promise<Survey | undefined> {
+    const [survey] = await db.select().from(surveys).where(eq(surveys.id, id));
+    return survey;
+  }
+
+  async createSurvey(surveyData: InsertSurvey): Promise<Survey> {
+    const [survey] = await db.insert(surveys).values(surveyData).returning();
+    return survey;
+  }
+
+  async updateSurvey(id: number, surveyData: Partial<InsertSurvey>): Promise<Survey> {
+    const [survey] = await db
+      .update(surveys)
+      .set(surveyData)
+      .where(eq(surveys.id, id))
+      .returning();
+    return survey;
+  }
+
+  async deleteSurvey(id: number): Promise<boolean> {
+    // First delete all associated questions, responses, and answers
+    await db.delete(surveyAnswers).where(
+      inArray(
+        surveyAnswers.responseId,
+        db.select({ id: surveyResponses.id })
+          .from(surveyResponses)
+          .where(eq(surveyResponses.surveyId, id))
+      )
+    );
+    
+    await db.delete(surveyResponses).where(eq(surveyResponses.surveyId, id));
+    await db.delete(surveyQuestions).where(eq(surveyQuestions.surveyId, id));
+    
+    // Then delete the survey
+    const result = await db.delete(surveys).where(eq(surveys.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishSurvey(id: number): Promise<Survey> {
+    const [survey] = await db
+      .update(surveys)
+      .set({ 
+        status: 'published',
+        publishedAt: new Date()
+      })
+      .where(eq(surveys.id, id))
+      .returning();
+    return survey;
+  }
+
+  // Survey questions methods
+  async getSurveyQuestions(surveyId: number): Promise<SurveyQuestion[]> {
+    return await db
+      .select()
+      .from(surveyQuestions)
+      .where(eq(surveyQuestions.surveyId, surveyId))
+      .orderBy(surveyQuestions.order);
+  }
+
+  async createSurveyQuestions(questions: InsertSurveyQuestion[]): Promise<SurveyQuestion[]> {
+    if (questions.length === 0) return [];
+    return await db.insert(surveyQuestions).values(questions).returning();
+  }
+
+  async updateSurveyQuestion(id: number, questionData: Partial<InsertSurveyQuestion>): Promise<SurveyQuestion> {
+    const [question] = await db
+      .update(surveyQuestions)
+      .set(questionData)
+      .where(eq(surveyQuestions.id, id))
+      .returning();
+    return question;
+  }
+
+  async deleteSurveyQuestion(id: number): Promise<boolean> {
+    // Delete all answers for this question first
+    await db.delete(surveyAnswers).where(eq(surveyAnswers.questionId, id));
+    
+    // Then delete the question
+    const result = await db.delete(surveyQuestions).where(eq(surveyQuestions.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Survey response methods
+  async getSurveyResponses(surveyId: number): Promise<SurveyResponse[]> {
+    return await db
+      .select()
+      .from(surveyResponses)
+      .where(eq(surveyResponses.surveyId, surveyId))
+      .orderBy(desc(surveyResponses.createdAt));
+  }
+
+  async getSurveyResponseById(id: number): Promise<SurveyResponse | undefined> {
+    const [response] = await db
+      .select()
+      .from(surveyResponses)
+      .where(eq(surveyResponses.id, id));
+    return response;
+  }
+
+  async createSurveyResponse(userId: number | null, surveyId: number, completedAt?: Date): Promise<SurveyResponse> {
+    const [response] = await db
+      .insert(surveyResponses)
+      .values({
+        userId,
+        surveyId,
+        completedAt,
+        startedAt: new Date()
+      })
+      .returning();
+    return response;
+  }
+
+  async completeSurveyResponse(responseId: number, timeToComplete: number): Promise<SurveyResponse> {
+    const [response] = await db
+      .update(surveyResponses)
+      .set({
+        completedAt: new Date(),
+        timeToComplete
+      })
+      .where(eq(surveyResponses.id, responseId))
+      .returning();
+    return response;
+  }
+
+  // Survey answer methods
+  async getSurveyAnswers(responseId: number): Promise<SurveyAnswer[]> {
+    return await db
+      .select()
+      .from(surveyAnswers)
+      .where(eq(surveyAnswers.responseId, responseId));
+  }
+
+  async createSurveyAnswer(answerData: InsertSurveyAnswer): Promise<SurveyAnswer> {
+    const [answer] = await db
+      .insert(surveyAnswers)
+      .values(answerData)
+      .returning();
+    return answer;
+  }
 }
 
 export const storage = new DatabaseStorage();
