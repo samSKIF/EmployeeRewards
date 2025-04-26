@@ -28,7 +28,7 @@ interface ProductCardProps {
     supplier?: string;
     createdAt?: Date;
     createdBy?: number | null;
-    available: boolean;
+    isAvailable: boolean;
   };
   balance: number;
 }
@@ -117,7 +117,7 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
 
   // Badge styles based on point value and availability
   const getBadgeVariant = () => {
-    if (!product.available) return "destructive";
+    if (!product.isAvailable) return "destructive";
     if (isLuxury) return "default";
     if (isPremium) return "default";
     return "secondary";
@@ -127,13 +127,13 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
   const PointsBadge = () => (
     <div 
       className={`text-white font-semibold px-3 py-1.5 rounded-full text-sm flex items-center shadow-sm ${
-        !product.available ? 'bg-red-500' :
+        !product.isAvailable ? 'bg-red-500' :
         isLuxury ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
         isPremium ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
         'bg-gradient-to-r from-emerald-500 to-green-500'
       }`}
       style={
-        product.available && !isLuxury && !isPremium ? 
+        product.isAvailable && !isLuxury && !isPremium ? 
         { background: `linear-gradient(to right, ${branding?.primaryColor || "#4F46E5"}, ${branding?.secondaryColor || "#10B981"})` } : 
         {}
       }
@@ -155,7 +155,7 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
         </div>
 
         {/* Points status */}
-        {!product.available && (
+        {!product.isAvailable && (
           <div className="absolute top-3 right-3 z-10">
             <Badge variant="destructive" className="text-xs px-2 py-0.5">
               {product.points - balance} more points needed
@@ -188,10 +188,10 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
             <Button 
               size="sm" 
               onClick={handleRedeem} 
-              disabled={!product.available}
+              disabled={!product.isAvailable}
               className="shadow-md"
               style={
-                product.available ? 
+                product.isAvailable ? 
                 { background: branding?.primaryColor || "#4F46E5" } : 
                 {}
               }
@@ -210,18 +210,18 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
             <PointsBadge />
             <Button
               onClick={handleRedeem}
-              disabled={!product.available}
+              disabled={!product.isAvailable}
               size="sm"
               className={`
-                ${!product.available ? "opacity-50 cursor-not-allowed bg-gray-400" : ""}
+                ${!product.isAvailable ? "opacity-50 cursor-not-allowed bg-gray-400" : ""}
               `}
               style={
-                product.available ? 
+                product.isAvailable ? 
                 { background: branding?.primaryColor || "#4F46E5" } : 
                 {}
               }
             >
-              {!product.available ? "Not Available" : "Redeem"}
+              {!product.isAvailable ? "Not Available" : "Redeem"}
             </Button>
           </div>
         </div>
@@ -310,7 +310,7 @@ const ProductCard = ({ product, balance }: ProductCardProps) => {
                   
                   <div className="p-4">
                     <div className="flex items-start mb-4">
-                      <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded mr-3" />
+                      <img src={product.imageUrl || "https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Z2lmdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60"} alt={product.name} className="w-16 h-16 object-cover rounded mr-3" />
                       <div>
                         <h4 className="font-medium text-gray-800">{product.name}</h4>
                         <p className="text-sm text-gray-500 mt-1">{product.description}</p>
