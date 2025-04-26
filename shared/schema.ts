@@ -210,79 +210,6 @@ export const fileTemplates = pgTable("file_templates", {
   createdBy: integer("created_by").references(() => users.id),
 });
 
-// Survey schema
-export const surveys = pgTable("surveys", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  templateType: text("template_type"), // enps, engagement, 360, custom
-  isAnonymous: boolean("is_anonymous").default(false),
-  isMandatory: boolean("is_mandatory").default(false),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  status: text("status").notNull().default("draft"), // draft, active, completed, archived
-  totalRecipients: integer("total_recipients").default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at"),
-  createdBy: integer("created_by").references(() => users.id),
-});
-
-// Survey section schema
-export const surveySections = pgTable("survey_sections", {
-  id: serial("id").primaryKey(),
-  surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Survey question schema
-export const surveyQuestions = pgTable("survey_questions", {
-  id: serial("id").primaryKey(),
-  sectionId: integer("section_id").references(() => surveySections.id, { onDelete: 'cascade' }).notNull(),
-  content: text("content").notNull(),
-  type: text("type").notNull(), // multiple_choice, rating, text, etc.
-  options: jsonb("options"), // For multiple choice or rating questions
-  isRequired: boolean("is_required").default(true),
-  order: integer("order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Survey recipients schema
-export const surveyRecipients = pgTable("survey_recipients", {
-  id: serial("id").primaryKey(),
-  surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  status: text("status").notNull().default("pending"), // pending, started, completed
-  notificationSent: boolean("notification_sent").default(false),
-  completedAt: timestamp("completed_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Survey responses schema
-export const surveyResponses = pgTable("survey_responses", {
-  id: serial("id").primaryKey(),
-  surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
-  questionId: integer("question_id").references(() => surveyQuestions.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }), // null if anonymous
-  responseText: text("response_text"),
-  responseValue: integer("response_value"), // For rating questions
-  responseOptions: jsonb("response_options"), // For multiple choice questions
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Survey templates schema (for predefined templates)
-export const surveyTemplates = pgTable("survey_templates", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  type: text("type").notNull(), // enps, engagement, 360, custom
-  structure: jsonb("structure").notNull(), // JSON structure of the survey template
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  createdBy: integer("created_by").references(() => users.id),
-});
-
 // Define relationships
 export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions, { relationName: "userTransactions" }),
@@ -466,66 +393,6 @@ export const fileTemplateRelations = relations(fileTemplates, ({ one }) => ({
   }),
 }));
 
-// Survey relations
-export const surveysRelations = relations(surveys, ({ one, many }) => ({
-  creator: one(users, {
-    fields: [surveys.createdBy],
-    references: [users.id],
-  }),
-  sections: many(surveySections),
-  recipients: many(surveyRecipients),
-  responses: many(surveyResponses),
-}));
-
-export const surveySectionsRelations = relations(surveySections, ({ one, many }) => ({
-  survey: one(surveys, {
-    fields: [surveySections.surveyId],
-    references: [surveys.id],
-  }),
-  questions: many(surveyQuestions),
-}));
-
-export const surveyQuestionsRelations = relations(surveyQuestions, ({ one, many }) => ({
-  section: one(surveySections, {
-    fields: [surveyQuestions.sectionId],
-    references: [surveySections.id],
-  }),
-  responses: many(surveyResponses),
-}));
-
-export const surveyRecipientsRelations = relations(surveyRecipients, ({ one }) => ({
-  survey: one(surveys, {
-    fields: [surveyRecipients.surveyId],
-    references: [surveys.id],
-  }),
-  user: one(users, {
-    fields: [surveyRecipients.userId],
-    references: [users.id],
-  }),
-}));
-
-export const surveyResponsesRelations = relations(surveyResponses, ({ one }) => ({
-  survey: one(surveys, {
-    fields: [surveyResponses.surveyId],
-    references: [surveys.id],
-  }),
-  question: one(surveyQuestions, {
-    fields: [surveyResponses.questionId],
-    references: [surveyQuestions.id],
-  }),
-  user: one(users, {
-    fields: [surveyResponses.userId],
-    references: [users.id],
-  }),
-}));
-
-export const surveyTemplatesRelations = relations(surveyTemplates, ({ one }) => ({
-  creator: one(users, {
-    fields: [surveyTemplates.createdBy],
-    references: [users.id],
-  }),
-}));
-
 // Insert schemas for validating API inputs
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
@@ -544,14 +411,6 @@ export const insertMessageSchema = createInsertSchema(messages).omit({ id: true,
 export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true });
 export const insertBrandingSettingsSchema = createInsertSchema(brandingSettings).omit({ id: true });
 export const insertFileTemplateSchema = createInsertSchema(fileTemplates).omit({ id: true, createdAt: true, updatedAt: true });
-
-// Survey insert schemas
-export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true, updatedAt: true, totalRecipients: true });
-export const insertSurveySectionSchema = createInsertSchema(surveySections).omit({ id: true, createdAt: true });
-export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
-export const insertSurveyRecipientSchema = createInsertSchema(surveyRecipients).omit({ id: true, createdAt: true, completedAt: true });
-export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });
-export const insertSurveyTemplateSchema = createInsertSchema(surveyTemplates).omit({ id: true, createdAt: true });
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -604,22 +463,3 @@ export type InsertBrandingSetting = z.infer<typeof insertBrandingSettingsSchema>
 
 export type FileTemplate = typeof fileTemplates.$inferSelect;
 export type InsertFileTemplate = z.infer<typeof insertFileTemplateSchema>;
-
-// Survey types
-export type Survey = typeof surveys.$inferSelect;
-export type InsertSurvey = z.infer<typeof insertSurveySchema>;
-
-export type SurveySection = typeof surveySections.$inferSelect;
-export type InsertSurveySection = z.infer<typeof insertSurveySectionSchema>;
-
-export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
-export type InsertSurveyQuestion = z.infer<typeof insertSurveyQuestionSchema>;
-
-export type SurveyRecipient = typeof surveyRecipients.$inferSelect;
-export type InsertSurveyRecipient = z.infer<typeof insertSurveyRecipientSchema>;
-
-export type SurveyResponse = typeof surveyResponses.$inferSelect;
-export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
-
-export type SurveyTemplate = typeof surveyTemplates.$inferSelect;
-export type InsertSurveyTemplate = z.infer<typeof insertSurveyTemplateSchema>;

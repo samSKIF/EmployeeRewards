@@ -10,13 +10,9 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
-import AdminSurveys from "@/pages/admin-surveys";
-import EmployeeSurveys from "@/pages/surveys";
-import UnifiedSurveys from "@/pages/unified-surveys";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
-import { AuthProvider } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
 
 function App() {
@@ -109,8 +105,7 @@ function App() {
       {appReady && (
         <FirebaseAuthProvider>
           <BrandingProvider>
-            <AuthProvider>
-              <Switch>
+            <Switch>
               {/* Main dashboard routes */}
               <Route path="/dashboard">
                 <Dashboard />
@@ -127,20 +122,11 @@ function App() {
               <Route path="/admin/employees">
                 <AdminEmployees />
               </Route>
-              <Route path="/admin/surveys">
-                <AdminSurveys />
-              </Route>
               <Route path="/hr-config">
                 <HRConfig />
               </Route>
               <Route path="/seller">
                 <Seller />
-              </Route>
-              <Route path="/surveys">
-                <EmployeeSurveys />
-              </Route>
-              <Route path="/unified-surveys">
-                <UnifiedSurveys />
               </Route>
               
               {/* ThrivioHR Social Platform routes */}
@@ -166,7 +152,6 @@ function App() {
                 <NotFound />
               </Route>
             </Switch>
-              </AuthProvider>
           </BrandingProvider>
         </FirebaseAuthProvider>
       )}
