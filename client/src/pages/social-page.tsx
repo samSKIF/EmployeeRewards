@@ -15,18 +15,21 @@ import {
   ChevronRight, ThumbsUp, Award, FileText, Share2, Smile,
   Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
-  Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash
+  Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash,
+  LogOut, ShoppingBag, CreditCard
 } from "lucide-react";
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBranding } from "@/context/BrandingContext";
+import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { branding } = useBranding();
+  const { signOut } = useFirebaseAuth();
   const [postContent, setPostContent] = useState("");
   const [currentSection, setCurrentSection] = useState("townhall");
   const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
@@ -34,6 +37,40 @@ export default function SocialPage() {
   const [recipientId, setRecipientId] = useState<number | null>(null);
   const [recognitionMessage, setRecognitionMessage] = useState("");
   const [recognitionPoints, setRecognitionPoints] = useState<number>(50);
+  
+  // Function to handle user logout
+  const handleLogout = async () => {
+    try {
+      // Remove Firebase token
+      localStorage.removeItem("firebaseToken");
+      
+      // Set sessionStorage to prevent auto-login on auth page
+      sessionStorage.setItem("skipAutoLogin", "true");
+      
+      // Sign out from Firebase
+      await signOut();
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+      
+      // Redirect to auth page
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: "There was a problem logging out. Please try again.",
+      });
+    }
+  };
+  
+  // Function to open reward shop in a new tab
+  const openRewardShop = () => {
+    window.open('/shop', '_blank');
+  };
   // State for org settings removed as requested
   
   // Get user profile
@@ -69,6 +106,16 @@ export default function SocialPage() {
     queryKey: ["/api/social/stats"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/social/stats");
+      return res.json();
+    },
+    enabled: !!user,
+  });
+  
+  // Get user balance
+  const { data: balanceData } = useQuery<{ balance: number }>({
+    queryKey: ["/api/points/balance"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/points/balance");
       return res.json();
     },
     enabled: !!user,
@@ -641,6 +688,30 @@ export default function SocialPage() {
           </div>
         </div>
         
+        {/* Redeem Points Section */}
+        <div className="mt-6 px-3">
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-indigo-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-indigo-700">Redeem Your Points</h3>
+              <div className="bg-white text-indigo-700 font-bold px-2 py-1 rounded-md shadow-sm text-sm border border-indigo-200">
+                {balanceData?.balance || 0}
+              </div>
+            </div>
+            
+            <p className="text-xs text-indigo-600 mb-3">
+              Explore our reward shop and redeem your hard-earned points for exciting rewards!
+            </p>
+            
+            <Button 
+              onClick={openRewardShop}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 text-sm shadow-md"
+            >
+              <ShoppingBag size={14} className="mr-2" />
+              Visit Reward Shop
+            </Button>
+          </div>
+        </div>
+        
         {/* Admin section removed as requested */}
       </div>
       
@@ -649,15 +720,44 @@ export default function SocialPage() {
         <div className="max-w-3xl mx-auto">
           {/* Organization Settings Panel removed as requested */}
           
-          <div className="flex items-center mb-6">
-            <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          {/* Top navigation bar with points balance and logout button */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
+                <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
+              </div>
             </div>
-            <div className="ml-3">
-              <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
-              <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
+            <div className="flex items-center gap-4">
+              {/* Points balance */}
+              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+                <CreditCard size={16} />
+                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
+              </div>
+              
+              {/* Reward Shop Button */}
+              <Button 
+                onClick={openRewardShop}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+              >
+                <ShoppingBag size={16} className="mr-2" /> 
+                Reward Shop
+              </Button>
+              
+              {/* Logout button */}
+              <Button 
+                onClick={handleLogout} 
+                variant="ghost" 
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <LogOut size={16} className="mr-2" /> 
+                Logout
+              </Button>
             </div>
           </div>
           
