@@ -4,6 +4,7 @@ import { useParams, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import MainLayout from "@/components/layout/MainLayout";
 import {
   Card,
   CardContent,
@@ -404,7 +405,8 @@ export default function AdminSurveyCreator() {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <MainLayout>
+      <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <Button
@@ -1287,6 +1289,7 @@ export default function AdminSurveyCreator() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+      </div>
+    </MainLayout>
   );
 }
