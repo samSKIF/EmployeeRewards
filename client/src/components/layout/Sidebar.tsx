@@ -13,7 +13,10 @@ import {
   Award,
   MessageSquare,
   Settings,
-  Users
+  Users,
+  Share2,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
@@ -85,6 +88,12 @@ const Sidebar = () => {
     }
   };
 
+  const [socialToolsOpen, setSocialToolsOpen] = useState(false);
+
+  const toggleSocialTools = () => {
+    setSocialToolsOpen(!socialToolsOpen);
+  };
+
   const navItems = [
     { 
       path: "/dashboard", 
@@ -92,9 +101,23 @@ const Sidebar = () => {
       icon: <Home className="w-5 h-5 mr-3" /> 
     },
     { 
-      path: "/shop", 
-      label: "Reward Shop", 
-      icon: <ShoppingCart className="w-5 h-5 mr-3" /> 
+      id: "social-tools",
+      label: "Social Tools", 
+      icon: <Share2 className="w-5 h-5 mr-3" />,
+      onClick: toggleSocialTools,
+      isOpen: socialToolsOpen,
+      children: [
+        { 
+          path: "/shop", 
+          label: "Reward Shop", 
+          icon: <ShoppingCart className="w-5 h-5 mr-3" /> 
+        },
+        { 
+          path: "/surveys", 
+          label: "Surveys", 
+          icon: <MessageSquare className="w-5 h-5 mr-3" /> 
+        }
+      ]
     },
     { 
       path: "/transactions", 
@@ -173,20 +196,60 @@ const Sidebar = () => {
         
         <nav>
           <ul>
-            {navItems.map((item) => (
-              <li className="mb-1" key={item.path}>
-                <Link 
-                  href={item.path}
-                  onClick={closeMobileMenu}
-                  className={`flex items-center ${
-                    location === item.path
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  } rounded-md px-3 py-2 text-sm font-medium transition-colors`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
+            {navItems.map((item, index) => (
+              <li className="mb-1" key={item.path || item.id || `menu-${index}`}>
+                {item.children ? (
+                  <div>
+                    <button
+                      onClick={item.onClick}
+                      className="flex items-center justify-between w-full text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors"
+                    >
+                      <div className="flex items-center">
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </div>
+                      {item.isOpen ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4" />
+                      )}
+                    </button>
+                    
+                    {item.isOpen && item.children && (
+                      <ul className="pl-4 mt-1 space-y-1">
+                        {item.children.map((child) => (
+                          <li key={child.path}>
+                            <Link
+                              href={child.path}
+                              onClick={closeMobileMenu}
+                              className={`flex items-center ${
+                                location === child.path
+                                  ? "bg-gray-700 text-white"
+                                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                              } rounded-md px-3 py-2 text-sm font-medium transition-colors`}
+                            >
+                              {child.icon}
+                              <span>{child.label}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href={item.path}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center ${
+                      location === item.path
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    } rounded-md px-3 py-2 text-sm font-medium transition-colors`}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
