@@ -65,7 +65,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../hooks/useAuth";
 import { AlertCircle, Calendar, Clock, ClipboardCheck, Eye, PieChart, Plus, Save, Trash2, Users } from "lucide-react";
 import { Survey } from "@shared/schema";
 import {

@@ -139,6 +139,9 @@ function App() {
               <Route path="/surveys">
                 <EmployeeSurveys />
               </Route>
+              <Route path="/unified-surveys">
+                <UnifiedSurveys />
+              </Route>
               
               {/* ThrivioHR Social Platform routes */}
               <Route path="/auth">
