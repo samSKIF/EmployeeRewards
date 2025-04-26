@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Settings,
   Users,
-  ClipboardList
+  ClipboardList,
+  FileText
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
@@ -111,6 +112,11 @@ const Sidebar = () => {
       path: "/admin/surveys",
       label: "Surveys",
       icon: <ClipboardList className="w-5 h-5 mr-3" />
+    },
+    {
+      path: "/admin/surveys/templates",
+      label: "Survey Templates",
+      icon: <FileText className="w-5 h-5 mr-3" />
     }
   ];
 
