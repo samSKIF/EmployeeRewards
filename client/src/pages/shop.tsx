@@ -54,7 +54,8 @@ const Shop = () => {
   
   // Check for brand parameter in URL
   useEffect(() => {
-    if (!processedRef.current) {
+    // Only process once per component mount
+    if (processedRef.current === false) {
       processedRef.current = true;
       // Parse URL params
       const urlParams = new URLSearchParams(window.location.search);
