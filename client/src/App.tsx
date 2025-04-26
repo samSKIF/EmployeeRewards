@@ -12,6 +12,7 @@ import SocialPage from "@/pages/social-page";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminSurveys from "@/pages/admin-surveys";
 import EmployeeSurveys from "@/pages/surveys";
+import UnifiedSurveys from "@/pages/unified-surveys";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
