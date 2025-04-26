@@ -536,7 +536,7 @@ export default function AuthPage() {
                   <CardFooter className="flex flex-col space-y-4 pt-2">
                     <Button 
                       type="submit" 
-                      className="w-full bg-primary-color hover:bg-primary-color/80 text-white"
+                      className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md"
                       disabled={isLoading}
                     >
                       {isLoading ? "Signing in..." : "Sign In"}
@@ -583,8 +583,7 @@ export default function AuthPage() {
                     
                     <Button 
                       type="button"
-                      variant="secondary"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2 font-medium shadow-md"
                       onClick={openAdminSetupDialog}
                       disabled={isLoading}
                     >
@@ -653,7 +652,7 @@ export default function AuthPage() {
                   <CardFooter className="flex flex-col space-y-4 pt-2">
                     <Button 
                       type="submit" 
-                      className="w-full bg-primary-color hover:bg-primary-color/80 text-white"
+                      className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md"
                       disabled={isLoading}
                     >
                       {isLoading ? "Creating Account..." : "Create Account"}
