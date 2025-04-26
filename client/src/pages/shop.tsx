@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import MainLayout from "@/components/layout/MainLayout";
 import ProductCard from "@/components/shop/ProductCard";
@@ -16,6 +16,7 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const { branding } = useBranding();
   const { signOut } = useFirebaseAuth();
 
@@ -47,6 +48,36 @@ const Shop = () => {
       console.error("Logout failed:", error);
     }
   };
+
+  // Create a ref outside the effect
+  const processedRef = useRef(false);
+  
+  // Check for brand parameter in URL
+  useEffect(() => {
+    if (!processedRef.current) {
+      processedRef.current = true;
+      // Parse URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const brandParam = urlParams.get('brand');
+      
+      if (brandParam) {
+        setSelectedBrand(brandParam);
+        
+        // Set search query based on brand
+        const brandSearchMap: Record<string, string> = {
+          'airbnb': 'airbnb',
+          'red-cross': 'red cross',
+          'walmart': 'walmart',
+          'nike': 'nike'
+        };
+        
+        // If we have a mapping for this brand, set the search query
+        if (brandSearchMap[brandParam]) {
+          setSearchQuery(brandSearchMap[brandParam]);
+        }
+      }
+    }
+  }, []);
 
   // Extract categories from products
   useEffect(() => {
@@ -157,6 +188,34 @@ const Shop = () => {
       </header>
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        {/* Brand filter notification */}
+        {selectedBrand && (
+          <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="mr-3 p-2 bg-blue-100 rounded-full">
+                <ShoppingBag className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-blue-800">
+                  Viewing {selectedBrand.charAt(0).toUpperCase() + selectedBrand.slice(1)} products
+                </h3>
+                <p className="text-xs text-blue-600">Products matching your selection from the social feed</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-blue-600 border-blue-200 hover:bg-blue-100"
+              onClick={() => {
+                setSelectedBrand(null);
+                setSearchQuery('');
+              }}
+            >
+              View All
+            </Button>
+          </div>
+        )}
+        
         {/* Search and filter section */}
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">

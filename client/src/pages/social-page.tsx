@@ -702,6 +702,21 @@ export default function SocialPage() {
               Explore our reward shop and redeem your hard-earned points for exciting rewards!
             </p>
             
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div 
+                className="bg-white rounded-lg p-2 flex items-center justify-center hover:bg-indigo-50 cursor-pointer transition shadow-sm border border-indigo-100"
+                onClick={() => window.open('/shop?brand=airbnb', '_blank')}
+              >
+                <img src="https://logo.clearbit.com/airbnb.com" alt="Airbnb" className="h-6 w-auto" />
+              </div>
+              <div 
+                className="bg-white rounded-lg p-2 flex items-center justify-center hover:bg-indigo-50 cursor-pointer transition shadow-sm border border-indigo-100"
+                onClick={() => window.open('/shop?brand=walmart', '_blank')}
+              >
+                <img src="https://logo.clearbit.com/walmart.com" alt="Walmart" className="h-5 w-auto" />
+              </div>
+            </div>
+            
             <Button 
               onClick={openRewardShop}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 text-sm shadow-md"
@@ -1117,20 +1132,37 @@ export default function SocialPage() {
         <div>
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-semibold text-gray-900">Redeem Your Points</h3>
-            <button className="text-xs text-blue-500">see all</button>
+            <button 
+              className="text-xs text-blue-500 hover:underline"
+              onClick={() => window.open('/shop', '_blank')}
+            >
+              see all
+            </button>
           </div>
           
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+            <div 
+              className="bg-gray-50 rounded-lg p-2 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition"
+              onClick={() => window.open('/shop?brand=airbnb', '_blank')}
+            >
               <img src="https://logo.clearbit.com/airbnb.com" alt="Airbnb" className="h-8 w-auto" />
             </div>
-            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+            <div 
+              className="bg-gray-50 rounded-lg p-2 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition"
+              onClick={() => window.open('/shop?brand=red-cross', '_blank')}
+            >
               <img src="https://logo.clearbit.com/americanredcross.org" alt="Red Cross" className="h-6 w-auto" />
             </div>
-            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+            <div 
+              className="bg-gray-50 rounded-lg p-2 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition"
+              onClick={() => window.open('/shop?brand=walmart', '_blank')}
+            >
               <img src="https://logo.clearbit.com/walmart.com" alt="Walmart" className="h-6 w-auto" />
             </div>
-            <div className="bg-gray-50 rounded-lg p-2 flex items-center justify-center">
+            <div 
+              className="bg-gray-50 rounded-lg p-2 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition"
+              onClick={() => window.open('/shop?brand=nike', '_blank')}
+            >
               <img src="https://logo.clearbit.com/nike.com" alt="Nike" className="h-6 w-auto" />
             </div>
           </div>
