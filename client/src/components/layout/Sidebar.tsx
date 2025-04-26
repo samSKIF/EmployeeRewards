@@ -113,7 +113,7 @@ const Sidebar = () => {
           icon: <ShoppingCart className="w-5 h-5 mr-3" /> 
         },
         { 
-          path: "/surveys", 
+          path: "/unified-surveys", 
           label: "Surveys", 
           icon: <MessageSquare className="w-5 h-5 mr-3" /> 
         }
