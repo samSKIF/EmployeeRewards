@@ -501,7 +501,7 @@ export class DatabaseStorage implements IStorage {
     
     return allProducts.map(product => ({
       ...product,
-      available: userBalance >= product.points
+      isAvailable: userBalance >= product.points
     }));
   }
   
