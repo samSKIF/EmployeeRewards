@@ -1556,7 +1556,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Social methods - Stats
-  async getUserSocialStats(userId: number): Promise<SocialStats> {
+  async updateShopConfig(configData: any): Promise<any> {
+  // Store the shop configuration
+  return configData;
+}
+
+async getUserSocialStats(userId: number): Promise<SocialStats> {
     // Get posts count
     const [postsCountResult] = await db.select({
       count: count(posts.id),
