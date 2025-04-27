@@ -217,13 +217,11 @@ export const surveys = pgTable("surveys", {
   description: text("description"),                // Survey description
   status: text("status").notNull().default("draft"), // draft, published, closed
   isAnonymous: boolean("is_anonymous").default(false), // Whether responses are anonymous 
-  targetAudience: text("target_audience").default("all"), // all, department, custom
-  targetDepartment: text("target_department"),     // If audience is department-specific
-  targetUserIds: integer("target_user_ids").array(), // Custom list of user IDs if audience is custom
-  publishedAt: timestamp("published_at"),          // When survey was published
-  expiresAt: timestamp("expires_at"),              // Optional expiration date
-  pointsAwarded: integer("points_awarded").default(0), // Points awarded for completion
-  reminderDays: integer("reminder_days"),          // Days after which to send a reminder 
+  isMandatory: boolean("is_mandatory").default(false), // Whether survey completion is mandatory
+  startDate: timestamp("start_date"),              // When survey starts
+  endDate: timestamp("end_date"),                  // When survey ends
+  templateType: text("template_type"),             // Type of template
+  totalRecipients: integer("total_recipients"),    // Count of recipients
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
   createdBy: integer("created_by").references(() => users.id),

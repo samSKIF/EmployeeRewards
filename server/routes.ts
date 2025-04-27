@@ -1789,18 +1789,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/surveys", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
-      // Process the request body to handle date fields
-      const { publishedAt, expiresAt, ...restData } = req.body;
+      // Process the request body to match the actual database schema
+      const { startDate, endDate, targetAudience, ...restData } = req.body;
       
-      // Properly format date fields or set to null
-      const formattedData = {
+      // Create a data object that matches the database schema
+      const surveyData = {
         ...restData,
-        publishedAt: publishedAt ? new Date(publishedAt) : null,
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        // Map targetAudience to totalRecipients if needed
+        totalRecipients: targetAudience === 'all' ? -1 : (req.body.targetUserIds?.length || 0),
         createdBy: req.user?.id
       };
       
-      const survey = await storage.createSurvey(formattedData);
+      const survey = await storage.createSurvey(surveyData);
       res.status(201).json(survey);
     } catch (error) {
       console.error("Error creating survey:", error);
@@ -1838,7 +1840,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/surveys/:id/publish", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
-      const survey = await storage.publishSurvey(parseInt(id));
+      // Update to match the actual schema - set startDate to now and status to published
+      const survey = await storage.updateSurvey(parseInt(id), {
+        status: 'published',
+        startDate: new Date()
+      });
       res.json(survey);
     } catch (error) {
       console.error(`Error publishing survey ${req.params.id}:`, error);
