@@ -47,10 +47,12 @@ const Sidebar = () => {
   
   // Function to open social platform in a new tab
   const openSocialPlatform = () => {
-    // Open social platform in a new browser tab with a redirectTo parameter
     window.open('/auth?redirectTo=social', '_blank');
-    
-    // Close mobile menu if applicable
+    closeMobileMenu();
+  };
+
+  const openRewardShop = () => {
+    window.open('/shop', '_blank');
     closeMobileMenu();
   };
   
@@ -94,8 +96,8 @@ const Sidebar = () => {
       icon: <Home className="w-5 h-5 mr-3" /> 
     },
     { 
-      path: "/shop", 
-      label: "Reward Shop", 
+      path: "/shop-config", 
+      label: "Configure Shop", 
       icon: <ShoppingCart className="w-5 h-5 mr-3" /> 
     },
     { 
@@ -213,6 +215,14 @@ const Sidebar = () => {
         >
           <MessageSquare className="w-5 h-5 mr-3" />
           <span>Open Social Platform</span>
+        </button>
+
+        <button
+          onClick={openRewardShop}
+          className="flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
+        >
+          <ShoppingCart className="w-5 h-5 mr-3" />
+          <span>Open Reward Shop</span>
         </button>
         
         <button

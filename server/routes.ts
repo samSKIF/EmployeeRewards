@@ -402,6 +402,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product routes
+  // Shop Configuration Routes
+  app.get("/api/shop/config", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const config = await storage.getShopConfig();
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching shop config:", error);
+      res.status(500).json({ message: "Failed to fetch shop configuration" });
+    }
+  });
+
+  app.post("/api/shop/config", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const config = await storage.updateShopConfig(req.body);
+      res.json(config);
+    } catch (error) {
+      console.error("Error updating shop config:", error);
+      res.status(500).json({ message: "Failed to update shop configuration" });
+    }
+  });
+
   app.get("/api/catalog", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {

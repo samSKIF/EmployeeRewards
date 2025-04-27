@@ -18,7 +18,7 @@ import AdminSurveyEditor from "@/pages/admin-survey-editor";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy } from "react";
 
 function App() {
   const [location, setLocation] = useLocation();
@@ -34,7 +34,7 @@ function App() {
     if (location === "/") {
       // Check if user is logged in via Firebase
       const token = localStorage.getItem("firebaseToken");
-      
+
       if (token) {
         const checkAdminStatus = async () => {
           try {
@@ -44,14 +44,14 @@ function App() {
               email: payload.email,
               hasAdminClaim: payload.claims?.isAdmin === true 
             });
-            
+
             // Special case for admin@demo.io which should always be admin
             if (payload.email === "admin@demo.io") {
               console.log("Admin email detected in App.tsx (admin@demo.io), redirecting to dashboard");
               setLocation("/dashboard");
               return;
             }
-            
+
             // Check if user is admin via token claims
             if (payload && payload.claims && payload.claims.isAdmin === true) {
               console.log("Admin detected from token claims in App.tsx");
@@ -59,7 +59,7 @@ function App() {
               setLocation("/dashboard");
               return;
             }
-            
+
             // If not determined by token, check with server
             try {
               const response = await fetch("/api/users/me", {
@@ -67,11 +67,11 @@ function App() {
                   "Authorization": `Bearer ${token}`
                 }
               });
-              
+
               if (response.ok) {
                 const userData = await response.json();
                 console.log("User data from API in App.tsx:", userData);
-                
+
                 // Check if user is admin based on server response
                 if (userData && userData.isAdmin) {
                   console.log("Admin status confirmed by server in App.tsx");
@@ -79,7 +79,7 @@ function App() {
                   return;
                 }
               }
-              
+
               // Regular employees go to social platform
               console.log("Regular employee detected in App.tsx, redirecting to social");
               setLocation("/social");
@@ -94,7 +94,7 @@ function App() {
             setLocation("/auth");
           }
         };
-        
+
         checkAdminStatus();
       } else {
         // No token found, redirect to auth page
@@ -151,7 +151,10 @@ function App() {
               <Route path="/seller">
                 <Seller />
               </Route>
-              
+              <Route path="/shop-config">
+                <ShopConfig /> {/* Added ShopConfig route */}
+              </Route>
+
               {/* ThrivioHR Social Platform routes */}
               <Route path="/auth">
                 <AuthPage />
@@ -162,7 +165,7 @@ function App() {
               <Route path="/social/:tab">
                 <SocialPage />
               </Route>
-              
+
               <Route path="/">
                 <div className="flex items-center justify-center min-h-screen">
                   <svg className="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -183,3 +186,5 @@ function App() {
 }
 
 export default App;
+
+const ShopConfig = lazy(() => import('./pages/shop-config')); //Added import for lazy loading
