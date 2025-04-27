@@ -543,213 +543,30 @@ export default function AdminSurveyCreator() {
       </div>
 
       {previewMode ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">
-              {surveyForm.getValues("title") || "Untitled Survey"}
-            </CardTitle>
-            {surveyForm.getValues("description") && (
-              <CardDescription>
-                {surveyForm.getValues("description")}
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            {questions.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No questions added yet. Add some questions to preview your survey.
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {questions
-                  .sort((a, b) => a.order - b.order)
-                  .map((question, index) => (
-                    <div
-                      key={question.id}
-                      className="border p-4 rounded-lg bg-white"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {index + 1}. {question.questionText}
-                            {question.isRequired && (
-                              <span className="text-red-500 ml-1">*</span>
-                            )}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            {getQuestionTypeLabel(question.questionType)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Render different inputs based on question type */}
-                      {question.questionType === "single" && (
-                        <div className="space-y-2 mt-3">
-                          {question.options?.map((option, i) => (
-                            <div key={i} className="flex items-center">
-                              <input
-                                type="radio"
-                                name={`question-${question.id}`}
-                                id={`option-${question.id}-${i}`}
-                                className="h-4 w-4 text-blue-600 mr-2"
-                                disabled
-                              />
-                              <label
-                                htmlFor={`option-${question.id}-${i}`}
-                                className="text-sm text-gray-700"
-                              >
-                                {option}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {question.questionType === "multiple" && (
-                        <div className="space-y-2 mt-3">
-                          {question.options?.map((option, i) => (
-                            <div key={i} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                name={`question-${question.id}-${i}`}
-                                id={`option-${question.id}-${i}`}
-                                className="h-4 w-4 text-blue-600 mr-2"
-                                disabled
-                              />
-                              <label
-                                htmlFor={`option-${question.id}-${i}`}
-                                className="text-sm text-gray-700"
-                              >
-                                {option}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {question.questionType === "rating" && (
-                        <div className="flex items-center space-x-1 mt-3">
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <button
-                              key={rating}
-                              type="button"
-                              disabled
-                              className="h-10 w-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-sm font-medium text-gray-600 hover:border-blue-500 hover:text-blue-500"
-                            >
-                              {rating}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {question.questionType === "likert" && (
-                        <div className="grid grid-cols-5 gap-2 mt-3">
-                          <div className="text-center text-xs text-gray-600">
-                            Strongly Disagree
-                          </div>
-                          <div className="text-center text-xs text-gray-600">
-                            Disagree
-                          </div>
-                          <div className="text-center text-xs text-gray-600">
-                            Neutral
-                          </div>
-                          <div className="text-center text-xs text-gray-600">
-                            Agree
-                          </div>
-                          <div className="text-center text-xs text-gray-600">
-                            Strongly Agree
-                          </div>
-                          <div className="text-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              disabled
-                              className="h-4 w-4 text-blue-600"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              disabled
-                              className="h-4 w-4 text-blue-600"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              disabled
-                              className="h-4 w-4 text-blue-600"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              disabled
-                              className="h-4 w-4 text-blue-600"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <input
-                              type="radio"
-                              name={`question-${question.id}`}
-                              disabled
-                              className="h-4 w-4 text-blue-600"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {question.questionType === "text" && (
-                        <div className="mt-3">
-                          <textarea
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                            placeholder="Your answer"
-                            disabled
-                            rows={3}
-                          />
-                        </div>
-                      )}
-
-                      {question.questionType === "file" && (
-                        <div className="mt-3">
-                          <div className="border border-dashed border-gray-300 rounded-md px-6 py-8 text-center">
-                            <div className="text-sm text-gray-600">
-                              Click to upload or drag and drop
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500">
-                              Supports images, documents and PDFs
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="border-t bg-gray-50 flex justify-between">
-            <div>
-              {surveyForm.getValues("isAnonymous") && (
-                <div className="text-xs text-gray-500 flex items-center">
-                  <CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />
-                  Responses to this survey are anonymous
-                </div>
-              )}
-            </div>
-            <div>
-              {surveyForm.getValues("pointsAwarded") > 0 && (
-                <div className="text-xs text-gray-500">
-                  Complete this survey to earn{" "}
-                  <span className="font-bold text-amber-500">
-                    {surveyForm.getValues("pointsAwarded")} points
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardFooter>
+        <SurveyTaker
+          survey={{
+            id: 'preview',
+            title: surveyForm.getValues("title") || "Untitled Survey",
+            description: surveyForm.getValues("description") || "",
+            isAnonymous: surveyForm.getValues("isAnonymous"),
+            pointsAwarded: surveyForm.getValues("pointsAwarded"),
+            status: 'draft',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }}
+          questions={questions.sort((a, b) => a.order - b.order).map(q => ({
+            ...q,
+            surveyId: 'preview'
+          }))}
+          preview={true}
+          onComplete={() => {
+            setPreviewMode(false);
+            toast({
+              title: "Preview completed",
+              description: "This was just a preview - no responses were saved.",
+            });
+          }}
+        />
         </Card>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
