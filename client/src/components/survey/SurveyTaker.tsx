@@ -106,6 +106,12 @@ export default function SurveyTaker({
       case 'likert':
         schema = z.number().min(0).max(10);
         break;
+      case 'ranking':
+        schema = z.array(z.string());
+        break;
+      case 'nps':
+        schema = z.number().min(1).max(10);
+        break;
       case 'file':
         schema = z.any(); // Simplified for demo
         break;
@@ -130,13 +136,28 @@ export default function SurveyTaker({
     });
   };
   
+  // Get default value based on question type
+  const getDefaultValue = (question: SurveyQuestion | undefined) => {
+    if (!question) return '';
+    
+    const savedAnswer = answers[`question_${question.id}`];
+    if (savedAnswer !== undefined) return savedAnswer;
+    
+    switch (question.questionType) {
+      case 'multiple':
+        return [];
+      case 'ranking':
+        return question.options || ["Samir", "SKIF", "Karim", "Rakim"];
+      default:
+        return '';
+    }
+  };
+
   // Initialize form
   const form = useForm({
     resolver: zodResolver(currentQuestion ? getQuestionSchema(currentQuestion) : z.object({})),
     defaultValues: {
-      [`question_${currentQuestion?.id}`]: 
-        answers[`question_${currentQuestion?.id}`] || 
-        (currentQuestion?.questionType === 'multiple' ? [] : '')
+      [`question_${currentQuestion?.id}`]: getDefaultValue(currentQuestion)
     }
   });
   
@@ -144,9 +165,7 @@ export default function SurveyTaker({
   useEffect(() => {
     if (currentQuestion) {
       form.reset({
-        [`question_${currentQuestion.id}`]: 
-          answers[`question_${currentQuestion.id}`] || 
-          (currentQuestion.questionType === 'multiple' ? [] : '')
+        [`question_${currentQuestion.id}`]: getDefaultValue(currentQuestion)
       });
     }
   }, [currentQuestion, form, answers]);
@@ -415,6 +434,140 @@ export default function SurveyTaker({
                     }}
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+        
+      case 'ranking':
+        return (
+          <FormField
+            control={form.control}
+            name={`question_${currentQuestion.id}`}
+            render={({ field }) => {
+              // Initialize options array if not already set
+              const options = currentQuestion.options || ["Samir", "SKIF", "Karim", "Rakim"];
+              
+              // If field.value is not yet an array, initialize it with the options
+              if (!Array.isArray(field.value) || field.value.length === 0) {
+                field.onChange([...options]);
+              }
+              
+              // Move item up in the ranking
+              const moveItemUp = (index: number) => {
+                if (index <= 0) return;
+                const newValue = [...field.value];
+                [newValue[index], newValue[index - 1]] = [newValue[index - 1], newValue[index]];
+                field.onChange(newValue);
+              };
+              
+              // Move item down in the ranking
+              const moveItemDown = (index: number) => {
+                if (index >= field.value.length - 1) return;
+                const newValue = [...field.value];
+                [newValue[index], newValue[index + 1]] = [newValue[index + 1], newValue[index]];
+                field.onChange(newValue);
+              };
+              
+              return (
+                <FormItem>
+                  <FormControl>
+                    <div className="space-y-2">
+                      {field.value && field.value.map((option: string, index: number) => (
+                        <div key={index} className="flex items-center border p-2 rounded-md bg-white">
+                          <span className="font-medium mr-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
+                            {index + 1}
+                          </span>
+                          <span>{option}</span>
+                          <div className="ml-auto flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => moveItemUp(index)}
+                              disabled={index === 0}
+                            >
+                              <span className="sr-only">Move up</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                              >
+                                <path d="m18 15-6-6-6 6"/>
+                              </svg>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => moveItemDown(index)}
+                              disabled={index === field.value.length - 1}
+                            >
+                              <span className="sr-only">Move down</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                              >
+                                <path d="m6 9 6 6 6-6"/>
+                              </svg>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        );
+        
+      case 'nps':
+        return (
+          <FormField
+            control={form.control}
+            name={`question_${currentQuestion.id}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+                      let bgColor = "bg-red-500";
+                      if (n >= 7 && n <= 8) bgColor = "bg-yellow-400";
+                      if (n >= 9) bgColor = "bg-green-500";
+                      
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          className={`flex-1 text-white font-medium ${bgColor} rounded-md py-2 px-1 hover:opacity-90 transition-opacity ${field.value === n ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
+                          onClick={() => field.onChange(n)}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between text-xs mt-2">
+                    <span>Not Likely</span>
+                    <span>Very Likely</span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

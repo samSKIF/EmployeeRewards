@@ -328,7 +328,7 @@ export default function AdminSurveyEditor() {
               ...q, 
               questionText: currentQuestionText, 
               isRequired: currentQuestionRequired,
-              options: q.questionType === 'single' || q.questionType === 'multiple' 
+              options: ['single', 'multiple', 'ranking', 'dropdown', 'matrix'].includes(q.questionType)
                 ? currentQuestionOptions 
                 : q.options
             } 
@@ -624,7 +624,7 @@ export default function AdminSurveyEditor() {
                       </div>
                     </div>
                     
-                    {(question.questionType === 'single' || question.questionType === 'multiple') && (
+                    {(['single', 'multiple', 'ranking', 'dropdown', 'matrix'].includes(question.questionType)) && (
                       <div className="mt-4">
                         <h4 className="text-sm font-medium mb-2">Options</h4>
                         <div className="space-y-2">
@@ -814,7 +814,7 @@ export default function AdminSurveyEditor() {
                 <Label htmlFor="required">Required</Label>
               </div>
               
-              {editingQuestionId && survey?.questions.find(q => q.id === editingQuestionId)?.questionType === 'single' && (
+              {editingQuestionId && ['single', 'multiple', 'ranking', 'dropdown', 'matrix'].includes(survey?.questions.find(q => q.id === editingQuestionId)?.questionType || '') && (
                 <div className="space-y-2">
                   <Label>Options</Label>
                   {currentQuestionOptions.map((option, index) => (
