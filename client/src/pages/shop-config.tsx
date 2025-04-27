@@ -11,34 +11,22 @@ const ShopConfig = () => {
 
   const designs = [
     {
-      id: "traditional",
-      name: "Traditional Multi-Page Catalog",
-      image: "/shop-designs/traditional.png",
-      description: "Classic e-commerce layout with detailed navigation and filtering"
+      id: "grid",
+      name: "Grid Layout",
+      image: "/shop-designs/grid-layout.jpg",
+      description: "Modern grid-based layout with large product cards"
     },
     {
-      id: "single-page",
-      name: "Single-Page Long-Scroll",
-      image: "/shop-designs/single-page.png",
-      description: "Modern one-page design with smooth scrolling sections"
+      id: "list",
+      name: "List View",
+      image: "/shop-designs/list-view.jpg",
+      description: "Classic list view with detailed product information"
     },
     {
-      id: "app-like",
-      name: "App-Like Dashboard",
-      image: "/shop-designs/app-like.png",
-      description: "Power user interface with quick access to features"
-    },
-    {
-      id: "guided",
-      name: "Guided Discovery",
-      image: "/shop-designs/guided.png",
-      description: "Wizard-based interface for personalized recommendations"
-    },
-    {
-      id: "modular",
-      name: "Modular Headless",
-      image: "/shop-designs/modular.png",
-      description: "Flexible component-based layout system"
+      id: "magazine",
+      name: "Magazine Style",
+      image: "/shop-designs/magazine.jpg",
+      description: "Magazine-style layout with featured products"
     }
   ];
 
@@ -141,6 +129,7 @@ const ShopConfig = () => {
         <Button 
           onClick={handleSaveDesign}
           disabled={!selectedDesign || saveConfigMutation.isPending}
+          className="mt-4"
         >
           {saveConfigMutation.isPending ? "Applying design..." : "Apply Selected Design"}
         </Button>
