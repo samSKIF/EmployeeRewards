@@ -2057,6 +2057,8 @@ async function seedInitialData() {
       console.log("Seeding test products...");
       await seedProducts();
       console.log("Test products seeded successfully");
+      
+      const demoProducts = [
         {
           name: "Amazon Gift Card",
           description: "$50 Amazon gift card to spend on anything you want.",
