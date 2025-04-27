@@ -2,13 +2,14 @@
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const ShopConfig = () => {
   const [selectedDesign, setSelectedDesign] = useState("design1");
@@ -23,27 +24,64 @@ const ShopConfig = () => {
     }
   });
 
-  const saveConfig = async () => {
-    try {
+  const saveConfigMutation = useMutation({
+    mutationFn: async (data: any) => {
       const response = await fetch("/api/shop/config", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(shopConfig)
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(data)
       });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Shop configuration saved successfully"
-        });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save configuration');
       }
-    } catch (error) {
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Shop configuration saved successfully"
+      });
+    },
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to save configuration",
         variant: "destructive"
       });
     }
+  });
+
+  const saveConfig = (section: string) => {
+    let configData;
+    switch(section) {
+      case 'brand':
+        configData = {
+          design: selectedDesign,
+          colorScheme: shopConfig.colorScheme
+        };
+        break;
+      case 'categories':
+        configData = {
+          categories: shopConfig.categories
+        };
+        break;
+      case 'misc':
+        configData = {
+          enableCashCheckout: shopConfig.enableCashCheckout,
+          enablePointsCheckout: shopConfig.enablePointsCheckout,
+          enableMixedCheckout: shopConfig.enableMixedCheckout
+        };
+        break;
+      default:
+        return;
+    }
+    
+    saveConfigMutation.mutate(configData);
   };
 
   return (
@@ -87,7 +125,12 @@ const ShopConfig = () => {
                   <Input type="color" className="h-10" />
                 </div>
 
-                <Button onClick={saveConfig}>Save Brand Settings</Button>
+                <Button 
+                  onClick={() => saveConfig('brand')}
+                  disabled={saveConfigMutation.isPending}
+                >
+                  {saveConfigMutation.isPending ? "Saving..." : "Save Brand Settings"}
+                </Button>
               </div>
             </Card>
           </TabsContent>
@@ -136,7 +179,13 @@ const ShopConfig = () => {
                   />
                 </div>
 
-                <Button onClick={saveConfig} className="mt-4">Save Categories</Button>
+                <Button 
+                  onClick={() => saveConfig('categories')}
+                  disabled={saveConfigMutation.isPending}
+                  className="mt-4"
+                >
+                  {saveConfigMutation.isPending ? "Saving..." : "Save Categories"}
+                </Button>
               </div>
             </Card>
           </TabsContent>
@@ -172,7 +221,13 @@ const ShopConfig = () => {
                   />
                 </div>
 
-                <Button onClick={saveConfig} className="mt-4">Save Checkout Settings</Button>
+                <Button 
+                  onClick={() => saveConfig('misc')}
+                  disabled={saveConfigMutation.isPending}
+                  className="mt-4"
+                >
+                  {saveConfigMutation.isPending ? "Saving..." : "Save Checkout Settings"}
+                </Button>
               </div>
             </Card>
           </TabsContent>
