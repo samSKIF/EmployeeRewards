@@ -63,6 +63,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { InsertSurvey, Survey, InsertSurveyQuestion } from "@shared/schema";
+import SurveyTaker from "@/components/survey/SurveyTaker"; // Added import here
 
 // Create a schema for survey creation
 const surveyFormSchema = z.object({
@@ -148,12 +149,12 @@ export default function AdminSurveyCreator() {
   // Effect to populate form when survey data is loaded
   useEffect(() => {
     if (isLoading || !id) return;
-    
+
     const fetchSurvey = async () => {
       try {
         const res = await apiRequest("GET", `/api/surveys/${id}`);
         const data = await res.json();
-        
+
         if (data) {
           surveyForm.reset({
             title: data.title || "",
@@ -170,7 +171,7 @@ export default function AdminSurveyCreator() {
         console.error("Error setting form data:", error);
       }
     };
-    
+
     fetchSurvey();
   }, [id, isLoading, surveyForm]);
 
@@ -188,16 +189,16 @@ export default function AdminSurveyCreator() {
     },
     enabled: isEditing,
   });
-  
+
   // Effect to populate questions when data is loaded
   useEffect(() => {
     if (isLoadingQuestions || !id) return;
-    
+
     const fetchQuestions = async () => {
       try {
         const res = await apiRequest("GET", `/api/surveys/${id}/questions`);
         const data = await res.json();
-        
+
         if (data && Array.isArray(data)) {
           const formattedQuestions = data.map((q: any, index: number) => ({
             id: q.id.toString(),
@@ -213,7 +214,7 @@ export default function AdminSurveyCreator() {
         console.error("Error setting questions data:", error);
       }
     };
-    
+
     fetchQuestions();
   }, [id, isLoadingQuestions]);
 
@@ -914,7 +915,7 @@ export default function AdminSurveyCreator() {
                             </Button>
                           </div>
                         )}
-                        
+
                         {/* Matrix scale options */}
                         {questionForm.watch("questionType") === "matrix" && (
                           <div className="space-y-2 mt-4">
