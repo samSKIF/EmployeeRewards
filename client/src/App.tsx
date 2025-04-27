@@ -14,6 +14,7 @@ import AdminSurveys from "@/pages/admin-surveys";
 import AdminSurveyCreator from "@/pages/admin-survey-creator";
 import AdminSurveyTemplates from "@/pages/admin-survey-templates";
 import AdminSurveyTemplatePreview from "@/pages/admin-survey-template-preview";
+import AdminSurveyEditor from "@/pages/admin-survey-editor";
 import HRConfig from "@/pages/hr-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
@@ -140,6 +141,9 @@ function App() {
               </Route>
               <Route path="/admin/surveys/templates/:templateId">
                 <AdminSurveyTemplatePreview />
+              </Route>
+              <Route path="/admin/surveys/editor/:templateId">
+                <AdminSurveyEditor />
               </Route>
               <Route path="/hr-config">
                 <HRConfig />

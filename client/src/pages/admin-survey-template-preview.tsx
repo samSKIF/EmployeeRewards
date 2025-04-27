@@ -188,10 +188,8 @@ export default function AdminSurveyTemplatePreview() {
       description: "Creating a new survey from this template..."
     });
     
-    // Simulate loading
-    setTimeout(() => {
-      setLocation(`/admin/surveys/new?template=${templateId}`);
-    }, 500);
+    // Redirect to the survey editor with the template ID
+    setLocation(`/admin/surveys/editor/${templateId}`);
   };
   
   const handleGoBack = () => {
