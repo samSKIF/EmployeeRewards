@@ -8,11 +8,36 @@ import UserTable from "@/components/admin/UserTable";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users, ClipboardList } from "lucide-react";
+import { Users, ClipboardList, ShoppingBag, RefreshCcw } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("transactions");
   const { user } = useAuth();
+  
+  // Mutation to refresh product catalog
+  const refreshCatalogMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/admin/products/refresh', {});
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Catalog Refreshed",
+        description: `Successfully refreshed product catalog with ${data.count} products.`,
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to refresh catalog: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
 
   return (
     <MainLayout>
@@ -31,6 +56,16 @@ const Admin = () => {
               <span>Surveys</span>
             </Button>
           </Link>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => refreshCatalogMutation.mutate()}
+            disabled={refreshCatalogMutation.isPending}
+          >
+            <ShoppingBag size={16} />
+            <span>{refreshCatalogMutation.isPending ? 'Refreshing...' : 'Refresh Shop Catalog'}</span>
+            {refreshCatalogMutation.isPending && <RefreshCcw size={16} className="animate-spin ml-1" />}
+          </Button>
           <span className="text-sm text-gray-500">Logged in as: {user?.email}</span>
         </div>
       </div>
