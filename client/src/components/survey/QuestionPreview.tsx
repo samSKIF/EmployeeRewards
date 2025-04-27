@@ -162,56 +162,30 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
       case "ranking":
         const rankingOptions = question.options && question.options.length > 0 
           ? question.options 
-          : ["Option 1", "Option 2", "Option 3", "Option 4"];
+          : ["Item 1", "Item 2", "Item 3"];
         
         return (
           <div className="space-y-2">
             {rankingOptions.map((option, index) => (
-              <div key={index} className="flex items-center border p-2 rounded-md bg-white">
-                <span className="font-medium mr-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
-                  {index + 1}
-                </span>
-                <span>{option}</span>
-                <div className="ml-auto flex items-center gap-1">
+              <div 
+                key={index} 
+                className="flex items-center justify-between border p-2 rounded-md bg-white shadow-sm hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-sm">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm">{option}</span>
+                </div>
+                <div className="flex items-center gap-1">
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 opacity-50"
-                    disabled={true}
+                    disabled={index === 0}
+                    className="h-8 w-8 p-0"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4"
-                    >
-                      <path d="m18 15-6-6-6 6"/>
-                    </svg>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 opacity-50"
-                    disabled={true}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4"
-                    >
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
+                    <ArrowDownUp className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
