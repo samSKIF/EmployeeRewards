@@ -30,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
+import QuestionTypePicker from "@/components/survey/QuestionTypePicker";
 import {
   Select,
   SelectContent,
@@ -236,6 +237,7 @@ export default function AdminSurveyEditor() {
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [editDialog, setEditDialog] = useState(false);
+  const [addQuestionDialog, setAddQuestionDialog] = useState(false);
   const [currentQuestionText, setCurrentQuestionText] = useState("");
   const [currentQuestionRequired, setCurrentQuestionRequired] = useState(false);
   const [currentQuestionOptions, setCurrentQuestionOptions] = useState<string[]>([]);
@@ -408,6 +410,39 @@ export default function AdminSurveyEditor() {
       
       setSurvey({ ...survey, questions: updatedQuestions });
       setEdited(true);
+    }
+  };
+  
+  // Add a new question with the given type
+  const handleAddQuestion = (questionType: string) => {
+    if (survey) {
+      const newQuestionId = `q${Date.now()}`;
+      const newOrder = survey.questions.length;
+      let newQuestion: SurveyQuestion = {
+        id: newQuestionId,
+        questionText: "New Question",
+        questionType,
+        isRequired: false,
+        order: newOrder
+      };
+      
+      // If the question type requires options, add default options
+      if (['single', 'multiple', 'dropdown', 'matrix', 'ranking'].includes(questionType)) {
+        newQuestion.options = questionType === 'ranking' 
+          ? ['Option 1', 'Option 2', 'Option 3', 'Option 4'] 
+          : ['Option 1', 'Option 2', 'Option 3'];
+      }
+      
+      const updatedQuestions = [...survey.questions, newQuestion];
+      setSurvey({ ...survey, questions: updatedQuestions });
+      setEdited(true);
+      
+      // Immediately open the edit dialog for the new question
+      setEditingQuestionId(newQuestionId);
+      setCurrentQuestionText("New Question");
+      setCurrentQuestionRequired(false);
+      setCurrentQuestionOptions(newQuestion.options || []);
+      setEditDialog(true);
     }
   };
   
@@ -728,11 +763,30 @@ export default function AdminSurveyEditor() {
             ))}
             
             <div className="text-center py-8">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => setAddQuestionDialog(true)}
+              >
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Question
               </Button>
             </div>
+            
+            <Dialog open={addQuestionDialog} onOpenChange={setAddQuestionDialog}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Select Question Type</DialogTitle>
+                  <DialogDescription>
+                    Choose the type of question you want to add to your survey.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <QuestionTypePicker 
+                  onSelect={handleAddQuestion}
+                  onClose={() => setAddQuestionDialog(false)}
+                />
+              </DialogContent>
+            </Dialog>
           </TabsContent>
           
           <TabsContent value="settings">
