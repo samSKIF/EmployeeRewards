@@ -269,9 +269,42 @@ export const questionTypes: QuestionTypeInfo[] = [
                 {i + 1}
               </span>
               <span className="text-sm">{option}</span>
-              <span className="ml-auto text-gray-400">
-                <ArrowDownUp className="h-4 w-4" />
-              </span>
+              <div className="ml-auto flex items-center gap-1">
+                <button
+                  className="h-8 w-8 p-0 flex items-center justify-center text-gray-500 opacity-50"
+                  disabled={true}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="m18 15-6-6-6 6"/>
+                  </svg>
+                </button>
+                <button
+                  className="h-8 w-8 p-0 flex items-center justify-center text-gray-500 opacity-50"
+                  disabled={true}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="m6 9 6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -483,9 +516,10 @@ const groupedQuestionTypes = questionTypes.reduce((acc, type) => {
 interface QuestionTypePickerProps {
   onSelect: (type: string) => void;
   currentType?: string;
+  onClose?: () => void;
 }
 
-export default function QuestionTypePicker({ onSelect, currentType }: QuestionTypePickerProps) {
+export default function QuestionTypePicker({ onSelect, currentType, onClose }: QuestionTypePickerProps) {
   const [open, setOpen] = useState(false);
   // Track previewType separately from the selectedType to allow showing previews without confirming selection
   const [previewType, setPreviewType] = useState<QuestionTypeInfo | null>(
@@ -516,6 +550,10 @@ export default function QuestionTypePicker({ onSelect, currentType }: QuestionTy
       setSelectedType(previewType);
       onSelect(previewType.id);
       setOpen(false);
+      // Call onClose if provided
+      if (onClose) {
+        onClose();
+      }
     }
   };
 
