@@ -1557,11 +1557,17 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Social methods - Stats
-  async updateShopConfig(configData: any): Promise<any> {
-  // Store the shop configuration
-  return configData;
-}
+  // Shop configuration methods
+  private shopConfig: ShopConfig = { design: 'design1' };
+
+  async getShopConfig(): Promise<ShopConfig> {
+    return this.shopConfig;
+  }
+
+  async updateShopConfig(configData: ShopConfig): Promise<ShopConfig> {
+    this.shopConfig = { ...this.shopConfig, ...configData };
+    return this.shopConfig;
+  }
 
 async getUserSocialStats(userId: number): Promise<SocialStats> {
     // Get posts count

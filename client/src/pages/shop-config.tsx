@@ -40,8 +40,17 @@ const ShopConfig = () => {
     }
   });
 
+  const { data: currentConfig } = useQuery({
+    queryKey: ['/api/shop/config'],
+    onSuccess: (data) => {
+      if (data?.design) {
+        setSelectedDesign(data.design);
+      }
+    }
+  });
+
   const saveConfigMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { design: string }) => {
       const firebaseToken = localStorage.getItem('firebaseToken');
       const response = await fetch("/api/shop/config", {
         method: "POST",
