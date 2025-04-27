@@ -2053,11 +2053,9 @@ async function seedInitialData() {
 
       console.log("Admin user created successfully");
 
-      // Seed test products
-      console.log("Seeding test products...");
-      await seedProducts();
-      console.log("Test products seeded successfully");
-      
+      // Seed 10 demo products
+      console.log("Seeding demo products...");
+
       const demoProducts = [
         {
           name: "Amazon Gift Card",
