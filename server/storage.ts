@@ -64,6 +64,7 @@ export interface IStorage {
   getProductsWithAvailability(userId: number): Promise<ProductWithAvailable[]>;
   getProductById(id: number): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
+  deleteAllProducts(): Promise<void>;
 
   // Order methods
   getOrdersByUserId(userId: number): Promise<OrderWithDetails[]>;
@@ -523,6 +524,10 @@ export class DatabaseStorage implements IStorage {
       .from(products)
       .where(eq(products.isActive, true))
       .orderBy(products.points);
+  }
+  
+  async deleteAllProducts(): Promise<void> {
+    await db.delete(products);
   }
 
   async getProductsWithAvailability(userId: number): Promise<ProductWithAvailable[]> {

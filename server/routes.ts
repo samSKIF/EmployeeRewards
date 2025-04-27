@@ -422,6 +422,1062 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update shop configuration" });
     }
   });
+  
+  // Admin endpoint to refresh the product catalog
+  app.post("/api/admin/products/refresh", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      console.log("Refreshing product catalog at admin request...");
+      
+      // Delete all existing products
+      await storage.deleteAllProducts();
+      console.log("All existing products deleted");
+      
+      // Insert all the gift card products
+      const giftCardProducts = [
+        {
+          name: "Amazon Gift Card",
+          description: "$50 Amazon gift card to spend on anything you want.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1584990451792-a664249664bc?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Starbucks Gift Card",
+          description: "$25 Starbucks gift card for your coffee breaks.",
+          category: "Gift Cards",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Netflix Gift Card",
+          description: "$30 Netflix gift card for movies and shows.",
+          category: "Gift Cards",
+          points: 250,
+          imageUrl: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Uber Eats Gift Card",
+          description: "$35 Uber Eats credit for meals delivered to your door.",
+          category: "Gift Cards",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1593504049359-74330189a345?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Apple App Store Gift Card",
+          description: "$25 Apple App Store credit for apps, games and entertainment.",
+          category: "Gift Cards",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1585184394271-4c0a47dc59c9?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Google Play Gift Card",
+          description: "$25 Google Play credit for apps, games, books, and more.",
+          category: "Gift Cards",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1611944212129-29977ae1398c?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "DoorDash Gift Card",
+          description: "$30 DoorDash credit for food delivery from your favorite restaurants.",
+          category: "Gift Cards",
+          points: 240,
+          imageUrl: "https://images.unsplash.com/photo-1582060371588-5d30bf398aa1?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Spotify Premium Gift Card",
+          description: "3-month subscription to Spotify Premium.",
+          category: "Gift Cards",
+          points: 300,
+          imageUrl: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Target Gift Card",
+          description: "$50 Target gift card for shopping essentials and more.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Walmart Gift Card",
+          description: "$50 Walmart gift card for everyday essentials.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1601524909162-ae8725290836?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Best Buy Gift Card",
+          description: "$100 Best Buy gift card for electronics and appliances.",
+          category: "Gift Cards",
+          points: 800,
+          imageUrl: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Airbnb Gift Card",
+          description: "$100 Airbnb credit for your next getaway.",
+          category: "Gift Cards",
+          points: 800,
+          imageUrl: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Steam Gift Card",
+          description: "$50 Steam credit for PC games and software.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1609092472326-41329e320fbc?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Xbox Gift Card",
+          description: "$60 Xbox gift card for games and digital content.",
+          category: "Gift Cards",
+          points: 480,
+          imageUrl: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "PlayStation Store Gift Card",
+          description: "$60 PlayStation Store credit for games and add-ons.",
+          category: "Gift Cards",
+          points: 480,
+          imageUrl: "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Home Depot Gift Card",
+          description: "$75 Home Depot gift card for home improvement projects.",
+          category: "Gift Cards",
+          points: 600,
+          imageUrl: "https://images.unsplash.com/photo-1578496479531-32e296d5c6e1?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Lowe's Gift Card",
+          description: "$75 Lowe's gift card for home and garden supplies.",
+          category: "Gift Cards",
+          points: 600,
+          imageUrl: "https://images.unsplash.com/photo-1516822669470-73637e892be3?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Sephora Gift Card",
+          description: "$50 Sephora gift card for beauty and skincare products.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1576426863848-c21f53c60b19?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Grubhub Gift Card",
+          description: "$40 Grubhub credit for food delivery.",
+          category: "Gift Cards",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "REI Gift Card",
+          description: "$100 REI gift card for outdoor gear and apparel.",
+          category: "Gift Cards",
+          points: 800,
+          imageUrl: "https://images.unsplash.com/photo-1539183204366-63a0589187ab?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Disney+ Subscription",
+          description: "6-month subscription to Disney+ streaming service.",
+          category: "Gift Cards",
+          points: 450,
+          imageUrl: "https://images.unsplash.com/photo-1604913571179-f9642e6b43f8?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Hulu Subscription",
+          description: "6-month subscription to Hulu streaming service.",
+          category: "Gift Cards",
+          points: 420,
+          imageUrl: "https://images.unsplash.com/photo-1580543687419-070d3bd4858c?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "HBO Max Subscription",
+          description: "3-month subscription to HBO Max streaming service.",
+          category: "Gift Cards",
+          points: 450,
+          imageUrl: "https://images.unsplash.com/photo-1520342868574-5fa3804e551c?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Whole Foods Gift Card",
+          description: "$50 Whole Foods gift card for grocery shopping.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Audible Subscription",
+          description: "3-month subscription to Audible for audiobooks.",
+          category: "Gift Cards",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        }
+      ];
+      
+      // Insert all the electronics products
+      const electronicsProducts = [
+        {
+          name: "Apple Airpods Pro",
+          description: "Latest model with noise cancellation technology.",
+          category: "Electronics",
+          points: 650,
+          imageUrl: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Bluetooth Speaker",
+          description: "Portable high-quality Bluetooth speaker.",
+          category: "Electronics",
+          points: 300,
+          imageUrl: "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smart Watch",
+          description: "Fitness and health tracking smart watch.",
+          category: "Electronics",
+          points: 500,
+          imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Wireless Charger",
+          description: "Fast wireless charging pad for compatible devices.",
+          category: "Electronics",
+          points: 180,
+          imageUrl: "https://images.unsplash.com/photo-1603539444875-76e7684265f6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Noise-Cancelling Headphones",
+          description: "Premium over-ear headphones with active noise cancellation.",
+          category: "Electronics",
+          points: 700,
+          imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smart Home Speaker",
+          description: "Voice-controlled smart speaker with virtual assistant.",
+          category: "Electronics",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1549482199-bc1ca6f58502?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Tablet Stand",
+          description: "Adjustable stand for tablets and e-readers.",
+          category: "Electronics",
+          points: 120,
+          imageUrl: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Portable Power Bank",
+          description: "20,000mAh power bank for charging devices on the go.",
+          category: "Electronics",
+          points: 250,
+          imageUrl: "https://images.unsplash.com/photo-1587047163886-e71b96567eb9?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Wireless Earbuds",
+          description: "Compact wireless earbuds with charging case.",
+          category: "Electronics",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1623515651673-28033bd10d13?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smart Bulb Kit",
+          description: "Set of 4 smart LED bulbs with app control.",
+          category: "Electronics",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1569073120512-05362a6b92e4?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Digital Photo Frame",
+          description: "10-inch digital photo frame with cloud connectivity.",
+          category: "Electronics",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1540885762261-a2ca01f290f9?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smartphone Gimbal",
+          description: "3-axis stabilizer for smartphone videography.",
+          category: "Electronics",
+          points: 450,
+          imageUrl: "https://images.unsplash.com/photo-1595781572981-d63151b232ed?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smart Scale",
+          description: "Digital bathroom scale with health metrics and app integration.",
+          category: "Electronics",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Portable Bluetooth Keyboard",
+          description: "Foldable Bluetooth keyboard for tablets and smartphones.",
+          category: "Electronics",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1516317518460-4a16985740e6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Video Doorbell",
+          description: "Smart doorbell with camera and two-way audio.",
+          category: "Electronics",
+          points: 550,
+          imageUrl: "https://images.unsplash.com/photo-1558002038-1055e2fc65af?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Smart Thermostat",
+          description: "Energy-saving smart thermostat with remote control.",
+          category: "Electronics",
+          points: 480,
+          imageUrl: "https://images.unsplash.com/photo-1567769541735-d43de3326c00?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Wireless Mouse",
+          description: "Ergonomic wireless mouse with long battery life.",
+          category: "Electronics",
+          points: 150,
+          imageUrl: "https://images.unsplash.com/photo-1605773527852-c546a8584ea3?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "USB-C Hub",
+          description: "7-in-1 USB-C hub adapter with multiple ports.",
+          category: "Electronics",
+          points: 220,
+          imageUrl: "https://images.unsplash.com/photo-1634328783781-b542bce0b3a6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Portable Bluetooth Printer",
+          description: "Compact photo printer for smartphones and tablets.",
+          category: "Electronics",
+          points: 380,
+          imageUrl: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Streaming Media Player",
+          description: "4K streaming device for smart TVs.",
+          category: "Electronics",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Wireless Charging Stand",
+          description: "Vertical wireless charging stand for smartphones.",
+          category: "Electronics",
+          points: 220,
+          imageUrl: "https://images.unsplash.com/photo-1633060284626-89f955be6f0a?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Gaming Controller",
+          description: "Bluetooth gaming controller compatible with PC and mobile.",
+          category: "Electronics",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1580327344181-c1163234e5a0?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Bluetooth Tracker Tags",
+          description: "Set of 4 Bluetooth trackers for keys, wallets, and more.",
+          category: "Electronics",
+          points: 190,
+          imageUrl: "https://images.unsplash.com/photo-1513116476489-7635e79feb27?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Mini Drone",
+          description: "Compact drone with HD camera and app control.",
+          category: "Electronics",
+          points: 700,
+          imageUrl: "https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Polaroid Camera",
+          description: "Instant camera with built-in printer for immediate photos.",
+          category: "Electronics",
+          points: 650,
+          imageUrl: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        }
+      ];
+      
+      // Insert all the experiences products
+      const experiencesProducts = [
+        {
+          name: "Wellness Retreat Day",
+          description: "Full day pass at luxury spa including treatments.",
+          category: "Experiences",
+          points: 550,
+          imageUrl: "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Movie Tickets",
+          description: "Two premium movie tickets for the theater of your choice.",
+          category: "Experiences",
+          points: 150,
+          imageUrl: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Wine Tasting Tour",
+          description: "Guided tour of a local winery with tastings for two.",
+          category: "Experiences",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Cooking Class",
+          description: "Interactive cooking class with professional chef.",
+          category: "Experiences",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Concert Tickets",
+          description: "Two tickets to a live music performance of your choice.",
+          category: "Experiences",
+          points: 500,
+          imageUrl: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Museum Annual Pass",
+          description: "12-month membership to local art and science museums.",
+          category: "Experiences",
+          points: 600,
+          imageUrl: "https://images.unsplash.com/photo-1503632235181-2618281d021e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Hot Air Balloon Ride",
+          description: "Scenic hot air balloon experience for one person.",
+          category: "Experiences",
+          points: 800,
+          imageUrl: "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Pottery Workshop",
+          description: "Hands-on pottery class with materials included.",
+          category: "Experiences",
+          points: 300,
+          imageUrl: "https://images.unsplash.com/photo-1565122640447-3128631baa36?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Kayaking Adventure",
+          description: "Guided kayaking tour for two on scenic waterways.",
+          category: "Experiences",
+          points: 450,
+          imageUrl: "https://images.unsplash.com/photo-1511098217401-2291d3b7cebd?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Theme Park Day Pass",
+          description: "Two tickets to a popular theme park for a full day of fun.",
+          category: "Experiences",
+          points: 700,
+          imageUrl: "https://images.unsplash.com/photo-1543313661-988f8be8809a?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Escape Room Challenge",
+          description: "Admission for 4 to an immersive escape room game.",
+          category: "Experiences",
+          points: 380,
+          imageUrl: "https://images.unsplash.com/photo-1543101516-5bcc9614f918?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Zip-lining Experience",
+          description: "Exhilarating zip-line course through scenic landscapes.",
+          category: "Experiences",
+          points: 550,
+          imageUrl: "https://images.unsplash.com/photo-1544230980-8f19ebdb9ea1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Golf Lesson Package",
+          description: "Series of 3 golf lessons with a PGA professional.",
+          category: "Experiences",
+          points: 650,
+          imageUrl: "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Skydiving Simulation",
+          description: "Indoor skydiving experience with professional instruction.",
+          category: "Experiences",
+          points: 480,
+          imageUrl: "https://images.unsplash.com/photo-1511169355326-be606c6e1da7?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Comedy Club Tickets",
+          description: "Two tickets to a live stand-up comedy show.",
+          category: "Experiences",
+          points: 250,
+          imageUrl: "https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Brewery Tour & Tasting",
+          description: "Behind-the-scenes tour with beer tasting flight for two.",
+          category: "Experiences",
+          points: 300,
+          imageUrl: "https://images.unsplash.com/photo-1559526324-593bc073d938?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Rock Climbing Session",
+          description: "Indoor rock climbing experience with gear and instruction.",
+          category: "Experiences",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Helicopter City Tour",
+          description: "15-minute helicopter sightseeing tour for one person.",
+          category: "Experiences",
+          points: 1200,
+          imageUrl: "https://images.unsplash.com/photo-1583991111178-7b042e3077f6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Horseback Riding Lesson",
+          description: "Beginner horseback riding lesson with professional instruction.",
+          category: "Experiences",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1511195448591-062cec834bc2?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Painting & Wine Workshop",
+          description: "Guided painting session with complimentary wine.",
+          category: "Experiences",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1547333590-47fae5f58d21?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Dance Class Package",
+          description: "4-class package for ballroom or Latin dance lessons.",
+          category: "Experiences",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1547048615-da56eb92d444?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Sushi Making Workshop",
+          description: "Learn to make sushi rolls with a professional chef.",
+          category: "Experiences",
+          points: 370,
+          imageUrl: "https://images.unsplash.com/photo-1583623025817-d180a2fe075e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Axe Throwing Session",
+          description: "1-hour axe throwing session with instruction for two people.",
+          category: "Experiences",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1574103188526-4faae477d34e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Star Gazing Tour",
+          description: "Guided nighttime astronomy experience with telescopes.",
+          category: "Experiences",
+          points: 420,
+          imageUrl: "https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Luxury Boat Cruise",
+          description: "2-hour sunset cruise on a luxury yacht for two.",
+          category: "Experiences",
+          points: 900,
+          imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        }
+      ];
+      
+      // Insert all the wellness products
+      const wellnessProducts = [
+        {
+          name: "Yoga Class Package",
+          description: "10-class package at a premium yoga studio.",
+          category: "Wellness",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1588286840104-8957b019727f?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Monthly Gym Membership",
+          description: "30-day access to a premium fitness club.",
+          category: "Wellness",
+          points: 500,
+          imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Premium Massage Chair Session",
+          description: "1-hour session in a luxury massage chair.",
+          category: "Wellness",
+          points: 250,
+          imageUrl: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Meditation Course",
+          description: "8-week guided meditation program with certified instructor.",
+          category: "Wellness",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1536623975707-c4b3b2af565d?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Aromatherapy Gift Set",
+          description: "Essential oil diffuser with 6 premium essential oils.",
+          category: "Wellness",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Weighted Blanket",
+          description: "15lb therapeutic weighted blanket for better sleep.",
+          category: "Wellness",
+          points: 380,
+          imageUrl: "https://images.unsplash.com/photo-1631756964162-25c8c07579b1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Acupuncture Session",
+          description: "Traditional acupuncture therapy with certified practitioner.",
+          category: "Wellness",
+          points: 450,
+          imageUrl: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Home Fitness Equipment",
+          description: "Resistance band set with workout guide.",
+          category: "Wellness",
+          points: 220,
+          imageUrl: "https://images.unsplash.com/photo-1598550593506-b035cba3ba0e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Nutritional Counseling",
+          description: "Personalized nutrition consultation with registered dietitian.",
+          category: "Wellness",
+          points: 600,
+          imageUrl: "https://images.unsplash.com/photo-1505576633757-0ac1084f63cd?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Sleep Therapy Light",
+          description: "Light therapy lamp for improved sleep and mood.",
+          category: "Wellness",
+          points: 300,
+          imageUrl: "https://images.unsplash.com/photo-1542728928-1413d1894ed1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Yoga Mat & Props Set",
+          description: "Premium yoga mat with blocks, strap, and towel.",
+          category: "Wellness",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1576095910607-644cd66e5c65?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Mindfulness Journal",
+          description: "Guided journal for daily mindfulness practice.",
+          category: "Wellness",
+          points: 150,
+          imageUrl: "https://images.unsplash.com/photo-1615310748514-99796d46e94e?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Himalayan Salt Lamp",
+          description: "Natural salt crystal lamp for air purification.",
+          category: "Wellness",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1539207554081-7214fbd6e282?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Foot Massager",
+          description: "Electric foot massager with heat therapy.",
+          category: "Wellness",
+          points: 420,
+          imageUrl: "https://images.unsplash.com/photo-1595238242018-22219945cf66?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Water Purification System",
+          description: "Countertop water filter for clean drinking water.",
+          category: "Wellness",
+          points: 350,
+          imageUrl: "https://images.unsplash.com/photo-1546483667-f62d66b96636?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Organic Tea Collection",
+          description: "Assortment of premium organic herbal teas.",
+          category: "Wellness",
+          points: 180,
+          imageUrl: "https://images.unsplash.com/photo-1563911892437-1feda0179e41?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Personal Air Purifier",
+          description: "HEPA air purifier for home or office.",
+          category: "Wellness",
+          points: 480,
+          imageUrl: "https://images.unsplash.com/photo-1598803783347-dada77361e66?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Fitness Tracker Watch",
+          description: "Smart fitness tracker with heart rate monitoring.",
+          category: "Wellness",
+          points: 500,
+          imageUrl: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Posture Corrector",
+          description: "Adjustable brace for improved posture and back support.",
+          category: "Wellness",
+          points: 140,
+          imageUrl: "https://images.unsplash.com/photo-1537344836915-25a58b04e69c?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Luxury Bath Set",
+          description: "Premium bath bombs, salts, and oils for relaxation.",
+          category: "Wellness",
+          points: 230,
+          imageUrl: "https://images.unsplash.com/photo-1532771522233-9079b9616c44?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Sleep Sound Machine",
+          description: "White noise machine with natural sounds for better sleep.",
+          category: "Wellness",
+          points: 250,
+          imageUrl: "https://images.unsplash.com/photo-1631703412785-e9754dea55c6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Indoor Plant Collection",
+          description: "Set of 3 air-purifying houseplants with decorative pots.",
+          category: "Wellness",
+          points: 280,
+          imageUrl: "https://images.unsplash.com/photo-1545165375-7c5f3a1a2c83?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Foam Roller Set",
+          description: "Deep tissue massage foam roller and balls for recovery.",
+          category: "Wellness",
+          points: 210,
+          imageUrl: "https://images.unsplash.com/photo-1600881333168-2ef49b341f30?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Cold Therapy System",
+          description: "Targeted cold therapy for muscle recovery and pain relief.",
+          category: "Wellness",
+          points: 370,
+          imageUrl: "https://images.unsplash.com/photo-1605296867424-35c82a8b1da1?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        },
+        {
+          name: "Luxury Bathrobe",
+          description: "Premium Turkish cotton spa robe.",
+          category: "Wellness",
+          points: 320,
+          imageUrl: "https://images.unsplash.com/photo-1614255976202-43b92dfb7d67?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id
+        }
+      ];
+      
+      // Insert all products
+      const allProducts = [
+        ...giftCardProducts,
+        ...electronicsProducts,
+        ...experiencesProducts,
+        ...wellnessProducts
+      ];
+      
+      // Use a transaction to ensure all products are inserted
+      await db.transaction(async (tx) => {
+        for (const product of allProducts) {
+          await tx.insert(products).values(product);
+        }
+      });
+      
+      console.log(`Catalog refreshed successfully with ${allProducts.length} products`);
+      
+      res.status(200).json({ 
+        message: "Product catalog refreshed successfully", 
+        count: allProducts.length 
+      });
+    } catch (error: any) {
+      console.error("Error refreshing product catalog:", error);
+      res.status(500).json({ message: error.message || "Failed to refresh product catalog" });
+    }
+  });
 
   app.get("/api/catalog", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
@@ -2979,7 +4035,7 @@ async function seedInitialData() {
         ...experiencesProducts,
         ...wellnessProducts
       ];
-
+      
       for (const product of demoProducts) {
         await db.insert(products).values(product);
       }
