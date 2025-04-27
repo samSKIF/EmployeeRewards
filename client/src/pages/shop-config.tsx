@@ -4,7 +4,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const ShopConfig = () => {
   const [selectedDesign, setSelectedDesign] = useState<string | null>(null);
@@ -30,6 +30,16 @@ const ShopConfig = () => {
     }
   ];
 
+  // Get current design
+  const { data: currentConfig } = useQuery({
+    queryKey: ["/api/shop/config"],
+    onSuccess: (data) => {
+      if (data?.design) {
+        setSelectedDesign(data.design);
+      }
+    }
+  });
+
   const saveConfigMutation = useMutation({
     mutationFn: async (data: any) => {
       const firebaseToken = localStorage.getItem('firebaseToken');
@@ -53,8 +63,6 @@ const ShopConfig = () => {
         title: "Success",
         description: "Shop design updated successfully"
       });
-      // Reload the shop page to apply changes
-      window.location.href = '/shop';
     },
     onError: () => {
       toast({
@@ -93,11 +101,17 @@ const ShopConfig = () => {
               onClick={() => setSelectedDesign(design.id)}
             >
               <CardContent className="p-4">
-                <img 
-                  src={design.image} 
-                  alt={design.name}
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                />
+                <div className="relative aspect-video mb-4">
+                  <img 
+                    src={design.image} 
+                    alt={design.name}
+                    className="w-full h-full object-cover rounded-md"
+                    onError={(e) => {
+                      e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+                      e.currentTarget.className = "w-full h-full object-contain p-8 bg-gray-100 rounded-md";
+                    }}
+                  />
+                </div>
                 <h3 className="font-semibold mb-2">{design.name}</h3>
                 <p className="text-sm text-gray-600 mb-4">{design.description}</p>
                 <div className="flex items-center justify-center">
