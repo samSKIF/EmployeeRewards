@@ -162,7 +162,7 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
       case "ranking":
         const rankingOptions = question.options && question.options.length > 0 
           ? question.options 
-          : ["Samir", "SKIF", "Karim", "Rakim"];
+          : ["Option 1", "Option 2", "Option 3", "Option 4"];
         
         return (
           <div className="space-y-2">
@@ -172,11 +172,48 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
                   {index + 1}
                 </span>
                 <span>{option}</span>
-                {index < rankingOptions.length - 1 && (
-                  <div className="ml-auto flex items-center gap-1 text-gray-400">
-                    <ArrowDownUp className="h-4 w-4" />
-                  </div>
-                )}
+                <div className="ml-auto flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 opacity-50"
+                    disabled={true}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="m18 15-6-6-6 6"/>
+                    </svg>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 opacity-50"
+                    disabled={true}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
