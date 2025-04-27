@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,19 +13,19 @@ const ShopConfig = () => {
     {
       id: "design1",
       name: "Grid Layout",
-      image: "/shop-designs/grid-layout.png",
+      image: "/shop-designs/grid-layout.jpg",
       description: "Modern grid-based layout with large product cards"
     },
     {
       id: "design2",
       name: "List View",
-      image: "/shop-designs/list-view.png", 
+      image: "/shop-designs/list-view.jpg", 
       description: "Classic list view with detailed product information"
     },
     {
       id: "design3",
       name: "Magazine Style",
-      image: "/shop-designs/magazine.png",
+      image: "/shop-designs/magazine.jpg",
       description: "Magazine-style layout with featured products"
     }
   ];
@@ -52,6 +53,8 @@ const ShopConfig = () => {
         title: "Success",
         description: "Shop design updated successfully"
       });
+      // Reload the shop page to apply changes
+      window.location.href = '/shop';
     },
     onError: () => {
       toast({
@@ -77,10 +80,10 @@ const ShopConfig = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Shop Configuration</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {designs.map((design) => (
             <Card 
               key={design.id}
@@ -112,7 +115,6 @@ const ShopConfig = () => {
         </div>
 
         <Button 
-          className="mt-6"
           onClick={handleSaveDesign}
           disabled={!selectedDesign || saveConfigMutation.isPending}
         >

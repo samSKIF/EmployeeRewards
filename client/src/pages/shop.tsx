@@ -14,6 +14,17 @@ import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [shopDesign, setShopDesign] = useState("design1");
+
+  // Fetch shop configuration
+  useQuery({
+    queryKey: ["/api/shop/config"],
+    onSuccess: (data) => {
+      if (data?.design) {
+        setShopDesign(data.design);
+      }
+    }
+  });
   const [categories, setCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
