@@ -1,28 +1,33 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 const ShopConfig = () => {
-  const [selectedDesign, setSelectedDesign] = useState("design1");
-  const [shopConfig, setShopConfig] = useState({
-    enableCashCheckout: false,
-    enablePointsCheckout: true,
-    enableMixedCheckout: false,
-    categories: {
-      giftCards: true,
-      electronics: true,
-      experiences: true
+  const [selectedDesign, setSelectedDesign] = useState<string | null>(null);
+
+  const designs = [
+    {
+      id: "design1",
+      name: "Grid Layout",
+      image: "/shop-designs/grid-layout.png",
+      description: "Modern grid-based layout with large product cards"
+    },
+    {
+      id: "design2",
+      name: "List View",
+      image: "/shop-designs/list-view.png", 
+      description: "Classic list view with detailed product information"
+    },
+    {
+      id: "design3",
+      name: "Magazine Style",
+      image: "/shop-designs/magazine.png",
+      description: "Magazine-style layout with featured products"
     }
-  });
+  ];
 
   const saveConfigMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -35,54 +40,39 @@ const ShopConfig = () => {
         },
         body: JSON.stringify(data)
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to save configuration');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Shop configuration saved successfully"
+        description: "Shop design updated successfully"
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to save configuration",
+        description: "Failed to update shop design",
         variant: "destructive"
       });
     }
   });
 
-  const saveConfig = (section: string) => {
-    let configData;
-    switch(section) {
-      case 'brand':
-        configData = {
-          design: selectedDesign,
-          colorScheme: shopConfig.colorScheme
-        };
-        break;
-      case 'categories':
-        configData = {
-          categories: shopConfig.categories
-        };
-        break;
-      case 'misc':
-        configData = {
-          enableCashCheckout: shopConfig.enableCashCheckout,
-          enablePointsCheckout: shopConfig.enablePointsCheckout,
-          enableMixedCheckout: shopConfig.enableMixedCheckout
-        };
-        break;
-      default:
-        return;
+  const handleSaveDesign = () => {
+    if (!selectedDesign) {
+      toast({
+        title: "Error",
+        description: "Please select a design first",
+        variant: "destructive"
+      });
+      return;
     }
-    
-    saveConfigMutation.mutate(configData);
+
+    saveConfigMutation.mutate({ design: selectedDesign });
   };
 
   return (
@@ -90,149 +80,44 @@ const ShopConfig = () => {
       <div className="container mx-auto py-6">
         <h1 className="text-2xl font-bold mb-6">Shop Configuration</h1>
 
-        <Tabs defaultValue="brand">
-          <TabsList className="mb-6">
-            <TabsTrigger value="brand">Brand Identity</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="misc">Miscellaneous</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="brand">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Brand Identity</h2>
-              
-              <div className="space-y-6">
-                <div>
-                  <Label>Store Design</Label>
-                  <Select value={selectedDesign} onValueChange={setSelectedDesign}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select design" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="design1">Modern Grid</SelectItem>
-                      <SelectItem value="design2">Classic List</SelectItem>
-                      <SelectItem value="design3">Magazine Style</SelectItem>
-                    </SelectContent>
-                  </Select>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {designs.map((design) => (
+            <Card 
+              key={design.id}
+              className={`cursor-pointer transition-all ${
+                selectedDesign === design.id ? 'ring-2 ring-blue-500' : ''
+              }`}
+              onClick={() => setSelectedDesign(design.id)}
+            >
+              <CardContent className="p-4">
+                <img 
+                  src={design.image} 
+                  alt={design.name}
+                  className="w-full h-48 object-cover rounded-md mb-4"
+                />
+                <h3 className="font-semibold mb-2">{design.name}</h3>
+                <p className="text-sm text-gray-600 mb-4">{design.description}</p>
+                <div className="flex items-center justify-center">
+                  <div 
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      selectedDesign === design.id 
+                        ? 'border-blue-500 bg-blue-500' 
+                        : 'border-gray-300'
+                    }`}
+                  />
                 </div>
-
-                <div>
-                  <Label>Primary Color</Label>
-                  <Input type="color" className="h-10" />
-                </div>
-
-                <div>
-                  <Label>Secondary Color</Label>
-                  <Input type="color" className="h-10" />
-                </div>
-
-                <Button 
-                  onClick={() => saveConfig('brand')}
-                  disabled={saveConfigMutation.isPending}
-                >
-                  {saveConfigMutation.isPending ? "Saving..." : "Save Brand Settings"}
-                </Button>
-              </div>
+              </CardContent>
             </Card>
-          </TabsContent>
+          ))}
+        </div>
 
-          <TabsContent value="categories">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Categories Management</h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Gift Cards</Label>
-                  <Switch 
-                    checked={shopConfig.categories.giftCards}
-                    onCheckedChange={(checked) => 
-                      setShopConfig(prev => ({
-                        ...prev,
-                        categories: { ...prev.categories, giftCards: checked }
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label>Electronics</Label>
-                  <Switch 
-                    checked={shopConfig.categories.electronics}
-                    onCheckedChange={(checked) => 
-                      setShopConfig(prev => ({
-                        ...prev,
-                        categories: { ...prev.categories, electronics: checked }
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label>Experiences</Label>
-                  <Switch 
-                    checked={shopConfig.categories.experiences}
-                    onCheckedChange={(checked) => 
-                      setShopConfig(prev => ({
-                        ...prev,
-                        categories: { ...prev.categories, experiences: checked }
-                      }))
-                    }
-                  />
-                </div>
-
-                <Button 
-                  onClick={() => saveConfig('categories')}
-                  disabled={saveConfigMutation.isPending}
-                  className="mt-4"
-                >
-                  {saveConfigMutation.isPending ? "Saving..." : "Save Categories"}
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="misc">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Checkout Settings</h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Enable Points Checkout</Label>
-                    <p className="text-sm text-gray-500">Allow users to redeem with points</p>
-                  </div>
-                  <Switch 
-                    checked={shopConfig.enablePointsCheckout}
-                    onCheckedChange={(checked) => 
-                      setShopConfig(prev => ({ ...prev, enablePointsCheckout: checked }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Enable Mixed Checkout</Label>
-                    <p className="text-sm text-gray-500">Allow users to combine points and cash</p>
-                  </div>
-                  <Switch 
-                    checked={shopConfig.enableMixedCheckout}
-                    onCheckedChange={(checked) => 
-                      setShopConfig(prev => ({ ...prev, enableMixedCheckout: checked }))
-                    }
-                  />
-                </div>
-
-                <Button 
-                  onClick={() => saveConfig('misc')}
-                  disabled={saveConfigMutation.isPending}
-                  className="mt-4"
-                >
-                  {saveConfigMutation.isPending ? "Saving..." : "Save Checkout Settings"}
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <Button 
+          className="mt-6"
+          onClick={handleSaveDesign}
+          disabled={!selectedDesign || saveConfigMutation.isPending}
+        >
+          {saveConfigMutation.isPending ? "Applying design..." : "Apply Selected Design"}
+        </Button>
       </div>
     </MainLayout>
   );
