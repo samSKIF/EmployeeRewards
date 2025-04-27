@@ -57,7 +57,7 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
                 let bgColor = "bg-red-500";
                 if (n >= 7 && n <= 8) bgColor = "bg-yellow-400";
                 if (n >= 9) bgColor = "bg-green-500";
-                
+
                 return (
                   <button
                     key={n}
@@ -160,30 +160,29 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
         );
 
       case "ranking":
-        const rankingOptions = question.options && question.options.length > 0 
-          ? question.options 
-          : ["Item 1", "Item 2", "Item 3"];
-        
+        const defaultItems = ["Option 1", "Option 2", "Option 3"];
+        const rankingItems = question.options?.length ? question.options : defaultItems;
+
         return (
           <div className="space-y-2">
-            {rankingOptions.map((option, index) => (
+            {rankingItems.map((item, index) => (
               <div 
-                key={index} 
-                className="flex items-center justify-between border p-2 rounded-md bg-white shadow-sm hover:bg-gray-50"
+                key={index}
+                className="flex items-center justify-between p-3 border rounded-md bg-white shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-medium w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-sm">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-sm font-medium">
                     {index + 1}
                   </span>
-                  <span className="text-sm">{option}</span>
+                  <span className="text-sm">{item}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    disabled={index === 0}
-                    className="h-8 w-8 p-0"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={readOnly}
                   >
                     <ArrowDownUp className="h-4 w-4" />
                   </Button>
