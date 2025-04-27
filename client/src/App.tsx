@@ -127,8 +127,14 @@ function App() {
               <Route path="/admin/employees">
                 <AdminEmployees />
               </Route>
-              <Route path="/admin/surveys">
-                <AdminSurveys />
+              <Route path="/admin/surveys/templates/:templateId">
+                <AdminSurveyTemplatePreview />
+              </Route>
+              <Route path="/admin/surveys/templates">
+                <AdminSurveyTemplates />
+              </Route>
+              <Route path="/admin/surveys/editor/:templateId">
+                <AdminSurveyEditor />
               </Route>
               <Route path="/admin/surveys/new">
                 <AdminSurveyCreator />
@@ -136,14 +142,8 @@ function App() {
               <Route path="/admin/surveys/:id/edit">
                 <AdminSurveyCreator />
               </Route>
-              <Route path="/admin/surveys/templates">
-                <AdminSurveyTemplates />
-              </Route>
-              <Route path="/admin/surveys/templates/:templateId">
-                <AdminSurveyTemplatePreview />
-              </Route>
-              <Route path="/admin/surveys/editor/:templateId">
-                <AdminSurveyEditor />
+              <Route path="/admin/surveys">
+                <AdminSurveys />
               </Route>
               <Route path="/hr-config">
                 <HRConfig />

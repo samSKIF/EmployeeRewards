@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { useQueryParams } from "@/hooks/use-query-params";
 import { 
   ChevronLeft,
   Save,
@@ -215,8 +214,17 @@ interface Survey {
 
 export default function AdminSurveyEditor() {
   const { templateId } = useParams();
-  const params = useQueryParams();
   const [, setLocation] = useLocation();
+  
+  // Get query parameters if needed
+  const getQueryParams = () => {
+    const url = new URL(window.location.href);
+    const params: Record<string, string> = {};
+    url.searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    return params;
+  };
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState("build");
