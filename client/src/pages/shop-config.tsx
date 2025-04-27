@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -9,35 +8,43 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 
 const ShopConfig = () => {
   const [selectedDesign, setSelectedDesign] = useState("design1");
-  
-  // Fetch current configuration
-  const { data: config, isLoading } = useQuery({
-    queryKey: ["/api/shop/config"],
+  const [shopConfig, setShopConfig] = useState({
+    enableCashCheckout: false,
+    enablePointsCheckout: true,
+    enableMixedCheckout: false,
+    categories: {
+      giftCards: true,
+      electronics: true,
+      experiences: true
+    }
   });
 
-  // Mutation for updating shop configuration
-  const updateConfig = useMutation({
-    mutationFn: async (data: any) => {
+  const saveConfig = async () => {
+    try {
       const response = await fetch("/api/shop/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(shopConfig)
       });
-      if (!response.ok) throw new Error("Failed to update configuration");
-      return response.json();
-    },
-    onSuccess: () => {
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Shop configuration saved successfully"
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Success",
-        description: "Shop configuration updated successfully",
+        title: "Error",
+        description: "Failed to save configuration",
+        variant: "destructive"
       });
-    },
-  });
+    }
+  };
 
   return (
     <MainLayout>
@@ -80,14 +87,7 @@ const ShopConfig = () => {
                   <Input type="color" className="h-10" />
                 </div>
 
-                <div>
-                  <Label>Accent Color</Label>
-                  <Input type="color" className="h-10" />
-                </div>
-
-                <Button onClick={() => updateConfig.mutate({ design: selectedDesign })}>
-                  Save Brand Settings
-                </Button>
+                <Button onClick={saveConfig}>Save Brand Settings</Button>
               </div>
             </Card>
           </TabsContent>
@@ -96,46 +96,83 @@ const ShopConfig = () => {
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Categories Management</h2>
               
-              <div className="space-y-6">
-                <div>
-                  <Label>Active Categories</Label>
-                  <div className="space-y-2 mt-2">
-                    {["Electronics", "Gift Cards", "Experiences", "Fashion"].map(category => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Checkbox id={category} />
-                        <label htmlFor={category}>{category}</label>
-                      </div>
-                    ))}
-                  </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Gift Cards</Label>
+                  <Switch 
+                    checked={shopConfig.categories.giftCards}
+                    onCheckedChange={(checked) => 
+                      setShopConfig(prev => ({
+                        ...prev,
+                        categories: { ...prev.categories, giftCards: checked }
+                      }))
+                    }
+                  />
                 </div>
 
-                <div>
-                  <Label>Excluded Brands</Label>
-                  <Input placeholder="Add brands to exclude (comma-separated)" />
+                <div className="flex items-center justify-between">
+                  <Label>Electronics</Label>
+                  <Switch 
+                    checked={shopConfig.categories.electronics}
+                    onCheckedChange={(checked) => 
+                      setShopConfig(prev => ({
+                        ...prev,
+                        categories: { ...prev.categories, electronics: checked }
+                      }))
+                    }
+                  />
                 </div>
 
-                <div>
-                  <Label>Company Branded Products</Label>
-                  <Button variant="outline" className="mt-2">
-                    Add New Product
-                  </Button>
+                <div className="flex items-center justify-between">
+                  <Label>Experiences</Label>
+                  <Switch 
+                    checked={shopConfig.categories.experiences}
+                    onCheckedChange={(checked) => 
+                      setShopConfig(prev => ({
+                        ...prev,
+                        categories: { ...prev.categories, experiences: checked }
+                      }))
+                    }
+                  />
                 </div>
+
+                <Button onClick={saveConfig} className="mt-4">Save Categories</Button>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="misc">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Miscellaneous Settings</h2>
+              <h2 className="text-xl font-semibold mb-4">Checkout Settings</h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Enable Cash + Points Checkout</Label>
-                    <p className="text-sm text-gray-500">Allow users to combine cash and points for purchases</p>
+                    <Label>Enable Points Checkout</Label>
+                    <p className="text-sm text-gray-500">Allow users to redeem with points</p>
                   </div>
-                  <Switch />
+                  <Switch 
+                    checked={shopConfig.enablePointsCheckout}
+                    onCheckedChange={(checked) => 
+                      setShopConfig(prev => ({ ...prev, enablePointsCheckout: checked }))
+                    }
+                  />
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Enable Mixed Checkout</Label>
+                    <p className="text-sm text-gray-500">Allow users to combine points and cash</p>
+                  </div>
+                  <Switch 
+                    checked={shopConfig.enableMixedCheckout}
+                    onCheckedChange={(checked) => 
+                      setShopConfig(prev => ({ ...prev, enableMixedCheckout: checked }))
+                    }
+                  />
+                </div>
+
+                <Button onClick={saveConfig} className="mt-4">Save Checkout Settings</Button>
               </div>
             </Card>
           </TabsContent>
