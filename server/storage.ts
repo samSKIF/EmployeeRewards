@@ -1197,6 +1197,58 @@ export class DatabaseStorage implements IStorage {
     })
     .from(pollVotes)
     .where(eq(pollVotes.pollId, id))
+
+async function seedProducts() {
+  const categories = {
+    "Electronics": [
+      { name: "Premium Noise-Canceling Headphones", points: 800, supplier: "carlton", description: "High-end wireless headphones with active noise cancellation" },
+      { name: "Smart Fitness Watch", points: 600, supplier: "carlton", description: "Track your health and fitness with this advanced smartwatch" },
+      { name: "Portable Power Bank", points: 300, supplier: "carlton", description: "20000mAh fast-charging power bank for all devices" },
+      { name: "Wireless Earbuds", points: 450, supplier: "carlton", description: "True wireless earbuds with charging case" },
+      { name: "Bluetooth Speaker", points: 350, supplier: "carlton", description: "Waterproof portable speaker with rich sound" }
+    ],
+    "Gift Cards": [
+      { name: "Amazon Gift Card", points: 500, supplier: "tillo", description: "$50 Amazon shopping credit" },
+      { name: "Netflix Subscription", points: 400, supplier: "tillo", description: "3-month premium streaming subscription" },
+      { name: "Spotify Premium", points: 300, supplier: "tillo", description: "3-month music streaming subscription" },
+      { name: "Steam Gaming Credit", points: 250, supplier: "tillo", description: "$25 gaming platform credit" },
+      { name: "Uber Credits", points: 200, supplier: "tillo", description: "$20 ride-sharing credit" }
+    ],
+    "Wellness": [
+      { name: "Spa Day Package", points: 1000, supplier: "carlton", description: "Full day spa treatment with massage" },
+      { name: "Yoga Mat Premium", points: 200, supplier: "carlton", description: "Professional non-slip yoga mat" },
+      { name: "Fitness Class Pack", points: 600, supplier: "carlton", description: "10 classes at premium fitness studios" },
+      { name: "Meditation App Premium", points: 300, supplier: "tillo", description: "1-year meditation app subscription" },
+      { name: "Health Food Box", points: 400, supplier: "carlton", description: "Curated box of healthy snacks and supplements" }
+    ],
+    "Experiences": [
+      { name: "Adventure Park Tickets", points: 700, supplier: "carlton", description: "Two tickets for thrilling adventure park" },
+      { name: "Cooking Class", points: 500, supplier: "carlton", description: "Gourmet cooking class with professional chef" },
+      { name: "Wine Tasting Tour", points: 800, supplier: "carlton", description: "Guided wine tasting experience for two" },
+      { name: "Concert Tickets", points: 900, supplier: "tillo", description: "Premium seating concert tickets" },
+      { name: "Museum Annual Pass", points: 600, supplier: "carlton", description: "Year-round access to city museums" }
+    ],
+    "Home & Lifestyle": [
+      { name: "Smart Home Starter Kit", points: 750, supplier: "carlton", description: "Essential smart home devices package" },
+      { name: "Gourmet Coffee Set", points: 350, supplier: "carlton", description: "Premium coffee beans and brewing accessories" },
+      { name: "Luxury Bedding Set", points: 550, supplier: "carlton", description: "High-thread-count cotton bedding ensemble" },
+      { name: "Art Print Collection", points: 400, supplier: "carlton", description: "Curated set of contemporary art prints" },
+      { name: "Kitchen Gadget Bundle", points: 450, supplier: "carlton", description: "Essential kitchen tools and gadgets set" }
+    ]
+  };
+
+  for (const [category, products] of Object.entries(categories)) {
+    for (const product of products) {
+      await db.insert(products).values({
+        ...product,
+        category,
+        imageUrl: `https://source.unsplash.com/random/800x600/?${encodeURIComponent(product.name.toLowerCase().replace(/ /g, '-'))}`,
+        isActive: true
+      });
+    }
+  }
+}
+
     .groupBy(pollVotes.optionIndex);
 
     // Get total votes
