@@ -567,7 +567,6 @@ export default function AdminSurveyCreator() {
             });
           }}
         />
-        </Card>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
