@@ -1796,7 +1796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const surveyData = {
         ...restData,
         startDate: new Date(), // Set start date to now
-        endDate: endDate ? new Date(endDate) : null,
+        endDate: endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default to 30 days if not specified
         // Map targetAudience to totalRecipients if needed
         totalRecipients: targetAudience === 'all' ? -1 : (req.body.targetUserIds?.length || 0),
         createdBy: req.user?.id
