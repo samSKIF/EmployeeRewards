@@ -8,7 +8,8 @@ import {
   FileText,
   Upload,
   Calendar,
-  BarChart3
+  BarChart3,
+  Check as CheckIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,16 +84,16 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
 
       case "single":
         return (
-          <RadioGroup defaultValue={readOnly ? undefined : value} onValueChange={setValue} disabled={readOnly}>
-            <div className="space-y-2">
-              {question.options?.map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem id={`${question.id}-option-${index}`} value={option} />
-                  <Label htmlFor={`${question.id}-option-${index}`}>{option}</Label>
+          <div className="space-y-2">
+            {question.options?.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                  {index === 0 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
                 </div>
-              ))}
-            </div>
-          </RadioGroup>
+                <label className="text-sm">{option}</label>
+              </div>
+            ))}
+          </div>
         );
 
       case "multiple":
@@ -100,13 +101,10 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
           <div className="space-y-2">
             {question.options?.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={`${question.id}-option-${index}`} 
-                  checked={multiValues.includes(option)}
-                  onCheckedChange={() => !readOnly && handleCheckboxChange(option)}
-                  disabled={readOnly}
-                />
-                <Label htmlFor={`${question.id}-option-${index}`}>{option}</Label>
+                <div className="h-4 w-4 rounded border inline-flex items-center justify-center">
+                  {index === 0 || index === 2 ? <CheckIcon className="h-3 w-3 text-blue-500" /> : null}
+                </div>
+                <label className="text-sm">{option}</label>
               </div>
             ))}
           </div>
