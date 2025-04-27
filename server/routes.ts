@@ -1872,7 +1872,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add surveyId to each question if not already present
       const questionsWithSurveyId = questions.map(q => ({
         ...q,
-        surveyId: parseInt(surveyId)
+        surveyId: parseInt(surveyId),
+        options: q.options ? JSON.stringify(q.options) : null // Convert options array to JSON string
       }));
 
       const savedQuestions = await storage.createSurveyQuestions(questionsWithSurveyId);
