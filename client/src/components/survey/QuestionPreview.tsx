@@ -142,12 +142,10 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
           <div className="space-y-1">
             {["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"].map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <RadioGroupItem 
-                  id={`${question.id}-likert-${index}`} 
-                  value={option}
-                  disabled={readOnly} 
-                />
-                <Label htmlFor={`${question.id}-likert-${index}`}>{option}</Label>
+                <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                  {index === 3 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
+                </div>
+                <label className="text-sm">{option}</label>
               </div>
             ))}
           </div>
@@ -217,16 +215,25 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
               </tr>
             </thead>
             <tbody>
-              {["Feature 1", "Feature 2", "Feature 3"].map((row) => (
-                <tr key={row} className="border-t">
+              {question.options ? question.options.map((row, rowIndex) => (
+                <tr key={rowIndex} className="border-t">
                   <td className="p-1">{row}</td>
                   {[1, 2, 3, 4].map((col) => (
                     <td key={col} className="text-center p-1">
-                      <RadioGroupItem
-                        id={`${question.id}-matrix-${row}-${col}`}
-                        value={`${row}-${col}`}
-                        disabled={readOnly}
-                      />
+                      <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                        {col === 3 && rowIndex === 0 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              )) : ["Feature 1", "Feature 2", "Feature 3"].map((row, rowIndex) => (
+                <tr key={rowIndex} className="border-t">
+                  <td className="p-1">{row}</td>
+                  {[1, 2, 3, 4].map((col) => (
+                    <td key={col} className="text-center p-1">
+                      <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                        {col === 3 && rowIndex === 0 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
+                      </div>
                     </td>
                   ))}
                 </tr>
@@ -242,12 +249,11 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
               <div key={index} className="grid grid-cols-7 items-center gap-1">
                 <span className="text-xs text-right">{left}</span>
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <RadioGroupItem
-                    key={n}
-                    id={`${question.id}-semantic-${index}-${n}`}
-                    value={`${index}-${n}`}
-                    disabled={readOnly}
-                  />
+                  <div key={n} className="flex justify-center">
+                    <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                      {n === 3 && index === 0 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
+                    </div>
+                  </div>
                 ))}
                 <span className="text-xs">{right}</span>
               </div>
@@ -329,16 +335,14 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
         return (
           <div className="grid grid-cols-2 gap-2">
             {[1, 2].map((n) => (
-              <div key={n} className="border rounded-md p-1 cursor-pointer hover:border-blue-500">
+              <div key={n} className={`border rounded-md p-1 cursor-pointer ${n === 1 ? 'border-blue-500 bg-blue-50' : ''}`}>
                 <div className="bg-gray-200 w-full h-16 rounded flex items-center justify-center">
                   <span className="text-xs text-gray-500">Image {n}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-center">
-                  <RadioGroupItem
-                    id={`${question.id}-image-${n}`}
-                    value={`image-${n}`}
-                    disabled={readOnly}
-                  />
+                  <div className="h-4 w-4 rounded-full border inline-flex items-center justify-center">
+                    {n === 1 ? <div className="h-2 w-2 bg-blue-500 rounded-full"></div> : null}
+                  </div>
                 </div>
               </div>
             ))}

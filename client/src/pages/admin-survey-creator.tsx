@@ -447,20 +447,48 @@ export default function AdminSurveyCreator() {
 
   const getQuestionTypeLabel = (type: string) => {
     switch (type) {
+      case "nps":
+        return "Net Promoter Score (NPS)";
       case "single":
         return "Single Choice";
       case "multiple":
         return "Multiple Choice";
+      case "scale":
+        return "Scale (1-5)";
       case "rating":
-        return "Rating";
+        return "Rating (Legacy)";
       case "likert":
         return "Likert Scale";
+      case "dropdown":
+        return "Dropdown Select";
+      case "ranking":
+        return "Ranking";
+      case "slider":
+        return "Slider Scale";
+      case "matrix":
+        return "Matrix/Grid";
+      case "semantic":
+        return "Semantic Differential";
+      case "star":
+        return "Star Rating";
+      case "numeric":
+        return "Numeric Input";
+      case "datetime":
+        return "Date/Time Picker";
+      case "toggle":
+        return "Yes/No Toggle";
       case "text":
-        return "Text";
+        return "Text Response";
       case "file":
         return "File Upload";
+      case "image":
+        return "Image Choice";
+      case "constant-sum":
+        return "Constant Sum";
+      case "heatmap":
+        return "Heatmap/Click Map";
       default:
-        return type;
+        return type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, ' ');
     }
   };
 
@@ -931,51 +959,28 @@ export default function AdminSurveyCreator() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Question Type</FormLabel>
-                              <Select
-                                onValueChange={(value) => {
-                                  field.onChange(value);
-                                  // Reset options if switching to a different type
-                                  if (
-                                    value !== "single" &&
-                                    value !== "multiple"
-                                  ) {
-                                    questionForm.setValue("options", []);
-                                  } else {
-                                    // Check if options exists and set a default if missing
-                                    const currentOptions = questionForm.getValues("options");
-                                    if (!currentOptions || currentOptions.length === 0) {
-                                      questionForm.setValue("options", [""]);
+                              <FormControl>
+                                <QuestionTypePicker 
+                                  onSelect={(value) => {
+                                    field.onChange(value);
+                                    // Reset options if switching to a different type that doesn't need options
+                                    const optionTypes = ["single", "multiple", "dropdown", "ranking", "matrix", "image", "constant-sum"];
+                                    if (!optionTypes.includes(value)) {
+                                      questionForm.setValue("options", []);
+                                    } else {
+                                      // Check if options exists and set a default if missing
+                                      const currentOptions = questionForm.getValues("options");
+                                      if (!currentOptions || currentOptions.length === 0) {
+                                        questionForm.setValue("options", [""]);
+                                      }
                                     }
-                                  }
-                                }}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="single">
-                                    Single Choice
-                                  </SelectItem>
-                                  <SelectItem value="multiple">
-                                    Multiple Choice
-                                  </SelectItem>
-                                  <SelectItem value="rating">
-                                    Rating (1-5)
-                                  </SelectItem>
-                                  <SelectItem value="likert">
-                                    Likert Scale
-                                  </SelectItem>
-                                  <SelectItem value="text">
-                                    Text Response
-                                  </SelectItem>
-                                  <SelectItem value="file">
-                                    File Upload
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                                  }}
+                                  currentType={field.value}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Choose from 19 different question types for your survey
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1002,11 +1007,27 @@ export default function AdminSurveyCreator() {
                           )}
                         />
 
-                        {/* Options for multiple choice questions */}
-                        {(questionForm.watch("questionType") === "single" ||
-                          questionForm.watch("questionType") === "multiple") && (
+                        {/* Question Preview */}
+                        <div className="border rounded-lg p-4 bg-gray-50 mb-4">
+                          <h3 className="text-sm font-medium mb-2">Preview</h3>
+                          <QuestionPreview 
+                            question={{
+                              id: currentQuestion?.id || 'preview',
+                              questionText: questionForm.watch("questionText") || "Question preview",
+                              questionType: questionForm.watch("questionType"),
+                              isRequired: questionForm.watch("isRequired"),
+                              options: questionForm.watch("options"),
+                            }}
+                            readOnly={true}
+                          />
+                        </div>
+
+                        {/* Options for questions that need them */}
+                        {["single", "multiple", "dropdown", "ranking", "matrix", "image", "constant-sum"].includes(questionForm.watch("questionType")) && (
                           <div className="space-y-2">
-                            <FormLabel>Answer Options</FormLabel>
+                            <FormLabel>
+                              {questionForm.watch("questionType") === "matrix" ? "Rows (Items to Rate)" : "Answer Options"}
+                            </FormLabel>
                             {questionForm.watch("options")?.map((_, index) => (
                               <div
                                 key={index}
@@ -1027,7 +1048,13 @@ export default function AdminSurveyCreator() {
                                       newOptions
                                     );
                                   }}
-                                  placeholder={`Option ${index + 1}`}
+                                  placeholder={
+                                    questionForm.watch("questionType") === "matrix" 
+                                      ? `Row ${index + 1} (e.g., "Customer Service")` 
+                                      : questionForm.watch("questionType") === "constant-sum"
+                                        ? `Item ${index + 1} (e.g., "Quality")`
+                                        : `Option ${index + 1}`
+                                  }
                                 />
                                 <Button
                                   type="button"
@@ -1045,6 +1072,7 @@ export default function AdminSurveyCreator() {
                                     );
                                   }}
                                   className="text-red-500"
+                                  disabled={(questionForm.watch("options") || []).length <= 1}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1065,8 +1093,18 @@ export default function AdminSurveyCreator() {
                               className="mt-2"
                             >
                               <Plus className="h-4 w-4 mr-2" />
-                              Add Option
+                              Add {questionForm.watch("questionType") === "matrix" ? "Row" : "Option"}
                             </Button>
+                          </div>
+                        )}
+                        
+                        {/* Matrix scale options */}
+                        {questionForm.watch("questionType") === "matrix" && (
+                          <div className="space-y-2 mt-4">
+                            <FormLabel>Column Headers (Rating Scale)</FormLabel>
+                            <div className="text-xs text-gray-500 mb-2">
+                              Default scale: Poor, Fair, Good, Excellent
+                            </div>
                           </div>
                         )}
                       </form>
