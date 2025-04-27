@@ -1787,6 +1787,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/surveys/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.getSurveyById(parseInt(id));
+
+      if (!survey) {
+        return res.status(404).json({ message: "Survey not found" });
+      }
+
+      res.json(survey);
+    } catch (error) {
+      console.error(`Error fetching survey ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to fetch survey" });
+    }
+  });
+
   app.post("/api/surveys", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       // Process the request body to match the actual database schema
