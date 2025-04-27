@@ -11,22 +11,34 @@ const ShopConfig = () => {
 
   const designs = [
     {
-      id: "grid",
-      name: "Grid Layout",
-      image: "/shop-designs/grid-layout.jpg",
-      description: "Modern grid-based layout with large product cards"
+      id: "traditional",
+      name: "Traditional Multi-Page Catalog",
+      image: "/shop-designs/traditional.png",
+      description: "Full-featured catalog with detailed navigation and filtered browsing"
     },
     {
-      id: "list",
-      name: "List View",
-      image: "/shop-designs/list-view.jpg",
-      description: "Classic list view with detailed product information"
+      id: "single-page",
+      name: "Single-Page Long-Scroll Shop",
+      image: "/shop-designs/single-page.png",
+      description: "All content on one page with smooth scrolling navigation"
     },
     {
-      id: "magazine",
-      name: "Magazine Style",
-      image: "/shop-designs/magazine.jpg",
-      description: "Magazine-style layout with featured products"
+      id: "app-like",
+      name: "App-Like Dashboard Portal",
+      image: "/shop-designs/app-like.png",
+      description: "Power user interface with quick access to rewards"
+    },
+    {
+      id: "guided",
+      name: "Guided Discovery",
+      image: "/shop-designs/guided.png",
+      description: "Step-by-step wizard to help find perfect rewards"
+    },
+    {
+      id: "modular",
+      name: "Modular Components",
+      image: "/shop-designs/modular.png",
+      description: "Flexible layout with customizable content blocks"
     }
   ];
 
