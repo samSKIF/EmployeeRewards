@@ -976,6 +976,7 @@ export default function AdminSurveyCreator() {
                                     }
                                   }}
                                   currentType={field.value}
+                                  onClose={() => {}}
                                 />
                               </FormControl>
                               <FormDescription>

@@ -47,7 +47,7 @@ interface QuestionTypeInfo {
   preview: React.ReactNode;
 }
 
-export const questionTypes: QuestionTypeInfo[] = [
+const questionTypes: QuestionTypeInfo[] = [
   // Feedback & Rating Category
   {
     id: "nps",
