@@ -14,31 +14,61 @@ const ShopConfig = () => {
       id: "traditional",
       name: "Traditional Multi-Page Catalog",
       image: "/shop-designs/traditional.png",
-      description: "Full-featured catalog with detailed navigation and filtered browsing"
+      description: "Full catalog with mega-menu navigation, filtered browsing and detailed product pages",
+      features: [
+        "Mega-menu categories",
+        "Product filtering",
+        "Image galleries",
+        "Detailed product pages"
+      ]
     },
     {
       id: "single-page",
       name: "Single-Page Long-Scroll Shop",
-      image: "/shop-designs/single-page.png",
-      description: "All content on one page with smooth scrolling navigation"
+      image: "/shop-designs/single-page.png", 
+      description: "All content on one scrollable page with quick navigation",
+      features: [
+        "Quick-redeem widget",
+        "Dynamic carousels",
+        "Promotional sections",
+        "Story blocks"
+      ]
     },
     {
       id: "app-like",
       name: "App-Like Dashboard Portal",
       image: "/shop-designs/app-like.png",
-      description: "Power user interface with quick access to rewards"
+      description: "Power user interface focused on quick redemptions",
+      features: [
+        "Points widget",
+        "Quick redemptions",
+        "Tabbed browsing",
+        "Saved lists"
+      ]
     },
     {
       id: "guided",
       name: "Guided Discovery",
       image: "/shop-designs/guided.png",
-      description: "Step-by-step wizard to help find perfect rewards"
+      description: "Wizard-style interface to find perfect rewards",
+      features: [
+        "Multi-step wizard",
+        "Tailored results",
+        "Quick checkout",
+        "Smart filters"
+      ]
     },
     {
       id: "modular",
       name: "Modular Components",
       image: "/shop-designs/modular.png",
-      description: "Flexible layout with customizable content blocks"
+      description: "Flexible layout built from customizable blocks",
+      features: [
+        "Drag-drop blocks",
+        "Custom layouts",
+        "Dynamic content",
+        "Responsive design"
+      ]
     }
   ];
 
@@ -113,7 +143,16 @@ const ShopConfig = () => {
               onClick={() => setSelectedDesign(design.id)}
             >
               <CardHeader>
-                <CardTitle className="text-lg">{design.name}</CardTitle>
+                <div className="flex justify-between items-start mb-2">
+                  <CardTitle className="text-lg">{design.name}</CardTitle>
+                  <div 
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      selectedDesign === design.id 
+                        ? 'border-blue-500 bg-blue-500' 
+                        : 'border-gray-300'
+                    }`}
+                  />
+                </div>
                 <CardDescription className="text-sm">{design.description}</CardDescription>
               </CardHeader>
               <CardContent>
@@ -124,15 +163,26 @@ const ShopConfig = () => {
                     className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                   />
                 </div>
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700">Key Features:</h4>
+                  <ul className="grid grid-cols-2 gap-2">
+                    {design.features.map((feature, i) => (
+                      <li key={i} className="text-xs text-gray-600 flex items-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </CardContent>
-              <CardFooter className="flex items-center justify-center">
-                <div 
-                  className={`w-4 h-4 rounded-full border-2 ${
-                    selectedDesign === design.id 
-                      ? 'border-blue-500 bg-blue-500' 
-                      : 'border-gray-300'
-                  }`}
-                />
+              <CardFooter className="flex justify-end pt-4">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className={selectedDesign === design.id ? "bg-blue-50" : ""}
+                >
+                  {selectedDesign === design.id ? "Selected" : "Select Design"}
+                </Button>
               </CardFooter>
             </Card>
           ))}
