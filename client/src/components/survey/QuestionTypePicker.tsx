@@ -58,29 +58,25 @@ export const questionTypes: QuestionTypeInfo[] = [
     preview: (
       <div className="w-full">
         <p className="text-sm mb-2">How likely are you to recommend our company to a friend or colleague?</p>
-        <div className="flex justify-between mb-1 text-xs">
-          <span>Not at all likely</span>
-          <span>Extremely likely</span>
-        </div>
         <div className="flex gap-1">
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-            <button
-              key={n}
-              className="flex-1 border rounded-md py-1 text-xs hover:bg-gray-100"
-            >
-              {n}
-            </button>
-          ))}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+            let bgColor = "bg-red-500";
+            if (n >= 7 && n <= 8) bgColor = "bg-yellow-400";
+            if (n >= 9) bgColor = "bg-green-500";
+            
+            return (
+              <button
+                key={n}
+                className={`flex-1 text-white font-medium ${bgColor} rounded-md py-2 px-1 text-xs hover:opacity-90 transition-opacity`}
+              >
+                {n}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex justify-between mt-1">
-          <div className="h-1 bg-red-400 flex-1"></div>
-          <div className="h-1 bg-yellow-400 flex-1"></div>
-          <div className="h-1 bg-green-400 flex-1"></div>
-        </div>
-        <div className="flex justify-between text-xs mt-1">
-          <span className="text-red-500">Detractors</span>
-          <span className="text-yellow-500">Passives</span>
-          <span className="text-green-500">Promoters</span>
+        <div className="flex justify-between text-xs mt-2">
+          <span>Not Likely</span>
+          <span>Very Likely</span>
         </div>
       </div>
     ),
@@ -491,6 +487,10 @@ interface QuestionTypePickerProps {
 
 export default function QuestionTypePicker({ onSelect, currentType }: QuestionTypePickerProps) {
   const [open, setOpen] = useState(false);
+  // Track previewType separately from the selectedType to allow showing previews without confirming selection
+  const [previewType, setPreviewType] = useState<QuestionTypeInfo | null>(
+    questionTypes.find(t => t.id === currentType) || null
+  );
   const [selectedType, setSelectedType] = useState<QuestionTypeInfo | null>(
     questionTypes.find(t => t.id === currentType) || null
   );
@@ -505,10 +505,18 @@ export default function QuestionTypePicker({ onSelect, currentType }: QuestionTy
       : "Select type";
   };
 
-  const handleSelect = (type: QuestionTypeInfo) => {
-    setSelectedType(type);
-    onSelect(type.id);
-    setOpen(false);
+  // This only updates the preview but doesn't select the type
+  const handlePreview = (type: QuestionTypeInfo) => {
+    setPreviewType(type);
+  };
+
+  // This confirms the selection and closes the dialog
+  const handleConfirmSelection = () => {
+    if (previewType) {
+      setSelectedType(previewType);
+      onSelect(previewType.id);
+      setOpen(false);
+    }
   };
 
   return (
@@ -538,8 +546,8 @@ export default function QuestionTypePicker({ onSelect, currentType }: QuestionTy
                     {types.map((type) => (
                       <CommandItem
                         key={type.id}
-                        onSelect={() => handleSelect(type)}
-                        className="cursor-pointer"
+                        onSelect={() => handlePreview(type)}
+                        className={`cursor-pointer ${previewType?.id === type.id ? 'bg-blue-50' : ''}`}
                       >
                         {type.icon}
                         <span>{type.name}</span>
@@ -552,19 +560,19 @@ export default function QuestionTypePicker({ onSelect, currentType }: QuestionTy
           </div>
           
           <div className="col-span-4 border rounded-lg p-4 bg-gray-50">
-            {selectedType ? (
+            {previewType ? (
               <>
                 <div className="flex items-center mb-2">
-                  {selectedType.icon}
-                  <h3 className="font-medium">{selectedType.name}</h3>
+                  {previewType.icon}
+                  <h3 className="font-medium">{previewType.name}</h3>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{selectedType.description}</p>
+                <p className="text-sm text-gray-600 mb-3">{previewType.description}</p>
                 <div className="border rounded-lg bg-white p-3 shadow-sm">
-                  {selectedType.preview}
+                  {previewType.preview}
                 </div>
                 <Button 
-                  className="mt-4 w-full"
-                  onClick={() => handleSelect(selectedType)}
+                  className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleConfirmSelection}
                 >
                   Select This Type
                 </Button>

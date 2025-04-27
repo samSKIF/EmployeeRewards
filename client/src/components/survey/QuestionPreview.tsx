@@ -51,33 +51,27 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
       case "nps":
         return (
           <div className="w-full">
-            <div className="flex justify-between mb-1 text-xs text-gray-500">
-              <span>Not at all likely</span>
-              <span>Extremely likely</span>
-            </div>
             <div className="flex gap-1">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                <button
-                  key={n}
-                  className={`flex-1 border rounded-md py-2 hover:bg-gray-100 ${
-                    !readOnly && value === n ? "bg-blue-100 border-blue-400" : ""
-                  }`}
-                  onClick={() => !readOnly && setValue(n)}
-                  disabled={readOnly}
-                >
-                  {n}
-                </button>
-              ))}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+                let bgColor = "bg-red-500";
+                if (n >= 7 && n <= 8) bgColor = "bg-yellow-400";
+                if (n >= 9) bgColor = "bg-green-500";
+                
+                return (
+                  <button
+                    key={n}
+                    className={`flex-1 text-white font-medium ${bgColor} rounded-md py-2 px-1 hover:opacity-90 transition-opacity`}
+                    onClick={() => !readOnly && setValue(n)}
+                    disabled={readOnly}
+                  >
+                    {n}
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex justify-between mt-1">
-              <div className="h-1 bg-red-400 flex-1"></div>
-              <div className="h-1 bg-yellow-400 flex-1"></div>
-              <div className="h-1 bg-green-400 flex-1"></div>
-            </div>
-            <div className="flex justify-between text-xs mt-1">
-              <span className="text-red-500">Detractors (0-6)</span>
-              <span className="text-yellow-500">Passives (7-8)</span>
-              <span className="text-green-500">Promoters (9-10)</span>
+            <div className="flex justify-between text-xs mt-2">
+              <span>Not Likely</span>
+              <span>Very Likely</span>
             </div>
           </div>
         );
