@@ -9,7 +9,8 @@ import {
   Upload,
   Calendar,
   BarChart3,
-  Check as CheckIcon
+  Check as CheckIcon,
+  ArrowDownUp
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -159,14 +160,23 @@ export default function QuestionPreview({ question, readOnly = true }: QuestionP
         );
 
       case "ranking":
+        const rankingOptions = question.options && question.options.length > 0 
+          ? question.options 
+          : ["Samir", "SKIF", "Karim", "Rakim"];
+        
         return (
           <div className="space-y-2">
-            {question.options?.map((option, index) => (
+            {rankingOptions.map((option, index) => (
               <div key={index} className="flex items-center border p-2 rounded-md bg-white">
                 <span className="font-medium mr-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
                   {index + 1}
                 </span>
                 <span>{option}</span>
+                {index < rankingOptions.length - 1 && (
+                  <div className="ml-auto flex items-center gap-1 text-gray-400">
+                    <ArrowDownUp className="h-4 w-4" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
