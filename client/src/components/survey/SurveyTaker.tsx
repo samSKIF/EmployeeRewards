@@ -383,6 +383,39 @@ export default function SurveyTaker({
           />
         );
 
+      case 'star':
+        return (
+          <FormField
+            control={form.control}
+            name={`question_${currentQuestion.id}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className="focus:outline-none"
+                        onClick={() => field.onChange(value)}
+                      >
+                        <Star
+                          className={`h-8 w-8 ${
+                            field.value >= value
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
       case 'likert':
         return (
           <FormField
