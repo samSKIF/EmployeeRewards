@@ -26,11 +26,12 @@ const ShopConfig = () => {
 
   const saveConfigMutation = useMutation({
     mutationFn: async (data: any) => {
+      const firebaseToken = localStorage.getItem('firebaseToken');
       const response = await fetch("/api/shop/config", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token')}`
+          "Authorization": `Bearer ${firebaseToken}`
         },
         body: JSON.stringify(data)
       });
