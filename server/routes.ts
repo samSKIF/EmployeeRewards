@@ -1789,12 +1789,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/surveys", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
-      const surveyData = {
-        ...req.body,
+      // Process the request body to handle date fields
+      const { publishedAt, expiresAt, ...restData } = req.body;
+      
+      // Properly format date fields or set to null
+      const formattedData = {
+        ...restData,
+        publishedAt: publishedAt ? new Date(publishedAt) : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
         createdBy: req.user?.id
       };
       
-      const survey = await storage.createSurvey(surveyData);
+      const survey = await storage.createSurvey(formattedData);
       res.status(201).json(survey);
     } catch (error) {
       console.error("Error creating survey:", error);
