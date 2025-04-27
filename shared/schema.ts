@@ -232,7 +232,7 @@ export const surveyQuestions = pgTable("survey_questions", {
   id: serial("id").primaryKey(),
   surveyId: integer("survey_id").references(() => surveys.id, { onDelete: 'cascade' }).notNull(),
   questionText: text("question_text").notNull(),   // The actual question
-  questionType: text("question_type").notNull(),   // single, multiple, rating, likert, text, file
+  questionType: text("question_type").notNull(),   // nps, single, multiple, scale, likert, dropdown, ranking, slider, matrix, semantic, star, numeric, datetime, toggle, text, file, image, constant-sum, heatmap
   isRequired: boolean("is_required").default(true),
   options: jsonb("options"),                       // For choice questions: array of options
   order: integer("order").notNull(),               // Ordering of questions
