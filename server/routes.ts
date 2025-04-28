@@ -3097,6 +3097,15 @@ async function seedInitialData() {
     if (existingUsers.length === 0) {
       console.log("Seeding admin user...");
 
+      // Create a corporate organization first
+      const [corporateOrg] = await db.insert(organizations).values({
+        name: "ThrivioHR Corporate",
+        type: "corporate",
+        status: "active",
+      }).returning();
+      
+      console.log("Corporate organization created successfully");
+
       // Create admin user
       await storage.createUser({
         username: "admin",
@@ -3104,7 +3113,9 @@ async function seedInitialData() {
         name: "Admin User",
         email: "admin@demo.io",
         department: "HR",
-        isAdmin: true
+        isAdmin: true,
+        roleType: "corporate_admin",
+        organizationId: corporateOrg.id
       });
 
       console.log("Admin user created successfully");
