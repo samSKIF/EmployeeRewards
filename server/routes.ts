@@ -22,6 +22,61 @@ import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create corporate admin account
+  app.post("/api/admin/corporate-account", async (req, res) => {
+    try {
+      const { email, password, name, username } = req.body;
+
+      if (!email || !password || !name || !username) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if email already exists
+      const existingEmailUser = await storage.getUserByEmail(email);
+      if (existingEmailUser) {
+        return res.status(409).json({ message: "Email already registered" });
+      }
+
+      // Check if username already exists
+      const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
+      if (existingUsernameUser) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+
+      // Get the corporate organization
+      const [corporateOrg] = await db.select().from(organizations).where(eq(organizations.type, "corporate"));
+      
+      if (!corporateOrg) {
+        return res.status(404).json({ message: "Corporate organization not found" });
+      }
+
+      // Hash the password
+      const hashedPassword = await hash(password, 10);
+
+      // Create the user with corporate_admin role
+      const [newUser] = await db.insert(users).values({
+        email,
+        username,
+        password: hashedPassword,
+        name,
+        isAdmin: true,
+        role_type: "corporate_admin",
+        organization_id: corporateOrg.id,
+        permissions: JSON.stringify({
+          manage_clients: true,
+          manage_marketplace: true,
+          manage_features: true
+        })
+      }).returning();
+
+      // Return success with user data (excluding password)
+      const { password: _, ...userWithoutPassword } = newUser;
+      return res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error creating corporate admin account:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
   // Registration endpoint
   app.post("/api/auth/register", async (req, res) => {
     try {
