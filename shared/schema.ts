@@ -1,9 +1,34 @@
 import { pgTable, text, serial, integer, timestamp, doublePrecision, boolean, date, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 
-// Users table
+// Organizations table (Corporate, Client, Seller)
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'corporate', 'client', 'seller'
+  status: text("status").default("active").notNull(), // 'active', 'inactive', 'pending'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by"),
+  logoUrl: text("logo_url"),
+  settings: jsonb("settings"), // Store org-specific settings like enabled features
+  parentOrgId: integer("parent_org_id").references(() => organizations.id), // For hierarchical relationships
+});
+
+// Organization features tracking
+export const organizationFeatures = pgTable("organization_features", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  featureKey: text("feature_key").notNull(), // 'social', 'rewards', 'marketplace'
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  enabledAt: timestamp("enabled_at").defaultNow(),
+  enabledBy: integer("enabled_by"),
+  settings: jsonb("settings"), // Feature-specific settings/configuration
+});
+
+// Users table (extended)
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -17,12 +42,16 @@ export const users = pgTable("users", {
   sex: text("sex"),                      // Gender
   nationality: text("nationality"),      // Nationality
   birthDate: date("birth_date"),         // Date of birth
-  isAdmin: boolean("is_admin").default(false), // Role: admin or user
+  roleType: text("role_type").default("employee").notNull(), // 'corporate_admin', 'client_admin', 'seller_admin', 'employee'
+  isAdmin: boolean("is_admin").default(false), // Legacy field: Role: admin or user
   status: text("status").default("active"), // Status: active/inactive
   avatarUrl: text("avatar_url"),         // Profile photo
   hireDate: date("hire_date"),           // Work anniversary date
   firebaseUid: text("firebase_uid"),     // Firebase User ID for authentication
+  organizationId: integer("organization_id").references(() => organizations.id), // Which org they belong to
+  permissions: jsonb("permissions"), // Specific permissions within their role
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: integer("created_by"),
 });
 
 // Accounts table to track point balances (ledger)
@@ -47,28 +76,170 @@ export const transactions = pgTable("transactions", {
   recognitionId: integer("recognition_id").references(() => recognitions.id),
 });
 
-// Products table (rewards)
-export const products = pgTable("products", {
+// Seller profiles table
+export const sellers = pgTable("sellers", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  businessName: text("business_name").notNull(),
+  businessType: text("business_type").notNull(), // 'physical_goods', 'digital_goods', 'services'
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone"),
+  website: text("website"),
+  description: text("description"),
+  logoUrl: text("logo_url"),
+  bannerUrl: text("banner_url"),
+  status: text("status").default("pending").notNull(), // 'pending', 'approved', 'suspended'
+  approvedAt: timestamp("approved_at"),
+  approvedBy: integer("approved_by").references(() => users.id),
+  rating: doublePrecision("rating"),
+  paymentInfo: jsonb("payment_info"),
+  taxId: text("tax_id"),
+  shippingPolicy: text("shipping_policy"),
+  returnPolicy: text("return_policy"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Product categories for marketplace
+export const productCategories = pgTable("product_categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description").notNull(),
-  category: text("category").notNull(),
-  points: integer("points").notNull(),
-  imageUrl: text("image_url").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  parentId: integer("parent_id").references(() => productCategories.id), // For nested categories
   isActive: boolean("is_active").default(true),
-  supplier: text("supplier").notNull(), // 'tillo', 'carlton'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),
 });
 
-// Orders table
+// Products table (rewards and marketplace)
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  categoryId: integer("category_id").references(() => productCategories.id),
+  category: text("category").notNull(), // Legacy field: 'Electronics', 'Gift Cards', etc.
+  points: integer("points").notNull(),
+  price: doublePrecision("price"), // For marketplace products that can be purchased with real money
+  imageUrl: text("image_url").notNull(),
+  additionalImages: text("additional_images").array(), // Additional product images
+  isActive: boolean("is_active").default(true),
+  isReward: boolean("is_reward").default(true), // Whether it's a reward product
+  isMarketplace: boolean("is_marketplace").default(false), // Whether it's a marketplace product
+  supplier: text("supplier"), // Legacy field: 'tillo', 'carlton'
+  sellerId: integer("seller_id").references(() => sellers.id), // Seller who provides this product
+  inventory: integer("inventory"), // Available inventory count
+  sku: text("sku"), // Stock keeping unit
+  status: text("status").default("draft").notNull(), // 'draft', 'pending_review', 'approved', 'rejected'
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewNotes: text("review_notes"), // Notes from the QC process
+  tags: text("tags").array(),
+  specifications: jsonb("specifications"), // Product specifications
+  weight: doublePrecision("weight"), // Product weight for shipping calculations
+  dimensions: jsonb("dimensions"), // Product dimensions
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Enhanced orders table for both reward redemptions and marketplace purchases
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
   productId: integer("product_id").references(() => products.id),
   transactionId: integer("transaction_id").references(() => transactions.id),
-  status: text("status").notNull().default("pending"), // pending, processing, shipped, completed
+  sellerId: integer("seller_id").references(() => sellers.id),
+  orderType: text("order_type").notNull().default("reward"), // 'reward' or 'marketplace'
+  status: text("status").notNull().default("pending"), // pending, processing, shipped, completed, cancelled, refunded
+  paymentMethod: text("payment_method"), // 'points', 'credit_card', etc.
+  paymentStatus: text("payment_status").default("pending"), // 'pending', 'completed', 'failed', 'refunded'
+  totalAmount: doublePrecision("total_amount"), // For marketplace purchases
+  totalPoints: integer("total_points"), // For reward redemptions
   externalRef: text("external_ref"), // Reference from supplier system
+  trackingNumber: text("tracking_number"), // Shipping tracking number
+  shipmentStatus: text("shipment_status"), // 'pending', 'shipped', 'delivered'
+  shipmentMethod: text("shipment_method"), // Shipping method used
+  shippingAddress: jsonb("shipping_address"), // Shipping address information
+  billingAddress: jsonb("billing_address"), // Billing address information
+  notes: text("notes"), // Order notes
+  estimatedDeliveryDate: timestamp("estimated_delivery_date"),
+  actualDeliveryDate: timestamp("actual_delivery_date"),
+  cancelledAt: timestamp("cancelled_at"),
+  cancelReason: text("cancel_reason"),
+  returnedAt: timestamp("returned_at"),
+  returnReason: text("return_reason"),
+  organizationId: integer("organization_id").references(() => organizations.id), // Client organization the order belongs to
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Order items (for orders with multiple products)
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id, { onDelete: 'cascade' }).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: doublePrecision("unit_price"),
+  unitPoints: integer("unit_points"),
+  totalPrice: doublePrecision("total_price"),
+  totalPoints: integer("total_points"),
+  discount: doublePrecision("discount").default(0), // Discount amount
+  status: text("status").default("pending"), // 'pending', 'shipped', 'delivered', 'returned'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Support tickets for marketplace
+export const supportTickets = pgTable("support_tickets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  sellerId: integer("seller_id").references(() => sellers.id),
+  orderId: integer("order_id").references(() => orders.id),
+  productId: integer("product_id").references(() => products.id),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  status: text("status").default("open").notNull(), // 'open', 'in_progress', 'resolved', 'closed'
+  priority: text("priority").default("medium").notNull(), // 'low', 'medium', 'high', 'urgent'
+  category: text("category").notNull(), // 'order', 'product', 'payment', 'shipping', 'other'
+  assignedTo: integer("assigned_to").references(() => users.id),
+  attachments: text("attachments").array(),
+  resolutionSummary: text("resolution_summary"),
+  resolvedAt: timestamp("resolved_at"),
+  closedAt: timestamp("closed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Ticket messages for communication
+export const ticketMessages = pgTable("ticket_messages", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").references(() => supportTickets.id, { onDelete: 'cascade' }).notNull(),
+  senderId: integer("sender_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  attachments: text("attachments").array(),
+  isInternal: boolean("is_internal").default(false), // Internal note visible only to staff
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Reviews for marketplace products
+export const productReviews = pgTable("product_reviews", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  orderId: integer("order_id").references(() => orders.id),
+  rating: integer("rating").notNull(), // 1-5 star rating
+  title: text("title"),
+  content: text("content"),
+  pros: text("pros").array(),
+  cons: text("cons").array(),
+  images: text("images").array(),
+  isVerified: boolean("is_verified").default(false), // Whether reviewer actually purchased the product
+  status: text("status").default("published").notNull(), // 'published', 'pending', 'rejected'
+  moderatedBy: integer("moderated_by").references(() => users.id),
+  moderationReason: text("moderation_reason"),
+  helpfulCount: integer("helpful_count").default(0),
+  unhelpfulCount: integer("unhelpful_count").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
 });
@@ -261,7 +432,24 @@ export const surveyAnswers = pgTable("survey_answers", {
 });
 
 // Define relationships
-export const usersRelations = relations(users, ({ many }) => ({
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+  parent: one(organizations, { fields: [organizations.parentOrgId], references: [organizations.id] }),
+  children: many(organizations, { relationName: "childOrganizations" }),
+  features: many(organizationFeatures),
+  users: many(users),
+  sellers: many(sellers),
+  orders: many(orders),
+  brandingSettings: many(brandingSettings),
+}));
+
+export const organizationFeaturesRelations = relations(organizationFeatures, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationFeatures.organizationId], references: [organizations.id] }),
+  enabledByUser: one(users, { fields: [organizationFeatures.enabledBy], references: [users.id] }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  organization: one(organizations, { fields: [users.organizationId], references: [organizations.id] }),
+  creator: one(users, { fields: [users.createdBy], references: [users.id] }),
   transactions: many(transactions, { relationName: "userTransactions" }),
   products: many(products),
   posts: many(posts),
@@ -274,6 +462,13 @@ export const usersRelations = relations(users, ({ many }) => ({
   conversationParticipants: many(conversationParticipants),
   surveys: many(surveys, { relationName: "createdSurveys" }),
   surveyResponses: many(surveyResponses),
+  supportTickets: many(supportTickets, { relationName: "userTickets" }),
+  assignedTickets: many(supportTickets, { relationName: "assignedTickets" }),
+  ticketMessages: many(ticketMessages),
+  productReviews: many(productReviews),
+  orders: many(orders),
+  approvedSellers: many(sellers, { relationName: "approvedSellers" }),
+  reviewedProducts: many(products, { relationName: "reviewedProducts" }),
 }));
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
@@ -296,15 +491,59 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   }),
 }));
 
+export const sellersRelations = relations(sellers, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [sellers.organizationId],
+    references: [organizations.id],
+  }),
+  approvedBy: one(users, {
+    fields: [sellers.approvedBy],
+    references: [users.id],
+    relationName: "approvedSellers"
+  }),
+  products: many(products),
+  orders: many(orders),
+  supportTickets: many(supportTickets),
+}));
+
+export const productCategoriesRelations = relations(productCategories, ({ one, many }) => ({
+  parent: one(productCategories, {
+    fields: [productCategories.parentId],
+    references: [productCategories.id],
+  }),
+  subCategories: many(productCategories, { relationName: "subCategories" }),
+  products: many(products),
+  createdBy: one(users, {
+    fields: [productCategories.createdBy],
+    references: [users.id],
+  }),
+}));
+
 export const productsRelations = relations(products, ({ one, many }) => ({
   creator: one(users, {
     fields: [products.createdBy],
     references: [users.id],
   }),
+  category: one(productCategories, {
+    fields: [products.categoryId],
+    references: [productCategories.id],
+  }),
+  seller: one(sellers, {
+    fields: [products.sellerId],
+    references: [sellers.id],
+  }),
+  reviewer: one(users, {
+    fields: [products.reviewedBy],
+    references: [users.id],
+    relationName: "reviewedProducts"
+  }),
   orders: many(orders),
+  orderItems: many(orderItems),
+  reviews: many(productReviews),
+  supportTickets: many(supportTickets),
 }));
 
-export const ordersRelations = relations(orders, ({ one }) => ({
+export const ordersRelations = relations(orders, ({ one, many }) => ({
   user: one(users, {
     fields: [orders.userId],
     references: [users.id],
@@ -316,6 +555,84 @@ export const ordersRelations = relations(orders, ({ one }) => ({
   transaction: one(transactions, {
     fields: [orders.transactionId],
     references: [transactions.id],
+  }),
+  seller: one(sellers, {
+    fields: [orders.sellerId],
+    references: [sellers.id],
+  }),
+  organization: one(organizations, {
+    fields: [orders.organizationId],
+    references: [organizations.id],
+  }),
+  items: many(orderItems),
+  supportTickets: many(supportTickets),
+  reviews: many(productReviews),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
+  user: one(users, {
+    fields: [supportTickets.userId],
+    references: [users.id],
+    relationName: "userTickets"
+  }),
+  assignedTo: one(users, {
+    fields: [supportTickets.assignedTo],
+    references: [users.id],
+    relationName: "assignedTickets"
+  }),
+  seller: one(sellers, {
+    fields: [supportTickets.sellerId],
+    references: [sellers.id],
+  }),
+  order: one(orders, {
+    fields: [supportTickets.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [supportTickets.productId],
+    references: [products.id],
+  }),
+  messages: many(ticketMessages),
+}));
+
+export const ticketMessagesRelations = relations(ticketMessages, ({ one }) => ({
+  ticket: one(supportTickets, {
+    fields: [ticketMessages.ticketId],
+    references: [supportTickets.id],
+  }),
+  sender: one(users, {
+    fields: [ticketMessages.senderId],
+    references: [users.id],
+  }),
+}));
+
+export const productReviewsRelations = relations(productReviews, ({ one }) => ({
+  product: one(products, {
+    fields: [productReviews.productId],
+    references: [products.id],
+  }),
+  user: one(users, {
+    fields: [productReviews.userId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [productReviews.orderId],
+    references: [orders.id],
+  }),
+  moderator: one(users, {
+    fields: [productReviews.moderatedBy],
+    references: [users.id],
   }),
 }));
 
