@@ -6,7 +6,7 @@ import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
 import ExcelJS from 'exceljs';
-import { db } from "./db";
+import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { 
   users, insertUserSchema, 
@@ -26,55 +26,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/corporate-account", async (req, res) => {
     try {
       const { email, password, name, username } = req.body;
+      console.log("Attempting to create corporate admin account:", { email, name, username });
 
       if (!email || !password || !name || !username) {
+        console.log("Missing required fields");
         return res.status(400).json({ message: "Missing required fields" });
       }
 
       // Check if email already exists
       const existingEmailUser = await storage.getUserByEmail(email);
       if (existingEmailUser) {
+        console.log("Email already registered:", email);
         return res.status(409).json({ message: "Email already registered" });
       }
 
       // Check if username already exists
       const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
       if (existingUsernameUser) {
+        console.log("Username already taken:", username);
         return res.status(409).json({ message: "Username already taken" });
       }
 
       // Get the corporate organization
-      const [corporateOrg] = await db.select().from(organizations).where(eq(organizations.type, "corporate"));
+      const orgsResult = await pool.query(`
+        SELECT * FROM organizations WHERE type = 'corporate' LIMIT 1
+      `);
+      console.log("Found corporate organizations:", orgsResult.rows);
+      
+      let corporateOrg = orgsResult.rows[0];
       
       if (!corporateOrg) {
-        return res.status(404).json({ message: "Corporate organization not found" });
+        console.log("No corporate organization found, creating one");
+        const newOrgResult = await pool.query(`
+          INSERT INTO organizations (name, type, status)
+          VALUES ('ThrivioHR Corporate', 'corporate', 'active')
+          RETURNING *
+        `);
+        
+        corporateOrg = newOrgResult.rows[0];
+        console.log("Created corporate organization:", corporateOrg);
       }
 
       // Hash the password
       const hashedPassword = await hash(password, 10);
+      console.log("Password hashed successfully");
 
-      // Create the user with corporate_admin role
-      const [newUser] = await db.insert(users).values({
+      console.log("Inserting corporate admin user with values:", {
         email,
         username,
-        password: hashedPassword,
         name,
         isAdmin: true,
         role_type: "corporate_admin",
-        organization_id: corporateOrg.id,
-        permissions: JSON.stringify({
+        organization_id: corporateOrg.id
+      });
+
+      // Create the user with corporate_admin role
+      // Use SQL directly to avoid type errors
+      const result = await pool.query(`
+        INSERT INTO users (
+          email, username, password, name, 
+          "is_admin", role_type, organization_id, 
+          permissions, status
+        ) 
+        VALUES (
+          $1, $2, $3, $4, 
+          $5, $6, $7, 
+          $8, $9
+        )
+        RETURNING *
+      `, [
+        email, 
+        username, 
+        hashedPassword, 
+        name, 
+        true, 
+        "corporate_admin", 
+        corporateOrg.id, 
+        JSON.stringify({
           manage_clients: true,
           manage_marketplace: true,
           manage_features: true
-        })
-      }).returning();
+        }),
+        "active"
+      ]);
+
+      const newUser = result.rows[0];
+      console.log("Corporate admin user created successfully:", {
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username,
+        role_type: newUser.role_type
+      });
 
       // Return success with user data (excluding password)
-      const { password: _, ...userWithoutPassword } = newUser;
+      const userWithoutPassword = { ...newUser, password: undefined };
       return res.status(201).json(userWithoutPassword);
     } catch (error) {
       console.error("Error creating corporate admin account:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error", error: error.message });
     }
   });
   // Registration endpoint
