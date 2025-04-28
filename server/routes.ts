@@ -126,6 +126,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error", error: error.message });
     }
   });
+  
+  // Verify corporate admin access
+  app.get("/api/admin/corporate/check", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Check if the user is a corporate admin
+      if (req.user.roleType !== "corporate_admin") {
+        return res.status(403).json({ message: "Forbidden: Corporate admin access required" });
+      }
+
+      res.json({ isCorporateAdmin: true });
+    } catch (error: any) {
+      console.error("Error checking corporate admin:", error);
+      res.status(500).json({ message: error.message || "Error checking corporate admin status" });
+    }
+  });
+
+  // Get all organizations (clients)
+  app.get("/api/admin/organizations", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Check if the user is a corporate admin
+      if (req.user.roleType !== "corporate_admin") {
+        return res.status(403).json({ message: "Forbidden: Corporate admin access required" });
+      }
+
+      // Query all organizations that are not corporate
+      const result = await pool.query(`
+        SELECT 
+          o.*, 
+          (SELECT COUNT(*) FROM users WHERE organization_id = o.id) as user_count 
+        FROM organizations o 
+        WHERE o.type != 'corporate'
+        ORDER BY o.created_at DESC
+      `);
+
+      const organizations = result.rows;
+      
+      res.json(organizations);
+    } catch (error: any) {
+      console.error("Error getting organizations:", error);
+      res.status(500).json({ message: error.message || "Error retrieving organizations" });
+    }
+  });
+  
+  // Create a new organization (client)
+  app.post("/api/admin/organizations", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Check if the user is a corporate admin
+      if (req.user.roleType !== "corporate_admin") {
+        return res.status(403).json({ message: "Forbidden: Corporate admin access required" });
+      }
+
+      const { name, type, status } = req.body;
+      
+      if (!name || !type) {
+        return res.status(400).json({ message: "Name and type are required" });
+      }
+      
+      // Create the new organization
+      const result = await pool.query(`
+        INSERT INTO organizations (name, type, status, created_by)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `, [
+        name,
+        type,
+        status || 'active',
+        req.user.id
+      ]);
+
+      const newOrganization = result.rows[0];
+      
+      // Create the organization features (enable all by default)
+      await pool.query(`
+        INSERT INTO organization_features (organization_id, feature_key, is_enabled)
+        VALUES 
+          ($1, 'shop', true),
+          ($1, 'social', true),
+          ($1, 'surveys', true),
+          ($1, 'hr', true)
+      `, [newOrganization.id]);
+      
+      res.status(201).json(newOrganization);
+    } catch (error: any) {
+      console.error("Error creating organization:", error);
+      res.status(500).json({ message: error.message || "Error creating organization" });
+    }
+  });
   // Registration endpoint
   app.post("/api/auth/register", async (req, res) => {
     try {

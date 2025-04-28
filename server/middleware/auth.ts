@@ -173,9 +173,26 @@ export const verifyToken = async (
       
       // If Firebase token verification fails, try JWT (for backward compatibility)
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as Omit<User, "password">;
-        req.user = decoded;
-        return next();
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; isAdmin: boolean };
+        
+        // Fetch the complete user data from the database
+        try {
+          const user = await db.select().from(users).where(eq(users.id, decoded.id)).then(rows => rows[0]);
+          
+          if (user) {
+            // Remove password from user object
+            const { password: _, ...userWithoutPassword } = user;
+            req.user = userWithoutPassword;
+            return next();
+          } else {
+            console.log("JWT token valid but user not found in database:", decoded.id);
+            return res.status(401).json({ message: "User not found" });
+          }
+        } catch (dbError) {
+          const err = dbError as { message?: string };
+          console.error("Error fetching user after JWT verification:", err.message || "Unknown error");
+          return res.status(500).json({ message: "Database error" });
+        }
       } catch (err2) {
         // Type assertion to handle the unknown error type
         const jwtError = err2 as { message?: string };
