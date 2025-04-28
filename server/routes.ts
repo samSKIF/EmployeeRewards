@@ -13,7 +13,10 @@ import {
   products, insertProductSchema,
   employees, insertEmployeeSchema,
   brandingSettings, insertBrandingSettingsSchema,
-  fileTemplates, insertFileTemplateSchema, FileTemplate
+  fileTemplates, insertFileTemplateSchema, FileTemplate,
+  organizations, organizationFeatures,
+  sellers, productCategories, orderItems,
+  supportTickets, ticketMessages, productReviews
 } from "@shared/schema";
 import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
@@ -3097,26 +3100,60 @@ async function seedInitialData() {
     if (existingUsers.length === 0) {
       console.log("Seeding admin user...");
 
-      // Create a corporate organization first
-      const [corporateOrg] = await db.insert(organizations).values({
-        name: "ThrivioHR Corporate",
-        type: "corporate",
-        status: "active",
-      }).returning();
-      
-      console.log("Corporate organization created successfully");
+      try {
+        // First try to create a corporate organization - might fail if table doesn't exist yet
+        try {
+          // Check if organizations table exists
+          await db.select().from(organizations).limit(1);
+          
+          // If we got here, the organizations table exists
+          const [corporateOrg] = await db.insert(organizations).values({
+            name: "ThrivioHR Corporate",
+            type: "corporate",
+            status: "active",
+          }).returning();
+          
+          console.log("Corporate organization created successfully");
 
-      // Create admin user
-      await storage.createUser({
-        username: "admin",
-        password: "admin123",
-        name: "Admin User",
-        email: "admin@demo.io",
-        department: "HR",
-        isAdmin: true,
-        roleType: "corporate_admin",
-        organizationId: corporateOrg.id
-      });
+          // Create admin user with organization reference
+          await storage.createUser({
+            username: "admin",
+            password: "admin123",
+            name: "Admin User",
+            email: "admin@demo.io",
+            department: "HR",
+            isAdmin: true
+          });
+          
+          // After creating user, try to update with the new fields
+          try {
+            await db.update(users)
+              .set({ 
+                roleType: "corporate_admin",
+                organizationId: corporateOrg.id
+              })
+              .where(eq(users.username, "admin"));
+            console.log("Admin user updated with roleType and organizationId");
+          } catch (error) {
+            console.log("Could not update user with roleType and organizationId - new columns may not exist yet");
+          }
+          
+        } catch (error) {
+          console.log("Organizations table might not exist yet, creating basic admin user");
+          
+          // Just create the admin user without the organization reference
+          await storage.createUser({
+            username: "admin",
+            password: "admin123",
+            name: "Admin User",
+            email: "admin@demo.io",
+            department: "HR",
+            isAdmin: true
+          });
+        }
+      } catch (error) {
+        console.error("Error creating organization or admin user:", error);
+      }
 
       console.log("Admin user created successfully");
 

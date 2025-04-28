@@ -74,25 +74,41 @@ export const verifyToken = async (
           console.log("Looking up user by Firebase UID:", firebaseUid);
           
           // Find user by Firebase UID first (this should work if metadata was properly saved)
-          let user = await db.select()
-            .from(users)
-            .where(eq(users.firebaseUid, firebaseUid))
-            .then(rows => rows[0]);
+          let user;
+          try {
+            user = await db.select()
+              .from(users)
+              .where(eq(users.firebaseUid, firebaseUid))
+              .then(rows => rows[0]);
+          } catch (error) {
+            console.error("Custom token decode failed:", error);
+          }
           
           // If not found by UID, try finding by email as fallback
           if (!user && decodedPayload.email) {
             console.log("User not found by UID, trying email:", decodedPayload.email);
-            user = await db.select()
-              .from(users)
-              .where(eq(users.email, decodedPayload.email))
-              .then(rows => rows[0]);
-              
-            // If found by email but Firebase UID doesn't match, update it
-            if (user && user.firebaseUid !== firebaseUid) {
-              console.log("Updating Firebase UID for user:", user.id);
-              await db.update(users)
-                .set({ firebaseUid: firebaseUid })
-                .where(eq(users.id, user.id));
+            try {
+              user = await db.select()
+                .from(users)
+                .where(eq(users.email, decodedPayload.email))
+                .then(rows => rows[0]);
+                
+              // If found by email but Firebase UID doesn't match, update it
+              if (user && user.firebaseUid !== firebaseUid) {
+                try {
+                  console.log("Updating Firebase UID for user:", user.id);
+                  await db.update(users)
+                    .set({ firebaseUid: firebaseUid })
+                    .where(eq(users.id, user.id));
+                } catch (error) {
+                  const updateErr = error as { message?: string };
+                  console.error("Error updating Firebase UID - field may not exist:", updateErr.message || "Unknown error");
+                  // Field might not exist yet (not migrated), but user is still valid
+                }
+              }
+            } catch (error) {
+              const emailLookupErr = error as { message?: string };
+              console.error("Error looking up user by email:", emailLookupErr.message || "Unknown error");
             }
           }
           
@@ -125,23 +141,29 @@ export const verifyToken = async (
       
       // Get the user from database by email
       if (decodedToken.email) {
-        const user = await db.select().from(users).where(eq(users.email, decodedToken.email)).then(rows => rows[0]);
-        
-        if (user) {
-          // Remove password from user object
-          const { password: _, ...userWithoutPassword } = user;
-          req.user = userWithoutPassword;
-          return next();
-        } else {
-          console.log("User authenticated with Firebase but not found in database");
-          return res.status(403).json({ 
-            message: "User authenticated but needs registration",
-            firebaseUser: {
-              uid: decodedToken.uid,
-              email: decodedToken.email,
-              displayName: decodedToken.name || decodedToken.email?.split('@')[0] || 'New User'
-            }
-          });
+        try {
+          const user = await db.select().from(users).where(eq(users.email, decodedToken.email)).then(rows => rows[0]);
+          
+          if (user) {
+            // Remove password from user object
+            const { password: _, ...userWithoutPassword } = user;
+            req.user = userWithoutPassword;
+            return next();
+          } else {
+            console.log("User authenticated with Firebase but not found in database");
+            return res.status(403).json({ 
+              message: "User authenticated but needs registration",
+              firebaseUser: {
+                uid: decodedToken.uid,
+                email: decodedToken.email,
+                displayName: decodedToken.name || decodedToken.email?.split('@')[0] || 'New User'
+              }
+            });
+          }
+        } catch (error) {
+          const dbErr = error as { message?: string };
+          console.error("Error retrieving user from database:", dbErr.message || "Unknown error");
+          return res.status(500).json({ message: "Database error" });
         }
       }
     } catch (err) {
