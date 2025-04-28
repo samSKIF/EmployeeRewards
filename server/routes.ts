@@ -197,21 +197,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create the new organization
       const result = await pool.query(`
-        INSERT INTO organizations (name, type, status, created_by)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO organizations (name, type, status)
+        VALUES ($1, $2, $3)
         RETURNING *
       `, [
         name,
         type,
-        status || 'active',
-        req.user.id
+        status || 'active'
       ]);
 
       const newOrganization = result.rows[0];
       
       // Create the organization features (enable all by default)
       await pool.query(`
-        INSERT INTO organization_features (organization_id, feature_key, is_enabled)
+        INSERT INTO organization_features (organization_id, feature_name, is_enabled)
         VALUES 
           ($1, 'shop', true),
           ($1, 'social', true),
