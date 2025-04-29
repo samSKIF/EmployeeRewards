@@ -38,6 +38,7 @@ export default function SocialPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { branding } = useBranding();
   const { signOut } = useFirebaseAuth();
   const [postContent, setPostContent] = useState("");
@@ -501,53 +502,107 @@ export default function SocialPage() {
         currentUser={user}
       />
       
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setShowMobileMenu(false)}>
+          <div className="w-64 h-full bg-gray-800" onClick={(e) => e.stopPropagation()}>
+            <Sidebar 
+              user={{
+                id: user?.id,
+                username: user?.username,
+                name: user?.name,
+                isAdmin: user?.isAdmin || false
+              }} 
+              closeMobileMenu={() => setShowMobileMenu(false)} 
+            />
+          </div>
+        </div>
+      )}
+      
       {/* Left sidebar */}
       <div className="hidden md:block h-screen">
-        <Sidebar user={user} closeMobileMenu={() => {}} />
+        <Sidebar 
+          user={{
+            id: user?.id,
+            username: user?.username,
+            name: user?.name,
+            isAdmin: user?.isAdmin || false
+          }} 
+          closeMobileMenu={() => {}} 
+        />
       </div>
       
       {/* Main content */}
-      <div className="flex-1 md:ml-64 px-4 py-4">
+      <div className="flex-1 md:ml-64 px-4 py-4 ml-0">
         <div className="max-w-3xl mx-auto">
           {/* Organization Settings Panel removed as requested */}
           
           {/* Top navigation bar with points balance and logout button */}
           <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
             <div className="flex items-center">
+              {/* Mobile menu button */}
+              <button 
+                className="md:hidden mr-2 p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+                onClick={() => setShowMobileMenu(true)}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            
               <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
-                <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
+                <h1 className="text-lg md:text-xl font-semibold text-gray-800">Townhall</h1>
+                <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Happiness is a virtue, not its reward.</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Points balance */}
-              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-2 md:px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
                 <CreditCard size={16} />
-                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
+                <span className="font-semibold text-xs md:text-sm">{balanceData?.balance || 0} Points</span>
               </div>
               
               {/* Reward Shop Button */}
               <Button 
                 onClick={openRewardShop}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md hidden md:flex"
               >
                 <ShoppingBag size={16} className="mr-2" /> 
                 Reward Shop
+              </Button>
+              
+              {/* Mobile Reward Shop Button - Icon Only */}
+              <Button 
+                onClick={openRewardShop}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md md:hidden p-2"
+                size="icon"
+              >
+                <ShoppingBag size={16} />
               </Button>
               
               {/* Logout button */}
               <Button 
                 onClick={handleLogout} 
                 variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 hidden md:flex"
               >
                 <LogOut size={16} className="mr-2" /> 
                 Logout
+              </Button>
+              
+              {/* Mobile Logout Button - Icon Only */}
+              <Button 
+                onClick={handleLogout} 
+                variant="ghost" 
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 md:hidden p-2"
+                size="icon"
+              >
+                <LogOut size={16} />
               </Button>
             </div>
           </div>

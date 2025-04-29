@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, closeMobileMenu }) => {
   };
 
   return (
-    <aside className="bg-gray-800 text-white w-64 p-4 h-full overflow-y-auto">
+    <aside className="bg-gray-800 text-white w-64 p-4 h-full overflow-y-auto fixed">
       <div className="space-y-3">
         {/* Reward Shop Button */}
         <button
