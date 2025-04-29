@@ -31,80 +31,47 @@ function App() {
 
   // Role-based redirect from root based on user type
   useEffect(() => {
-    if (location === "/") {
-      // Check if user is logged in via Firebase
-      const token = localStorage.getItem("firebaseToken");
+    const token = localStorage.getItem("firebaseToken");
 
-      if (token) {
-        const checkAdminStatus = async () => {
-          try {
-            // First attempt to decode the token to determine user role
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log("Token payload in App.tsx:", { 
-              email: payload.email,
-              hasAdminClaim: payload.claims?.isAdmin === true 
-            });
-
-            // Only redirect if we're on the root path "/"
-            if (location === "/") {
-              if (payload.email === "admin@demo.io" || 
-                  (payload.claims && payload.claims.isAdmin === true)) {
-                console.log("Admin detected on root path, redirecting to dashboard");
-                setLocation("/dashboard");
-              } else {
-                console.log("Regular user detected on root path, redirecting to social");
-                setLocation("/social");
-              }
-              return;
-            }
-
-            // Do not continue checking with server if we're on specific pages
-            if (location === "/social" || location === "/dashboard") {
-              console.log("On protected page, skipping further redirects");
-              return;
-            }
-
-            // Continue with server check only for other routes
-            try {
-              const response = await fetch("/api/users/me", {
-                headers: {
-                  "Authorization": `Bearer ${token}`
-                }
-              });
-
-              if (response.ok) {
-                const userData = await response.json();
-                console.log("User data from API in App.tsx:", userData);
-
-                // Check if user is admin based on server response
-                if (userData && userData.isAdmin) {
-                  console.log("Admin status confirmed by server in App.tsx");
-                  setLocation("/dashboard");
-                  return;
-                }
-              }
-
-              // Regular employees go to social platform
-              console.log("Regular employee detected in App.tsx, redirecting to social");
-              setLocation("/social");
-            } catch (serverError) {
-              console.error("Server check failed:", serverError);
-              // If server check fails but we have token, go to social as default
-              setLocation("/social");
-            }
-          } catch (e) {
-            console.error("Error decoding token:", e);
-            // If there's an error decoding, go to auth page
-            setLocation("/auth");
-          }
-        };
-
-        checkAdminStatus();
-      } else {
-        // No token found, redirect to auth page
+    // Only handle routing for unauthenticated users or root path
+    if (!token) {
+      if (location !== "/auth") {
+        console.log("No token found, redirecting to auth");
         setLocation("/auth");
       }
+      return;
     }
+
+    // Only proceed with role check if we're on the root path
+    if (location !== "/") {
+      console.log("Not on root path, skipping redirect checks");
+      return;
+    }
+
+    const checkAdminStatus = async () => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log("Token payload for role check:", {
+          email: payload.email,
+          hasAdminClaim: payload.claims?.isAdmin === true
+        });
+
+        // Determine initial route based on token claims
+        if (payload.email === "admin@demo.io" || 
+            (payload.claims && payload.claims.isAdmin === true)) {
+          console.log("Admin user detected, routing to dashboard");
+          setLocation("/dashboard");
+        } else {
+          console.log("Regular user detected, routing to social");
+          setLocation("/social");
+        }
+      } catch (e) {
+        console.error("Error checking admin status:", e);
+        setLocation("/social"); // Default to social on error
+      }
+    };
+
+    checkAdminStatus();
   }, [location, setLocation]);
 
   // Main application
