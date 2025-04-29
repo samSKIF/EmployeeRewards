@@ -45,7 +45,7 @@ function App() {
               hasAdminClaim: payload.claims?.isAdmin === true 
             });
 
-            // Only handle redirections if we're on root path "/"
+            // Only redirect if we're on the root path "/"
             if (location === "/") {
               if (payload.email === "admin@demo.io" || 
                   (payload.claims && payload.claims.isAdmin === true)) {
@@ -55,16 +55,16 @@ function App() {
                 console.log("Regular user detected on root path, redirecting to social");
                 setLocation("/social");
               }
-              return; // Exit early after handling root path redirects
-            }
-
-            // Skip any further redirects if on social page
-            if (location === "/social") {
-              console.log("On social page, skipping redirects");
               return;
             }
 
-            // If not determined by token, check with server
+            // Do not continue checking with server if we're on specific pages
+            if (location === "/social" || location === "/dashboard") {
+              console.log("On protected page, skipping further redirects");
+              return;
+            }
+
+            // Continue with server check only for other routes
             try {
               const response = await fetch("/api/users/me", {
                 headers: {
