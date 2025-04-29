@@ -8,6 +8,7 @@ import { z } from "zod";
 import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
+import { upload, getPublicUrl } from './file-upload';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -2634,13 +2635,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/social/posts", verifyToken, async (req: AuthenticatedRequest, res) => {
+  // Handle file upload for social posts
+  app.post("/api/social/posts", verifyToken, upload.single('image'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const { content, imageUrl, type, tags } = req.body;
+      // Get fields from body (form data)
+      const content = req.body.content;
+      const type = req.body.type || 'standard';
+      const tags = req.body.tags ? JSON.parse(req.body.tags) : undefined;
+      
+      // Check if we have an uploaded file
+      let imageUrl = undefined;
+      if (req.file) {
+        // Get public URL for the uploaded image
+        imageUrl = getPublicUrl(req.file.filename);
+        console.log('Image uploaded:', req.file.filename, 'URL:', imageUrl);
+      }
 
       if (!content || !type) {
         return res.status(400).json({ message: "Missing required fields" });
