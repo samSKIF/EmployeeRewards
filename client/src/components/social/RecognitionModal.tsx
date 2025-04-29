@@ -68,16 +68,33 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
     }) => {
       const content = `Congratulations @${users.find(u => u.id === recipientId)?.name?.split(' ')[0] || 'teammate'} for ${message}`;
       
-      const res = await apiRequest("POST", "/api/social/posts", {
-        content,
-        type: "recognition",
-        recognition: {
-          recipientId,
-          badgeType,
-          message,
-          points
-        }
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch("/api/social/posts", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content,
+          type: "recognition",
+          recognition: {
+            recipientId,
+            badgeType,
+            message,
+            points
+          }
+        })
       });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create recognition");
+      }
+      
       return res.json();
     },
     onSuccess: () => {

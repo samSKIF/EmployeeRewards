@@ -46,15 +46,32 @@ export const PollModal = ({ isOpen, onClose, currentUser }: PollModalProps) => {
       options: string[];
       expiryDate?: Date;
     }) => {
-      const res = await apiRequest("POST", "/api/social/posts", {
-        content: question,
-        type: "poll",
-        poll: {
-          question,
-          options,
-          expiresAt: expiryDate ? expiryDate.toISOString() : null
-        }
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch("/api/social/posts", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content: question,
+          type: "poll",
+          poll: {
+            question,
+            options,
+            expiresAt: expiryDate ? expiryDate.toISOString() : null
+          }
+        })
       });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create poll");
+      }
+      
       return res.json();
     },
     onSuccess: () => {

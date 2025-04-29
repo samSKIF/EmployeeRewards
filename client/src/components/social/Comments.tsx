@@ -32,7 +32,21 @@ export const Comments = ({ postId, currentUser }: CommentsProps) => {
   const { data: comments = [], isLoading } = useQuery<CommentWithUser[]>({
     queryKey: ["/api/social/posts", postId, "comments"],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/social/posts/${postId}/comments`);
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch(`/api/social/posts/${postId}/comments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to fetch comments");
+      }
+      
       return res.json();
     }
   });

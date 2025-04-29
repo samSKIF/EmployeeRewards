@@ -27,7 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Comments from "./Comments";
+// Import Comments component
+import { Comments } from "@/components/social";
 
 interface PostProps {
   post: PostWithDetails;
@@ -50,10 +51,27 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Add reaction mutation
   const addReactionMutation = useMutation({
     mutationFn: async ({ postId, type }: { postId: number, type: string }) => {
-      const res = await apiRequest("POST", "/api/social/reactions", {
-        postId,
-        type
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch("/api/social/reactions", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          postId,
+          type
+        })
       });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to add reaction");
+      }
+      
       return res.json();
     },
     onSuccess: () => {
@@ -71,7 +89,21 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Remove reaction mutation
   const removeReactionMutation = useMutation({
     mutationFn: async (postId: number) => {
-      await apiRequest("DELETE", `/api/social/reactions/${postId}`);
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch(`/api/social/reactions/${postId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to remove reaction");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
@@ -88,7 +120,21 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Delete post mutation
   const deletePostMutation = useMutation({
     mutationFn: async (postId: number) => {
-      await apiRequest("DELETE", `/api/social/posts/${postId}`);
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch(`/api/social/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to delete post");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
@@ -109,10 +155,27 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Add comment mutation
   const addCommentMutation = useMutation({
     mutationFn: async ({ postId, content }: { postId: number, content: string }) => {
-      const res = await apiRequest("POST", "/api/social/comments", {
-        postId,
-        content
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch("/api/social/comments", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          postId,
+          content
+        })
       });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to add comment");
+      }
+      
       return res.json();
     },
     onSuccess: () => {
