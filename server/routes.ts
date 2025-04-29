@@ -507,14 +507,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const userWithBalance = await storage.getUserWithBalance(req.user.id);
-
-      if (!userWithBalance) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Get the user's balance
+      const balance = await storage.getUserBalance(req.user.id);
+      
+      // Combine user data with balance
+      const userWithBalance = {
+        ...req.user,
+        balance
+      };
 
       res.json(userWithBalance);
     } catch (error: any) {
+      console.error("Error getting user data:", error);
       res.status(500).json({ message: error.message || "Failed to get user" });
     }
   });
@@ -584,9 +588,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/users", verifyToken, verifyAdmin, async (req, res) => {
     try {
-      const users = await storage.getAllUsersWithBalance();
-      res.json(users);
+      // Get all users from the database
+      const allUsers = await db.select().from(users);
+      
+      // Get balances for all users
+      const usersWithBalance = await Promise.all(allUsers.map(async (user) => {
+        const balance = await storage.getUserBalance(user.id);
+        // Remove sensitive data like password
+        const { password, ...userWithoutPassword } = user;
+        return {
+          ...userWithoutPassword,
+          balance
+        };
+      }));
+      
+      res.json(usersWithBalance);
     } catch (error: any) {
+      console.error("Error getting all users:", error);
       res.status(500).json({ message: error.message || "Failed to get users" });
     }
   });

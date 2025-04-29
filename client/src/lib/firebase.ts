@@ -2,11 +2,17 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 
+// Get Firebase project ID from environment
+const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "fripl-d2c13";
+
+// Log Firebase project ID on client side for debugging
+console.log("Client Firebase projectId:", projectId);
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "employee-reward-fb8ea.firebaseapp.com",
-  projectId: "employee-reward-fb8ea",
-  storageBucket: "employee-reward-fb8ea.appspot.com",
+  authDomain: `${projectId}.firebaseapp.com`,
+  projectId: projectId,
+  storageBucket: `${projectId}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
