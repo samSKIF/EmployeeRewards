@@ -1,9 +1,9 @@
 
 import { getFirestore } from 'firebase-admin/firestore';
-import { auth } from './firebase-admin';
+import { auth, app } from './firebase-admin';
 import { hash, compare } from 'bcrypt';
 
-const db = getFirestore();
+const db = getFirestore(app);
 
 // Collections
 const usersCollection = db.collection('users');
