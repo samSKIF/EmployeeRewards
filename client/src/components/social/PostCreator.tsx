@@ -126,6 +126,57 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
+    // Create a JSON request instead of FormData for regular posts
+    if (!imageFile) {
+      // Standard post without image
+      const postData = {
+        content: content,
+        type: "standard"
+      };
+      
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      fetch("/api/social/posts", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(err => {
+            throw new Error(err.message || "Failed to create post");
+          });
+        }
+        return res.json();
+      })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
+        setContent("");
+        setImageFile(null);
+        setImagePreview(null);
+        setIsExpanded(false);
+        toast({
+          title: "Success",
+          description: "Post created successfully",
+        });
+      })
+      .catch(error => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create post",
+          variant: "destructive"
+        });
+      });
+      
+      return;
+    }
+    
+    // Post with image
     const formData = new FormData();
     formData.append("content", content);
     formData.append("type", "standard");
@@ -134,7 +185,43 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       formData.append("image", imageFile);
     }
     
-    createPostMutation.mutate(formData);
+    // Get Firebase token from localStorage
+    const token = localStorage.getItem('firebaseToken');
+    
+    // Create request with token
+    fetch("/api/social/posts", {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => {
+          throw new Error(err.message || "Failed to create post");
+        });
+      }
+      return res.json();
+    })
+    .then(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
+      setContent("");
+      setImageFile(null);
+      setImagePreview(null);
+      setIsExpanded(false);
+      toast({
+        title: "Success",
+        description: "Post created successfully",
+      });
+    })
+    .catch(error => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post",
+        variant: "destructive"
+      });
+    });
   };
   
   // Expanded post composer with image preview
