@@ -24,6 +24,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useBranding } from "@/context/BrandingContext";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
+// Import our custom social components
+import { 
+  PostCreator, 
+  Post, 
+  Comments, 
+  RecognitionModal,
+  PollModal 
+} from "@/components/social";
+
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -645,159 +654,13 @@ export default function SocialPage() {
           </div>
           
           {/* Post composer */}
-          <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
-            <div className="flex">
-              <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                <span className="text-xl">
-                  {user?.name?.charAt(0) || 'U'}
-                </span>
-              </div>
-              <div className="ml-4 flex-1">
-                <div className="rounded-xl bg-gray-100 px-4 py-3 text-gray-600">
-                  <p>Who are you rewarding today? Use @ to tag a teammate.</p>
-                </div>
-                <div className="mt-3 flex space-x-2 items-center">
-                  <button 
-                    className="flex items-center rounded-lg text-red-600 border border-red-100 bg-red-50 px-3 py-1 text-sm"
-                    onClick={() => setIsRecognitionModalOpen(true)}
-                  >
-                    <div className="mr-1">🏆</div>
-                    <span>Recognize</span>
-                  </button>
-                  <button 
-                    className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm"
-                    onClick={handleCreatePost}
-                    disabled={createPostMutation.isPending}
-                  >
-                    {createPostMutation.isPending ? "Posting..." : "Post"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PostCreator
+            user={user}
+            onRecognizeClick={() => setIsRecognitionModalOpen(true)}
+            onPollClick={() => setIsPollModalOpen(true)}
+          />
           
-          {/* Example post */}
-          <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                    JP
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">James Park</div>
-                    <div className="text-xs text-gray-500">Mar 5</div>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <p className="text-gray-700">
-                  Congratulations <span className="text-blue-500">@Thresa</span> on 2 years with the company and here's to many more. Here is <span className="text-green-600 font-medium">500 Points</span> to celebrate this joyous occasion!
-                </p>
-              </div>
-              
-              <div className="bg-amber-50 rounded-xl p-4 mb-3">
-                <div className="flex items-center mb-2">
-                  <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center mr-2">
-                    <div className="text-amber-700">🎉</div>
-                  </div>
-                  <div className="text-amber-800 font-medium">Work Anniversary</div>
-                </div>
-                
-                <div className="rounded-xl overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&h=400&auto=format&fit=crop"
-                    alt="Celebration" 
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-                
-                <div className="mt-3 flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border shadow-sm">
-                      <div className="text-xs">TW</div>
-                    </div>
-                    <div className="ml-2">
-                      <div className="text-sm font-medium">Theresa Webb</div>
-                      <div className="text-xs text-gray-500">Manager, Marketing</div>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full px-3 py-1.5 font-bold text-sm">
-                    500 Points
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between text-gray-500 text-sm">
-                <div className="flex space-x-4">
-                  <div className="flex items-center space-x-1">
-                    <ThumbsUp size={16} />
-                    <span>24</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <MessageCircle size={16} />
-                    <span>15</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Award size={16} />
-                    <span>8</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-3 border-t pt-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <div className="text-xs">MD</div>
-                  </div>
-                  <div>
-                    <div className="flex items-center">
-                      <div className="font-medium text-sm">Max Dixon</div>
-                      <div className="ml-2 text-xs text-gray-500">15m</div>
-                    </div>
-                    <div className="text-sm text-gray-600">Happy Anniversary 🎉</div>
-                  </div>
-                </div>
-                
-                <div className="mt-3 flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <div className="text-xs">
-                      {user?.name?.charAt(0) || 'U'}
-                    </div>
-                  </div>
-                  <div className="ml-3 flex-1 relative">
-                    <input 
-                      type="text" 
-                      placeholder="Add a comment..." 
-                      className="w-full py-2 px-3 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                    />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2 text-gray-400">
-                      <button>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M15.182 15.182C13.4246 16.9393 10.5754 16.9393 8.81802 15.182M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM9.75 9.75C9.75 10.1642 9.41421 10.5 9 10.5C8.58579 10.5 8.25 10.1642 8.25 9.75C8.25 9.33579 8.58579 9 9 9C9.41421 9 9.75 9.33579 9.75 9.75ZM15.75 9.75C15.75 10.1642 15.4142 10.5 15 10.5C14.5858 10.5 14.25 10.1642 14.25 9.75C14.25 9.33579 14.5858 9 15 9C15.4142 9 15.75 9.33579 15.75 9.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </button>
-                      <button>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M2 20L2.75916 17.2351C3.57588 14.2499 4 12.7572 4.81716 11.8118C5.63433 10.8665 6.82943 10.4335 9.21964 9.56766L11 9L13.5 10L15.2107 9.57748C17.2148 8.95517 18.2169 8.64402 19.1085 9.03229C20 9.42057 20 10.5103 20 12.6896V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M4 14C4 14 5 14 6.5 17.5C6.5 17.5 9.33333 11.6667 14 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <circle cx="17.5" cy="17.5" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Posts from API */}
           
           {/* Posts from the API */}
           {postsLoading ? (
@@ -821,67 +684,11 @@ export default function SocialPage() {
           ) : (
             <div className="space-y-6">
               {posts.map((post: PostWithDetails) => (
-                <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center">
-                        <Avatar className="w-10 h-10 mr-3">
-                          <AvatarFallback className="bg-blue-100 text-blue-700">
-                            {post.user.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-gray-900">{post.user.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M5 10H5.01M10 10H10.01M15 10H15.01M5.2 5.2L5.2 5.2M5.2 14.8L5.2 14.8M14.8 5.2L14.8 5.2M14.8 14.8L14.8 14.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    {renderPostContent(post)}
-                    
-                    <div className="mt-4 border-t pt-3">
-                      {post.commentCount > 0 ? (
-                        <div className="text-sm text-blue-600 mb-3">
-                          View all {post.commentCount} comments
-                        </div>
-                      ) : null}
-                      
-                      <div className="flex items-center">
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
-                            {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="ml-3 flex-1 relative">
-                          <Input 
-                            placeholder="Add a comment..." 
-                            className="w-full py-2 px-3 text-sm focus:ring-0"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                handleAddComment(post.id, e.currentTarget.value);
-                                e.currentTarget.value = '';
-                              }
-                            }}
-                          />
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2 text-gray-400">
-                            <Smile 
-                              size={16} 
-                              className="cursor-pointer" 
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Post 
+                  key={post.id} 
+                  post={post}
+                  currentUser={user}
+                />
               ))}
               
               {posts.length === 0 && (

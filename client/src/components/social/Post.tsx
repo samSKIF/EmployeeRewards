@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Comments } from "./Comments";
+import Comments from "./Comments";
 
 interface PostProps {
   post: PostWithDetails;

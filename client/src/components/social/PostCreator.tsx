@@ -1,81 +1,34 @@
 import React, { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@shared/types";
 import { 
-  ImageIcon, 
-  X, 
-  Smile,
-  MessageCircle, 
-  PlusCircle,
-  Users,
-  BarChart,
+  Smile, 
+  Image as ImageIcon, 
+  BarChart, 
+  Award,
   Send
 } from "lucide-react";
 
 interface PostCreatorProps {
   user: User | undefined;
   onRecognizeClick: () => void;
+  onPollClick?: () => void;
 }
 
-export const PostCreator = ({ user, onRecognizeClick }: PostCreatorProps) => {
+export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreatorProps) => {
   const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      
-      // Validate file size (5MB max)
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Image must be less than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Validate file type
-      if (!selectedFile.type.startsWith("image/")) {
-        toast({
-          title: "Invalid file type",
-          description: "Only image files are allowed",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      setImage(selectedFile);
-      
-      // Create and set image preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImagePreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
-    }
-  };
-  
-  // Clear selected image
-  const clearImage = () => {
-    setImage(null);
-    setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-  
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -85,8 +38,8 @@ export const PostCreator = ({ user, onRecognizeClick }: PostCreatorProps) => {
       });
       
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create post");
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create post");
       }
       
       return res.json();
@@ -94,16 +47,15 @@ export const PostCreator = ({ user, onRecognizeClick }: PostCreatorProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
       setContent("");
-      setImage(null);
+      setImageFile(null);
       setImagePreview(null);
-      setIsSubmitting(false);
+      setIsExpanded(false);
       toast({
         title: "Success",
         description: "Post created successfully",
       });
     },
     onError: (error: any) => {
-      setIsSubmitting(false);
       toast({
         title: "Error",
         description: error.message || "Failed to create post",
@@ -112,151 +64,252 @@ export const PostCreator = ({ user, onRecognizeClick }: PostCreatorProps) => {
     }
   });
   
-  // Handle post submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     
-    if (!content.trim() && !image) {
+    if (!file.type.startsWith("image/")) {
       toast({
-        title: "Error",
-        description: "Post must contain text or an image",
+        title: "Invalid file type",
+        description: "Please select an image file",
         variant: "destructive"
       });
       return;
     }
     
-    setIsSubmitting(true);
-    
-    try {
-      // Create FormData object for multipart/form-data request
-      const formData = new FormData();
-      formData.append("content", content);
-      formData.append("type", "standard");
-      
-      if (image) {
-        formData.append("image", image);
-      }
-      
-      createPostMutation.mutate(formData);
-    } catch (error: any) {
-      setIsSubmitting(false);
+    // Maximum size: 5MB
+    if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create post",
+        title: "File too large",
+        description: "Please select an image file smaller than 5MB",
         variant: "destructive"
       });
+      return;
+    }
+    
+    setImageFile(file);
+    
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  // Remove selected image
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
   
-  // Text area with auto expand
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    // Auto-resize the textarea
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
+    if (!content.trim() && !imageFile) {
+      toast({
+        title: "Empty post",
+        description: "Please add some text or an image to your post",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("type", "standard");
+    
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+    
+    createPostMutation.mutate(formData);
   };
-
+  
+  // Expanded post composer with image preview
+  if (isExpanded) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
+        <div className="flex items-start">
+          <Avatar className="w-10 h-10 mr-3">
+            <AvatarFallback className="bg-blue-100 text-blue-700">
+              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1">
+            <form onSubmit={handleSubmit}>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind?"
+                className="resize-none border-none shadow-none focus-visible:ring-0 px-0 py-2"
+                rows={3}
+              />
+              
+              {/* Image preview */}
+              {imagePreview && (
+                <div className="relative mt-2 rounded-lg overflow-hidden">
+                  <img 
+                    src={imagePreview} 
+                    alt="Selected" 
+                    className="max-h-60 rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 h-6 w-6 p-0"
+                    onClick={removeImage}
+                  >
+                    ×
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center mt-3">
+                <div className="flex space-x-2">
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-500"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Add Image</span>
+                  </Button>
+                  
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-500"
+                    onClick={onPollClick}
+                  >
+                    <BarChart className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Poll</span>
+                  </Button>
+                  
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-500"
+                    onClick={onRecognizeClick}
+                  >
+                    <Award className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Recognize</span>
+                  </Button>
+                  
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setIsExpanded(false);
+                      setContent("");
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  
+                  <Button 
+                    type="submit"
+                    disabled={createPostMutation.isPending}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    {createPostMutation.isPending ? (
+                      <div className="flex items-center">
+                        <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
+                        <span>Posting...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Send className="h-4 w-4" />
+                        <span>Post</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Collapsed post composer
   return (
     <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
       <div className="flex">
-        <Avatar className="w-10 h-10">
-          <AvatarFallback className="bg-blue-500 text-white">
-            {user?.name?.charAt(0) || 'U'}
+        <Avatar className="w-10 h-10 mr-3">
+          <AvatarFallback className="bg-blue-100 text-blue-700">
+            {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
           </AvatarFallback>
         </Avatar>
         
-        <div className="ml-4 flex-1">
-          <form onSubmit={handleSubmit}>
-            <Textarea
-              value={content}
-              onChange={handleTextareaChange}
-              placeholder="What's on your mind? Use @ to mention someone..."
-              className="min-h-[80px] resize-none border-none shadow-none focus-visible:ring-0 p-0 text-base placeholder:text-gray-500"
-            />
-            
-            {imagePreview && (
-              <div className="relative mt-2 rounded-lg overflow-hidden inline-block">
-                <img 
-                  src={imagePreview} 
-                  alt="Upload preview" 
-                  className="max-h-60 rounded-lg"
-                />
-                <Button 
-                  type="button"
-                  size="icon"
-                  variant="destructive"
-                  className="absolute top-2 right-2 h-6 w-6 rounded-full"
-                  onClick={clearImage}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-            
-            <div className="mt-3 flex justify-between items-center">
-              <div className="flex space-x-2">
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="sm"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <ImageIcon className="h-4 w-4 mr-1" /> 
-                  Photo
-                </Button>
-                
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="sm"
-                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                  onClick={onRecognizeClick}
-                >
-                  <PlusCircle className="h-4 w-4 mr-1" /> 
-                  Recognize
-                </Button>
-                
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="sm"
-                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                >
-                  <BarChart className="h-4 w-4 mr-1" /> 
-                  Poll
-                </Button>
-              </div>
-              
-              <Button 
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={isSubmitting || (!content.trim() && !image)}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Posting...
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Send className="h-4 w-4 mr-2" />
-                    Post
-                  </div>
-                )}
-              </Button>
-            </div>
-          </form>
+        <div 
+          className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
+          onClick={() => setIsExpanded(true)}
+        >
+          <p>What's on your mind?</p>
         </div>
+      </div>
+      
+      <div className="mt-3 flex justify-between items-center">
+        <div className="flex space-x-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-500"
+            onClick={() => {
+              setIsExpanded(true);
+              setTimeout(() => fileInputRef.current?.click(), 10);
+            }}
+          >
+            <ImageIcon className="h-4 w-4 mr-1" />
+            <span className="text-xs">Image</span>
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-500"
+            onClick={onPollClick}
+          >
+            <BarChart className="h-4 w-4 mr-1" />
+            <span className="text-xs">Poll</span>
+          </Button>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="text-red-500 border-red-100 bg-red-50 hover:bg-red-100 hover:text-red-600"
+          onClick={onRecognizeClick}
+        >
+          <Award className="h-4 w-4 mr-1" />
+          <span className="text-xs">Recognize</span>
+        </Button>
       </div>
     </div>
   );
