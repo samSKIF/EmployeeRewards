@@ -176,14 +176,12 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
-    // Post with image
-    const formData = new FormData();
-    formData.append("content", content);
-    formData.append("type", "standard");
-    
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
+    // Post with image using standard JSON payload
+    const postData = {
+      content: content,
+      type: "standard",
+      imageUrl: null
+    };
     
     // Get Firebase token from localStorage
     const token = localStorage.getItem('firebaseToken');
@@ -192,9 +190,10 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     fetch("/api/social/posts", {
       method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
-      body: formData
+      body: JSON.stringify(postData)
     })
     .then(res => {
       if (!res.ok) {
