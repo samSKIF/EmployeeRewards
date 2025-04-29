@@ -1,5 +1,15 @@
-export { default as PostCreator } from './PostCreator';
-export { default as Post } from './Post';
-export { default as Comments } from './Comments';
-export { default as RecognitionModal } from './RecognitionModal';
-export { default as PollModal } from './PollModal';
+import PostCreator from './PostCreator';
+import Post from './Post';
+import Comments from './Comments';
+import RecognitionModal from './RecognitionModal';
+import PollModal from './PollModal';
+import Sidebar from './Sidebar';
+
+export {
+  PostCreator,
+  Post,
+  Comments,
+  RecognitionModal,
+  PollModal,
+  Sidebar
+};
