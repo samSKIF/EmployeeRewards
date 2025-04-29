@@ -47,7 +47,7 @@ const Sidebar = () => {
   
   // Function to open social platform in a new tab
   const openSocialPlatform = () => {
-    window.open('/auth?redirectTo=social', '_blank');
+    window.open('/social', '_blank');
     closeMobileMenu();
   };
 
