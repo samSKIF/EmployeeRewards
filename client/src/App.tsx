@@ -56,15 +56,9 @@ function App() {
           hasAdminClaim: payload.claims?.isAdmin === true
         });
 
-        // Determine initial route based on token claims
-        if (payload.email === "admin@demo.io" || 
-            (payload.claims && payload.claims.isAdmin === true)) {
-          console.log("Admin user detected, routing to dashboard");
-          setLocation("/dashboard");
-        } else {
-          console.log("Regular user detected, routing to social");
-          setLocation("/social");
-        }
+        // Set default route - no longer redirecting admin users away from social
+        console.log("User authenticated, routing to social by default");
+        setLocation("/social");
       } catch (e) {
         console.error("Error checking admin status:", e);
         setLocation("/social"); // Default to social on error

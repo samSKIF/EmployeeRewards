@@ -88,7 +88,7 @@ export default function SocialPage() {
     retry: false,
   });
   
-  // Redirect if not logged in or if admin user
+  // Redirect if not logged in
   useEffect(() => {
     // Check for either Firebase token or old JWT token
     const firebaseToken = localStorage.getItem("firebaseToken");
@@ -100,14 +100,12 @@ export default function SocialPage() {
       return;
     }
     
-    // If we have a user object and it's an admin, redirect to dashboard
+    // Admin users should now have access to social page
     if (user?.isAdmin) {
-      console.log("Admin user detected, redirecting to dashboard");
-      setLocation("/dashboard");
-      return;
+      console.log("Admin user accessing social page");
+    } else {
+      console.log("Regular user accessing social page");
     }
-    
-    console.log("Regular user accessing social page");
   }, [setLocation, user]);
   
   // Get social stats

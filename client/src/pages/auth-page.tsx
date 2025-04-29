@@ -120,16 +120,14 @@ export default function AuthPage() {
           hasAdminClaim: payload.claims?.isAdmin === true 
         });
         
-        // If we have custom claims for admin role, use them
+        // No special redirection for admin users anymore
         if (payload && payload.claims && payload.claims.isAdmin === true) {
-          console.log("Admin detected from token claims");
-          return '/dashboard'; // Admin users go to dashboard
+          console.log("Admin detected from token claims, using default path");
         }
         
-        // For the admin@demo.io special case
+        // No special redirection for admin@demo.io anymore
         if (payload.email === "admin@demo.io") {
-          console.log("Admin email detected (admin@demo.io), redirecting to dashboard");
-          return '/dashboard';
+          console.log("Admin email detected (admin@demo.io), using default path");
         }
         
         // Make a request to the server to verify user's admin status
