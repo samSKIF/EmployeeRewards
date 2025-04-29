@@ -45,17 +45,12 @@ function App() {
               hasAdminClaim: payload.claims?.isAdmin === true 
             });
 
-            // Special case for admin@demo.io which should always be admin
-            if (payload.email === "admin@demo.io") {
-              console.log("Admin email detected in App.tsx (admin@demo.io), redirecting to dashboard");
-              setLocation("/dashboard");
-              return;
-            }
-
-            // Check if user is admin via token claims
-            if (payload && payload.claims && payload.claims.isAdmin === true) {
-              console.log("Admin detected from token claims in App.tsx");
-              // Admin users go to dashboard
+            // Only redirect to dashboard if we're on the root path
+            if (location === "/" && (
+              payload.email === "admin@demo.io" || 
+              (payload.claims && payload.claims.isAdmin === true)
+            )) {
+              console.log("Admin detected, redirecting to dashboard from root path");
               setLocation("/dashboard");
               return;
             }
