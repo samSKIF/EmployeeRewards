@@ -45,25 +45,16 @@ function App() {
               hasAdminClaim: payload.claims?.isAdmin === true 
             });
 
-            // Only redirect from root path
+            // Only redirect from root path "/"
             if (location === "/") {
-              // Admin users default to dashboard
               if (payload.email === "admin@demo.io" || 
                   (payload.claims && payload.claims.isAdmin === true)) {
                 console.log("Admin detected on root path, redirecting to dashboard");
                 setLocation("/dashboard");
-                return;
+              } else {
+                console.log("Regular user detected on root path, redirecting to social");
+                setLocation("/social");
               }
-              // Regular users default to social
-              console.log("Regular user detected on root path, redirecting to social");
-              setLocation("/social");
-              return;
-            }
-
-            // Don't redirect to dashboard if explicitly on social page
-            if (location === "/social") {
-              console.log("On social page, skipping admin redirect");
-              return;
             }
 
             // If not determined by token, check with server
