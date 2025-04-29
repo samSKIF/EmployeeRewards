@@ -1,13 +1,12 @@
+
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : null;
-
-if (!serviceAccount) {
-  throw new Error('Firebase service account credentials are required');
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
 }
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 // Initialize Firebase Admin
 const app = initializeApp({
