@@ -1,3 +1,4 @@
+
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
@@ -21,12 +22,16 @@ console.log(`Environment had: ${process.env.VITE_FIREBASE_PROJECT_ID}`);
 const firebaseApp = initializeApp(
   serviceAccount 
     ? {
-        credential: cert(serviceAccount)
+        credential: cert({
+          projectId: CLIENT_PROJECT_ID,
+          ...serviceAccount
+        })
       }
     : {
         projectId: CLIENT_PROJECT_ID
       }
 );
 
-// Export the auth module for verifying tokens
+// Export both the app and auth for use in other modules
+export const app = firebaseApp;
 export const auth = getAuth(firebaseApp);
