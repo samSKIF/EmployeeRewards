@@ -16,7 +16,8 @@ import {
   fileTemplates, insertFileTemplateSchema, FileTemplate,
   organizations, organizationFeatures,
   sellers, productCategories, orderItems,
-  supportTickets, ticketMessages, productReviews
+  supportTickets, ticketMessages, productReviews,
+  posts, comments, reactions, polls, pollVotes, recognitions
 } from "@shared/schema";
 import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
