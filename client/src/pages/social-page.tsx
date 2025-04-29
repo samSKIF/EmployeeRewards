@@ -30,7 +30,8 @@ import {
   Post, 
   Comments, 
   RecognitionModal,
-  PollModal 
+  PollModal,
+  Sidebar
 } from "@/components/social";
 
 export default function SocialPage() {
