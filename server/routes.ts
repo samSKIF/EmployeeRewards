@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./firebase-storage";
 import { verifyToken, verifyAdmin, AuthenticatedRequest, generateToken } from "./middleware/auth";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
