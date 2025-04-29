@@ -114,23 +114,12 @@ export default function AuthPage() {
         // First try to determine admin status from token claims
         const payload = JSON.parse(atob(token.split('.')[1]));
         
-        // Check payload data
-        console.log("Token payload for role determination:", { 
-          email: payload.email,
-          hasAdminClaim: payload.claims?.isAdmin === true 
+        // No role checks needed, always redirect to social
+        console.log("Token payload:", { 
+          email: payload.email
         });
         
-        // No special redirection for admin users anymore
-        if (payload && payload.claims && payload.claims.isAdmin === true) {
-          console.log("Admin detected from token claims, using default path");
-        }
-        
-        // No special redirection for admin@demo.io anymore
-        if (payload.email === "admin@demo.io") {
-          console.log("Admin email detected (admin@demo.io), using default path");
-        }
-        
-        // Make a request to the server to verify user's admin status
+        // Make a request to the server to verify user status
         try {
           const response = await fetch("/api/users/me", {
             headers: {
@@ -142,11 +131,7 @@ export default function AuthPage() {
             const userData = await response.json();
             console.log("User data from API for admin check:", userData);
             
-            // Check if user is admin based on server response
-            if (userData && userData.isAdmin) {
-              console.log("Admin status confirmed by server");
-              return '/dashboard';
-            }
+            console.log("User authenticated");
           }
         } catch (serverError) {
           console.error("Error checking admin status with server:", serverError);
