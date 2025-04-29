@@ -54,7 +54,21 @@ export const Comments = ({ postId, currentUser }: CommentsProps) => {
   // Delete comment mutation
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: number) => {
-      await apiRequest("DELETE", `/api/social/comments/${commentId}`);
+      // Get Firebase token from localStorage
+      const token = localStorage.getItem('firebaseToken');
+      
+      // Create request with token
+      const res = await fetch(`/api/social/comments/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to delete comment");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ 
