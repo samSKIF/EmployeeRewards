@@ -77,17 +77,17 @@ function App() {
           <BrandingProvider>
             <Switch>
               {/* Main dashboard routes */}
-              <Route path="/dashboard">
-                <Dashboard />
+              <Route path="/social">
+                <SocialPage />
               </Route>
-              <Route path="/shop">
+              <Route path="/social/shop">
                 <Shop />
               </Route>
-              <Route path="/transactions">
-                <Transactions />
-              </Route>
-              <Route path="/admin">
+              <Route path="/social/admin">
                 <Admin />
+              </Route>
+              <Route path="/social/transactions">
+                <Transactions />
               </Route>
               <Route path="/admin/employees">
                 <AdminEmployees />
@@ -117,15 +117,12 @@ function App() {
                 <Seller />
               </Route>
               <Route path="/shop-config">
-                <ShopConfig /> {/* Added ShopConfig route */}
+                <ShopConfig />
               </Route>
 
               {/* ThrivioHR Social Platform routes */}
               <Route path="/auth">
                 <AuthPage />
-              </Route>
-              <Route path="/social">
-                <SocialPage />
               </Route>
               <Route path="/social/:tab">
                 <SocialPage />
@@ -152,4 +149,4 @@ function App() {
 
 export default App;
 
-const ShopConfig = lazy(() => import('./pages/shop-config')); //Added import for lazy loading
+const ShopConfig = lazy(() => import('./pages/shop-config'));
