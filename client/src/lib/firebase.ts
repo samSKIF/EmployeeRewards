@@ -3,7 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 
 // Get Firebase project ID from environment
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "fripl-d2c13";
+// Hard-code this to match the server config from firebase-admin.ts
+const projectId = "employee-reward-fb8ea";
 
 // Log Firebase project ID on client side for debugging
 console.log("Client Firebase projectId:", projectId);
