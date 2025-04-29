@@ -126,101 +126,18 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
-    // Create a JSON request instead of FormData for regular posts
-    if (!imageFile) {
-      // Standard post without image
-      const postData = {
-        content: content,
-        type: "standard"
-      };
-      
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
-      
-      // Create request with token
-      fetch("/api/social/posts", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(postData)
-      })
-      .then(res => {
-        if (!res.ok) {
-          return res.json().then(err => {
-            throw new Error(err.message || "Failed to create post");
-          });
-        }
-        return res.json();
-      })
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
-        setContent("");
-        setImageFile(null);
-        setImagePreview(null);
-        setIsExpanded(false);
-        toast({
-          title: "Success",
-          description: "Post created successfully",
-        });
-      })
-      .catch(error => {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create post",
-          variant: "destructive"
-        });
-      });
-      
-      return;
+    // Create FormData for any type of post
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('type', 'standard');
+    
+    // Add the image file if present
+    if (imageFile) {
+      formData.append('image', imageFile);
     }
     
-    // Post with image using standard JSON payload
-    const postData = {
-      content: content,
-      type: "standard",
-      imageUrl: null
-    };
-    
-    // Get Firebase token from localStorage
-    const token = localStorage.getItem('firebaseToken');
-    
-    // Create request with token
-    fetch("/api/social/posts", {
-      method: "POST",
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postData)
-    })
-    .then(res => {
-      if (!res.ok) {
-        return res.json().then(err => {
-          throw new Error(err.message || "Failed to create post");
-        });
-      }
-      return res.json();
-    })
-    .then(() => {
-      queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
-      setContent("");
-      setImageFile(null);
-      setImagePreview(null);
-      setIsExpanded(false);
-      toast({
-        title: "Success",
-        description: "Post created successfully",
-      });
-    })
-    .catch(error => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create post",
-        variant: "destructive"
-      });
-    });
+    // Use the mutation to handle the submission
+    createPostMutation.mutate(formData);
   };
   
   // Expanded post composer with image preview

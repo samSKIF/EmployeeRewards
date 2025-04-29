@@ -2662,6 +2662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Different handling based on post type
       if (type === 'standard') {
         const post = await storage.createPost(req.user.id, {
+          userId: req.user.id,
           content,
           imageUrl,
           type,
@@ -2679,7 +2680,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const { post, poll } = await storage.createPollPost(
           req.user.id,
-          { content, imageUrl, tags },
+          { 
+            userId: req.user.id,
+            content, 
+            imageUrl, 
+            tags 
+          },
           {
             question: pollData.question,
             options: pollData.options,
@@ -2698,7 +2704,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const { post, recognition } = await storage.createRecognitionPost(
           req.user.id,
-          { content, imageUrl, tags },
+          { 
+            userId: req.user.id,
+            content, 
+            imageUrl, 
+            tags 
+          },
           {
             recipientId: recognitionData.recipientId,
             badgeType: recognitionData.badgeType,
@@ -2810,6 +2821,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const comment = await storage.createComment(req.user.id, {
+        userId: req.user.id,
         postId,
         content
       });
@@ -2867,6 +2879,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const reaction = await storage.addReaction(req.user.id, {
+        userId: req.user.id,
         postId,
         type
       });
