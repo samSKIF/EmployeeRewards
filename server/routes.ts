@@ -1712,18 +1712,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      // Direct query to products table instead of using storage method
-      const productsData = await db.select().from(products);
+      // Provide mock product catalog for now
+      const mockProducts = [
+        {
+          id: 1,
+          name: "Amazon Gift Card",
+          description: "$50 Amazon gift card to spend on anything you want.",
+          category: "Gift Cards",
+          points: 400,
+          imageUrl: "https://images.unsplash.com/photo-1584990451792-a664249664bc?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id,
+          available: true,
+          stock: 999,
+          userCanAfford: true
+        },
+        {
+          id: 2,
+          name: "Starbucks Gift Card",
+          description: "$25 Starbucks gift card for your coffee breaks.",
+          category: "Gift Cards",
+          points: 200,
+          imageUrl: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=500&h=300&fit=crop",
+          supplier: "tillo",
+          isActive: true,
+          createdBy: req.user.id,
+          available: true,
+          stock: 999,
+          userCanAfford: true
+        },
+        {
+          id: 3,
+          name: "Wireless Headphones",
+          description: "Premium noise-cancelling wireless headphones.",
+          category: "Electronics",
+          points: 750,
+          imageUrl: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id,
+          available: true,
+          stock: 999,
+          userCanAfford: true
+        },
+        {
+          id: 4,
+          name: "Fitness Tracker",
+          description: "Track your steps, heart rate, and activity throughout the day.",
+          category: "Electronics",
+          points: 550,
+          imageUrl: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=500&h=300&fit=crop",
+          supplier: "carlton",
+          isActive: true,
+          createdBy: req.user.id,
+          available: true, 
+          stock: 999,
+          userCanAfford: true
+        }
+      ];
       
-      // Return products with empty availability info for now
-      const productsWithAvailability = productsData.map(product => ({
-        ...product,
-        available: true,
-        stock: 999,
-        userCanAfford: true
-      }));
-      
-      res.json(productsWithAvailability);
+      res.json(mockProducts);
     } catch (error: any) {
       console.error("Error fetching catalog:", error);
       res.status(500).json({ message: error.message || "Failed to get catalog" });

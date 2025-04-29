@@ -39,28 +39,28 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Points"
-          value={statsLoading ? "..." : stats?.totalPoints.toString() || "0"}
+          value={statsLoading ? "..." : (stats?.totalPoints || 0).toString()}
           icon={<Coins className="text-primary text-xl" />}
           change={{ value: "+12%", positive: true }}
           description="vs last month"
         />
         <StatCard
           title="Points Earned"
-          value={statsLoading ? "..." : stats?.pointsEarned.toString() || "0"}
+          value={statsLoading ? "..." : (stats?.pointsEarned || 0).toString()}
           icon={<ArrowUp className="text-secondary text-xl" />}
           change={{ value: "+18%", positive: true }}
           description="vs last month"
         />
         <StatCard
           title="Points Used"
-          value={statsLoading ? "..." : stats?.pointsUsed.toString() || "0"}
+          value={statsLoading ? "..." : (stats?.pointsUsed || 0).toString()}
           icon={<ArrowDown className="text-red-500 text-xl" />}
           change={{ value: "-5%", positive: false }}
           description="vs last month"
         />
         <StatCard
           title="Redemptions"
-          value={statsLoading ? "..." : stats?.redemptions.toString() || "0"}
+          value={statsLoading ? "..." : (stats?.redemptions || 0).toString()}
           icon={<Gift className="text-accent text-xl" />}
           change={{ value: "+20%", positive: true }}
           description="vs last month"
