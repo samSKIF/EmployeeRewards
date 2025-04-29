@@ -2687,6 +2687,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             tags 
           },
           {
+            // The postId will be set after post creation in the storage function
+            postId: 0, 
             question: pollData.question,
             options: pollData.options,
             expiresAt: pollData.expiresAt ? new Date(pollData.expiresAt) : undefined
@@ -2711,6 +2713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             tags 
           },
           {
+            recognizerId: req.user.id,
             recipientId: recognitionData.recipientId,
             badgeType: recognitionData.badgeType,
             message: recognitionData.message,
@@ -3133,6 +3136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const message = await storage.sendMessage(req.user.id, {
+        senderId: req.user.id,
         conversationId,
         content,
         isRead: false
@@ -3225,7 +3229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/surveys/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const { id } = reqparams;
+      const { id } = req.params;
       const survey = await storage.getSurveyById(parseInt(id));
 
       if (!survey) {
