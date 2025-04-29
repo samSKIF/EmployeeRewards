@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createAdminUser } from "./create-admin-user";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Create admin user in Firebase
+  try {
+    console.log("Creating admin user in Firebase...");
+    await createAdminUser();
+    console.log("Admin user setup completed");
+  } catch (error) {
+    console.error("Error creating admin user:", error);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
