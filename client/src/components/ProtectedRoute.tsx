@@ -13,8 +13,10 @@ export function ProtectedRoute({ path, component: Component }: ProtectedRoutePro
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!loading && !currentUser) {
-      console.log("User not authenticated, redirecting to /auth");
+    const token = localStorage.getItem("firebaseToken");
+    // Only redirect if we're not loading, have no user, and no token
+    if (!loading && !currentUser && !token) {
+      console.log("No authentication found, redirecting to /auth");
       setLocation("/auth");
     }
   }, [currentUser, loading, setLocation]);
