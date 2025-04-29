@@ -209,14 +209,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newOrganization = result.rows[0];
       
       // Create the organization features (enable all by default)
-      await pool.query(`
-        INSERT INTO organization_features (organization_id, feature_name, is_enabled)
-        VALUES 
-          ($1, 'shop', true),
-          ($1, 'social', true),
-          ($1, 'surveys', true),
-          ($1, 'hr', true)
-      `, [newOrganization.id]);
+      try {
+        await pool.query(`
+          INSERT INTO organization_features (organization_id, feature_name, is_enabled)
+          VALUES 
+            ($1, 'shop', true),
+            ($1, 'social', true),
+            ($1, 'surveys', true),
+            ($1, 'hr', true)
+        `, [newOrganization.id]);
+      } catch (featureError: any) {
+        console.error("Error adding organization features:", featureError);
+        // Don't throw the error - we want the organization to be created even if features fail
+      }
       
       res.status(201).json(newOrganization);
     } catch (error: any) {
