@@ -3,7 +3,12 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { auth, app } from './firebase-admin';
 import { hash, compare } from 'bcrypt';
 
+// Initialize Firestore with settings to ignore undefined properties
+const settings = {
+  ignoreUndefinedProperties: true
+};
 const db = getFirestore(app);
+db.settings(settings);
 
 // Collections
 const usersCollection = db.collection('users');
