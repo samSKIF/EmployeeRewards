@@ -35,14 +35,15 @@ interface MenuItemProps {
   onClick: () => void;
   isActive?: boolean;
   badge?: string | number;
+  className?: string;
 }
 
-const MenuItem = ({ icon: Icon, label, onClick, isActive, badge }: MenuItemProps) => (
+const MenuItem = ({ icon: Icon, label, onClick, isActive, badge, className }: MenuItemProps) => (
   <button
     onClick={onClick}
     className={`flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100 ${
       isActive ? 'bg-gray-100 text-gray-900' : ''
-    }`}
+    } ${className || ''}`}
   >
     <Icon className="w-5 h-5 mr-3" />
     <span>{label}</span>
@@ -189,6 +190,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
                     label={item.label}
                     onClick={item.onClick}
                     isActive={item.isActive}
+                    className={item.className}
                   />
                 ))}
               </div>
