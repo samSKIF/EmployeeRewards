@@ -30,7 +30,8 @@ import {
   Post, 
   Comments, 
   RecognitionModal,
-  PollModal 
+  PollModal,
+  Sidebar
 } from "@/components/social";
 
 export default function SocialPage() {
@@ -46,6 +47,7 @@ export default function SocialPage() {
   const [recipientId, setRecipientId] = useState<number | null>(null);
   const [recognitionMessage, setRecognitionMessage] = useState("");
   const [recognitionPoints, setRecognitionPoints] = useState<number>(50);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // Function to handle user logout
   const handleLogout = async () => {
