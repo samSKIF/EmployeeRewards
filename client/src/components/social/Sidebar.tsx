@@ -101,6 +101,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       label: "Employee Management", 
       onClick: () => navigateTo('/admin/employees'),
       isActive: location === '/admin/employees',
+      className: "whitespace-nowrap",
     },
     { 
       icon: Palette, 
