@@ -13,6 +13,8 @@ import {
   Award,
   CircleDollarSign,
   Palette,
+  FileText,
+  LogOut,
   LucideIcon
 } from 'lucide-react';
 
@@ -38,14 +40,14 @@ interface MenuItemProps {
 const MenuItem = ({ icon: Icon, label, onClick, isActive, badge }: MenuItemProps) => (
   <button
     onClick={onClick}
-    className={`flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-700 ${
-      isActive ? 'bg-gray-700 text-white' : ''
+    className={`flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100 ${
+      isActive ? 'bg-gray-100 text-gray-900' : ''
     }`}
   >
     <Icon className="w-5 h-5 mr-3" />
     <span>{label}</span>
     {badge && (
-      <span className="ml-auto bg-gray-700 text-xs rounded-full px-2 py-0.5">{badge}</span>
+      <span className="ml-auto bg-gray-200 text-xs rounded-full px-2 py-0.5">{badge}</span>
     )}
   </button>
 );
@@ -53,6 +55,7 @@ const MenuItem = ({ icon: Icon, label, onClick, isActive, badge }: MenuItemProps
 const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
   const [, navigate] = useLocation();
   const [isAdminConsoleOpen, setIsAdminConsoleOpen] = useState(false);
+  const [location] = useLocation();
 
   // Navigation helper
   const navigateTo = (path: string) => {
@@ -60,14 +63,29 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     closeMobileMenu();
   };
 
+  // Check if any admin console page is active
+  const isOnAdminPage = location.startsWith('/admin/');
+  
+  // If we're on admin page, ensure the admin console is open
+  if (isOnAdminPage && !isAdminConsoleOpen) {
+    setIsAdminConsoleOpen(true);
+  }
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("firebaseToken");
+    sessionStorage.setItem("skipAutoLogin", "true");
+    window.location.href = "/auth";
+  };
+
   // Main menu items
   const mainMenuItems = [
-    { icon: Home, label: "Home", onClick: () => navigateTo('/') },
-    { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize') },
-    { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets') },
-    { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard') },
-    { icon: ClipboardList, label: "Surveys", onClick: () => navigateTo('/surveys') },
-    { icon: Users, label: "Groups", onClick: () => navigateTo('/groups') },
+    { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
+    { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
+    { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
+    { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
+    { icon: FileText, label: "Surveys", onClick: () => navigateTo('/surveys'), isActive: location === '/surveys' },
+    { icon: Users, label: "Groups", onClick: () => navigateTo('/groups'), isActive: location === '/groups' },
   ];
 
   // Admin console menu items (only shown to admins)
@@ -76,36 +94,36 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       icon: Shield, 
       label: "Admin Dashboard", 
       onClick: () => navigateTo('/admin/dashboard'),
-      description: "Data dashboard with point metrics"
+      isActive: location === '/admin/dashboard',
     },
     { 
       icon: Users, 
       label: "Employee Management", 
       onClick: () => navigateTo('/admin/employees'),
-      description: "Create and manage employee profiles"
+      isActive: location === '/admin/employees',
     },
     { 
       icon: Palette, 
       label: "Brand Identity", 
       onClick: () => navigateTo('/admin/branding'),
-      description: "Customize colors and design features"
+      isActive: location === '/admin/branding',
     },
     { 
       icon: Store, 
       label: "Shop Configuration", 
       onClick: () => navigateTo('/admin/shop/config'),
-      description: "Manage products and categories"
+      isActive: location === '/admin/shop/config',
     },
     { 
       icon: ClipboardList, 
       label: "Surveys", 
       onClick: () => navigateTo('/admin/surveys'),
-      description: "Create and manage surveys"
+      isActive: location === '/admin/surveys',
     }
   ];
 
   return (
-    <aside className="bg-gray-800 text-white w-64 p-4 h-full overflow-y-auto fixed">
+    <aside className="bg-white text-gray-800 w-64 p-4 h-full overflow-y-auto border-r border-gray-200">
       {/* Logo/Brand area */}
       <div className="flex items-center mb-6 pl-2">
         <div className="text-teal-500 mr-2">
@@ -120,15 +138,16 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       </div>
 
       {/* User profile summary */}
-      <div className="flex items-center mb-6">
-        <div className="flex-shrink-0 bg-teal-600 rounded-full h-10 w-10 flex items-center justify-center text-white font-medium">
+      <div className="flex items-center mb-6 bg-gray-50 p-3 rounded-lg">
+        <div className="flex-shrink-0 bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-700 font-medium">
           {user?.name?.charAt(0) || 'A'}
         </div>
         <div className="ml-3">
-          <p className="text-white font-medium">{user?.name || 'Admin User'}</p>
-          <p className="text-xs text-teal-400">
-            <span className="inline-block h-2 w-2 rounded-full bg-teal-400 mr-1"></span>
-            Online
+          <p className="text-gray-800 font-medium">{user?.name || 'Admin User'}</p>
+          <p className="text-xs text-amber-500 flex items-center">
+            <span className="mr-1">★</span>
+            <span>580</span>
+            <span className="ml-2 text-green-500">Online</span>
           </p>
         </div>
       </div>
@@ -141,24 +160,16 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
             icon={item.icon}
             label={item.label}
             onClick={item.onClick}
+            isActive={item.isActive}
           />
         ))}
 
-        {/* Reward Shop Button - Highlighted */}
-        <button
-          onClick={() => navigateTo('/shop')}
-          className="flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 mt-2"
-        >
-          <ShoppingCart className="w-5 h-5 mr-3" />
-          <span>Reward Shop</span>
-        </button>
-
         {/* Admin Console Section - Only visible to admins */}
         {user?.isAdmin && (
-          <div className="space-y-2 border-t border-gray-700 pt-4 mt-4">
+          <div className="space-y-2 border-t border-gray-200 pt-4 mt-4">
             <button
               onClick={() => setIsAdminConsoleOpen(!isAdminConsoleOpen)}
-              className="flex items-center justify-between text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full"
+              className="flex items-center justify-between text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100"
             >
               <div className="flex items-center">
                 <Settings className="w-5 h-5 mr-3" />
@@ -168,7 +179,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
             </button>
             
             {isAdminConsoleOpen && (
-              <div className="ml-2 space-y-1 py-1">
+              <div className="ml-6 space-y-1 py-1">
                 {/* Admin Console Sub-menu Items */}
                 {adminConsoleItems.map((item, index) => (
                   <MenuItem
@@ -176,25 +187,56 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
                     icon={item.icon}
                     label={item.label}
                     onClick={item.onClick}
+                    isActive={item.isActive}
                   />
                 ))}
               </div>
             )}
           </div>
         )}
-      </div>
-
-      {/* Groups section - Similar to the design you shared */}
-      {user?.isAdmin && (
-        <div className="mt-8">
-          <h3 className="text-xs uppercase text-gray-400 font-semibold tracking-wider mb-2 px-3">GROUPS</h3>
-          <button className="flex items-center text-gray-300 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-700">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">OT</div>
-            <span>Outdoor Together</span>
-            <span className="ml-auto bg-gray-700 text-xs rounded-full px-2 py-0.5">8</span>
+        
+        {/* Open buttons section */}
+        <div className="space-y-2 mt-4">
+          {/* Reward Shop Button - Highlighted */}
+          <button
+            onClick={() => navigateTo('/shop')}
+            className="flex items-center justify-center w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+          >
+            <ShoppingCart className="w-5 h-5 mr-2" />
+            <span>Open Reward Shop</span>
+          </button>
+          
+          {/* Social Platform Button */}
+          <button
+            onClick={() => navigateTo('/social')}
+            className="flex items-center justify-center w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors"
+          >
+            <Users className="w-5 h-5 mr-2" />
+            <span>Open Social Platform</span>
           </button>
         </div>
-      )}
+      </div>
+
+      {/* Groups section */}
+      <div className="mt-8">
+        <h3 className="text-xs uppercase text-gray-500 font-semibold tracking-wider mb-2 px-3">GROUPS</h3>
+        <button className="flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100">
+          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">OT</div>
+          <span>Outdoor Together</span>
+          <span className="ml-auto bg-gray-200 text-xs rounded-full px-2 py-0.5">8</span>
+        </button>
+      </div>
+      
+      {/* Logout button */}
+      <div className="mt-8 border-t border-gray-200 pt-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100"
+        >
+          <LogOut className="w-5 h-5 mr-3" />
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
   );
 };
