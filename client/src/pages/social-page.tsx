@@ -30,15 +30,13 @@ import {
   Post, 
   Comments, 
   RecognitionModal,
-  PollModal,
-  Sidebar
+  PollModal 
 } from "@/components/social";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { branding } = useBranding();
   const { signOut } = useFirebaseAuth();
   const [postContent, setPostContent] = useState("");
@@ -502,107 +500,153 @@ export default function SocialPage() {
         currentUser={user}
       />
       
-      {/* Mobile Menu */}
-      {showMobileMenu && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setShowMobileMenu(false)}>
-          <div className="w-64 h-full bg-gray-800" onClick={(e) => e.stopPropagation()}>
-            <Sidebar 
-              user={{
-                id: user?.id,
-                username: user?.username,
-                name: user?.name,
-                isAdmin: user?.isAdmin || false
-              }} 
-              closeMobileMenu={() => setShowMobileMenu(false)} 
-            />
+      {/* Left sidebar */}
+      <div className="w-64 hidden md:block bg-white border-r px-4 py-6 space-y-6 fixed h-screen overflow-y-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="var(--primary-color, #00A389)" />
+            <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span className="text-xl font-bold text-gray-800">{branding?.organizationName || 'ThrivioHR'}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <span className="font-medium text-green-700">
+              {user?.name?.charAt(0) || 'U'}
+            </span>
+          </div>
+          <div>
+            <div className="font-medium text-sm">{user?.name || 'User'}</div>
+            <div className="text-xs text-gray-500 flex items-center gap-1">
+              <span className="flex items-center text-amber-500"><span className="text-xs mr-0.5">★</span> 580</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-green-600">Online</span>
+            </div>
           </div>
         </div>
-      )}
-      
-      {/* Left sidebar */}
-      <div className="hidden md:block h-screen">
-        <Sidebar 
-          user={{
-            id: user?.id,
-            username: user?.username,
-            name: user?.name,
-            isAdmin: user?.isAdmin || false
-          }} 
-          closeMobileMenu={() => {}} 
-        />
+        
+        <div className="space-y-1">
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'home' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => setCurrentSection('home')}
+          >
+            <Home size={18} className="mr-3" />
+            <span className="text-sm font-medium">Home</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'recognize' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => {
+              setCurrentSection('recognize');
+              setIsRecognitionModalOpen(true);
+            }}
+          >
+            <Award size={18} className="mr-3" />
+            <span className="text-sm font-medium">Recognize & Reward</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'budgets' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => setCurrentSection('budgets')}  
+          >
+            <Gift size={18} className="mr-3" />
+            <span className="text-sm font-medium">Reward Budgets</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'leaderboard' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => setCurrentSection('leaderboard')}
+          >
+            <BarChart3 size={18} className="mr-3" />
+            <span className="text-sm font-medium">Leaderboard</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'surveys' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => setCurrentSection('surveys')}
+          >
+            <FileText size={18} className="mr-3" />
+            <span className="text-sm font-medium">Surveys</span>
+          </div>
+          
+          <div className={`flex items-center px-3 py-2 rounded-md ${
+            currentSection === 'groups' ? 'bg-primary/10 text-primary-color' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+            onClick={() => setCurrentSection('groups')}
+          >
+            <Users size={18} className="mr-3" />
+            <span className="text-sm font-medium">Groups</span>
+          </div>
+        </div>
+        
+        <div className="pt-2">
+          <div className="px-3 py-2 mt-1">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Groups
+            </div>
+            <div className="flex items-center mt-2 space-y-2">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">
+                OT
+              </div>
+              <span className="text-sm text-gray-700">Outdoor Together</span>
+              <span className="ml-auto rounded-full bg-gray-200 text-xs px-1.5 py-0.5">8</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Redeem Points Section removed as requested - using only the one in the right sidebar */}
+        
+        {/* Admin section removed as requested */}
       </div>
       
       {/* Main content */}
-      <div className="flex-1 md:ml-64 px-4 py-4 ml-0">
+      <div className="flex-1 md:ml-64 px-4 py-4">
         <div className="max-w-3xl mx-auto">
           {/* Organization Settings Panel removed as requested */}
           
           {/* Top navigation bar with points balance and logout button */}
           <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
             <div className="flex items-center">
-              {/* Mobile menu button */}
-              <button 
-                className="md:hidden mr-2 p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
-                onClick={() => setShowMobileMenu(true)}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            
               <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <div className="ml-3">
-                <h1 className="text-lg md:text-xl font-semibold text-gray-800">Townhall</h1>
-                <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Happiness is a virtue, not its reward.</p>
+                <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
+                <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-4">
               {/* Points balance */}
-              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-2 md:px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
                 <CreditCard size={16} />
-                <span className="font-semibold text-xs md:text-sm">{balanceData?.balance || 0} Points</span>
+                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
               </div>
               
               {/* Reward Shop Button */}
               <Button 
                 onClick={openRewardShop}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md hidden md:flex"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
               >
                 <ShoppingBag size={16} className="mr-2" /> 
                 Reward Shop
-              </Button>
-              
-              {/* Mobile Reward Shop Button - Icon Only */}
-              <Button 
-                onClick={openRewardShop}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md md:hidden p-2"
-                size="icon"
-              >
-                <ShoppingBag size={16} />
               </Button>
               
               {/* Logout button */}
               <Button 
                 onClick={handleLogout} 
                 variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 hidden md:flex"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               >
                 <LogOut size={16} className="mr-2" /> 
                 Logout
-              </Button>
-              
-              {/* Mobile Logout Button - Icon Only */}
-              <Button 
-                onClick={handleLogout} 
-                variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 md:hidden p-2"
-                size="icon"
-              >
-                <LogOut size={16} />
               </Button>
             </div>
           </div>
