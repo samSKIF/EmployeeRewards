@@ -53,7 +53,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-4 md:p-6">
+        <main className="p-0">
           {children}
         </main>
       </div>
