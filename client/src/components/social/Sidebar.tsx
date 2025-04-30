@@ -22,6 +22,7 @@ interface SidebarProps {
     username?: string;
     name?: string;
     isAdmin?: boolean;
+    email?: string;
   } | null;
   closeMobileMenu: () => void;
 }
