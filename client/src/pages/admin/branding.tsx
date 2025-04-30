@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { BrandingConfig } from './types';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -87,7 +88,7 @@ const BrandingPage = () => {
   const queryClient = useQueryClient();
 
   // Fetch current branding
-  const { data: branding, isLoading } = useQuery({
+  const { data: branding, isLoading } = useQuery<BrandingConfig>({
     queryKey: ['/api/hr/branding'],
     staleTime: 60000, // 1 minute
   });

@@ -56,7 +56,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
   // Navigation helper
   const navigateTo = (path: string) => {
-    window.location.href = path;
+    navigate(path);
     closeMobileMenu();
   };
 
