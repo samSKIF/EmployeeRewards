@@ -164,6 +164,11 @@ function App() {
                   <SocialPage />
                 </SocialLayout>
               </Route>
+              <Route path="/user/surveys">
+                <SocialLayout>
+                  <SocialPage />
+                </SocialLayout>
+              </Route>
 
               <Route path="/">
                 <div className="flex items-center justify-center min-h-screen">

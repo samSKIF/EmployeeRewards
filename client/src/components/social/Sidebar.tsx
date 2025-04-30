@@ -84,7 +84,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
     { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
-    { icon: FileText, label: "Surveys", onClick: () => navigateTo('/surveys'), isActive: location === '/surveys' },
+    { icon: FileText, label: "Surveys", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Users, label: "Groups", onClick: () => navigateTo('/groups'), isActive: location === '/groups' },
   ];
 
