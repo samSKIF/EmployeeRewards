@@ -34,7 +34,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
       <div className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden ${showMobileMenu ? 'block' : 'hidden'}`} onClick={closeMobileMenu}></div>
       
       <div className={`fixed md:static md:flex-shrink-0 z-30 h-full transition-transform duration-300 ease-in-out transform ${showMobileMenu ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <Sidebar user={user} closeMobileMenu={closeMobileMenu} />
+        <Sidebar user={mockUser} closeMobileMenu={closeMobileMenu} />
       </div>
 
       {/* Main content */}

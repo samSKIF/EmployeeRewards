@@ -22,6 +22,7 @@ import ShopConfigPage from "@/pages/admin/shop-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy } from "react";
+import SocialLayout from "@/layouts/SocialLayout";
 
 function App() {
   const [location, setLocation] = useLocation();
@@ -81,7 +82,9 @@ function App() {
             <Switch>
               {/* Main dashboard routes */}
               <Route path="/social">
-                <SocialPage />
+                <SocialLayout>
+                  <SocialPage />
+                </SocialLayout>
               </Route>
               <Route path="/social/shop">
                 <Shop />
@@ -93,34 +96,54 @@ function App() {
                 <Transactions />
               </Route>
               <Route path="/admin/employees">
-                <AdminEmployees />
+                <SocialLayout>
+                  <AdminEmployees />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys/templates/:templateId">
-                <AdminSurveyTemplatePreview />
+                <SocialLayout>
+                  <AdminSurveyTemplatePreview />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys/templates">
-                <AdminSurveyTemplates />
+                <SocialLayout>
+                  <AdminSurveyTemplates />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys/editor/:templateId">
-                <AdminSurveyEditor />
+                <SocialLayout>
+                  <AdminSurveyEditor />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys/new">
-                <AdminSurveyCreator />
+                <SocialLayout>
+                  <AdminSurveyCreator />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys/:id/edit">
-                <AdminSurveyCreator />
+                <SocialLayout>
+                  <AdminSurveyCreator />
+                </SocialLayout>
               </Route>
               <Route path="/admin/surveys">
-                <AdminSurveys />
+                <SocialLayout>
+                  <AdminSurveys />
+                </SocialLayout>
               </Route>
               <Route path="/admin/dashboard">
-                <AdminDashboard />
+                <SocialLayout>
+                  <AdminDashboard />
+                </SocialLayout>
               </Route>
               <Route path="/admin/branding">
-                <BrandingPage />
+                <SocialLayout>
+                  <BrandingPage />
+                </SocialLayout>
               </Route>
               <Route path="/admin/shop/config">
-                <ShopConfigPage />
+                <SocialLayout>
+                  <ShopConfigPage />
+                </SocialLayout>
               </Route>
               <Route path="/hr-config">
                 <HRConfig />
@@ -137,7 +160,9 @@ function App() {
                 <AuthPage />
               </Route>
               <Route path="/social/:tab">
-                <SocialPage />
+                <SocialLayout>
+                  <SocialPage />
+                </SocialLayout>
               </Route>
 
               <Route path="/">
