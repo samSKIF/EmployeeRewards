@@ -16,6 +16,9 @@ import AdminSurveyTemplates from "@/pages/admin-survey-templates";
 import AdminSurveyTemplatePreview from "@/pages/admin-survey-template-preview";
 import AdminSurveyEditor from "@/pages/admin-survey-editor";
 import HRConfig from "@/pages/hr-config";
+import AdminDashboard from "@/pages/admin/admin-dashboard";
+import BrandingPage from "@/pages/admin/branding";
+import ShopConfigPage from "@/pages/admin/shop-config";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy } from "react";
@@ -109,6 +112,15 @@ function App() {
               </Route>
               <Route path="/admin/surveys">
                 <AdminSurveys />
+              </Route>
+              <Route path="/admin/dashboard">
+                <AdminDashboard />
+              </Route>
+              <Route path="/admin/branding">
+                <BrandingPage />
+              </Route>
+              <Route path="/admin/shop/config">
+                <ShopConfigPage />
               </Route>
               <Route path="/hr-config">
                 <HRConfig />
