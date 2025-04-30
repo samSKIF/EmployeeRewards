@@ -16,7 +16,7 @@ import {
   Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
   Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash,
-  LogOut, ShoppingBag, CreditCard, Menu
+  LogOut, ShoppingBag, CreditCard
 } from "lucide-react";
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
@@ -30,8 +30,7 @@ import {
   Post, 
   Comments, 
   RecognitionModal,
-  PollModal,
-  Sidebar
+  PollModal
 } from "@/components/social";
 
 export default function SocialPage() {
@@ -47,7 +46,6 @@ export default function SocialPage() {
   const [recipientId, setRecipientId] = useState<number | null>(null);
   const [recognitionMessage, setRecognitionMessage] = useState("");
   const [recognitionPoints, setRecognitionPoints] = useState<number>(50);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // Function to handle user logout
   const handleLogout = async () => {
@@ -82,7 +80,6 @@ export default function SocialPage() {
   const openRewardShop = () => {
     window.open('/shop', '_blank');
   };
-  // State for org settings removed as requested
   
   // Get user profile
   const { data: user } = useQuery<User>({
@@ -479,15 +476,14 @@ export default function SocialPage() {
     { type: "Innovation Award", icon: <Sparkles className="h-5 w-5" />, color: "bg-emerald-500" },
     { type: "Leadership", icon: <Target className="h-5 w-5" />, color: "bg-red-500" },
     { type: "Work Anniversary", icon: <Cake className="h-5 w-5" />, color: "bg-pink-500" },
-    { type: "Top Performer", icon: <Trophy className="h-5 w-5" />, color: "bg-indigo-500" },
-    { type: "Milestone", icon: <Medal className="h-5 w-5" />, color: "bg-cyan-500" }
+    { type: "Top Performer", icon: <Trophy className="h-5 w-5" />, color: "bg-indigo-500" }
   ];
   
-  // Import our custom components
+  // Poll creation state
   const [isPollModalOpen, setIsPollModalOpen] = useState(false);
   
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div>
       {/* Recognition Modal */}
       <RecognitionModal
         isOpen={isRecognitionModalOpen}
@@ -502,124 +498,87 @@ export default function SocialPage() {
         currentUser={user}
       />
       
-      {/* Mobile menu overlay - only shown when mobile menu is open */}
-      {showMobileMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setShowMobileMenu(false)}>
-          <div className="relative w-4/5 max-w-xs h-full" onClick={(e) => e.stopPropagation()}>
-            <Sidebar user={user || null} closeMobileMenu={() => setShowMobileMenu(false)} />
-          </div>
-        </div>
-      )}
-      
-      {/* Desktop sidebar */}
-      <div className="hidden md:block">
-        <Sidebar user={user || null} closeMobileMenu={() => {}} />
-      </div>
-      
       {/* Main content */}
-      <div className="flex-1 md:ml-64 px-4 py-4">
-        <div className="max-w-3xl mx-auto">
-          {/* Organization Settings Panel removed as requested */}
-          
-          {/* Top navigation bar with points balance and logout button */}
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
-            <div className="flex items-center">
-              {/* Mobile menu toggle button - only visible on mobile */}
-              <button 
-                className="md:hidden mr-3 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
-                onClick={() => setShowMobileMenu(true)}
-              >
-                <Menu size={20} />
-              </button>
-              
-              <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
-                <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
-              </div>
+      <div className="max-w-3xl mx-auto">
+        {/* Top navigation bar with points balance and logout button */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
+          <div className="flex items-center">
+            {/* Section title icon */}
+            <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-            <div className="flex items-center gap-4">
-              {/* Points balance */}
-              <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
-                <CreditCard size={16} />
-                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
-              </div>
-              
-              {/* Reward Shop Button */}
-              <Button 
-                onClick={openRewardShop}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-              >
-                <ShoppingBag size={16} className="mr-2" /> 
-                Reward Shop
-              </Button>
-              
-              {/* Logout button */}
-              <Button 
-                onClick={handleLogout} 
-                variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                <LogOut size={16} className="mr-2" /> 
-                Logout
-              </Button>
+            <div className="ml-3">
+              <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
+              <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
             </div>
           </div>
-          
-          {/* Post composer */}
-          <PostCreator
-            user={user}
-            onRecognizeClick={() => setIsRecognitionModalOpen(true)}
-            onPollClick={() => setIsPollModalOpen(true)}
-          />
-          
-          {/* Posts from API */}
-          
-          {/* Posts from the API */}
-          {postsLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                  <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200" />
-                    <div className="ml-3 space-y-1">
-                      <div className="h-4 w-24 bg-gray-200 rounded" />
-                      <div className="h-3 w-16 bg-gray-200 rounded" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-4 w-full bg-gray-200 rounded" />
-                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                  </div>
-                </div>
-              ))}
+          <div className="flex items-center gap-4">
+            {/* Points balance */}
+            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+              <CreditCard size={16} />
+              <span className="font-semibold">{balanceData?.balance || 0} Points</span>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {posts.map((post: PostWithDetails) => (
-                <Post 
-                  key={post.id} 
-                  post={post}
-                  currentUser={user}
-                />
-              ))}
-              
-              {posts.length === 0 && (
-                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                  <div className="flex flex-col items-center gap-3 text-gray-500">
-                    <MessageCircle size={48} strokeWidth={1} />
-                    <h3 className="text-lg font-semibold">No posts yet</h3>
-                    <p>Be the first to post something!</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            
+            {/* Reward Shop Button */}
+            <Button 
+              onClick={openRewardShop}
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+            >
+              <ShoppingBag size={16} className="mr-2" /> 
+              Reward Shop
+            </Button>
+          </div>
         </div>
+        
+        {/* Post composer */}
+        <PostCreator
+          user={user}
+          onRecognizeClick={() => setIsRecognitionModalOpen(true)}
+          onPollClick={() => setIsPollModalOpen(true)}
+        />
+        
+        {/* Posts from API */}
+        {postsLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="ml-3 space-y-1">
+                    <div className="h-4 w-24 bg-gray-200 rounded" />
+                    <div className="h-3 w-16 bg-gray-200 rounded" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-gray-200 rounded" />
+                  <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {posts.map((post: PostWithDetails) => (
+              <Post 
+                key={post.id} 
+                post={post}
+                currentUser={user}
+              />
+            ))}
+            
+            {posts.length === 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                <div className="flex flex-col items-center gap-3 text-gray-500">
+                  <MessageCircle size={48} strokeWidth={1} />
+                  <h3 className="text-lg font-semibold">No posts yet</h3>
+                  <p>Be the first to post something!</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Right sidebar */}
@@ -720,8 +679,7 @@ export default function SocialPage() {
           </div>
         </div>
         
-        {/* Redeem points section */}
-        {/* Redeem Your Points section removed as requested - now only available in sidebar */}
+        {/* Redeem points section removed - now only available in sidebar */}
       </div>
     </div>
   );
