@@ -38,7 +38,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 md:ml-64">
+      <div className="flex-1">
         {/* Mobile header with menu button */}
         <div className="md:hidden flex items-center justify-between bg-gray-800 p-4 sticky top-0 z-10">
           <div className="flex items-center text-white">
