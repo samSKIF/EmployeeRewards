@@ -3,3 +3,4 @@ export { default as Post } from './Post';
 export { default as Comments } from './Comments';
 export { default as RecognitionModal } from './RecognitionModal';
 export { default as PollModal } from './PollModal';
+export { default as Sidebar } from './Sidebar';

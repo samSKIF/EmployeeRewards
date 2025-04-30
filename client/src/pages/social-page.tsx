@@ -16,7 +16,7 @@ import {
   Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
   Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash,
-  LogOut, ShoppingBag, CreditCard
+  LogOut, ShoppingBag, CreditCard, Menu
 } from "lucide-react";
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
