@@ -288,39 +288,48 @@ export const Post = ({ post, currentUser }: PostProps) => {
   const renderPoll = () => {
     if (post.type !== 'poll' || !post.poll) return null;
     
+    // Debug poll data
+    console.log("Poll data:", post.poll);
+    
     return (
       <div className="bg-gray-50 p-4 rounded-lg mb-4">
         <h4 className="font-semibold mb-2">{post.poll.question}</h4>
         <div className="space-y-2">
-          {post.poll.options.map((option, index) => {
-            const isSelected = post.poll?.userVote === index;
-            const percentage = post.poll?.votePercentages?.[index] || 0;
-            
-            return (
-              <div 
-                key={index}
-                className="relative cursor-pointer hover:bg-gray-100 rounded-lg p-3"
-                onClick={() => {
-                  if (post.poll?.userVote === undefined) {
-                    // Call vote mutation here
-                  }
-                }}
-              >
+          {post.poll.options && Array.isArray(post.poll.options) ? (
+            post.poll.options.map((option, index) => {
+              const isSelected = post.poll?.userVote === index;
+              const percentage = post.poll?.votePercentages?.[index] || 0;
+              
+              return (
                 <div 
-                  className={`absolute top-0 left-0 h-full rounded-lg ${
-                    isSelected ? 'bg-blue-100' : 'bg-gray-200'
-                  }`}
-                  style={{ width: `${percentage}%`, zIndex: 0 }}
-                />
-                <div className="flex justify-between relative z-10">
-                  <span>{option}</span>
-                  <span className="font-semibold">{percentage}%</span>
+                  key={index}
+                  className="relative cursor-pointer hover:bg-gray-100 rounded-lg p-3"
+                  onClick={() => {
+                    if (post.poll?.userVote === undefined) {
+                      // Call vote mutation here
+                    }
+                  }}
+                >
+                  <div 
+                    className={`absolute top-0 left-0 h-full rounded-lg ${
+                      isSelected ? 'bg-blue-100' : 'bg-gray-200'
+                    }`}
+                    style={{ width: `${percentage}%`, zIndex: 0 }}
+                  />
+                  <div className="flex justify-between relative z-10">
+                    <span>{option}</span>
+                    <span className="font-semibold">{percentage}%</span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="p-3 bg-gray-100 rounded">
+              No poll options available
+            </div>
+          )}
           <div className="text-sm text-gray-500 mt-2">
-            {post.poll.totalVotes} votes
+            {post.poll.totalVotes || 0} votes
           </div>
         </div>
       </div>
