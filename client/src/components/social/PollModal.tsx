@@ -59,7 +59,7 @@ export const PollModal = ({ isOpen, onClose, currentUser }: PollModalProps) => {
         body: JSON.stringify({
           content: question,
           type: "poll",
-          poll: {
+          pollData: {
             question,
             options,
             expiresAt: expiryDate ? expiryDate.toISOString() : null
