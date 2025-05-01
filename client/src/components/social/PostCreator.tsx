@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -32,7 +33,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      // Get Firebase token from localStorage
       const token = localStorage.getItem('firebaseToken');
       
       const res = await fetch("/api/social/posts", {
@@ -70,7 +70,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     }
   });
   
-  // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -84,7 +83,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
-    // Maximum size: 5MB
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -96,7 +94,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     
     setImageFile(file);
     
-    // Create preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -104,7 +101,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     reader.readAsDataURL(file);
   };
   
-  // Remove selected image
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
@@ -113,7 +109,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     }
   };
   
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -126,21 +121,17 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
-    // Create FormData for any type of post
     const formData = new FormData();
     formData.append('content', content);
     formData.append('type', 'standard');
     
-    // Add the image file if present
     if (imageFile) {
       formData.append('image', imageFile);
     }
     
-    // Use the mutation to handle the submission
     createPostMutation.mutate(formData);
   };
   
-  // Expanded post composer with image preview
   if (isExpanded) {
     return (
       <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
@@ -161,7 +152,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 rows={3}
               />
               
-              {/* Image preview */}
               {imagePreview && (
                 <div className="relative mt-2 rounded-lg overflow-hidden">
                   <img 
@@ -266,7 +256,6 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     );
   }
   
-  // Collapsed post composer
   return (
     <div className="bg-white rounded-xl shadow-sm mb-6">
       <div className="p-4 border-b">
@@ -285,24 +274,43 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
         </div>
       </div>
       
-      <div className="px-4 py-2 flex items-center justify-between">
+      <div className="mt-3 flex justify-between items-center p-4">
         <div className="flex space-x-2">
-          <button className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full">
-            <Smile className="h-4 w-4" />
-            <span>Share a Highlight</span>
-          </button>
-          <button 
-            className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full"
-            onClick={onRecognizeClick}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-500"
+            onClick={() => {
+              setIsExpanded(true);
+              setTimeout(() => fileInputRef.current?.click(), 10);
+            }}
           >
-            <Award className="h-4 w-4" />
-            <span>Give a Spot Bonus</span>
-          </button>
+            <ImageIcon className="h-4 w-4 mr-1" />
+            <span className="text-xs">Image</span>
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-500"
+            onClick={onPollClick}
+          >
+            <BarChart className="h-4 w-4 mr-1" />
+            <span className="text-xs">Poll</span>
+          </Button>
         </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="text-red-500 border-red-100 bg-red-50 hover:bg-red-100 hover:text-red-600"
+          onClick={onRecognizeClick}
+        >
+          <Award className="h-4 w-4 mr-1" />
+          <span className="text-xs">Recognize</span>
+        </Button>
       </div>
     </div>
-  );
-}
   );
 };
 
