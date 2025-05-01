@@ -206,26 +206,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
           </div>
         )}
         
-        {/* Open buttons section */}
-        <div className="space-y-2 mt-4">
-          {/* Reward Shop Button - Highlighted */}
-          <button
-            onClick={() => navigateTo('/social/shop')}
-            className="flex items-center justify-center w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            <span>Open Reward Shop</span>
-          </button>
-          
-          {/* Social Platform Button */}
-          <button
-            onClick={() => navigateTo('/social')}
-            className="flex items-center justify-center w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors"
-          >
-            <Users className="w-5 h-5 mr-2" />
-            <span>Open Social Platform</span>
-          </button>
-        </div>
+
       </div>
 
       {/* Groups section */}
