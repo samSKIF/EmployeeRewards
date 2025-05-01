@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milestones Page</title>
+  <style>
+    :root {
+      --primary-blue: #007bff;
+      --bg-light: #f8f9fa;
+      --bg-white: #ffffff;
+      --text-dark: #343a40;
+      --text-light: #6c757d;
+      --border-color: #dee2e6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+    /* Top Navigation */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      height: 60px;
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .top-nav .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-blue);
+      margin-right: 40px;
+    }
+    .top-nav ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    .top-nav ul li {
+      margin: 0 15px;
+      position: relative;
+    }
+    .top-nav ul li a {
+      text-decoration: none;
+      color: var(--text-dark);
+      padding: 10px 0;
+      display: inline-block;
+    }
+    .top-nav ul li a.active {
+      color: var(--primary-blue);
+      border-bottom: 2px solid var(--primary-blue);
+    }
+    .top-nav .search {
+      margin-left: auto;
+      margin-right: 20px;
+    }
+    .top-nav .search input {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      width: 200px;
+    }
+    .top-nav .icons {
+      display: flex;
+      align-items: center;
+    }
+    .top-nav .icons .icon {
+      position: relative;
+      margin-left: 15px;
+      cursor: pointer;
+    }
+    .top-nav .icons .icon .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #dc3545;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Layout */
+    .content {
+      display: flex;
+    }
+    .sidebar {
+      width: 280px;
+      padding: 20px;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+    /* Cards */
+    .card {
+      background: var(--bg-white);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .card p {
+      margin: 5px 0;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+    .card button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--primary-blue);
+      border-radius: 4px;
+      background: none;
+      color: var(--primary-blue);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    /* Most Active List */
+    .active-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .active-list li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .active-list li img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .active-list li span {
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .tabs .tab {
+      margin-right: 20px;
+      cursor: pointer;
+      color: var(--text-dark);
+      font-size: 16px;
+      position: relative;
+    }
+    .tabs .tab.active {
+      color: var(--primary-blue);
+      border-bottom: 2px solid var(--primary-blue);
+      padding-bottom: 5px;
+    }
+    .tabs .sub-tabs {
+      display: flex;
+      margin-left: 40px;
+    }
+    .tabs .sub-tab {
+      margin-right: 15px;
+      cursor: pointer;
+      padding-bottom: 5px;
+      color: var(--text-dark);
+    }
+    .tabs .sub-tab.active {
+      color: var(--primary-blue);
+      border-bottom: 2px solid var(--primary-blue);
+    }
+    .tabs .filter {
+      margin-left: auto;
+      font-size: 14px;
+    }
+    /* Milestone Card */
+    .milestone-card {
+      background: var(--bg-white);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .milestone-card .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .milestone-card .info {
+      display: flex;
+      align-items: center;
+    }
+    .milestone-card .info img.avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .milestone-card .info .text h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .milestone-card .info .text p {
+      margin: 2px 0;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .milestone-card .icon img {
+      width: 16px;
+      height: 16px;
+    }
+    /* Comment Input */
+    .comment-input {
+      display: flex;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+    }
+    .comment-input input {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    .comment-input .actions {
+      display: flex;
+      align-items: center;
+    }
+    .comment-input .action {
+      margin-right: 8px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .comment-input .send {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="logo">Vibe</div>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Store</a></li>
+      <li><a href="#">Spaces ▼</a></li>
+      <li><a href="#">Awards</a></li>
+      <li><a href="#" class="active">Milestones</a></li>
+      <li><a href="#">More ▼</a></li>
+    </ul>
+    <div class="search">
+      <input type="text" placeholder="Search...">
+    </div>
+    <div class="icons">
+      <div class="icon"><img src="https://via.placeholder.com/20" alt="Bell"><span class="badge">6</span></div>
+      <div class="icon"><img src="https://via.placeholder.com/20" alt="Cart"><span class="badge">1</span></div>
+      <div class="icon"><img src="https://via.placeholder.com/32" alt="User" style="border-radius:50%;"></div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="card">
+        <h3>Motivosity Bucks</h3>
+        <p><strong>To Give:</strong> $3</p>
+        <p class="text-light">$400 - Spot Bonus</p>
+        <p><strong>To Spend:</strong> $31</p>
+        <p class="text-light">$20 - Wellness Rewards</p>
+        <p class="text-light">$50 - Team Lunches</p>
+        <p class="text-light">$100 - Remote Work Setup</p>
+        <button>Card details</button>
+      </div>
+      <div class="card">
+        <h3>Most Active</h3>
+        <ul class="active-list">
+          <li><img src="https://via.placeholder.com/32" alt="Andy"><span>Andy Dwyer</span></li>
+          <li><img src="https://via.placeholder.com/32" alt="Donna"><span>Donna Meagle</span></li>
+          <li><img src="https://via.placeholder.com/32" alt="Leslie"><span>Leslie Knope</span></li>
+          <li><img src="https://via.placeholder.com/32" alt="Ann"><span>Ann Perkins</span></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="tabs">
+        <div class="tab active">Milestones</div>
+        <div class="sub-tabs">
+          <div class="sub-tab active">Birthdays</div>
+          <div class="sub-tab">Anniversaries</div>
+        </div>
+        <div class="filter">Filter by: 'My Company' ▼</div>
+      </div>
+
+      <div class="milestone-card">
+        <div class="header">
+          <div class="info">
+            <img class="avatar" src="https://via.placeholder.com/40" alt="Avatar">
+            <div class="text">
+              <h4>Happy Birthday, Chloe Hill!</h4>
+              <p>Department: Fire • Title: Administrative Analyst</p>
+            </div>
+          </div>
+          <div class="icon"><img src="https://via.placeholder.com/16" alt="Cake"></div>
+        </div>
+        <div class="comment-input">
+          <input type="text" placeholder="Happy Birthday Chloe!">
+          <div class="actions">
+            <span class="action">GIF</span>
+            <span class="action">📎</span>
+            <span class="send">➤</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repeat .milestone-card for additional items -->
+    </main>
+  </div>
+</body>
+</html>

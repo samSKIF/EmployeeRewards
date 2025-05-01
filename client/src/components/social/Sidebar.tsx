@@ -16,6 +16,7 @@ import {
   FileText,
   LogOut,
   Briefcase,
+  Calendar,
   LucideIcon
 } from 'lucide-react';
 
@@ -86,6 +87,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
     { icon: ShoppingCart, label: "Rewards", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
+    { icon: Calendar, label: "Milestones", onClick: () => navigateTo('/social/milestones'), isActive: location === '/social/milestones' },
     { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
     { icon: FileText, label: "Surveys", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Users, label: "Groups", onClick: () => navigateTo('/groups'), isActive: location === '/groups' },
