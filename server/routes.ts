@@ -18,7 +18,12 @@ import {
   organizations, organizationFeatures,
   sellers, productCategories, orderItems,
   supportTickets, ticketMessages, productReviews,
-  posts, comments, reactions, polls, pollVotes, recognitions
+  posts, comments, reactions, polls, pollVotes, recognitions,
+  // Onboarding schemas
+  onboardingPlans, onboardingMissions, onboardingAssignments, onboardingProgress,
+  insertOnboardingPlanSchema, insertOnboardingMissionSchema,
+  insertOnboardingAssignmentSchema, insertOnboardingProgressSchema,
+  OnboardingPlan, OnboardingMission, OnboardingAssignment, OnboardingProgress
 } from "@shared/schema";
 import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";

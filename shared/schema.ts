@@ -931,3 +931,6 @@ export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 
 export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
 export type InsertSurveyAnswer = z.infer<typeof insertSurveyAnswerSchema>;
+
+// Export Onboarding Schema
+export * from './onboarding';
