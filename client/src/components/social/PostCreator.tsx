@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -33,6 +32,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      // Get Firebase token from localStorage
       const token = localStorage.getItem('firebaseToken');
       
       const res = await fetch("/api/social/posts", {
@@ -70,6 +70,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     }
   });
   
+  // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,6 +84,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
+    // Maximum size: 5MB
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -94,6 +96,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     
     setImageFile(file);
     
+    // Create preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -101,6 +104,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     reader.readAsDataURL(file);
   };
   
+  // Remove selected image
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
@@ -109,6 +113,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     }
   };
   
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -121,17 +126,21 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
     
+    // Create FormData for any type of post
     const formData = new FormData();
     formData.append('content', content);
     formData.append('type', 'standard');
     
+    // Add the image file if present
     if (imageFile) {
       formData.append('image', imageFile);
     }
     
+    // Use the mutation to handle the submission
     createPostMutation.mutate(formData);
   };
   
+  // Expanded post composer with image preview
   if (isExpanded) {
     return (
       <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
@@ -152,6 +161,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 rows={3}
               />
               
+              {/* Image preview */}
               {imagePreview && (
                 <div className="relative mt-2 rounded-lg overflow-hidden">
                   <img 
@@ -256,25 +266,25 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     );
   }
   
+  // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm mb-6">
-      <div className="p-4 border-b">
-        <div className="flex items-center space-x-2">
-          <Avatar className="w-8 h-8">
-            <AvatarFallback className="bg-blue-100 text-blue-700">
-              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div 
-            className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
-            onClick={() => setIsExpanded(true)}
-          >
-            <p>Who Do You Appreciate?</p>
-          </div>
+    <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
+      <div className="flex">
+        <Avatar className="w-10 h-10 mr-3">
+          <AvatarFallback className="bg-blue-100 text-blue-700">
+            {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        
+        <div 
+          className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
+          onClick={() => setIsExpanded(true)}
+        >
+          <p>What's on your mind?</p>
         </div>
       </div>
       
-      <div className="mt-3 flex justify-between items-center p-4">
+      <div className="mt-3 flex justify-between items-center">
         <div className="flex space-x-2">
           <Button 
             variant="ghost" 
