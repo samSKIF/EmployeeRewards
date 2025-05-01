@@ -521,14 +521,7 @@ export default function SocialPage() {
               <span className="font-semibold">{balanceData?.balance || 0} Points</span>
             </div>
             
-            {/* Reward Shop Button */}
-            <Button 
-              onClick={openRewardShop}
-              className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-            >
-              <ShoppingBag size={16} className="mr-2" /> 
-              Reward Shop
-            </Button>
+
           </div>
         </div>
         
