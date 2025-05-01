@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { 
   Card,
   CardContent,
@@ -47,6 +48,7 @@ export default function OnboardingPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [, navigate] = useLocation();
   
   // Fetch onboarding plans - this will be implemented later on the backend
   const { data: plans = [], isLoading } = useQuery<OnboardingPlanWithStats[]>({
@@ -243,18 +245,23 @@ export default function OnboardingPage() {
                   </CardContent>
                   <CardFooter className="bg-gray-50 border-t flex justify-between pt-3 pb-3">
                     <div>
-                      <Button size="sm" variant="outline" asChild className="mr-2">
-                        <a href={`/admin/onboarding/${plan.id}`}>
-                          <Eye className="h-3 w-3 mr-1" />
-                          View
-                        </a>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="mr-2"
+                        onClick={() => navigate(`/admin/onboarding/${plan.id}`)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
                       </Button>
                       {plan.activeAssignments > 0 && (
-                        <Button size="sm" variant="outline" asChild>
-                          <a href={`/admin/onboarding/${plan.id}/tracking`}>
-                            <BarChart4 className="h-3 w-3 mr-1" />
-                            Tracking
-                          </a>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate(`/admin/onboarding/${plan.id}/tracking`)}
+                        >
+                          <BarChart4 className="h-3 w-3 mr-1" />
+                          Tracking
                         </Button>
                       )}
                     </div>
@@ -268,11 +275,14 @@ export default function OnboardingPage() {
                         <Trash2 className="h-3 w-3 mr-1" />
                         Delete
                       </Button>
-                      <Button size="sm" variant="outline" asChild className="ml-2">
-                        <a href={`/admin/onboarding/${plan.id}/edit`}>
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </a>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="ml-2"
+                        onClick={() => navigate(`/admin/onboarding/${plan.id}/edit`)}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
                       </Button>
                     </div>
                   </CardFooter>
@@ -299,20 +309,29 @@ export default function OnboardingPage() {
             </p>
             
             <div className="grid grid-cols-1 gap-4">
-              <Button asChild className="w-full h-auto py-6 flex flex-col">
-                <a href="/admin/onboarding/new">
-                  <PlusCircle className="h-8 w-8 mb-2" />
-                  <span className="font-bold">Create from Scratch</span>
-                  <span className="text-xs mt-1">Build a completely custom onboarding plan</span>
-                </a>
+              <Button 
+                className="w-full h-auto py-6 flex flex-col items-center" 
+                onClick={() => {
+                  setIsCreateDialogOpen(false);
+                  navigate("/admin/onboarding/new");
+                }}
+              >
+                <PlusCircle className="h-8 w-8 mb-2" />
+                <span className="font-bold">Create from Scratch</span>
+                <span className="text-xs mt-1">Build a completely custom onboarding plan</span>
               </Button>
               
-              <Button asChild variant="outline" className="w-full h-auto py-6 flex flex-col">
-                <a href="/admin/onboarding/templates">
-                  <FileText className="h-8 w-8 mb-2" />
-                  <span className="font-bold">Use Template</span>
-                  <span className="text-xs mt-1">Start with a pre-built onboarding template</span>
-                </a>
+              <Button 
+                variant="outline" 
+                className="w-full h-auto py-6 flex flex-col items-center"
+                onClick={() => {
+                  setIsCreateDialogOpen(false);
+                  navigate("/admin/onboarding/templates");
+                }}
+              >
+                <FileText className="h-8 w-8 mb-2" />
+                <span className="font-bold">Use Template</span>
+                <span className="text-xs mt-1">Start with a pre-built onboarding template</span>
               </Button>
             </div>
           </div>

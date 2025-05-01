@@ -24,6 +24,9 @@ import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy } from "react";
 import SocialLayout from "@/layouts/SocialLayout";
+// Lazy loaded components
+const OnboardingTemplates = lazy(() => import('./pages/admin/onboarding/templates'));
+const OnboardingNew = lazy(() => import('./pages/admin/onboarding/new'));
 
 function App() {
   const [location, setLocation] = useLocation();
@@ -144,6 +147,16 @@ function App() {
               <Route path="/admin/shop/config">
                 <SocialLayout>
                   <ShopConfigPage />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/onboarding/templates">
+                <SocialLayout>
+                  <OnboardingTemplates />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/onboarding/new">
+                <SocialLayout>
+                  <OnboardingNew />
                 </SocialLayout>
               </Route>
               <Route path="/admin/onboarding">
