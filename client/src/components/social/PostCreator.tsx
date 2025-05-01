@@ -268,21 +268,39 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
-      <div className="flex">
-        <Avatar className="w-10 h-10 mr-3">
-          <AvatarFallback className="bg-blue-100 text-blue-700">
-            {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div 
-          className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
-          onClick={() => setIsExpanded(true)}
-        >
-          <p>What's on your mind?</p>
+    <div className="bg-white rounded-xl shadow-sm mb-6">
+      <div className="p-4 border-b">
+        <div className="flex items-center space-x-2">
+          <Avatar className="w-8 h-8">
+            <AvatarFallback className="bg-blue-100 text-blue-700">
+              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div 
+            className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
+            onClick={() => setIsExpanded(true)}
+          >
+            <p>Who Do You Appreciate?</p>
+          </div>
         </div>
       </div>
+      
+      <div className="px-4 py-2 flex items-center justify-between">
+        <div className="flex space-x-2">
+          <button className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full">
+            <Smile className="h-4 w-4" />
+            <span>Share a Highlight</span>
+          </button>
+          <button 
+            className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full"
+            onClick={onRecognizeClick}
+          >
+            <Award className="h-4 w-4" />
+            <span>Give a Spot Bonus</span>
+          </button>
+        </div>
+      </div>
+    </div>
       
       <div className="mt-3 flex justify-between items-center">
         <div className="flex space-x-2">
