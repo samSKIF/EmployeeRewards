@@ -22,8 +22,10 @@ import ShopConfigPage from "@/pages/admin/shop-config";
 import OnboardingPage from "@/pages/admin/onboarding";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
-import { useState, useEffect, lazy } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import SocialLayout from "@/layouts/SocialLayout";
+import { Loader2 } from "lucide-react";
+
 // Lazy loaded components
 const OnboardingTemplates = lazy(() => import('./pages/admin/onboarding/templates'));
 const OnboardingNew = lazy(() => import('./pages/admin/onboarding/new'));
@@ -151,12 +153,24 @@ function App() {
               </Route>
               <Route path="/admin/onboarding/templates">
                 <SocialLayout>
-                  <OnboardingTemplates />
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-screen">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }>
+                    <OnboardingTemplates />
+                  </Suspense>
                 </SocialLayout>
               </Route>
               <Route path="/admin/onboarding/new">
                 <SocialLayout>
-                  <OnboardingNew />
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-screen">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }>
+                    <OnboardingNew />
+                  </Suspense>
                 </SocialLayout>
               </Route>
               <Route path="/admin/onboarding">
@@ -165,13 +179,31 @@ function App() {
                 </SocialLayout>
               </Route>
               <Route path="/hr-config">
-                <HRConfig />
+                <Suspense fallback={
+                  <div className="flex items-center justify-center min-h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <HRConfig />
+                </Suspense>
               </Route>
               <Route path="/seller">
-                <Seller />
+                <Suspense fallback={
+                  <div className="flex items-center justify-center min-h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <Seller />
+                </Suspense>
               </Route>
               <Route path="/shop-config">
-                <ShopConfig />
+                <Suspense fallback={
+                  <div className="flex items-center justify-center min-h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <ShopConfig />
+                </Suspense>
               </Route>
 
               {/* ThrivioHR Social Platform routes */}
