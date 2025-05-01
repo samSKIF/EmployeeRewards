@@ -19,6 +19,7 @@ import HRConfig from "@/pages/hr-config";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import BrandingPage from "@/pages/admin/branding";
 import ShopConfigPage from "@/pages/admin/shop-config";
+import OnboardingPage from "@/pages/admin/onboarding";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy } from "react";
@@ -143,6 +144,11 @@ function App() {
               <Route path="/admin/shop/config">
                 <SocialLayout>
                   <ShopConfigPage />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/onboarding">
+                <SocialLayout>
+                  <OnboardingPage />
                 </SocialLayout>
               </Route>
               <Route path="/hr-config">

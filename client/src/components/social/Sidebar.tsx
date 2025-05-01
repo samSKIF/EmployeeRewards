@@ -15,6 +15,7 @@ import {
   Palette,
   FileText,
   LogOut,
+  Briefcase,
   LucideIcon
 } from 'lucide-react';
 
@@ -103,6 +104,12 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       onClick: () => navigateTo('/admin/employees'),
       isActive: location === '/admin/employees',
       className: "whitespace-nowrap",
+    },
+    { 
+      icon: Briefcase, 
+      label: "Onboarding", 
+      onClick: () => navigateTo('/admin/onboarding'),
+      isActive: location === '/admin/onboarding',
     },
     { 
       icon: Palette, 

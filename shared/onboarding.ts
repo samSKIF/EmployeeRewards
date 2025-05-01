@@ -1,105 +1,127 @@
-import { pgTable, serial, text, boolean, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, serial, integer, timestamp, boolean, date, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
+import { employees, users } from "./schema";
 
-// Enum for mission action types
-export const actionTypeEnum = pgEnum('action_type', [
-  'POST_RECOGNITION',
-  'UPDATE_PROFILE',
-  'REDEEM_REWARD',
-  'FOLLOW_COLLEAGUE',
-  'VIEW_CONTENT'
-]);
-
-// Enum for onboarding assignment status
-export const onboardingStatusEnum = pgEnum('onboarding_status', [
-  'in_progress',
-  'completed'
-]);
-
-// Onboarding Plans Table
-export const onboardingPlans = pgTable('onboarding_plans', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  createdBy: integer('created_by').notNull(),
-  isDefault: boolean('is_default').default(false),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
+// Onboarding plans table (templates for onboarding processes)
+export const onboardingPlans = pgTable("onboarding_plans", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  departmentId: integer("department_id"),
+  jobTitleId: integer("job_title_id"),
+  locationId: integer("location_id"),
+  duration: integer("duration_days"), // Duration in days
+  isActive: boolean("is_active").default(true),
+  isTemplate: boolean("is_template").default(false),
+  organizationId: integer("organization_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
 });
 
-// Onboarding Missions Table
-export const onboardingMissions = pgTable('onboarding_missions', {
-  id: serial('id').primaryKey(),
-  planId: integer('plan_id').notNull().references(() => onboardingPlans.id, { onDelete: 'cascade' }),
-  actionType: actionTypeEnum('action_type').notNull(),
-  title: text('title').notNull(),
-  description: text('description'),
-  points: integer('points').default(0),
-  order: integer('order').default(1)
+// Missions are groups of tasks (Orientation, Training, etc.)
+export const onboardingMissions = pgTable("onboarding_missions", {
+  id: serial("id").primaryKey(),
+  planId: integer("plan_id").references(() => onboardingPlans.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  order: integer("order").default(0),
+  daysFromStart: integer("days_from_start").default(0), // When mission should start
+  duration: integer("duration_days"), // Duration in days
+  isRequired: boolean("is_required").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Onboarding Assignments Table
-export const onboardingAssignments = pgTable('onboarding_assignments', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
-  planId: integer('plan_id').notNull().references(() => onboardingPlans.id),
-  status: onboardingStatusEnum('status').default('in_progress'),
-  assignedAt: timestamp('assigned_at').defaultNow(),
-  completedAt: timestamp('completed_at')
+// Assignments are individual onboarding assignments for specific employees
+export const onboardingAssignments = pgTable("onboarding_assignments", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").references(() => employees.id).notNull(),
+  planId: integer("plan_id").references(() => onboardingPlans.id).notNull(),
+  startDate: date("start_date").notNull(),
+  dueDate: date("due_date"),
+  status: text("status").default("in_progress").notNull(), // in_progress, completed, overdue
+  progress: integer("progress").default(0), // Percentage complete
+  mentorId: integer("mentor_id").references(() => employees.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
 });
 
-// Onboarding Progress Table
-export const onboardingProgress = pgTable('onboarding_progress', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
-  missionId: integer('mission_id').notNull().references(() => onboardingMissions.id),
-  completedAt: timestamp('completed_at').defaultNow(),
-  pointsAwarded: integer('points_awarded').default(0)
+// Track progress of individual tasks for each mission
+export const onboardingProgress = pgTable("onboarding_progress", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").references(() => onboardingAssignments.id).notNull(),
+  missionId: integer("mission_id").references(() => onboardingMissions.id).notNull(),
+  status: text("status").default("not_started").notNull(), // not_started, in_progress, completed
+  completedAt: timestamp("completed_at"),
+  feedback: text("feedback"),
+  rating: integer("rating"), // Optional rating (1-5)
+  completedBy: integer("completed_by").references(() => employees.id),
+  verifiedBy: integer("verified_by").references(() => employees.id),
+  attachments: jsonb("attachments"), // URLs to any uploaded documents
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Relations
+// Define relationships
 export const onboardingPlansRelations = relations(onboardingPlans, ({ many }) => ({
   missions: many(onboardingMissions),
-  assignments: many(onboardingAssignments)
+  assignments: many(onboardingAssignments),
 }));
 
 export const onboardingMissionsRelations = relations(onboardingMissions, ({ one, many }) => ({
   plan: one(onboardingPlans, {
     fields: [onboardingMissions.planId],
-    references: [onboardingPlans.id]
+    references: [onboardingPlans.id],
   }),
-  progress: many(onboardingProgress)
+  progress: many(onboardingProgress),
 }));
 
-export const onboardingAssignmentsRelations = relations(onboardingAssignments, ({ one }) => ({
+export const onboardingAssignmentsRelations = relations(onboardingAssignments, ({ one, many }) => ({
+  employee: one(employees, {
+    fields: [onboardingAssignments.employeeId],
+    references: [employees.id],
+  }),
   plan: one(onboardingPlans, {
     fields: [onboardingAssignments.planId],
-    references: [onboardingPlans.id]
-  })
+    references: [onboardingPlans.id],
+  }),
+  mentor: one(employees, {
+    fields: [onboardingAssignments.mentorId],
+    references: [employees.id],
+  }),
+  progress: many(onboardingProgress),
 }));
 
 export const onboardingProgressRelations = relations(onboardingProgress, ({ one }) => ({
+  assignment: one(onboardingAssignments, {
+    fields: [onboardingProgress.assignmentId],
+    references: [onboardingAssignments.id],
+  }),
   mission: one(onboardingMissions, {
     fields: [onboardingProgress.missionId],
-    references: [onboardingMissions.id]
-  })
+    references: [onboardingMissions.id],
+  }),
 }));
 
-// Zod Schemas for validation
+// Create schemas for validation and type inference
 export const insertOnboardingPlanSchema = createInsertSchema(onboardingPlans)
   .omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertOnboardingMissionSchema = createInsertSchema(onboardingMissions)
-  .omit({ id: true });
+  .omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertOnboardingAssignmentSchema = createInsertSchema(onboardingAssignments)
-  .omit({ id: true, assignedAt: true, completedAt: true });
+  .omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertOnboardingProgressSchema = createInsertSchema(onboardingProgress)
-  .omit({ id: true, completedAt: true });
+  .omit({ id: true, createdAt: true, updatedAt: true });
 
-// Types
+// Define types for use in the application
 export type OnboardingPlan = typeof onboardingPlans.$inferSelect;
 export type InsertOnboardingPlan = z.infer<typeof insertOnboardingPlanSchema>;
 
@@ -111,15 +133,3 @@ export type InsertOnboardingAssignment = z.infer<typeof insertOnboardingAssignme
 
 export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
 export type InsertOnboardingProgress = z.infer<typeof insertOnboardingProgressSchema>;
-
-// Extended types for frontend use
-export interface OnboardingPlanWithMissions extends OnboardingPlan {
-  missions: OnboardingMission[];
-}
-
-export interface UserOnboardingStatus {
-  plan: OnboardingPlan;
-  missions: Array<OnboardingMission & { completed: boolean }>;
-  progress: number; // Percentage or fraction
-  completed: boolean;
-}
