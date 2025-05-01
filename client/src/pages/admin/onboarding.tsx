@@ -35,9 +35,24 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
-import { OnboardingPlan } from "@shared/schema";
+import { OnboardingPlan } from "@shared/onboarding";
 
-interface OnboardingPlanWithStats extends OnboardingPlan {
+// Extended interface that adds statistics for display
+interface OnboardingPlanWithStats {
+  id: number;
+  title: string;
+  description?: string | null;
+  departmentId?: number | null;
+  jobTitleId?: number | null;
+  locationId?: number | null;
+  duration: number;
+  isActive: boolean;
+  isTemplate: boolean;
+  organizationId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: number | null;
+  // Stats for UI display
   activeAssignments: number;
   completedAssignments: number;
   missionCount: number;
@@ -63,6 +78,7 @@ export default function OnboardingPage() {
             description: "Comprehensive onboarding plan for new marketing team members",
             departmentId: 101,
             jobTitleId: 201,
+            locationId: 301,
             duration: 30,
             isActive: true,
             isTemplate: true,
@@ -81,6 +97,7 @@ export default function OnboardingPage() {
             description: "Technical onboarding program for software engineers",
             departmentId: 102,
             jobTitleId: 202,
+            locationId: 302,
             duration: 45,
             isActive: true,
             isTemplate: false,
@@ -99,6 +116,7 @@ export default function OnboardingPage() {
             description: "Training program for customer service representatives",
             departmentId: 103,
             jobTitleId: 203,
+            locationId: 303,
             duration: 21,
             isActive: false,
             isTemplate: false,
@@ -206,7 +224,7 @@ export default function OnboardingPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {plans.map((plan) => (
+              {plans.map((plan: OnboardingPlanWithStats) => (
                 <Card key={plan.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
