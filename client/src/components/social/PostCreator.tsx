@@ -301,44 +301,8 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
         </div>
       </div>
     </div>
-      
-      <div className="mt-3 flex justify-between items-center">
-        <div className="flex space-x-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500"
-            onClick={() => {
-              setIsExpanded(true);
-              setTimeout(() => fileInputRef.current?.click(), 10);
-            }}
-          >
-            <ImageIcon className="h-4 w-4 mr-1" />
-            <span className="text-xs">Image</span>
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500"
-            onClick={onPollClick}
-          >
-            <BarChart className="h-4 w-4 mr-1" />
-            <span className="text-xs">Poll</span>
-          </Button>
-        </div>
-        
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-red-500 border-red-100 bg-red-50 hover:bg-red-100 hover:text-red-600"
-          onClick={onRecognizeClick}
-        >
-          <Award className="h-4 w-4 mr-1" />
-          <span className="text-xs">Recognize</span>
-        </Button>
-      </div>
-    </div>
+  );
+}
   );
 };
 
