@@ -93,13 +93,19 @@ function App() {
                 </SocialLayout>
               </Route>
               <Route path="/social/shop">
-                <Shop />
+                <SocialLayout>
+                  <Shop />
+                </SocialLayout>
               </Route>
               <Route path="/social/admin">
-                <Admin />
+                <SocialLayout>
+                  <Admin />
+                </SocialLayout>
               </Route>
               <Route path="/social/transactions">
-                <Transactions />
+                <SocialLayout>
+                  <Transactions />
+                </SocialLayout>
               </Route>
               <Route path="/admin/employees">
                 <SocialLayout>

@@ -85,6 +85,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
     { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
+    { icon: ShoppingCart, label: "Rewards", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
     { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
     { icon: FileText, label: "Surveys", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Users, label: "Groups", onClick: () => navigateTo('/groups'), isActive: location === '/groups' },
@@ -209,7 +210,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
         <div className="space-y-2 mt-4">
           {/* Reward Shop Button - Highlighted */}
           <button
-            onClick={() => navigateTo('/shop')}
+            onClick={() => navigateTo('/social/shop')}
             className="flex items-center justify-center w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
