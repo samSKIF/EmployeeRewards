@@ -298,11 +298,117 @@ const ProfilePage = () => {
 
   return (
     <div className="container py-8 max-w-7xl">
+      {/* Main header with navigation icons (similar to image) */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="bg-teal-500 rounded-full p-2 mr-4">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+              <AvatarFallback className="text-xl bg-teal-500 text-white">
+                {user?.name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+          <div className="flex space-x-8">
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <span className="text-xs">Home</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+              </div>
+              <span className="text-xs">Store</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <span className="text-xs">Milestones</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="7"></circle>
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                </svg>
+              </div>
+              <span className="text-xs">Awards</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </div>
+              <span className="text-xs">Manage</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+              </div>
+              <span className="text-xs">Insights</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+              <span className="text-xs">Setup</span>
+            </div>
+            <div className="flex flex-col items-center opacity-80">
+              <div className="text-gray-500 p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M16.2 7.8l-2 6.3-6.4 2.1 2-6.3z"></path>
+                </svg>
+              </div>
+              <span className="text-xs">Org Chart</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center">
+          <div className="relative mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">1</span>
+          </div>
+          <Avatar className="h-10 w-10 border-2 border-teal-100">
+            <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+            <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
+              {user?.name?.charAt(0) || 'A'}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+      
       {/* Profile Header with Cover Image */}
       <div className="bg-white rounded-xl overflow-hidden shadow-sm mb-6">
         {/* Cover Image */}
         <div
-          className="h-48 bg-gradient-to-r from-amber-300 to-amber-500 relative"
+          className="h-48 bg-gradient-to-r from-orange-300 to-yellow-500 relative"
           style={{
             backgroundImage: "url('/assets/cover-background.jpg')",
             backgroundSize: "cover",
@@ -313,18 +419,23 @@ const ProfilePage = () => {
           <Button
             variant="outline"
             size="sm"
-            className="absolute top-4 right-4 bg-white"
+            className="absolute top-4 left-4 bg-white"
             onClick={handleEditToggle}
           >
             <Edit className="h-4 w-4 mr-2" />
             {isEditing ? "Cancel" : "Edit User"}
           </Button>
           
+          {/* Top badge */}
+          <div className="absolute top-4 right-4 bg-white rounded-md text-sm py-1 px-3 shadow-sm">
+            Top 10%
+          </div>
+          
           {/* Profile Image */}
-          <div className="absolute -bottom-12 left-8">
+          <div className="absolute -bottom-16 left-8">
             <div className="relative">
-              <Avatar className="h-24 w-24 border-4 border-white">
-                <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
+              <Avatar className="h-32 w-32 border-4 border-white">
+                <AvatarFallback className="text-3xl bg-blue-100 text-blue-700">
                   {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
                 </AvatarFallback>
                 <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
@@ -349,31 +460,38 @@ const ProfilePage = () => {
         </div>
         
         {/* Profile Information */}
-        <div className="pt-14 px-8 pb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold">{user?.name || "User"}</h1>
-              <p className="text-gray-600">{userDetails.title}</p>
+        <div className="pt-16 px-8 pb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold">{user?.name || "Leslie Knope"}</h1>
+            <p className="text-gray-600">{userDetails.title}</p>
+            <div className="flex items-center mt-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-500 mr-1">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor"/>
+              </svg>
             </div>
-            <div className="text-right">
+          </div>
+          <div className="flex items-center">
+            <div className="text-right mr-4">
               <div className="text-sm text-gray-500">Profile Status {userDetails.profileStatus}%</div>
               <div className="w-48 mt-1">
                 <Progress value={userDetails.profileStatus} className="h-2" />
               </div>
-              {isEditing ? (
-                <Button 
-                  className="mt-3" 
-                  onClick={handleSaveProfile} 
-                  disabled={updateProfileMutation.isPending}
-                >
-                  {updateProfileMutation.isPending ? "Saving..." : "Edit Profile"}
-                </Button>
-              ) : (
-                <Button variant="outline" className="mt-3">
-                  View Public Profile
-                </Button>
-              )}
             </div>
+            {isEditing ? (
+              <Button 
+                className="bg-sky-500 hover:bg-sky-600" 
+                onClick={handleSaveProfile} 
+                disabled={updateProfileMutation.isPending}
+              >
+                {updateProfileMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            ) : (
+              <Button 
+                className="bg-sky-500 hover:bg-sky-600"
+              >
+                Edit Profile
+              </Button>
+            )}
           </div>
         </div>
         
@@ -383,21 +501,51 @@ const ProfilePage = () => {
             <TabsList className="border-b w-full justify-start rounded-none bg-transparent pb-0 mb-6">
               <TabsTrigger
                 value="about"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
               >
                 About Me
               </TabsTrigger>
               <TabsTrigger
                 value="appreciations"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
               >
                 Appreciations
               </TabsTrigger>
               <TabsTrigger
                 value="highlights"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
               >
                 Highlights
+              </TabsTrigger>
+              <TabsTrigger
+                value="motivation"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+              >
+                Motiv. Bucks
+              </TabsTrigger>
+              <TabsTrigger
+                value="orders"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+              >
+                Orders
+              </TabsTrigger>
+              <TabsTrigger
+                value="oneOnOnes"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+              >
+                1 on 1s
+              </TabsTrigger>
+              <TabsTrigger
+                value="coaching"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+              >
+                Coaching
+              </TabsTrigger>
+              <TabsTrigger
+                value="bonuses"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=active]:shadow-none pb-3 text-gray-500"
+              >
+                Spot Bonuses
               </TabsTrigger>
             </TabsList>
             
@@ -418,7 +566,7 @@ const ProfilePage = () => {
                               <Mail className="h-4 w-4 mr-2 text-gray-500" />
                               <Input
                                 id="email"
-                                value={userDetails.email}
+                                value={userDetails.email || "leslie@parks.com"}
                                 disabled
                                 className="bg-gray-50 h-8 text-sm"
                               />
@@ -426,7 +574,7 @@ const ProfilePage = () => {
                           ) : (
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                              <span className="text-blue-500">{userDetails.email}</span>
+                              <span className="text-blue-500">{userDetails.email || "leslie@parks.com"}</span>
                             </div>
                           )}
                         </div>
@@ -467,7 +615,7 @@ const ProfilePage = () => {
                           ) : (
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{userDetails.title}</span>
+                              <span>{userDetails.title || "Deputy Director"}</span>
                             </div>
                           )}
                         </div>
@@ -487,7 +635,31 @@ const ProfilePage = () => {
                           ) : (
                             <div className="flex items-center">
                               <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{userDetails.department}</span>
+                              <span>{userDetails.department || "Parks"}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <div className="space-y-1">
+                          <Label htmlFor="location" className="text-sm text-gray-500">Location:</Label>
+                          {isEditing ? (
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                              <Input
+                                id="location"
+                                name="location"
+                                value={formValues.location}
+                                onChange={handleInputChange}
+                                className="h-8 text-sm"
+                                placeholder="Add location"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                              <span>{userDetails.location || "Pawnee"}</span>
                             </div>
                           )}
                         </div>
@@ -511,7 +683,7 @@ const ProfilePage = () => {
                         />
                       </div>
                     ) : (
-                      <p className="text-gray-700">{userDetails.responsibilities}</p>
+                      <p className="text-gray-700">{userDetails.responsibilities || "Citizen Outreach, Citizen Outreach, Council Meetings, Council Meetings, Making Pawnee great, Making Pawnee great"}</p>
                     )}
                   </div>
                   
@@ -535,15 +707,6 @@ const ProfilePage = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  {/* History Section */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-4">My History</h3>
-                    <div className="text-gray-500 text-center py-8">
-                      <History className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-                      <p>No history records to display</p>
-                    </div>
-                  </div>
                 </div>
                 
                 {/* Right Column - Personality, Interests, Strengths */}
@@ -551,13 +714,17 @@ const ProfilePage = () => {
                   {/* Personality Type */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-2">Personality</h3>
-                    <h4 className="font-medium text-gray-800 mb-2">{user?.name?.split(' ')[0] || 'User'} - The {personalityType.title}</h4>
-                    <p className="text-gray-600 text-sm">{personalityType.description}</p>
+                    <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                      Leslie - The Champion
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs.
+                    </p>
                   </div>
                   
                   {/* People Like You */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3">People most like {user?.name?.split(' ')[0] || 'User'}</h3>
+                    <h3 className="text-lg font-semibold mb-3">People most like Leslie</h3>
                     <div className="flex space-x-2">
                       {similarPeople.map(person => (
                         <Avatar key={person.id} className="h-10 w-10">
@@ -574,14 +741,36 @@ const ProfilePage = () => {
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-3">Interests</h3>
                     <div className="flex flex-wrap gap-2">
-                      {interests.map(interest => (
-                        <Badge key={interest.id} variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
-                          <span className="bg-blue-200 text-blue-700 rounded-full h-5 w-5 inline-flex items-center justify-center mr-1.5 text-xs">
-                            {interest.count}
-                          </span>
-                          {interest.name}
-                        </Badge>
-                      ))}
+                      <Badge variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200 px-4 py-2 rounded-full">
+                        <span className="bg-blue-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs">
+                          5
+                        </span>
+                        <span className="text-blue-700">Camping</span>
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200 px-4 py-2 rounded-full">
+                        <span className="bg-blue-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs">
+                          9
+                        </span>
+                        <span className="text-blue-700">Parties</span>
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200 px-4 py-2 rounded-full">
+                        <span className="bg-blue-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs">
+                          3
+                        </span>
+                        <span className="text-blue-700">Photography</span>
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200 px-4 py-2 rounded-full">
+                        <span className="bg-blue-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs">
+                          1
+                        </span>
+                        <span className="text-blue-700">Politics</span>
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200 px-4 py-2 rounded-full">
+                        <span className="bg-blue-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs">
+                          5
+                        </span>
+                        <span className="text-blue-700">Sci-fi</span>
+                      </Badge>
                     </div>
                     <Button variant="link" className="text-blue-500 mt-3 px-0">
                       See company-wide interests
@@ -592,14 +781,18 @@ const ProfilePage = () => {
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-3">Strengths</h3>
                     <div className="flex flex-wrap gap-2">
-                      {strengths.map(strength => (
-                        <Badge key={strength.id} variant="outline" className="bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200">
-                          <span className="bg-gray-200 text-gray-700 rounded-full h-5 w-5 inline-flex items-center justify-center mr-1.5 text-xs">
-                            {strength.count}
-                          </span>
-                          {strength.name}
-                        </Badge>
-                      ))}
+                      <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100 border-gray-200 px-4 py-2 rounded-full">
+                        <span className="bg-gray-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs text-gray-700">
+                          6
+                        </span>
+                        <span className="text-gray-700">Belief</span>
+                      </Badge>
+                      <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100 border-gray-200 px-4 py-2 rounded-full">
+                        <span className="bg-gray-200 rounded-full h-6 w-6 inline-flex items-center justify-center mr-2 text-xs text-gray-700">
+                          2
+                        </span>
+                        <span className="text-gray-700">Ideation</span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
