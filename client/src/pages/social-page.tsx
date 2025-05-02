@@ -480,53 +480,23 @@ export default function SocialPage() {
             </div>
           </div>
           
-          {/* Post Creation Section - New Design with Avatar */}
+          {/* Who Do You Appreciate? section - Exact match to design */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="flex items-center mb-4">
-              <div className="mr-4">
-                <Avatar className="h-14 w-14">
-                  <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
-                    AU
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="flex-1">
-                <div className="bg-gray-100 rounded-full px-6 py-3 cursor-text">
-                  <span className="text-gray-500">What's on your mind?</span>
+            <div className="relative mb-6">
+              <div className="absolute inset-y-0 left-4 flex items-center">
+                <div className="bg-blue-500 text-white rounded-full p-2.5">
+                  <Gift className="h-6 w-6" /> 
                 </div>
               </div>
+              <input 
+                type="text"
+                className="w-full py-4 pl-16 pr-4 text-gray-500 text-lg border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                placeholder="Who Do You Appreciate?"
+              />
             </div>
-
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex justify-between">
-                <button className="flex-1 flex items-center justify-center py-2 text-gray-600 hover:text-gray-800">
-                  <FileText className="h-5 w-5 mr-2" />
-                  <span className="font-medium">Image</span>
-                </button>
-                
-                <button 
-                  className="flex-1 flex items-center justify-center py-2 text-gray-600 hover:text-gray-800"
-                  onClick={() => setIsPollModalOpen(true)}
-                >
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  <span className="font-medium">Poll</span>
-                </button>
-                
-                <button 
-                  className="flex-1 flex items-center justify-center py-2 text-gray-600 hover:text-gray-800"
-                  onClick={() => setIsRecognitionModalOpen(true)}
-                >
-                  <Award className="h-5 w-5 mr-2" />
-                  <span className="font-medium">Recognize</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Who Do You Appreciate? section - Button Style Version */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            
             <div className="flex gap-4">
-              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center cursor-pointer">
+              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center">
                 <div className="bg-amber-500 text-white rounded-full p-2 mr-2">
                   <Star className="h-5 w-5" />
                 </div>
