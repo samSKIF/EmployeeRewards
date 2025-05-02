@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Edit, Camera, Mail, Phone, MapPin, Calendar, Award, 
   History, User, Home, ShoppingBag, Trophy, FileText, 
-  Zap, Heart, Camera as CameraIcon
+  Zap, Heart, ImageIcon, Camera as CameraIcon
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
 
@@ -23,6 +23,7 @@ interface UserType extends BaseUserType {
   title?: string;
   location?: string;
   responsibilities?: string;
+  coverPhotoUrl?: string;
 }
 
 const UpdatedProfilePage = () => {
@@ -250,6 +251,120 @@ const UpdatedProfilePage = () => {
       });
   };
 
+  // Cover photo upload mutation
+  const updateCoverPhotoMutation = useMutation({
+    mutationFn: async (data: { coverPhotoUrl: string }) => {
+      const res = await fetch("/api/users/cover-photo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to upload cover photo");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      // Update the user data in the cache with the new cover photo URL
+      const currentUser = queryClient.getQueryData<UserType>(["/api/users/me"]);
+      if (currentUser) {
+        queryClient.setQueryData(["/api/users/me"], {
+          ...currentUser,
+          coverPhotoUrl: data.user.coverPhotoUrl
+        });
+      }
+      
+      toast({
+        title: "Cover photo updated",
+        description: "Your cover photo has been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload cover photo",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Handle cover photo upload
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Compress image before uploading
+    const compressImage = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+          
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            // Cover photos should be wider
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 400;
+            
+            let width = img.width;
+            let height = img.height;
+            
+            // Calculate new dimensions
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            
+            // Convert to base64 with reduced quality
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+          
+          img.onerror = () => {
+            reject(new Error('Failed to load image'));
+          };
+        };
+        
+        reader.onerror = () => {
+          reject(new Error('Failed to read file'));
+        };
+      });
+    };
+    
+    // Process and upload the compressed image
+    compressImage(file)
+      .then(base64Data => {
+        updateCoverPhotoMutation.mutate({ coverPhotoUrl: base64Data });
+      })
+      .catch(error => {
+        toast({
+          title: "Error processing image",
+          description: error.message || "Failed to process image for upload",
+          variant: "destructive"
+        });
+      });
+  };
+
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (userData: Partial<UserType>) => {
@@ -325,7 +440,7 @@ const UpdatedProfilePage = () => {
                   className="bg-white/80 hover:bg-white"
                   onClick={() => document.getElementById('cover-photo-upload')?.click()}
                 >
-                  <Image className="h-4 w-4 mr-2" />
+                  <ImageIcon className="h-4 w-4 mr-2" />
                   Upload Cover
                   <input 
                     type="file"
