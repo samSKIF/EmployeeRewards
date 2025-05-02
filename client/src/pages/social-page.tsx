@@ -436,12 +436,49 @@ export default function SocialPage() {
         
         {/* Main content */}
         <div className="lg:col-span-2">
-          {/* Post Creator Component */}
-          <PostCreator 
-            user={user} 
-            onRecognizeClick={() => setIsRecognitionModalOpen(true)}
-            onPollClick={() => setIsPollModalOpen(true)}
-          />
+          {/* New Post creator area */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <div className="flex items-center mb-4">
+              {/* Avatar */}
+              <div className="mr-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-blue-100 text-blue-700">
+                    {user?.name?.charAt(0) || 'A'}
+                    {user?.name?.split(' ')[1]?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              
+              {/* Post input field */}
+              <div className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2.5 cursor-pointer">
+                <span className="text-gray-500">What's on your mind?</span>
+              </div>
+            </div>
+            
+            {/* Post action buttons */}
+            <div className="flex justify-between border-t pt-3">
+              <button className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDVINFY5LjVIMjBWNVoiIHN0cm9rZT0iIzZCN0FCMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTMgMTEuNUgxOEwyMC41IDE2LjVIMy41TDYgMTEuNUgxMVYxOCIgc3Ryb2tlPSIjNkI3QUIwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik04IDcuNUg4LjAwOTc1IiBzdHJva2U9IiM2QjdBQjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==" alt="Image" className="w-6 h-6 mr-2" />
+                <span className="text-sm">Image</span>
+              </button>
+              
+              <button 
+                onClick={() => setIsPollModalOpen(true)}
+                className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md"
+              >
+                <BarChart3 className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="text-sm">Poll</span>
+              </button>
+              
+              <button 
+                onClick={() => setIsRecognitionModalOpen(true)}
+                className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md"
+              >
+                <Award className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="text-sm">Recognize</span>
+              </button>
+            </div>
+          </div>
           
           {/* Filters */}
           <div className="flex justify-end items-center mb-4">
