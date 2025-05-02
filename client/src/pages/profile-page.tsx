@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Edit, Camera, Mail, Phone, MapPin, Calendar, Award, History, User, Mail as MailIcon } from "lucide-react";
-import { User as UserType } from "@shared/types";
+import { User as BaseUserType } from "@shared/types";
+
+// Extended UserType with additional profile fields
+interface UserType extends BaseUserType {
+  title?: string;
+  location?: string;
+  responsibilities?: string;
+}
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -29,18 +36,33 @@ const ProfilePage = () => {
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
     queryKey: ["/api/users/me"],
-    retry: false,
-    onSuccess: (data) => {
+    retry: false
+  });
+
+  // User details fallback values
+  const userDetailsFallback = {
+    title: "Deputy Director",
+    location: "Pawnee",
+    department: "Parks",
+    responsibilities: "Citizen Outreach, Council Meetings, Making Pawnee great",
+    hireDate: "8/24/17",
+    birthday: "Aug 15",
+    profileStatus: 89
+  };
+
+  // Update form values when user data is fetched
+  useEffect(() => {
+    if (user) {
       // Initialize form values with user data
       setFormValues({
-        name: data?.name || '',
-        title: data?.title || userDetails.title || '',
-        department: data?.department || userDetails.department || '',
-        location: data?.location || userDetails.location || '',
-        responsibilities: data?.responsibilities || userDetails.responsibilities || ''
+        name: user.name || '',
+        title: user.title || userDetailsFallback.title || '',
+        department: user.department || userDetailsFallback.department || '',
+        location: user.location || userDetailsFallback.location || '',
+        responsibilities: user.responsibilities || userDetailsFallback.responsibilities || ''
       });
     }
-  });
+  }, [user]);
 
   // Mock data for profile sections
   const personalityType = {
@@ -69,16 +91,16 @@ const ProfilePage = () => {
     { id: 103, name: "Mike Chen", avatar: "/avatars/mike.jpg" }
   ];
 
-  // User details
+  // User details (combine with the fallback values)
   const userDetails = {
     email: user?.email || "admin@demo.io",
-    title: "Deputy Director",
-    location: "Pawnee",
-    department: "Parks",
-    responsibilities: "Citizen Outreach, Council Meetings, Making Pawnee great",
-    hireDate: "8/24/17",
-    birthday: "Aug 15",
-    profileStatus: 89
+    title: user?.title || userDetailsFallback.title,
+    location: user?.location || userDetailsFallback.location, 
+    department: user?.department || userDetailsFallback.department,
+    responsibilities: user?.responsibilities || userDetailsFallback.responsibilities,
+    hireDate: userDetailsFallback.hireDate,
+    birthday: userDetailsFallback.birthday,
+    profileStatus: userDetailsFallback.profileStatus
   };
 
   // Update profile mutation
@@ -355,7 +377,21 @@ const ProfilePage = () => {
                   {/* Responsibilities */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-4">Responsibilities</h3>
-                    <p className="text-gray-700">{userDetails.responsibilities}</p>
+                    {isEditing ? (
+                      <div>
+                        <Label htmlFor="responsibilities" className="sr-only">Responsibilities</Label>
+                        <textarea
+                          id="responsibilities"
+                          name="responsibilities"
+                          value={formValues.responsibilities}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-200 rounded-md text-sm min-h-24"
+                          placeholder="Enter your job responsibilities"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-gray-700">{userDetails.responsibilities}</p>
+                    )}
                   </div>
                   
                   {/* Important Dates */}
