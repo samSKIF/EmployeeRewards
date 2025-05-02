@@ -175,7 +175,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Expanded post composer with image preview
   if (isExpanded) {
     return (
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6 w-full max-w-[560px] mx-auto">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
         <div className="flex items-start">
           <Avatar className="w-12 h-12 mr-4">
             <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
@@ -300,7 +300,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
 
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6 w-full max-w-[560px] mx-auto">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
       <div className="flex items-center gap-3 mb-4">
         <Avatar className="h-12 w-12 border-2 border-gray-100">
           <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
@@ -315,7 +315,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           <span className="text-gray-500 text-md">What's on your mind?</span>
         </div>
       </div>
-
+      
       <div className="grid grid-cols-3 gap-2 my-4">
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -324,7 +324,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           <ImageIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
           <span>Share</span>
         </button>
-
+        
         <button
           onClick={onRecognizeClick}
           className="flex items-center justify-center gap-1.5 bg-amber-100 text-amber-800 py-2 px-3 rounded-lg text-sm font-medium"
@@ -332,7 +332,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           <Award className="h-4 w-4 text-amber-500 flex-shrink-0" />
           <span>Appreciate</span>
         </button>
-
+        
         <button
           onClick={onPollClick}
           className="flex items-center justify-center gap-1.5 bg-purple-100 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium"
@@ -340,7 +340,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           <BarChart className="h-4 w-4 text-purple-500 flex-shrink-0" />
           <span>Poll</span>
         </button>
-
+        
         <input
           type="file"
           ref={fileInputRef}
