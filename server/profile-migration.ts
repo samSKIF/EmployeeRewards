@@ -14,6 +14,9 @@ async function runProfileMigration() {
     throw new Error("DATABASE_URL environment variable is not set.");
   }
 
+  // Configure Neon to use the WebSocket polyfill
+  neonConfig.webSocketConstructor = ws;
+  
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool);
 
