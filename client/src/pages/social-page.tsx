@@ -480,8 +480,6 @@ export default function SocialPage() {
             </div>
           </div>
           
-
-          
           {/* Filters */}
           <div className="flex justify-end items-center mb-4">
             <div className="flex items-center text-sm text-gray-600">
