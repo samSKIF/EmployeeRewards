@@ -18,7 +18,9 @@ import {
   User,
   Search,
   Bell,
-  LucideIcon
+  LucideIcon,
+  Eye,
+  ListChecks
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -54,15 +56,16 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, onClick, isActive, badge, className, hasDropdown }: NavItemProps) => (
   <button
     onClick={onClick}
-    className={`flex items-center text-white hover:text-white/90 px-3 py-2 text-sm font-medium transition-colors relative ${
-      isActive ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-white after:rounded-t-md' : ''
+    className={`flex flex-col items-center text-center gap-1 text-gray-600 hover:text-teal-600 px-2 py-1 text-xs font-medium transition-colors relative ${
+      isActive ? 'text-teal-600' : ''
     } ${className || ''}`}
   >
-    <Icon className="w-5 h-5 mr-1.5" />
+    <div className={`p-2 rounded-full ${isActive ? 'bg-teal-100' : 'bg-gray-100'}`}>
+      <Icon className="w-5 h-5" />
+    </div>
     <span>{label}</span>
-    {hasDropdown && <ChevronDown className="w-4 h-4 ml-1" />}
     {badge && (
-      <Badge variant="secondary" className="ml-1.5 bg-white text-teal-600 h-5 min-w-5 flex items-center justify-center rounded-full">
+      <Badge variant="secondary" className="absolute -top-1 -right-1 bg-red-500 text-white h-5 min-w-5 flex items-center justify-center rounded-full text-xs">
         {badge}
       </Badge>
     )}
@@ -89,15 +92,11 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const navItems = [
     { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
     { icon: Store, label: "Store", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
-    { 
-      icon: Users, 
-      label: "Spaces", 
-      onClick: () => {}, 
-      isActive: location === '/spaces',
-      hasDropdown: true
-    },
+    { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
-    { icon: FileText, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
+    { icon: Eye, label: "Insights", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
+    { icon: Users, label: "Manage", onClick: () => navigateTo('/manage'), isActive: location === '/manage' },
+    { icon: Settings, label: "Setup", onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
   ];
 
   // Admin dropdown menu items
@@ -135,138 +134,94 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   ];
 
   return (
-    <header className="bg-teal-500 text-white">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo and main nav */}
-          <div className="flex items-center space-x-4">
-            {/* Logo */}
-            <div className="flex items-center mr-4">
-              <div className="bg-white text-teal-500 rounded-full p-1.5 mr-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9 9H9.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M15 9H15.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h1 className="font-bold text-xl">ThrivioHR</h1>
-            </div>
-
-            {/* Main nav items */}
-            <nav className="hidden md:flex space-x-1">
-              {navItems.map((item, index) => (
-                <NavItem 
-                  key={index}
-                  icon={item.icon}
-                  label={item.label}
-                  onClick={item.onClick}
-                  isActive={item.isActive}
-                  hasDropdown={item.hasDropdown}
-                />
-              ))}
-              
-              {/* More menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center text-white hover:text-white/90 px-3 py-2 text-sm font-medium transition-colors">
-                    <Settings className="w-5 h-5 mr-1.5" />
-                    <span>More</span>
-                    <ChevronDown className="w-4 h-4 ml-1" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigateTo('/leaderboard')}>
-                    <BarChart2 className="w-4 h-4 mr-2" /> 
-                    <span>Leaderboard</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigateTo('/budgets')}>
-                    <CircleDollarSign className="w-4 h-4 mr-2" /> 
-                    <span>Reward Budgets</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigateTo('/groups')}>
-                    <Users className="w-4 h-4 mr-2" /> 
-                    <span>Groups</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </nav>
-          </div>
-
-          {/* Search and User actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="w-4 h-4 text-white/70" />
-              </div>
-              <input 
-                type="search" 
-                className="block w-full p-2 pl-10 bg-teal-600/50 border border-teal-400 rounded-full text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/30"
-                placeholder="Search..." 
-              />
-            </div>
-
-            {/* Notifications */}
-            <button className="relative p-1.5 text-white rounded-full hover:bg-teal-600/50">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">6</span>
-            </button>
-
-            {/* Points */}
-            <div className="hidden sm:flex items-center bg-white/10 rounded-full px-3 py-1 text-sm">
-              <span className="mr-1 text-amber-200">★</span>
-              <span>580</span>
-            </div>
-
-            {/* Cart icon */}
-            <button className="relative p-1.5 text-white rounded-full hover:bg-teal-600/50">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">1</span>
-            </button>
-
-            {/* User menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center">
-                  <Avatar className="h-8 w-8 border-2 border-white/50">
-                    <AvatarFallback className="bg-teal-700 text-white">
-                      {user?.name?.charAt(0) || 'A'}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigateTo('/profile')}>
-                  <User className="w-4 h-4 mr-2" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                
-                {user?.isAdmin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Admin</DropdownMenuLabel>
-                    {adminItems.map((item, index) => (
-                      <DropdownMenuItem key={index} onClick={item.onClick}>
-                        <item.icon className="w-4 h-4 mr-2" />
-                        <span>{item.label}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </>
-                )}
-                
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <div className="bg-gray-100 pt-4 pb-2 px-4">
+      <div className="bg-white rounded-full shadow-sm mx-auto max-w-6xl flex items-center justify-between py-2 px-4">
+        {/* Logo */}
+        <div className="flex items-center mr-4">
+          <div className="bg-teal-500 text-white rounded-full p-2.5 mr-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="currentColor"/>
+              <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 9H9.01" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 9H15.01" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
         </div>
+
+        {/* Search box */}
+        <div className="relative flex-1 max-w-md mx-4 hidden md:block">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <Search className="w-4 h-4 text-gray-400" />
+          </div>
+          <input 
+            type="search" 
+            className="block w-full p-2 pl-10 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+            placeholder="Who Do You Appreciate?" 
+          />
+        </div>
+
+        {/* Main nav items */}
+        <nav className="hidden md:flex space-x-2">
+          {navItems.map((item, index) => (
+            <NavItem 
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              onClick={item.onClick}
+              isActive={item.isActive}
+            />
+          ))}
+        </nav>
+
+        {/* User actions */}
+        <div className="flex items-center space-x-4">
+          {/* Notifications */}
+          <button className="relative p-1">
+            <Bell className="w-5 h-5 text-gray-600" />
+            <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">1</span>
+          </button>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center">
+                <Avatar className="h-8 w-8 border-2 border-teal-100">
+                  <AvatarFallback className="bg-teal-100 text-teal-700">
+                    {user?.name?.charAt(0) || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => navigateTo('/profile')}>
+                <User className="w-4 h-4 mr-2" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              
+              {user?.isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Admin</DropdownMenuLabel>
+                  {adminItems.map((item, index) => (
+                    <DropdownMenuItem key={index} onClick={item.onClick}>
+                      <item.icon className="w-4 h-4 mr-2" />
+                      <span>{item.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="w-4 h-4 mr-2" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-    </header>
+    </div>
   );
 };
 

@@ -43,21 +43,29 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
 
       {/* Main content */}
       <div className="flex-1">
-        {/* Mobile header with menu button */}
-        <div className="md:hidden flex items-center justify-between bg-teal-500 p-4 sticky top-0 z-10">
-          <div className="flex items-center text-white">
-            <span className="font-bold text-xl">ThrivioHR</span>
+        {/* Mobile header with menu button - only visible on mobile */}
+        <div className="md:hidden flex items-center justify-between bg-white shadow-sm p-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <div className="bg-teal-500 text-white rounded-full p-1.5 mr-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="currentColor"/>
+                <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 9H9.01" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M15 9H15.01" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <span className="font-bold text-gray-800">ThrivioHR</span>
           </div>
           <button 
             onClick={toggleMobileMenu}
-            className="text-white p-2 rounded-md hover:bg-teal-600 focus:outline-none"
+            className="text-gray-600 p-2 rounded-md hover:bg-gray-100 focus:outline-none"
           >
-            {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
         {/* Page content */}
-        <main className="p-0 container mx-auto px-4 py-6">
+        <main className="mx-auto px-4 py-6 max-w-6xl">
           {children}
         </main>
       </div>
