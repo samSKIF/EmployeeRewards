@@ -148,15 +148,15 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
           </div>
         </div>
 
-        {/* Search box */}
-        <div className="relative flex-1 max-w-md mx-4 hidden md:block">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        {/* Compact Search box */}
+        <div className="relative w-60 mx-3 hidden md:block">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
             <Search className="w-4 h-4 text-gray-400" />
           </div>
           <input 
             type="search" 
-            className="block w-full p-2 pl-10 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
-            placeholder="Who Do You Appreciate?" 
+            className="block w-full p-1.5 pl-8 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+            placeholder="Search..." 
           />
         </div>
 
