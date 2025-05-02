@@ -301,11 +301,11 @@ const UpdatedProfilePage = () => {
   }
 
   return (
-    <div className="container max-w-[1800px] xl:max-w-[2100px] mx-auto py-6">
-      {/* Main grid layout - similar to front page layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="container max-w-[2200px] mx-auto py-6">
+      {/* Main grid layout - matching front page layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-4 max-w-[2200px] mx-auto justify-center">
         {/* Left column - Picture area, contact, responsibilities */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+        <div className="lg:col-span-6 w-full space-y-6 max-w-[1800px] 4xl:max-w-[1800px] 3xl:max-w-[1600px] 2xl:max-w-[1400px] xl:max-w-[1200px] lg:max-w-[1000px]">
           {/* Profile picture card with tabs */}
           <Card className="overflow-hidden shadow-sm">
             {/* Cover Image & Profile Picture */}
@@ -573,8 +573,8 @@ const UpdatedProfilePage = () => {
           </Card>
         </div>
         
-        {/* Right column - Personality, Interests, Strengths */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+        {/* Right sidebar - exactly 42% of center width, matching front page */}
+        <div className="lg:col-span-3 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "750px" }}>
           {/* Personality Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
