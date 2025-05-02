@@ -12,11 +12,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
   MessageCircle, Heart, Gift, BarChart3, Users, Settings, 
-  ChevronRight, ThumbsUp, Award, FileText, Share2, Smile,
+  ChevronRight, ChevronDown, ThumbsUp, Award, FileText, Share2, Smile,
   Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
   Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash,
-  LogOut, ShoppingBag, CreditCard
+  LogOut, ShoppingBag, CreditCard, Eye, Store
 } from "lucide-react";
 import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +30,9 @@ import {
   Post, 
   Comments, 
   RecognitionModal,
-  PollModal
+  PollModal,
+  WalletWidget,
+  PrioritiesWidget
 } from "@/components/social";
 
 export default function SocialPage() {
@@ -385,99 +387,24 @@ export default function SocialPage() {
                 </div>
               )}
             </div>
-            <p className="text-amber-900 text-sm">{post.recognition.message}</p>
             
-            <div className="mt-3 flex items-center">
-              <Avatar className="h-8 w-8 border-2 border-white">
-                <AvatarFallback className="bg-amber-200 text-amber-700">
-                  {post.recognition.recipient.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ml-2">
-                <div className="text-sm font-medium">{post.recognition.recipient.name}</div>
-                <div className="text-xs text-gray-500">{post.recognition.recipient.jobTitle || 'Team Member'}</div>
+            <p className="text-amber-900">{post.recognition.message}</p>
+            
+            {post.recognition.recipientId && (
+              <div className="mt-3 flex">
+                <div className="flex-1">
+                  <div className="text-xs text-amber-700 uppercase font-medium">Recipient</div>
+                  <div className="font-medium">
+                    {users.find(u => u.id === post.recognition?.recipientId)?.name || 'Unknown recipient'}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
-        
-        <div className="flex items-center gap-6 mt-4">
-          <button 
-            className={`flex items-center gap-1 ${
-              post.userReaction === 'like' ? 'text-blue-600 font-semibold' : 'text-gray-500'
-            }`}
-            onClick={() => handleReaction(post, 'like')}
-          >
-            <ThumbsUp size={16} />
-            <span className="text-sm">{post.reactionCounts['like'] || 0}</span>
-          </button>
-          
-          <button 
-            className={`flex items-center gap-1 ${
-              post.userReaction === 'celebrate' ? 'text-blue-600 font-semibold' : 'text-gray-500'
-            }`}
-            onClick={() => handleReaction(post, 'celebrate')}
-          >
-            <Award size={16} />
-            <span className="text-sm">{post.reactionCounts['celebrate'] || 0}</span>
-          </button>
-          
-          <button className="flex items-center gap-1 text-gray-500">
-            <MessageCircle size={16} />
-            <span className="text-sm">{post.commentCount}</span>
-          </button>
-        </div>
       </div>
     );
   };
-  
-  // Handler for submitting recognition
-  const handleCreateRecognition = () => {
-    if (!recipientId) {
-      toast({
-        title: "Error",
-        description: "Please select a teammate to recognize",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!selectedBadge) {
-      toast({
-        title: "Error",
-        description: "Please select a badge type",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!recognitionMessage.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a recognition message",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    createRecognitionMutation.mutate({
-      recipientId,
-      badgeType: selectedBadge,
-      message: recognitionMessage,
-      points: recognitionPoints
-    });
-  };
-  
-  // Badge options for recognition
-  const badges = [
-    { type: "Outstanding Work", icon: <Star className="h-5 w-5" />, color: "bg-amber-500" },
-    { type: "Team Player", icon: <Users className="h-5 w-5" />, color: "bg-blue-500" },
-    { type: "Problem Solver", icon: <Zap className="h-5 w-5" />, color: "bg-purple-500" },
-    { type: "Innovation Award", icon: <Sparkles className="h-5 w-5" />, color: "bg-emerald-500" },
-    { type: "Leadership", icon: <Target className="h-5 w-5" />, color: "bg-red-500" },
-    { type: "Work Anniversary", icon: <Cake className="h-5 w-5" />, color: "bg-pink-500" },
-    { type: "Top Performer", icon: <Trophy className="h-5 w-5" />, color: "bg-indigo-500" }
-  ];
   
   // Poll creation state
   const [isPollModalOpen, setIsPollModalOpen] = useState(false);
@@ -498,201 +425,221 @@ export default function SocialPage() {
         currentUser={user}
       />
       
-      {/* Main content */}
-      <div className="max-w-3xl mx-auto pt-4">
-        {/* Section header */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {/* Section title icon */}
-              <div className="bg-teal-100 text-teal-600 p-2 rounded-lg">
-                <Home size={24} />
+      {/* Main layout with sidebar and content */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-4">
+        {/* Left sidebar */}
+        <div className="hidden lg:block">
+          {/* Import and use the new wallet and priorities widgets */}
+          <WalletWidget balance={balanceData?.balance || 0} />
+          <PrioritiesWidget />
+        </div>
+        
+        {/* Main content */}
+        <div className="lg:col-span-2">
+          {/* Search and action buttons */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <div className="bg-blue-500 text-white rounded-full p-1">
+                  <MessageCircle className="h-5 w-5" /> 
+                </div>
               </div>
-              <div className="ml-3">
-                <h1 className="text-xl font-semibold text-gray-800">Social Feed</h1>
-                <p className="text-sm text-gray-500">Connect with your colleagues</p>
-              </div>
+              <input 
+                type="text"
+                className="w-full py-3 pl-12 pr-4 text-gray-700 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="Who Do You Appreciate?"
+              />
             </div>
-            <div className="flex items-center gap-3">
-              {/* Points balance */}
-              <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm">
-                <Star className="h-4 w-4 text-amber-200 fill-amber-200" />
-                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
-              </div>
+            
+            <div className="flex mt-4 space-x-2">
+              <button className="flex items-center justify-center py-2 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full flex-1">
+                <div className="bg-amber-500 text-white rounded-full p-1 mr-2">
+                  <Star className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium">Share a Highlight</span>
+              </button>
+              
+              <button 
+                className="flex items-center justify-center py-2 px-3 bg-green-100 hover:bg-green-200 text-green-800 rounded-full flex-1"
+                onClick={() => setIsRecognitionModalOpen(true)}
+              >
+                <div className="bg-green-500 text-white rounded-full p-1 mr-2">
+                  <Award className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium">Give a Spot Bonus</span>
+              </button>
+              
+              <button 
+                className="flex items-center justify-center py-2 px-3 bg-red-100 hover:bg-red-200 text-red-800 rounded-full flex-1"
+                onClick={() => setIsPollModalOpen(true)}
+              >
+                <div className="bg-red-500 text-white rounded-full p-1 mr-2">
+                  <Users className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium whitespace-nowrap">1 on 1 with {user?.name?.split(' ')[0] || 'Ron'}</span>
+              </button>
             </div>
           </div>
           
-          {/* Stats - conditionally show on larger screens */}
-          {socialStats && (
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-teal-50 rounded-lg p-3">
-                <div className="text-xs text-teal-600 uppercase font-medium">Posts</div>
-                <div className="text-2xl font-bold text-teal-700">{socialStats.postCount || 0}</div>
-              </div>
-              <div className="bg-blue-50 rounded-lg p-3">
-                <div className="text-xs text-blue-600 uppercase font-medium">Comments</div>
-                <div className="text-2xl font-bold text-blue-700">{socialStats.commentCount || 0}</div>
-              </div>
-              <div className="bg-amber-50 rounded-lg p-3">
-                <div className="text-xs text-amber-600 uppercase font-medium">Recognitions</div>
-                <div className="text-2xl font-bold text-amber-700">{socialStats.recognitionCount || 0}</div>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-3">
-                <div className="text-xs text-purple-600 uppercase font-medium">Reactions</div>
-                <div className="text-2xl font-bold text-purple-700">{socialStats.reactionCount || 0}</div>
-              </div>
+          {/* Filters */}
+          <div className="flex justify-end items-center mb-4">
+            <div className="flex items-center text-sm text-gray-600">
+              <span>Filter by:</span>
+              <button className="ml-2 border border-gray-300 rounded-md px-3 py-1 flex items-center">
+                <span>My Company</span>
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Post composer */}
+          <PostCreator
+            user={user}
+            onRecognizeClick={() => setIsRecognitionModalOpen(true)}
+            onPollClick={() => setIsPollModalOpen(true)}
+          />
+        
+          {/* Posts from API */}
+          {postsLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                    <div className="ml-3 space-y-1">
+                      <div className="h-4 w-24 bg-gray-200 rounded" />
+                      <div className="h-3 w-16 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-gray-200 rounded" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {posts.map((post: PostWithDetails) => (
+                <Post 
+                  key={post.id} 
+                  post={post}
+                  currentUser={user}
+                />
+              ))}
+              
+              {posts.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                  <div className="flex flex-col items-center gap-3 text-gray-500">
+                    <MessageCircle size={48} strokeWidth={1} />
+                    <h3 className="text-lg font-semibold">No posts yet</h3>
+                    <p>Be the first to post something!</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
         
-        {/* Post composer */}
-        <PostCreator
-          user={user}
-          onRecognizeClick={() => setIsRecognitionModalOpen(true)}
-          onPollClick={() => setIsPollModalOpen(true)}
-        />
-        
-        {/* Posts from API */}
-        {postsLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gray-200" />
-                  <div className="ml-3 space-y-1">
-                    <div className="h-4 w-24 bg-gray-200 rounded" />
-                    <div className="h-3 w-16 bg-gray-200 rounded" />
+        {/* Right sidebar */}
+        <div className="hidden lg:block lg:col-span-1">
+          {/* Action Items section */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-4">Action Items</h3>
+              
+              <div className="flex items-start mb-4">
+                <div className="flex-shrink-0 mr-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-red-100 text-red-700">
+                      AD
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div>
+                  <div className="text-sm">
+                    <span>Your 1 on 1 with </span>
+                    <span className="font-medium text-blue-600">Andy Dwyer</span>
+                    <span> is coming soon. Review the agenda!</span>
+                  </div>
+                  <div className="flex mt-2 space-x-2">
+                    <button className="text-xs px-2 py-1 border border-gray-300 hover:bg-gray-100 rounded">
+                      Hide
+                    </button>
+                    <button className="text-xs px-2 py-1 bg-blue-500 text-white hover:bg-blue-600 rounded">
+                      Review
+                    </button>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-4 w-full bg-gray-200 rounded" />
-                  <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {posts.map((post: PostWithDetails) => (
-              <Post 
-                key={post.id} 
-                post={post}
-                currentUser={user}
-              />
-            ))}
-            
-            {posts.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                <div className="flex flex-col items-center gap-3 text-gray-500">
-                  <MessageCircle size={48} strokeWidth={1} />
-                  <h3 className="text-lg font-semibold">No posts yet</h3>
-                  <p>Be the first to post something!</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      
-      {/* Right sidebar */}
-      <div className="w-72 hidden lg:block bg-white border-l px-4 py-6 fixed right-0 h-screen overflow-y-auto">
-        {/* Celebrations section */}
-        <div className="mb-6">
-          <h3 className="font-semibold text-gray-900 mb-3">Celebrations</h3>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 mr-2">
-                🎂
-              </div>
-              <div>
-                <div className="text-sm">
-                  <span className="font-medium text-pink-600">Monica & 3 others</span>
-                  <span className="text-gray-600"> birthday is today</span>
-                </div>
               </div>
             </div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mr-2">
-                🏆
-              </div>
-              <div>
-                <div className="text-sm">
-                  <span className="font-medium text-blue-600">Ted & 1 other</span>
-                  <span className="text-gray-600"> work anniversary is today</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-2">
-                👋
-              </div>
-              <div>
-                <div className="text-sm">
-                  <span className="font-medium text-green-600">Tim & 2 other</span>
-                  <span className="text-gray-600"> joined the team today</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Leaderboard section */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-900">Leaderboard</h3>
-            <button className="text-xs text-blue-500">see all</button>
           </div>
           
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <div className="w-6 text-center text-gray-500 text-sm mr-2">
-                1
+          {/* Last Thanked section */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Last Thanked</h3>
+              <div className="text-sm text-gray-500 mb-3">Your Direct Reports</div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarFallback className="bg-purple-100 text-purple-700">
+                        DM
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium">Donna Meagle</div>
+                      <div className="text-xs text-gray-500">3 days ago</div>
+                    </div>
+                  </div>
+                  <button className="text-teal-500 hover:text-teal-600">
+                    <PlusCircle className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarFallback className="bg-blue-100 text-blue-700">
+                        AD
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium">Andy Dwyer</div>
+                      <div className="text-xs text-gray-500">16 hours ago</div>
+                    </div>
+                  </div>
+                  <button className="text-teal-500 hover:text-teal-600">
+                    <PlusCircle className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarFallback className="bg-green-100 text-green-700">
+                        AP
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium">Ann Perkins</div>
+                      <div className="text-xs text-gray-500">4 hours ago</div>
+                    </div>
+                  </div>
+                  <button className="text-teal-500 hover:text-teal-600">
+                    <PlusCircle className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mr-2">
-                🥇
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">Theresa Webb</div>
-              </div>
-              <div className="font-semibold text-sm flex items-center">
-                <span className="text-amber-500 mr-1">★</span>
-                5310
-              </div>
-            </div>
-            <div className="flex items-center">
-              <div className="w-6 text-center text-gray-500 text-sm mr-2">
-                2
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center mr-2">
-                🥈
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">Bessie Cooper</div>
-              </div>
-              <div className="font-semibold text-sm flex items-center">
-                <span className="text-amber-500 mr-1">★</span>
-                4791
-              </div>
-            </div>
-            <div className="flex items-center">
-              <div className="w-6 text-center text-gray-500 text-sm mr-2">
-                3
-              </div>
-              <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center mr-2">
-                🥉
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">Dianne Russell</div>
-              </div>
-              <div className="font-semibold text-sm flex items-center">
-                <span className="text-amber-500 mr-1">★</span>
-                4315
+              
+              <div className="mt-4 text-sm text-gray-500 flex items-center justify-between">
+                <div>You've recognized <span className="font-semibold text-teal-600">80%</span> of your team this month.</div>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Redeem points section removed - now only available in sidebar */}
       </div>
     </div>
   );
