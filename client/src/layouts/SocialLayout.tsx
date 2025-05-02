@@ -42,13 +42,18 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main layout with sidebar and content - responsive for large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-[21%_58%_21%] gap-6 pt-4 max-w-screen-2xl mx-auto px-4"> {/* Adjusted grid template columns */}
-        {/* Left sidebar */}
-        <div className="hidden lg:block">
-          {/* Sidebar content would go here */}
+      <div className="grid grid-cols-12 gap-6 w-full max-w-[1600px] mx-auto px-4 pt-4">
+        {/* Left sidebar - Profile & Wallet */}
+        <div className="hidden lg:block lg:col-span-3 xl:col-span-2">
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <WalletWidget />
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <PrioritiesWidget />
+          </div>
         </div>
         {/* Main content area */}
-        <div>
+        <div className="col-span-12 lg:col-span-6 xl:col-span-7">
           {/* Mobile header with menu button - only visible on mobile */}
           <div className="md:hidden flex items-center justify-between bg-white shadow-sm p-4 sticky top-0 z-10">
             <div className="flex items-center">
@@ -71,15 +76,22 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
           </div>
 
           {/* Page content */}
-          <main className="flex justify-center w-full py-6">
-            <div className="w-full px-4 lg:px-8">
+          <main className="flex justify-center w-full pt-4 pb-6">
+            <div className="w-full px-3 lg:px-6" style={{ maxWidth: "1400px" }}>
               {children}
             </div>
           </main>
         </div>
-        {/* Right sidebar */}
-        <div className="hidden lg:block">
-          {/* Action Items would go here */}
+        {/* Right sidebar - Action Items */}
+        <div className="hidden lg:block lg:col-span-3">
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <h2 className="font-semibold text-gray-800 mb-3">Action Items</h2>
+            {/* Action items content */}
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <h2 className="font-semibold text-gray-800 mb-3">Last Thanked</h2>
+            {/* Last thanked content */}
+          </div>
         </div>
       </div>
     </div>

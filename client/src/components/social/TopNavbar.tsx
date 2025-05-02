@@ -57,8 +57,8 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, onClick, isActive, badge, className, hasDropdown }: NavItemProps) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center text-center gap-0.5 text-gray-600 hover:text-teal-600 px-1.5 py-0.5 text-xs font-medium transition-colors relative ${
-      isActive ? 'text-teal-600' : ''
+    className={`flex items-center gap-1.5 text-gray-600 hover:text-blue-600 px-2 py-1 text-sm font-medium transition-colors relative ${
+      isActive ? 'text-blue-600' : ''
     } ${className || ''}`}
   >
     <div className={`p-1.5 rounded-full ${isActive ? 'bg-teal-100' : 'bg-gray-100'}`}>
@@ -135,9 +135,9 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   ];
 
   return (
-    <div className="w-full bg-gray-100 pt-2 pb-1">
-      <div className="max-w-screen-2xl mx-auto px-4">
-        <div className="bg-white rounded-full shadow-sm flex items-center justify-between py-1 px-3">
+    <div className="w-full bg-white">
+      <div className="max-w-[1600px] mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
         {/* Logo */}
         <div className="flex items-center mr-3">
           <div className="bg-teal-500 text-white rounded-full p-2 mr-1.5">
@@ -163,7 +163,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         </div>
 
         {/* Main nav items */}
-        <nav className="hidden md:flex space-x-2">
+        <nav className="hidden md:flex items-center space-x-6">
           {navItems.map((item, index) => (
             <NavItem 
               key={index}
