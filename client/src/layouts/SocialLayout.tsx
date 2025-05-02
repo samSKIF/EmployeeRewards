@@ -66,7 +66,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
 
         {/* Page content */}
         <main className="flex justify-center w-full py-6">
-          <div className="w-full px-4 max-w-[1000px] 3xl:max-w-[1000px] 2xl:max-w-[850px] xl:max-w-[700px] lg:max-w-[600px]">
+          <div className="w-full px-4 max-w-[1800px] 4xl:max-w-[1800px] 3xl:max-w-[1600px] 2xl:max-w-[1400px] xl:max-w-[1200px] lg:max-w-[1000px]">
             {children}
           </div>
         </main>
