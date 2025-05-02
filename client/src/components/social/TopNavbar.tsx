@@ -194,7 +194,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigateTo('/profile')}>
+              <DropdownMenuItem onClick={() => navigateTo('/user/profile')}>
                 <User className="w-4 h-4 mr-2" />
                 <span>Profile</span>
               </DropdownMenuItem>

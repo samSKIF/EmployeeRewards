@@ -18,11 +18,28 @@ const ProfilePage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const [formValues, setFormValues] = useState({
+    name: '',
+    title: '',
+    department: '',
+    location: '',
+    responsibilities: ''
+  });
 
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
     queryKey: ["/api/users/me"],
     retry: false,
+    onSuccess: (data) => {
+      // Initialize form values with user data
+      setFormValues({
+        name: data?.name || '',
+        title: data?.title || userDetails.title || '',
+        department: data?.department || userDetails.department || '',
+        location: data?.location || userDetails.location || '',
+        responsibilities: data?.responsibilities || userDetails.responsibilities || ''
+      });
+    }
   });
 
   // Mock data for profile sections
@@ -91,19 +108,19 @@ const ProfilePage = () => {
     setIsEditing(!isEditing);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Get form data and update profile
-    // This is a placeholder - in a real implementation, you'd gather data from form fields
-    const formData = {
-      name: user?.name,
-      title: "Deputy Director",
-      department: "Parks",
-      // Add other fields as needed
-    };
-    
-    updateProfileMutation.mutate(formData);
+    // Send the form data to the server
+    updateProfileMutation.mutate(formValues);
   };
 
   if (userLoading) {
@@ -252,35 +269,84 @@ const ProfilePage = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between">
                         <div className="space-y-1">
-                          <label className="text-sm text-gray-500">Email:</label>
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="text-blue-500">{userDetails.email}</span>
-                          </div>
+                          <Label htmlFor="email" className="text-sm text-gray-500">Email:</Label>
+                          {isEditing ? (
+                            <div className="flex items-center">
+                              <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                              <Input
+                                id="email"
+                                value={userDetails.email}
+                                disabled
+                                className="bg-gray-50 h-8 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                              <span className="text-blue-500">{userDetails.email}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-1">
-                          <label className="text-sm text-gray-500">Phone:</label>
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                            <span>-</span>
-                          </div>
+                          <Label htmlFor="phone" className="text-sm text-gray-500">Phone:</Label>
+                          {isEditing ? (
+                            <div className="flex items-center">
+                              <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                              <Input
+                                id="phone"
+                                placeholder="Add phone number"
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                              <span>-</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
                       <div className="flex justify-between">
                         <div className="space-y-1">
-                          <label className="text-sm text-gray-500">Title:</label>
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-gray-500" />
-                            <span>{userDetails.title}</span>
-                          </div>
+                          <Label htmlFor="title" className="text-sm text-gray-500">Title:</Label>
+                          {isEditing ? (
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2 text-gray-500" />
+                              <Input
+                                id="title"
+                                name="title"
+                                value={formValues.title}
+                                onChange={handleInputChange}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2 text-gray-500" />
+                              <span>{userDetails.title}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-1">
-                          <label className="text-sm text-gray-500">Department:</label>
-                          <div className="flex items-center">
-                            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                            <span>{userDetails.department}</span>
-                          </div>
+                          <Label htmlFor="department" className="text-sm text-gray-500">Department:</Label>
+                          {isEditing ? (
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                              <Input
+                                id="department"
+                                name="department"
+                                value={formValues.department}
+                                onChange={handleInputChange}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                              <span>{userDetails.department}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
