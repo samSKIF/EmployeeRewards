@@ -421,8 +421,8 @@ const UpdatedProfilePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-4 max-w-[2200px] mx-auto justify-center">
         {/* Left column - Picture area, contact, responsibilities */}
         <div className="lg:col-span-9 w-full space-y-6 max-w-[1800px] 4xl:max-w-[1800px] 3xl:max-w-[1600px] 2xl:max-w-[1400px] xl:max-w-[1200px] lg:max-w-[1000px]">
-          {/* Profile picture card with tabs */}
-          <Card className="overflow-hidden shadow-sm">
+          {/* Cover Photo & Profile Area */}
+          <div className="shadow-sm overflow-hidden">
             {/* Cover Image & Profile Picture */}
             <div
               className="h-48 bg-gradient-to-r from-teal-400 to-teal-500 relative"
@@ -488,9 +488,12 @@ const UpdatedProfilePage = () => {
                 </div>
               </div>
             </div>
-            
+          </div>
+          
+          {/* Profile Info, Tabs, Contact & Responsibilities */}
+          <Card className="shadow-sm -mt-8 pt-8">
             {/* Profile Information */}
-            <div className="pt-14 px-8 pb-4">
+            <div className="px-8 pt-4 pb-4">
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold">{user?.name || "User"}</h1>
@@ -584,11 +587,8 @@ const UpdatedProfilePage = () => {
                 </TabsContent>
               </Tabs>
             </div>
-          </Card>
-          
-          {/* Contact & Responsibilities - Combined in one card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
+            
+            <CardHeader className="pb-2 pt-0 border-t border-gray-100">
               <CardTitle>Contact & Responsibilities</CardTitle>
             </CardHeader>
             
