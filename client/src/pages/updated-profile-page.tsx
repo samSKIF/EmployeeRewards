@@ -312,21 +312,39 @@ const UpdatedProfilePage = () => {
             <div
               className="h-48 bg-gradient-to-r from-teal-400 to-teal-500 relative"
               style={{
-                backgroundImage: "url('/assets/cover-background.jpg')",
+                backgroundImage: `url('${user?.coverPhotoUrl || '/assets/cover-background.jpg'}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center"
               }}
             >
               {/* Edit Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="absolute top-4 right-4 bg-white/80 hover:bg-white"
-                onClick={handleEditToggle}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isEditing ? "Cancel" : "Edit Profile"}
-              </Button>
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 hover:bg-white"
+                  onClick={() => document.getElementById('cover-photo-upload')?.click()}
+                >
+                  <Image className="h-4 w-4 mr-2" />
+                  Upload Cover
+                  <input 
+                    type="file"
+                    id="cover-photo-upload"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleCoverPhotoUpload}
+                  />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 hover:bg-white"
+                  onClick={handleEditToggle}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  {isEditing ? "Cancel" : "Edit Profile"}
+                </Button>
+              </div>
               
               {/* Profile Image */}
               <div className="absolute -bottom-12 left-8">
