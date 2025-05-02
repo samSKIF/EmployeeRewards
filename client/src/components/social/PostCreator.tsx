@@ -123,12 +123,15 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       return;
     }
 
+    // First, set the image file
     setImageFile(file);
 
     // Create preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
+      // Automatically expand the post creator when an image is selected
+      setIsExpanded(true);
     };
     reader.readAsDataURL(file);
   };
@@ -314,7 +317,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       
       <div className="grid grid-cols-3 gap-2 my-4">
         <button
-          onClick={() => setIsExpanded(true)}
+          onClick={() => fileInputRef.current?.click()}
           className="flex items-center justify-center gap-1.5 bg-green-100 text-green-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
           <ImageIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
@@ -336,6 +339,14 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           <BarChart className="h-4 w-4 text-purple-500 flex-shrink-0" />
           <span>Poll</span>
         </button>
+        
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*"
+        />
       </div>
     </div>
   );
