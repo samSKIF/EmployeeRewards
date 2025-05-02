@@ -499,30 +499,50 @@ export default function SocialPage() {
       />
       
       {/* Main content */}
-      <div className="max-w-3xl mx-auto">
-        {/* Top navigation bar with points balance and logout button */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
-          <div className="flex items-center">
-            {/* Section title icon */}
-            <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+      <div className="max-w-3xl mx-auto pt-4">
+        {/* Section header */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {/* Section title icon */}
+              <div className="bg-teal-100 text-teal-600 p-2 rounded-lg">
+                <Home size={24} />
+              </div>
+              <div className="ml-3">
+                <h1 className="text-xl font-semibold text-gray-800">Social Feed</h1>
+                <p className="text-sm text-gray-500">Connect with your colleagues</p>
+              </div>
             </div>
-            <div className="ml-3">
-              <h1 className="text-xl font-semibold text-gray-800">Townhall</h1>
-              <p className="text-sm text-gray-500">Happiness is a virtue, not its reward.</p>
+            <div className="flex items-center gap-3">
+              {/* Points balance */}
+              <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+                <Star className="h-4 w-4 text-amber-200 fill-amber-200" />
+                <span className="font-semibold">{balanceData?.balance || 0} Points</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            {/* Points balance */}
-            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
-              <CreditCard size={16} />
-              <span className="font-semibold">{balanceData?.balance || 0} Points</span>
+          
+          {/* Stats - conditionally show on larger screens */}
+          {socialStats && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-teal-50 rounded-lg p-3">
+                <div className="text-xs text-teal-600 uppercase font-medium">Posts</div>
+                <div className="text-2xl font-bold text-teal-700">{socialStats.postCount || 0}</div>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-3">
+                <div className="text-xs text-blue-600 uppercase font-medium">Comments</div>
+                <div className="text-2xl font-bold text-blue-700">{socialStats.commentCount || 0}</div>
+              </div>
+              <div className="bg-amber-50 rounded-lg p-3">
+                <div className="text-xs text-amber-600 uppercase font-medium">Recognitions</div>
+                <div className="text-2xl font-bold text-amber-700">{socialStats.recognitionCount || 0}</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-3">
+                <div className="text-xs text-purple-600 uppercase font-medium">Reactions</div>
+                <div className="text-2xl font-bold text-purple-700">{socialStats.reactionCount || 0}</div>
+              </div>
             </div>
-            
-
-          </div>
+          )}
         </div>
         
         {/* Post composer */}

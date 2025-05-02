@@ -239,7 +239,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
     <button 
       className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
         post.userReaction === type 
-          ? 'bg-blue-50 text-blue-600 font-medium' 
+          ? 'bg-teal-50 text-teal-600 font-medium' 
           : 'text-gray-600 hover:bg-gray-100'
       }`}
       onClick={() => handleReaction(type)}
@@ -288,12 +288,9 @@ export const Post = ({ post, currentUser }: PostProps) => {
   const renderPoll = () => {
     if (post.type !== 'poll' || !post.poll) return null;
     
-    // Debug poll data
-    console.log("Poll data:", post.poll);
-    
     return (
-      <div className="bg-gray-50 p-4 rounded-lg mb-4">
-        <h4 className="font-semibold mb-2">{post.poll.question}</h4>
+      <div className="bg-teal-50 p-4 rounded-lg mb-4">
+        <h4 className="font-semibold mb-2 text-teal-900">{post.poll.question}</h4>
         <div className="space-y-2">
           {post.poll.options && Array.isArray(post.poll.options) ? (
             post.poll.options.map((option, index) => {
@@ -303,7 +300,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
               return (
                 <div 
                   key={index}
-                  className="relative cursor-pointer hover:bg-gray-100 rounded-lg p-3"
+                  className="relative cursor-pointer hover:bg-teal-100/50 rounded-lg p-3"
                   onClick={() => {
                     if (post.poll?.userVote === undefined) {
                       // Call vote mutation here
@@ -312,23 +309,23 @@ export const Post = ({ post, currentUser }: PostProps) => {
                 >
                   <div 
                     className={`absolute top-0 left-0 h-full rounded-lg ${
-                      isSelected ? 'bg-blue-100' : 'bg-gray-200'
+                      isSelected ? 'bg-teal-200/70' : 'bg-teal-100/50'
                     }`}
                     style={{ width: `${percentage}%`, zIndex: 0 }}
                   />
                   <div className="flex justify-between relative z-10">
-                    <span>{option}</span>
-                    <span className="font-semibold">{percentage}%</span>
+                    <span className="text-teal-900">{option}</span>
+                    <span className="font-semibold text-teal-700">{percentage}%</span>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="p-3 bg-gray-100 rounded">
+            <div className="p-3 bg-teal-100/50 rounded text-teal-700">
               No poll options available
             </div>
           )}
-          <div className="text-sm text-gray-500 mt-2">
+          <div className="text-sm text-teal-600 mt-2 font-medium">
             {post.poll.totalVotes || 0} votes
           </div>
         </div>
@@ -409,13 +406,13 @@ export const Post = ({ post, currentUser }: PostProps) => {
           <div className="flex items-center text-sm text-gray-500 mb-3 pb-3 border-b">
             <div className="flex -space-x-1 mr-2">
               {post.reactionCounts['like'] > 0 && (
-                <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <ThumbsUp className="text-blue-600 w-3 h-3" />
+                <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center">
+                  <ThumbsUp className="text-teal-600 w-3 h-3" />
                 </div>
               )}
               {post.reactionCounts['celebrate'] > 0 && (
-                <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <Award className="text-yellow-600 w-3 h-3" />
+                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                  <Award className="text-amber-600 w-3 h-3" />
                 </div>
               )}
               {post.reactionCounts['insightful'] > 0 && (
@@ -465,7 +462,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
           <div>
             {post.commentCount > 0 && !showComments && (
               <button 
-                className="text-sm text-blue-600 font-medium mb-3 hover:underline"
+                className="text-sm text-teal-600 font-medium mb-3 hover:underline"
                 onClick={() => setShowComments(true)}
               >
                 View all {post.commentCount} comments
@@ -481,7 +478,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
             {/* Comment input */}
             <form onSubmit={handleCommentSubmit} className="flex items-center">
               <Avatar className="w-7 h-7 mr-2">
-                <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
+                <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
                   {currentUser?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -491,13 +488,13 @@ export const Post = ({ post, currentUser }: PostProps) => {
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Write a comment..."
-                  className="w-full py-2 pr-10 rounded-full bg-gray-100 border-gray-100 focus-visible:ring-offset-0 focus-visible:ring-blue-400"
+                  className="w-full py-2 pr-10 rounded-full bg-gray-100 border-gray-100 focus-visible:ring-offset-0 focus-visible:ring-teal-400"
                 />
                 <button 
                   type="submit"
                   disabled={!commentText.trim()}
                   className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 ${
-                    commentText.trim() ? 'text-blue-500 hover:text-blue-600' : ''
+                    commentText.trim() ? 'text-teal-500 hover:text-teal-600' : ''
                   }`}
                 >
                   <Send className="h-4 w-4" />
