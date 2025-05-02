@@ -135,8 +135,9 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   ];
 
   return (
-    <div className="bg-gray-100 pt-2 pb-1 px-4 flex justify-center">
-      <div className="bg-white rounded-full shadow-sm flex items-center justify-between py-1 px-3" style={{ width: "800px" }}>
+    <div className="w-full bg-gray-100 pt-2 pb-1">
+      <div className="max-w-screen-2xl mx-auto px-4">
+        <div className="bg-white rounded-full shadow-sm flex items-center justify-between py-1 px-3">
         {/* Logo */}
         <div className="flex items-center mr-3">
           <div className="bg-teal-500 text-white rounded-full p-2 mr-1.5">
@@ -221,6 +222,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
         </div>
       </div>
     </div>
