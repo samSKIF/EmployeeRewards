@@ -103,6 +103,73 @@ const ProfilePage = () => {
     profileStatus: userDetailsFallback.profileStatus
   };
 
+  // Avatar upload mutation
+  const avatarUploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const reader = new FileReader();
+      return new Promise<string>((resolve, reject) => {
+        reader.onloadend = async () => {
+          try {
+            const base64Data = reader.result as string;
+            
+            const res = await fetch("/api/users/avatar", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+              },
+              body: JSON.stringify({ avatarUrl: base64Data })
+            });
+            
+            if (!res.ok) {
+              const error = await res.json();
+              throw new Error(error.message || "Failed to upload avatar");
+            }
+            
+            const data = await res.json();
+            resolve(data.user.avatarUrl);
+          } catch (error: any) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => {
+          reject(new Error("Failed to read file"));
+        };
+        reader.readAsDataURL(file);
+      });
+    },
+    onSuccess: (avatarUrl) => {
+      // Update the user data in the cache with the new avatar URL
+      const currentUser = queryClient.getQueryData<UserType>(["/api/users/me"]);
+      if (currentUser) {
+        queryClient.setQueryData(["/api/users/me"], {
+          ...currentUser,
+          avatarUrl
+        });
+      }
+      
+      toast({
+        title: "Avatar uploaded",
+        description: "Your profile picture has been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload avatar",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle avatar file upload
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      avatarUploadMutation.mutate(file);
+    }
+  };
+
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (userData: Partial<UserType>) => {
