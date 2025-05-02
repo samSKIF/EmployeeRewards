@@ -9,7 +9,6 @@ import Admin from "@/pages/admin";
 import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
-import MilestonesPage from "@/pages/milestones-page";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminSurveys from "@/pages/admin-surveys";
 import AdminSurveyCreator from "@/pages/admin-survey-creator";
@@ -106,11 +105,6 @@ function App() {
               <Route path="/social/transactions">
                 <SocialLayout>
                   <Transactions />
-                </SocialLayout>
-              </Route>
-              <Route path="/social/milestones">
-                <SocialLayout>
-                  <MilestonesPage />
                 </SocialLayout>
               </Route>
               <Route path="/admin/employees">
