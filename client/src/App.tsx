@@ -11,6 +11,7 @@ import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import ProfilePage from "@/pages/profile-page";
 import NewProfilePage from "@/pages/new-profile-page";
+import UpdatedProfilePage from "@/pages/updated-profile-page";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminSurveys from "@/pages/admin-surveys";
 import AdminSurveyCreator from "@/pages/admin-survey-creator";
@@ -230,11 +231,8 @@ function App() {
               </Route>
               <Route path="/user/profile">
                 <SocialLayout>
-                  <ProfilePage />
+                  <UpdatedProfilePage />
                 </SocialLayout>
-              </Route>
-              <Route path="/user/new-profile">
-                <NewProfilePage />
               </Route>
 
               <Route path="/">
