@@ -30,7 +30,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 max-w-screen-2xl mx-auto"> {/* Updated container */}
+    <div className="flex flex-col min-h-screen bg-gray-100"> {/* Updated container */}
       {/* Top Navigation */}
       <TopNavbar user={mockUser} />
 
@@ -66,7 +66,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
 
         {/* Page content */}
         <main className="flex justify-center w-full py-6">
-          <div className="w-full px-4" style={{ maxWidth: "800px" }}>
+          <div className="w-full px-4 lg:px-8" style={{ maxWidth: "1200px" }}>
             {children}
           </div>
         </main>

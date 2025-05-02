@@ -300,9 +300,9 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
 
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <Avatar className="h-12 w-12 border-2 border-gray-100">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-8">
+      <div className="flex items-center gap-4 mb-6">
+        <Avatar className="h-14 w-14 border-2 border-gray-100">
           <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
           <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
             {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
