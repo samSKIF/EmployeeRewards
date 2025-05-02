@@ -11,7 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Edit, Camera, Mail, Phone, MapPin, Calendar, Award, History, User, Mail as MailIcon } from "lucide-react";
+import { 
+  Edit, Camera, Mail, Phone, MapPin, Calendar, Award, 
+  History, User, Home, ShoppingBag, Trophy, FileText, 
+  Zap, Heart, Camera as CameraIcon
+} from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
 
 // Extended UserType with additional profile fields

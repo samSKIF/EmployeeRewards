@@ -10,6 +10,7 @@ import Seller from "@/pages/seller";
 import AuthPage from "@/pages/auth-page";
 import SocialPage from "@/pages/social-page";
 import ProfilePage from "@/pages/profile-page";
+import NewProfilePage from "@/pages/new-profile-page";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminSurveys from "@/pages/admin-surveys";
 import AdminSurveyCreator from "@/pages/admin-survey-creator";
@@ -231,6 +232,9 @@ function App() {
                 <SocialLayout>
                   <ProfilePage />
                 </SocialLayout>
+              </Route>
+              <Route path="/user/new-profile">
+                <NewProfilePage />
               </Route>
 
               <Route path="/">

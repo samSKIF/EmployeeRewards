@@ -200,6 +200,10 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 <User className="w-4 h-4 mr-2" />
                 <span>Profile</span>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigateTo('/user/new-profile')}>
+                <User className="w-4 h-4 mr-2" />
+                <span>New Profile Design</span>
+              </DropdownMenuItem>
               
               {user?.isAdmin && (
                 <>
