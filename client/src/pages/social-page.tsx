@@ -426,16 +426,16 @@ export default function SocialPage() {
       />
       
       {/* Main layout with sidebar and content - responsive for large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-flow-col gap-4 pt-4 max-w-[1100px] mx-auto justify-center">
         {/* Left sidebar - exactly 42% of center width */}
-        <div className="hidden lg:block lg:col-span-3">
+        <div className="hidden lg:block lg:col-span-3 w-full" style={{ maxWidth: "235px" }}>
           {/* Import and use the new wallet and priorities widgets */}
           <WalletWidget balance={balanceData?.balance || 0} />
           <PrioritiesWidget />
         </div>
         
-        {/* Main content - wider on larger screens */}
-        <div className="lg:col-span-6">
+        {/* Main content - 14cm (approximately 560px) width */}
+        <div className="lg:col-span-6 w-full" style={{ maxWidth: "560px" }}>
           {/* Post creator component */}
           <PostCreator 
             user={user}
@@ -497,7 +497,7 @@ export default function SocialPage() {
         </div>
         
         {/* Right sidebar - exactly 42% of center width */}
-        <div className="hidden lg:block lg:col-span-3">
+        <div className="hidden lg:block lg:col-span-3 w-full" style={{ maxWidth: "235px" }}>
           {/* Action Items section */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <div className="p-4">

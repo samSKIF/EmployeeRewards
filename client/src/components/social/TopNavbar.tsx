@@ -136,7 +136,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
   return (
     <div className="bg-gray-100 pt-2 pb-1 px-4 flex justify-center">
-      <div className="bg-white rounded-full shadow-sm flex items-center justify-between py-1 px-3 w-full max-w-screen-sm">
+      <div className="bg-white rounded-full shadow-sm flex items-center justify-between py-1 px-3 w-full max-w-[560px]">
         {/* Logo */}
         <div className="flex items-center mr-3">
           <div className="bg-teal-500 text-white rounded-full p-2 mr-1.5">
