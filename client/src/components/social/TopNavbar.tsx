@@ -136,8 +136,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
   return (
     <div className="w-full bg-white">
-      <div className="max-w-screen-2xl mx-auto px-3">
-        <div className="flex items-center justify-between h-14">
+      <div className="max-w-[1600px] mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
         {/* Logo */}
         <div className="flex items-center mr-3">
           <div className="bg-teal-500 text-white rounded-full p-2 mr-1.5">
@@ -163,7 +163,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         </div>
 
         {/* Main nav items */}
-        <nav className="hidden md:flex space-x-2">
+        <nav className="hidden md:flex items-center space-x-6">
           {navItems.map((item, index) => (
             <NavItem 
               key={index}
