@@ -65,7 +65,7 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="mx-auto px-4 py-6 w-full max-w-6xl">
+        <main className="mx-auto px-4 py-6 w-full max-w-4xl">
           {children}
         </main>
       </div>
