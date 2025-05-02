@@ -312,33 +312,29 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
         </div>
       </div>
       
-      <div className="flex gap-3 my-4">
+      <div className="grid grid-cols-3 gap-2 my-4">
         <button
           onClick={() => setIsExpanded(true)}
-          className="flex-1 flex items-center justify-center gap-2 bg-green-100 text-green-800 py-3 px-4 rounded-full text-sm font-medium"
+          className="flex items-center justify-center gap-1.5 bg-green-100 text-green-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
-          <ImageIcon className="h-5 w-5 text-green-600" />
-          <span className="whitespace-nowrap">Share a story</span>
+          <ImageIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
+          <span>Share</span>
         </button>
         
         <button
           onClick={onRecognizeClick}
-          className="flex-1 flex items-center justify-center gap-2 bg-amber-100 text-amber-800 py-3 px-4 rounded-full text-sm font-medium"
+          className="flex items-center justify-center gap-1.5 bg-amber-100 text-amber-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
-          <Award className="h-5 w-5 text-amber-500" />
-          <span className="whitespace-nowrap">Appreciate a colleague</span>
+          <Award className="h-4 w-4 text-amber-500 flex-shrink-0" />
+          <span>Appreciate</span>
         </button>
         
         <button
           onClick={onPollClick}
-          className="flex-1 flex items-center justify-center gap-2 bg-purple-100 text-purple-800 py-3 px-4 rounded-full text-sm font-medium"
+          className="flex items-center justify-center gap-1.5 bg-purple-100 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
-          <BarChart className="h-5 w-5 text-purple-500" />
-          <span className="whitespace-nowrap">Launch a POLL</span>
-        </button>
-        
-        <button className="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full hover:bg-blue-600">
-          <Plus className="w-6 h-6" />
+          <BarChart className="h-4 w-4 text-purple-500 flex-shrink-0" />
+          <span>Poll</span>
         </button>
       </div>
     </div>
