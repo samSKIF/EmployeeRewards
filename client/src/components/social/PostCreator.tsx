@@ -11,7 +11,12 @@ import {
   Image as ImageIcon, 
   BarChart, 
   Award,
-  Send
+  Send,
+  Heart,
+  Plus,
+  Star,
+  Gift,
+  Users
 } from "lucide-react";
 
 interface PostCreatorProps {
@@ -29,12 +34,36 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const actionButtons = [
+    {
+      icon: <Star className="w-5 h-5" />,
+      label: "Share a Highlight",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-700",
+      iconColor: "text-amber-400"
+    },
+    {
+      icon: <Gift className="w-5 h-5" />,
+      label: "Give a Spot Bonus",
+      bgColor: "bg-emerald-50",
+      textColor: "text-emerald-700",
+      iconColor: "text-emerald-400"
+    },
+    {
+      icon: <Users className="w-5 h-5" />,
+      label: "1 on 1 with Ron",
+      bgColor: "bg-rose-50",
+      textColor: "text-rose-700",
+      iconColor: "text-rose-400"
+    }
+  ];
+
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       // Get Firebase token from localStorage
       const token = localStorage.getItem('firebaseToken');
-      
+
       const res = await fetch("/api/social/posts", {
         method: "POST",
         headers: {
@@ -42,12 +71,12 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
         },
         body: formData,
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Failed to create post");
       }
-      
+
       return res.json();
     },
     onSuccess: () => {
@@ -69,12 +98,12 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       });
     }
   });
-  
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (!file.type.startsWith("image/")) {
       toast({
         title: "Invalid file type",
@@ -83,7 +112,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       });
       return;
     }
-    
+
     // Maximum size: 5MB
     if (file.size > 5 * 1024 * 1024) {
       toast({
@@ -93,9 +122,9 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       });
       return;
     }
-    
+
     setImageFile(file);
-    
+
     // Create preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -103,7 +132,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
     };
     reader.readAsDataURL(file);
   };
-  
+
   // Remove selected image
   const removeImage = () => {
     setImageFile(null);
@@ -112,11 +141,11 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       fileInputRef.current.value = "";
     }
   };
-  
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim() && !imageFile) {
       toast({
         title: "Empty post",
@@ -125,32 +154,32 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       });
       return;
     }
-    
+
     // Create FormData for any type of post
     const formData = new FormData();
     formData.append('content', content);
     formData.append('type', 'standard');
-    
+
     // Add the image file if present
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    
+
     // Use the mutation to handle the submission
     createPostMutation.mutate(formData);
   };
-  
+
   // Expanded post composer with image preview
   if (isExpanded) {
     return (
-      <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6 p-4"> {/* Added rounded-2xl and overflow-hidden */}
         <div className="flex items-start">
           <Avatar className="w-10 h-10 mr-3">
             <AvatarFallback className="bg-blue-100 text-blue-700">
               {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1">
             <form onSubmit={handleSubmit}>
               <Textarea
@@ -160,7 +189,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 className="resize-none border-none shadow-none focus-visible:ring-0 px-0 py-2"
                 rows={3}
               />
-              
+
               {/* Image preview */}
               {imagePreview && (
                 <div className="relative mt-2 rounded-lg overflow-hidden">
@@ -180,7 +209,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   </Button>
                 </div>
               )}
-              
+
               <div className="flex justify-between items-center mt-3">
                 <div className="flex space-x-2">
                   <Button 
@@ -193,7 +222,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                     <ImageIcon className="h-4 w-4 mr-1" />
                     <span className="text-xs">Add Image</span>
                   </Button>
-                  
+
                   <Button 
                     type="button"
                     variant="ghost" 
@@ -204,7 +233,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                     <BarChart className="h-4 w-4 mr-1" />
                     <span className="text-xs">Poll</span>
                   </Button>
-                  
+
                   <Button 
                     type="button"
                     variant="ghost" 
@@ -215,7 +244,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                     <Award className="h-4 w-4 mr-1" />
                     <span className="text-xs">Recognize</span>
                   </Button>
-                  
+
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -224,7 +253,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                     accept="image/*"
                   />
                 </div>
-                
+
                 <div className="flex space-x-2">
                   <Button 
                     type="button"
@@ -239,7 +268,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   >
                     Cancel
                   </Button>
-                  
+
                   <Button 
                     type="submit"
                     disabled={createPostMutation.isPending}
@@ -265,60 +294,23 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
       </div>
     );
   }
-  
+
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm mb-6 p-4">
-      <div className="flex">
-        <Avatar className="w-10 h-10 mr-3">
-          <AvatarFallback className="bg-blue-100 text-blue-700">
-            {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div 
-          className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
-          onClick={() => setIsExpanded(true)}
-        >
-          <p>What's on your mind?</p>
-        </div>
-      </div>
-      
-      <div className="mt-3 flex justify-between items-center">
-        <div className="flex space-x-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500"
-            onClick={() => {
-              setIsExpanded(true);
-              setTimeout(() => fileInputRef.current?.click(), 10);
-            }}
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6 p-4"> {/* Added rounded-2xl and overflow-hidden */}
+      <div className="grid grid-cols-3 gap-2 p-3"> {/* Added grid layout */}
+        {actionButtons.map((button, index) => (
+          <button
+            key={index}
+            className={`flex items-center gap-2 ${button.bgColor} ${button.textColor} p-3 rounded-full text-sm font-medium transition-colors hover:opacity-90`}
           >
-            <ImageIcon className="h-4 w-4 mr-1" />
-            <span className="text-xs">Image</span>
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500"
-            onClick={onPollClick}
-          >
-            <BarChart className="h-4 w-4 mr-1" />
-            <span className="text-xs">Poll</span>
-          </Button>
-        </div>
-        
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-red-500 border-red-100 bg-red-50 hover:bg-red-100 hover:text-red-600"
-          onClick={onRecognizeClick}
-        >
-          <Award className="h-4 w-4 mr-1" />
-          <span className="text-xs">Recognize</span>
-        </Button>
+            <span className={`${button.iconColor}`}>{button.icon}</span>
+            <span>{button.label}</span>
+          </button>
+        ))}
+        <button className="flex items-center justify-center w-10 h-10 bg-gray-50 rounded-full text-gray-600 hover:bg-gray-100">
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );
