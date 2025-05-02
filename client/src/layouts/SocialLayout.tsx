@@ -42,13 +42,13 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main layout with sidebar and content - responsive for large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4 max-w-screen-2xl mx-auto px-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[21%_58%_21%] gap-6 pt-4 max-w-screen-2xl mx-auto px-4"> {/* Adjusted grid template columns */}
         {/* Left sidebar */}
-        <div className="hidden lg:block lg:col-span-3">
+        <div className="hidden lg:block">
           {/* Sidebar content would go here */}
         </div>
         {/* Main content area */}
-        <div className="lg:col-span-9">
+        <div>
           {/* Mobile header with menu button - only visible on mobile */}
           <div className="md:hidden flex items-center justify-between bg-white shadow-sm p-4 sticky top-0 z-10">
             <div className="flex items-center">
@@ -72,10 +72,14 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
 
           {/* Page content */}
           <main className="flex justify-center w-full py-6">
-            <div className="w-full px-4 lg:px-8"> {/*This needs further adjustment to prevent overflow*/}
+            <div className="w-full px-4 lg:px-8">
               {children}
             </div>
           </main>
+        </div>
+        {/* Right sidebar */}
+        <div className="hidden lg:block">
+          {/* Action Items would go here */}
         </div>
       </div>
     </div>
