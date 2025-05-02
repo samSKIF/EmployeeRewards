@@ -6,8 +6,8 @@ import { setupStaticFileServing } from "./file-upload";
 import path from "path";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Set up static file serving for uploaded files
 setupStaticFileServing(app);

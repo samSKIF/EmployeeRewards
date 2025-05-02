@@ -162,12 +162,88 @@ const ProfilePage = () => {
     },
   });
 
-  // Handle avatar file upload
+  // Handle avatar file upload with image compression
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      avatarUploadMutation.mutate(file);
-    }
+    if (!file) return;
+    
+    // Compress image before uploading
+    const compressImage = (file: File): Promise<File> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+          
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            // Max dimensions while maintaining aspect ratio
+            const MAX_WIDTH = 400;
+            const MAX_HEIGHT = 400;
+            
+            let width = img.width;
+            let height = img.height;
+            
+            // Calculate new dimensions
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            
+            // Convert to Blob with reduced quality
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                reject(new Error('Failed to compress image'));
+                return;
+              }
+              
+              // Create new file from blob
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              
+              resolve(compressedFile);
+            }, 'image/jpeg', 0.7); // 70% quality
+          };
+          
+          img.onerror = () => {
+            reject(new Error('Failed to load image'));
+          };
+        };
+        
+        reader.onerror = () => {
+          reject(new Error('Failed to read file'));
+        };
+      });
+    };
+    
+    // Process and upload the compressed image
+    compressImage(file)
+      .then(compressedFile => {
+        avatarUploadMutation.mutate(compressedFile);
+      })
+      .catch(error => {
+        toast({
+          title: "Error processing image",
+          description: error.message || "Failed to process image for upload",
+          variant: "destructive"
+        });
+      });
   };
 
   // Update profile mutation
