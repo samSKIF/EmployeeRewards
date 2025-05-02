@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   ShoppingCart, 
   Shield, 
@@ -150,9 +151,12 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
       {/* User profile summary */}
       <div className="flex items-center mb-6 bg-gray-50 p-3 rounded-lg">
-        <div className="flex-shrink-0 bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-700 font-medium">
-          {user?.name?.charAt(0) || 'A'}
-        </div>
+        <Avatar className="h-10 w-10 border-2 border-gray-100 flex-shrink-0">
+          <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+          <AvatarFallback className="bg-teal-100 text-teal-700">
+            {user?.name?.charAt(0) || 'A'}
+          </AvatarFallback>
+        </Avatar>
         <div className="ml-3">
           <p className="text-gray-800 font-medium">{user?.name || 'Admin User'}</p>
           <p className="text-xs text-amber-500 flex items-center">
