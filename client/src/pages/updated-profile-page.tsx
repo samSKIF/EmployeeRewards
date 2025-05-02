@@ -541,23 +541,7 @@ const UpdatedProfilePage = () => {
                 {/* About Me Content */}
                 <TabsContent value="about" className="px-8 py-6">
                   <div className="space-y-6">
-                    <p>A passionate team member with a focus on innovation and creative solutions.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <span className="text-sm text-gray-500 block">Hire Date:</span>
-                          <span>{userDetails.hireDate}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <span className="text-sm text-gray-500 block">Birthday:</span>
-                          <span>{userDetails.birthday}</span>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-gray-500">Your profile information and interests will appear here.</p>
                   </div>
                 </TabsContent>
                 
@@ -586,10 +570,10 @@ const UpdatedProfilePage = () => {
             </div>
           </Card>
           
-          {/* Contact & Responsibilities - Combined in one card */}
+          {/* Contact, Bio, & Responsibilities - Combined in one card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle>Contact & Responsibilities</CardTitle>
+              <CardTitle>Profile Details</CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-6">
@@ -682,6 +666,30 @@ const UpdatedProfilePage = () => {
                 </div>
               </div>
               
+              <Separator />
+              
+              {/* Biographical Information */}
+              <div>
+                <h3 className="text-md font-medium mb-4">Biographical Information</h3>
+                <p className="text-sm mb-4">A passionate team member with a focus on innovation and creative solutions.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                    <div>
+                      <span className="text-sm text-gray-500 block">Hire Date:</span>
+                      <span>{userDetails.hireDate}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                    <div>
+                      <span className="text-sm text-gray-500 block">Birthday:</span>
+                      <span>{userDetails.birthday}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <Separator />
               
               {/* Responsibilities */}
