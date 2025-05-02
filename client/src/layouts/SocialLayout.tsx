@@ -12,7 +12,7 @@ interface SocialLayoutProps {
 
 const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  
+
   // Create a user object to pass to the navigation components
   const mockUser = {
     id: 1,
@@ -30,13 +30,13 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-100 max-w-screen-2xl mx-auto"> {/* Updated container */}
       {/* Top Navigation */}
       <TopNavbar user={mockUser} />
-      
+
       {/* Mobile Sidebar - hidden by default, shown when toggled */}
       <div className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden ${showMobileMenu ? 'block' : 'hidden'}`} onClick={closeMobileMenu}></div>
-      
+
       <div className={`fixed md:hidden z-30 h-full transition-transform duration-300 ease-in-out transform ${showMobileMenu ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar user={mockUser} closeMobileMenu={closeMobileMenu} />
       </div>
