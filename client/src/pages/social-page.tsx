@@ -480,54 +480,7 @@ export default function SocialPage() {
             </div>
           </div>
           
-          {/* Who Do You Appreciate? section - Exact match to design */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="relative mb-6">
-              <div className="absolute inset-y-0 left-4 flex items-center">
-                <div className="bg-blue-500 text-white rounded-full p-2.5">
-                  <Gift className="h-6 w-6" /> 
-                </div>
-              </div>
-              <input 
-                type="text"
-                className="w-full py-4 pl-16 pr-4 text-gray-500 text-lg border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-300"
-                placeholder="Who Do You Appreciate?"
-              />
-            </div>
-            
-            <div className="flex gap-4">
-              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center">
-                <div className="bg-amber-500 text-white rounded-full p-2 mr-2">
-                  <Star className="h-5 w-5" />
-                </div>
-                <span className="text-amber-800 font-medium whitespace-nowrap">Share a Highlight</span>
-              </div>
-              
-              <div 
-                className="flex-1 bg-green-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
-                onClick={() => setIsRecognitionModalOpen(true)}
-              >
-                <div className="bg-green-500 text-white rounded-full p-2 mr-2">
-                  <Award className="h-5 w-5" />
-                </div>
-                <span className="text-green-800 font-medium whitespace-nowrap">Give a Spot Bonus</span>
-              </div>
-              
-              <div 
-                className="flex-1 bg-red-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
-                onClick={() => setIsPollModalOpen(true)}
-              >
-                <div className="bg-red-500 text-white rounded-full p-2 mr-2">
-                  <Users className="h-5 w-5" />
-                </div>
-                <span className="text-red-800 font-medium whitespace-nowrap">1 on 1 with Admin</span>
-              </div>
-                
-              <div className="bg-blue-50 text-blue-500 p-3 rounded-full flex items-center justify-center cursor-pointer">
-                <Plus className="h-6 w-6" />
-              </div>
-            </div>
-          </div>
+
           
           {/* Filters */}
           <div className="flex justify-end items-center mb-4">
