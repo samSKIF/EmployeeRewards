@@ -172,11 +172,11 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Expanded post composer with image preview
   if (isExpanded) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6 p-4"> {/* Added rounded-2xl and overflow-hidden */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
         <div className="flex items-start">
-          <Avatar className="w-10 h-10 mr-3">
-            <AvatarFallback className="bg-blue-100 text-blue-700">
-              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+          <Avatar className="w-12 h-12 mr-4">
+            <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
+              {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
             </AvatarFallback>
           </Avatar>
 
@@ -186,23 +186,23 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind?"
-                className="resize-none border-none shadow-none focus-visible:ring-0 px-0 py-2"
+                className="resize-none border-none bg-gray-50 shadow-none focus-visible:ring-0 px-4 py-3 rounded-xl text-gray-700"
                 rows={3}
               />
 
               {/* Image preview */}
               {imagePreview && (
-                <div className="relative mt-2 rounded-lg overflow-hidden">
+                <div className="relative mt-3 rounded-xl overflow-hidden border border-gray-100">
                   <img 
                     src={imagePreview} 
                     alt="Selected" 
-                    className="max-h-60 rounded-lg"
+                    className="max-h-60 w-full object-cover rounded-xl"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="absolute top-2 right-2 h-6 w-6 p-0"
+                    className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full"
                     onClick={removeImage}
                   >
                     ×
@@ -210,39 +210,39 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 </div>
               )}
 
-              <div className="flex justify-between items-center mt-3">
-                <div className="flex space-x-2">
+              <div className="flex justify-between items-center mt-4">
+                <div className="flex space-x-3">
                   <Button 
                     type="button"
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
-                    className="text-gray-500"
+                    className="text-gray-600 rounded-full border-gray-200"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Add Image</span>
+                    <ImageIcon className="h-4 w-4 mr-2 text-green-600" />
+                    <span>Image</span>
                   </Button>
 
                   <Button 
                     type="button"
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
-                    className="text-gray-500"
+                    className="text-gray-600 rounded-full border-gray-200"
                     onClick={onPollClick}
                   >
-                    <BarChart className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Poll</span>
+                    <BarChart className="h-4 w-4 mr-2 text-purple-600" />
+                    <span>Poll</span>
                   </Button>
 
                   <Button 
                     type="button"
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
-                    className="text-red-500"
+                    className="text-gray-600 rounded-full border-gray-200"
                     onClick={onRecognizeClick}
                   >
-                    <Award className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Recognize</span>
+                    <Award className="h-4 w-4 mr-2 text-amber-500" />
+                    <span>Recognize</span>
                   </Button>
 
                   <input
@@ -254,11 +254,11 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   />
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="flex space-x-3">
                   <Button 
                     type="button"
-                    variant="ghost" 
-                    size="sm"
+                    variant="outline" 
+                    className="rounded-full px-4 border-gray-200"
                     onClick={() => {
                       setIsExpanded(false);
                       setContent("");
@@ -272,7 +272,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   <Button 
                     type="submit"
                     disabled={createPostMutation.isPending}
-                    className="bg-blue-600 text-white hover:bg-blue-700"
+                    className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-5"
                   >
                     {createPostMutation.isPending ? (
                       <div className="flex items-center">
@@ -280,7 +280,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                         <span>Posting...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <Send className="h-4 w-4" />
                         <span>Post</span>
                       </div>
@@ -297,32 +297,49 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
 
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-3xl shadow-sm overflow-hidden mb-6"> {/* Updated rounded-3xl */}
-      <div className="p-4 mb-2">
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-100 text-blue-700">
-              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 bg-gray-50 hover:bg-gray-100 rounded-full px-4 py-3">
-            <span className="text-gray-500">Who Do You Appreciate?</span>
-          </div>
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Avatar className="h-12 w-12 bg-blue-100">
+          <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
+            {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
+          </AvatarFallback>
+        </Avatar>
+        <div 
+          className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-3 cursor-pointer"
+          onClick={() => setIsExpanded(true)}
+        >
+          <span className="text-gray-500 text-md">What's on your mind?</span>
         </div>
-        <div className="flex gap-2 items-center">
-          {actionButtons.map((button, index) => (
-            <button
-              key={index}
-              className={`flex items-center gap-2 ${button.bgColor} ${button.textColor} px-4 py-2.5 rounded-full text-sm font-medium transition-colors hover:opacity-90 flex-1`}
-            >
-              <span className={`${button.iconColor}`}>{button.icon}</span>
-              <span>{button.label}</span>
-            </button>
-          ))}
-          <button className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-full text-blue-600 hover:bg-blue-100">
-            <Plus className="w-5 h-5" />
-          </button>
-        </div>
+      </div>
+      
+      <div className="flex gap-3 my-4">
+        <button
+          onClick={() => setIsExpanded(true)}
+          className="flex-1 flex items-center justify-center gap-2 bg-green-100 text-green-800 py-3 px-4 rounded-full text-sm font-medium"
+        >
+          <ImageIcon className="h-5 w-5 text-green-600" />
+          <span className="whitespace-nowrap">Share a story</span>
+        </button>
+        
+        <button
+          onClick={onRecognizeClick}
+          className="flex-1 flex items-center justify-center gap-2 bg-amber-100 text-amber-800 py-3 px-4 rounded-full text-sm font-medium"
+        >
+          <Award className="h-5 w-5 text-amber-500" />
+          <span className="whitespace-nowrap">Appreciate a colleague</span>
+        </button>
+        
+        <button
+          onClick={onPollClick}
+          className="flex-1 flex items-center justify-center gap-2 bg-purple-100 text-purple-800 py-3 px-4 rounded-full text-sm font-medium"
+        >
+          <BarChart className="h-5 w-5 text-purple-500" />
+          <span className="whitespace-nowrap">Launch a POLL</span>
+        </button>
+        
+        <button className="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );
