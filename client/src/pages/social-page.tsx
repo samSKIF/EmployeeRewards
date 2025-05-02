@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   MessageCircle, Heart, Gift, BarChart3, Users, Settings, 
   ChevronRight, ChevronDown, ThumbsUp, Award, FileText, Share2, Smile,
-  Home, X, Search, Calendar, Star, Check, PlusCircle, Medal,
+  Home, X, Search, Calendar, Star, Check, PlusCircle, Medal, Plus,
   Cake, Trophy, Target, Sparkles, Zap, UserCog, Building,
   Briefcase, UserPlus, FileSpreadsheet, Upload, Edit, Trash,
   LogOut, ShoppingBag, CreditCard, Eye, Store
@@ -436,7 +436,51 @@ export default function SocialPage() {
         
         {/* Main content */}
         <div className="lg:col-span-2">
-          {/* Search and action buttons */}
+          {/* New Post creator area */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <div className="flex items-center mb-4">
+              {/* Avatar */}
+              <div className="mr-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-blue-100 text-blue-700">
+                    {user?.name?.charAt(0) || 'A'}
+                    {user?.name?.split(' ')[1]?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              
+              {/* Post input field */}
+              <div className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2.5 cursor-pointer">
+                <span className="text-gray-500">What's on your mind?</span>
+              </div>
+            </div>
+            
+            {/* Post action buttons */}
+            <div className="flex justify-between border-t pt-3">
+              <button className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDVINFY5LjVIMjBWNVoiIHN0cm9rZT0iIzZCN0FCMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTMgMTEuNUgxOEwyMC41IDE2LjVIMy41TDYgMTEuNUgxMVYxOCIgc3Ryb2tlPSIjNkI3QUIwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik04IDcuNUg4LjAwOTc1IiBzdHJva2U9IiM2QjdBQjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==" alt="Image" className="w-6 h-6 mr-2" />
+                <span className="text-sm">Image</span>
+              </button>
+              
+              <button 
+                onClick={() => setIsPollModalOpen(true)}
+                className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md"
+              >
+                <BarChart3 className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="text-sm">Poll</span>
+              </button>
+              
+              <button 
+                onClick={() => setIsRecognitionModalOpen(true)}
+                className="flex items-center text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-md"
+              >
+                <Award className="h-5 w-5 mr-2 text-gray-500" />
+                <span className="text-sm">Recognize</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Quick actions and one-on-one area */}
           <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -469,15 +513,20 @@ export default function SocialPage() {
                 <span className="text-sm font-medium">Give a Spot Bonus</span>
               </button>
               
-              <button 
-                className="flex items-center justify-center py-2 px-3 bg-red-100 hover:bg-red-200 text-red-800 rounded-full flex-1"
-                onClick={() => setIsPollModalOpen(true)}
-              >
-                <div className="bg-red-500 text-white rounded-full p-1 mr-2">
-                  <Users className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium whitespace-nowrap">1 on 1 with {user?.name?.split(' ')[0] || 'Ron'}</span>
-              </button>
+              <div className="flex-1 relative">
+                <button 
+                  className="flex items-center justify-center py-2 px-3 bg-red-100 hover:bg-red-200 text-red-800 rounded-full w-full"
+                  onClick={() => setIsPollModalOpen(true)}
+                >
+                  <div className="bg-red-500 text-white rounded-full p-1 mr-2">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium whitespace-nowrap">1 on 1 with {user?.name?.split(' ')[0] || 'Admin'}</span>
+                </button>
+                <button className="absolute right-0 top-0 -mr-2 -mt-2 bg-white shadow-md rounded-full p-1 border border-gray-200 hover:bg-gray-100">
+                  <Plus className="h-4 w-4 text-gray-600" />
+                </button>
+              </div>
             </div>
           </div>
           
@@ -491,13 +540,6 @@ export default function SocialPage() {
               </button>
             </div>
           </div>
-          
-          {/* Post composer */}
-          <PostCreator
-            user={user}
-            onRecognizeClick={() => setIsRecognitionModalOpen(true)}
-            onPollClick={() => setIsPollModalOpen(true)}
-          />
         
           {/* Posts from API */}
           {postsLoading ? (
