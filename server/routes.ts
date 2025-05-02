@@ -530,6 +530,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.patch("/api/users/me", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get fields to update from the request body
+      const { name, title, department, location, responsibilities } = req.body;
+
+      // Update user fields in a real app this would interact with the database
+      // For now, we just return the updated user object
+      const updatedUser = {
+        ...req.user,
+        name: name || req.user.name,
+        title: title || req.user.title,
+        department: department || req.user.department,
+        location: location || req.user.location,
+        responsibilities: responsibilities || req.user.responsibilities
+      };
+
+      // Get the user's balance
+      const balance = await storage.getUserBalance(req.user.id);
+      
+      // Combine user data with balance
+      const userWithBalance = {
+        ...updatedUser,
+        balance
+      };
+
+      res.json(userWithBalance);
+    } catch (error: any) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: error.message || "Failed to update user profile" });
+    }
+  });
+
   // Save user metadata from Firebase auth
   app.post("/api/users/metadata", async (req, res) => {
     try {
