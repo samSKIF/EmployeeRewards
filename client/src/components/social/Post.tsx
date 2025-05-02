@@ -271,6 +271,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
         
         <div className="mt-3 flex items-center">
           <Avatar className="h-8 w-8 border-2 border-white">
+            <AvatarImage src={post.recognition.recipient.avatarUrl} alt={post.recognition.recipient.name} />
             <AvatarFallback className="bg-amber-200 text-amber-700">
               {post.recognition.recipient.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
@@ -339,7 +340,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
         {/* Post header with user info */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
-            <Avatar className="w-10 h-10 mr-3">
+            <Avatar className="w-10 h-10 mr-3 border-2 border-gray-100">
+              <AvatarImage src={post.user.avatarUrl} alt={post.user.name} />
               <AvatarFallback className="bg-blue-100 text-blue-700">
                 {post.user.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
@@ -477,7 +479,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
             
             {/* Comment input */}
             <form onSubmit={handleCommentSubmit} className="flex items-center">
-              <Avatar className="w-7 h-7 mr-2">
+              <Avatar className="w-7 h-7 mr-2 border-2 border-gray-100">
+                <AvatarImage src={currentUser?.avatarUrl} alt={currentUser?.name || "User"} />
                 <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
                   {currentUser?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                 </AvatarFallback>

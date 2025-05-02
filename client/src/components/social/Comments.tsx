@@ -132,7 +132,8 @@ export const Comments = ({ postId, currentUser }: CommentsProps) => {
         
         return (
           <div key={comment.id} className="flex items-start group">
-            <Avatar className="w-7 h-7 mr-2">
+            <Avatar className="w-7 h-7 mr-2 border-2 border-gray-100">
+              <AvatarImage src={comment.user.avatarUrl} alt={comment.user.name} />
               <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
                 {comment.user.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
