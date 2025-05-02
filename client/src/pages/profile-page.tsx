@@ -190,8 +190,16 @@ const ProfilePage = () => {
                 variant="outline"
                 size="icon"
                 className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-white"
+                onClick={() => document.getElementById('avatar-upload')?.click()}
               >
                 <Camera className="h-4 w-4" />
+                <input 
+                  type="file"
+                  id="avatar-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                />
               </Button>
             </div>
           </div>

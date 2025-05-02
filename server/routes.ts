@@ -538,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get fields to update from the request body
-      const { name, title, department, location, responsibilities } = req.body;
+      const { name, title, department, location, responsibilities, avatarUrl } = req.body;
 
       // Update user fields in a real app this would interact with the database
       // For now, we just return the updated user object
@@ -548,7 +548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: title || req.user.title,
         department: department || req.user.department,
         location: location || req.user.location,
-        responsibilities: responsibilities || req.user.responsibilities
+        responsibilities: responsibilities || req.user.responsibilities,
+        avatarUrl: avatarUrl || req.user.avatarUrl
       };
 
       // Get the user's balance
@@ -564,6 +565,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error updating user profile:", error);
       res.status(500).json({ message: error.message || "Failed to update user profile" });
+    }
+  });
+
+  // Upload user avatar
+  app.post("/api/users/avatar", verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // For demonstration, we'll accept a base64 image URL
+      const { avatarUrl } = req.body;
+
+      if (!avatarUrl) {
+        return res.status(400).json({ message: "No avatar image provided" });
+      }
+
+      // In a real implementation, we would save the image to storage
+      // and update the database with the image URL
+
+      // Update user with the avatar URL
+      const updatedUser = {
+        ...req.user,
+        avatarUrl
+      };
+
+      // In a real implementation, save to database
+      // For now, just return the updated user
+      res.json({
+        message: "Avatar updated successfully",
+        user: updatedUser
+      });
+    } catch (error: any) {
+      console.error("Error updating user avatar:", error);
+      res.status(500).json({ message: error.message || "Failed to update avatar" });
     }
   });
 
