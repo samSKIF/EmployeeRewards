@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
 interface TopNavbarProps {
@@ -40,6 +40,7 @@ interface TopNavbarProps {
     name?: string;
     isAdmin?: boolean;
     email?: string;
+    avatarUrl?: string;
   } | null;
 }
 
@@ -186,6 +187,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center">
                 <Avatar className="h-6 w-6 border-2 border-teal-100">
+                  <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
                   <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
                     {user?.name?.charAt(0) || 'A'}
                   </AvatarFallback>
