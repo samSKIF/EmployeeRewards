@@ -248,36 +248,6 @@ const ProfilePage = () => {
               >
                 Highlights
               </TabsTrigger>
-              <TabsTrigger
-                value="motivosity"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
-              >
-                Motivosity Bucks
-              </TabsTrigger>
-              <TabsTrigger
-                value="orders"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
-              >
-                Orders
-              </TabsTrigger>
-              <TabsTrigger
-                value="1on1s"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
-              >
-                1 on 1s
-              </TabsTrigger>
-              <TabsTrigger
-                value="coaching"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
-              >
-                Coaching
-              </TabsTrigger>
-              <TabsTrigger
-                value="bonuses"
-                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none pb-3 text-gray-500"
-              >
-                Spot Bonuses
-              </TabsTrigger>
             </TabsList>
             
             {/* About Me Tab Content */}
@@ -502,56 +472,6 @@ const ProfilePage = () => {
                 <h3 className="text-xl font-semibold mb-2">Your Highlights</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
                   Key achievements and highlights of your work will be displayed here.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="motivosity" className="mt-0">
-              <div className="bg-white rounded-lg shadow-sm p-10 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                <h3 className="text-xl font-semibold mb-2">Motivosity Bucks</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Your Motivosity Bucks history and balance will be shown here.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="orders" className="mt-0">
-              <div className="bg-white rounded-lg shadow-sm p-10 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                <h3 className="text-xl font-semibold mb-2">Your Orders</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  View your order history and track current orders here.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="1on1s" className="mt-0">
-              <div className="bg-white rounded-lg shadow-sm p-10 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-indigo-500" />
-                <h3 className="text-xl font-semibold mb-2">1 on 1 Sessions</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Schedule and review your 1 on 1 sessions with your manager.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="coaching" className="mt-0">
-              <div className="bg-white rounded-lg shadow-sm p-10 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-teal-500" />
-                <h3 className="text-xl font-semibold mb-2">Coaching</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  View your coaching sessions and development plans.
-                </p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="bonuses" className="mt-0">
-              <div className="bg-white rounded-lg shadow-sm p-10 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-amber-500" />
-                <h3 className="text-xl font-semibold mb-2">Spot Bonuses</h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Review the spot bonuses you've received for exceptional work.
                 </p>
               </div>
             </TabsContent>
