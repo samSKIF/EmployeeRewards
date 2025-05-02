@@ -496,8 +496,8 @@ export default function SocialPage() {
           )}
         </div>
         
-        {/* Right sidebar */}
-        <div className="hidden lg:block lg:col-span-1 xl:col-span-2 2xl:col-span-3">
+        {/* Right sidebar - exactly 42% of center width */}
+        <div className="hidden lg:block lg:col-span-3">
           {/* Action Items section */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <div className="p-4">
