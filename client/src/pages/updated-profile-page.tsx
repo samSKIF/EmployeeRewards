@@ -541,7 +541,7 @@ const UpdatedProfilePage = () => {
                 {/* About Me Content */}
                 <TabsContent value="about" className="px-8 py-6">
                   <div className="space-y-6">
-                    <p className="text-gray-500">Your profile information and interests will appear here.</p>
+                    {/* Left empty as per user request */}
                   </div>
                 </TabsContent>
                 
