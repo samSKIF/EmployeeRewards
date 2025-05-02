@@ -4,3 +4,4 @@ export { default as Comments } from './Comments';
 export { default as RecognitionModal } from './RecognitionModal';
 export { default as PollModal } from './PollModal';
 export { default as Sidebar } from './Sidebar';
+export { default as TopNavbar } from './TopNavbar';
