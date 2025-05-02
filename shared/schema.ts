@@ -49,7 +49,10 @@ export const users = pgTable("users", {
   hireDate: date("hire_date"),           // Work anniversary date
   firebaseUid: text("firebase_uid"),     // Firebase User ID for authentication
   organizationId: integer("organization_id").references(() => organizations.id), // Which org they belong to
-  permissions: jsonb("permissions"), // Specific permissions within their role
+  permissions: jsonb("permissions"),     // Specific permissions within their role
+  title: text("title"),                  // Job title for profile
+  location: text("location"),            // Location/office
+  responsibilities: text("responsibilities"), // Job responsibilities
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
 });

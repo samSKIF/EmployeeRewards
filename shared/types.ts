@@ -9,6 +9,9 @@ export interface User {
   birthDate?: string;
   avatarUrl?: string;
   jobTitle?: string;
+  title?: string;
+  location?: string;
+  responsibilities?: string;
   createdAt: Date;
 }
 
