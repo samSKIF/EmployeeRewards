@@ -480,6 +480,50 @@ export default function SocialPage() {
             </div>
           </div>
           
+          {/* Post Creation Area */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            {/* User avatar and post input */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
+                AU
+              </div>
+              <div className="flex-1">
+                <input 
+                  type="text"
+                  className="w-full py-3 px-4 text-gray-600 bg-gray-100 rounded-full focus:outline-none"
+                  placeholder="What's on your mind?"
+                />
+              </div>
+            </div>
+            
+            {/* Divider */}
+            <div className="border-t border-gray-100 mb-3"></div>
+            
+            {/* Post action buttons */}
+            <div className="flex justify-around">
+              <button className="flex items-center gap-2 py-2 px-4 text-gray-600 hover:bg-gray-50 rounded-md">
+                <FileText className="h-5 w-5 text-blue-500" />
+                <span>Image</span>
+              </button>
+              
+              <button 
+                className="flex items-center gap-2 py-2 px-4 text-gray-600 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsPollModalOpen(true)}
+              >
+                <BarChart3 className="h-5 w-5 text-blue-500" />
+                <span>Poll</span>
+              </button>
+              
+              <button 
+                className="flex items-center gap-2 py-2 px-4 text-gray-600 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsRecognitionModalOpen(true)}
+              >
+                <Award className="h-5 w-5 text-blue-500" />
+                <span>Recognize</span>
+              </button>
+            </div>
+          </div>
+          
           {/* Who Do You Appreciate? section - Exact match to design */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
             <div className="relative mb-6">
@@ -496,8 +540,8 @@ export default function SocialPage() {
             </div>
             
             <div className="flex gap-4">
-              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center">
-                <div className="bg-amber-500 text-white rounded-full p-2 mr-2">
+              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center cursor-pointer">
+                <div className="w-8 h-8 flex-shrink-0 bg-amber-500 text-white rounded-full flex items-center justify-center mr-2">
                   <Star className="h-5 w-5" />
                 </div>
                 <span className="text-amber-800 font-medium whitespace-nowrap">Share a Highlight</span>
@@ -507,7 +551,7 @@ export default function SocialPage() {
                 className="flex-1 bg-green-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
                 onClick={() => setIsRecognitionModalOpen(true)}
               >
-                <div className="bg-green-500 text-white rounded-full p-2 mr-2">
+                <div className="w-8 h-8 flex-shrink-0 bg-green-500 text-white rounded-full flex items-center justify-center mr-2">
                   <Award className="h-5 w-5" />
                 </div>
                 <span className="text-green-800 font-medium whitespace-nowrap">Give a Spot Bonus</span>
@@ -517,10 +561,10 @@ export default function SocialPage() {
                 className="flex-1 bg-red-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
                 onClick={() => setIsPollModalOpen(true)}
               >
-                <div className="bg-red-500 text-white rounded-full p-2 mr-2">
+                <div className="w-8 h-8 flex-shrink-0 bg-red-500 text-white rounded-full flex items-center justify-center mr-2">
                   <Users className="h-5 w-5" />
                 </div>
-                <span className="text-red-800 font-medium whitespace-nowrap">1 on 1 with Admin</span>
+                <span className="text-red-800 font-medium whitespace-nowrap">1 on 1 with Ron</span>
               </div>
                 
               <div className="bg-blue-50 text-blue-500 p-3 rounded-full flex items-center justify-center cursor-pointer">
