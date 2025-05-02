@@ -186,7 +186,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center">
-                <Avatar className="h-6 w-6 border-2 border-teal-100">
+                <Avatar className="h-8 w-8 border-2 border-teal-100">
                   <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
                   <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
                     {user?.name?.charAt(0) || 'A'}
