@@ -56,12 +56,12 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, onClick, isActive, badge, className, hasDropdown }: NavItemProps) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center text-center gap-1 text-gray-600 hover:text-teal-600 px-2 py-1 text-xs font-medium transition-colors relative ${
+    className={`flex flex-col items-center text-center gap-0.5 text-gray-600 hover:text-teal-600 px-1.5 py-0.5 text-xs font-medium transition-colors relative ${
       isActive ? 'text-teal-600' : ''
     } ${className || ''}`}
   >
-    <div className={`p-2 rounded-full ${isActive ? 'bg-teal-100' : 'bg-gray-100'}`}>
-      <Icon className="w-5 h-5" />
+    <div className={`p-1.5 rounded-full ${isActive ? 'bg-teal-100' : 'bg-gray-100'}`}>
+      <Icon className="w-4 h-4" />
     </div>
     <span>{label}</span>
     {badge && (
@@ -134,12 +134,12 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   ];
 
   return (
-    <div className="bg-gray-100 pt-4 pb-2 px-4">
-      <div className="bg-white rounded-full shadow-sm mx-auto max-w-6xl flex items-center justify-between py-2 px-4">
+    <div className="bg-gray-100 pt-2 pb-1 px-4">
+      <div className="bg-white rounded-full shadow-sm mx-auto max-w-6xl flex items-center justify-between py-1 px-3">
         {/* Logo */}
-        <div className="flex items-center mr-4">
-          <div className="bg-teal-500 text-white rounded-full p-2.5 mr-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div className="flex items-center mr-3">
+          <div className="bg-teal-500 text-white rounded-full p-2 mr-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="currentColor"/>
               <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M9 9H9.01" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -149,13 +149,13 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         </div>
 
         {/* Compact Search box */}
-        <div className="relative w-60 mx-3 hidden md:block">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
-            <Search className="w-4 h-4 text-gray-400" />
+        <div className="relative w-52 mx-2 hidden md:block">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+            <Search className="w-3.5 h-3.5 text-gray-400" />
           </div>
           <input 
             type="search" 
-            className="block w-full p-1.5 pl-8 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+            className="block w-full py-1 px-2 pl-7 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-teal-400 focus:border-transparent"
             placeholder="Search..." 
           />
         </div>
@@ -174,19 +174,19 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         </nav>
 
         {/* User actions */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <button className="relative p-1">
-            <Bell className="w-5 h-5 text-gray-600" />
-            <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">1</span>
+          <button className="relative p-0.5">
+            <Bell className="w-4 h-4 text-gray-600" />
+            <span className="absolute top-0 right-0 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">1</span>
           </button>
 
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center">
-                <Avatar className="h-8 w-8 border-2 border-teal-100">
-                  <AvatarFallback className="bg-teal-100 text-teal-700">
+                <Avatar className="h-6 w-6 border-2 border-teal-100">
+                  <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
                     {user?.name?.charAt(0) || 'A'}
                   </AvatarFallback>
                 </Avatar>
