@@ -20,28 +20,28 @@ const WalletWidget: React.FC<WalletWidgetProps> = ({ balance = 0 }) => {
   const userBalance = balanceData?.balance || balance;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
-      <div className="px-4 pt-4 pb-3">
-        <h2 className="font-bold text-gray-800 mb-3">ThrivioHR Points</h2>
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+      <div className="px-6 pt-5 pb-4">
+        <h2 className="font-bold text-gray-800 text-lg mb-4">ThrivioHR Points</h2>
         
         {/* To Give section */}
-        <div className="border-b border-gray-100 pb-3 mb-3">
+        <div className="border-b border-gray-100 pb-4 mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
-                <Gift className="h-5 w-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mr-3">
+                <Gift className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-xs uppercase text-gray-500 font-medium">TO GIVE</div>
-                <div className="text-xl font-bold text-blue-600">{userBalance}</div>
+                <div className="text-xs uppercase text-gray-500 font-medium whitespace-nowrap">TO GIVE</div>
+                <div className="text-xl font-bold text-blue-500">{userBalance}</div>
               </div>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">
+            <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50">
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-1 text-xs text-gray-500 flex items-center">
-            <span className="mr-1">300 Point Bonus</span>
+          <div className="mt-2 text-xs text-gray-500 flex items-center">
+            <span className="mr-1 whitespace-nowrap">300 Point Bonus</span>
             <Info className="h-3 w-3" />
           </div>
         </div>
@@ -50,15 +50,15 @@ const WalletWidget: React.FC<WalletWidgetProps> = ({ balance = 0 }) => {
         <div>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-md bg-green-100 flex items-center justify-center mr-3">
-                <CreditCard className="h-5 w-5 text-green-600" />
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mr-3">
+                <CreditCard className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <div className="text-xs uppercase text-gray-500 font-medium">TO SPEND</div>
-                <div className="text-xl font-bold text-green-600">{Math.floor(userBalance * 0.8)}</div>
+                <div className="text-xs uppercase text-gray-500 font-medium whitespace-nowrap">TO SPEND</div>
+                <div className="text-xl font-bold text-green-500">{Math.floor(userBalance * 0.8)}</div>
               </div>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">
+            <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50">
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
@@ -66,9 +66,9 @@ const WalletWidget: React.FC<WalletWidgetProps> = ({ balance = 0 }) => {
       </div>
       
       {/* Footer */}
-      <div className="bg-gray-50 p-4 text-center">
+      <div className="bg-gray-50 px-6 py-4 text-center">
         <div className="text-xs text-gray-500 mb-2 font-medium">#thanksmatter</div>
-        <button className="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+        <button className="py-2 px-5 bg-teal-500 hover:bg-teal-600 text-white rounded-full text-sm font-medium transition-colors">
           Show Details
         </button>
       </div>

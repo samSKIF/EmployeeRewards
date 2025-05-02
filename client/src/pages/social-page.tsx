@@ -480,52 +480,51 @@ export default function SocialPage() {
             </div>
           </div>
           
-          {/* Quick actions and one-on-one area */}
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <div className="bg-blue-500 text-white rounded-full p-1">
-                  <MessageCircle className="h-5 w-5" /> 
+          {/* Who Do You Appreciate? section - Exact match to design */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-y-0 left-4 flex items-center">
+                <div className="bg-blue-500 text-white rounded-full p-2.5">
+                  <Gift className="h-6 w-6" /> 
                 </div>
               </div>
               <input 
                 type="text"
-                className="w-full py-3 pl-12 pr-4 text-gray-700 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full py-4 pl-16 pr-4 text-gray-500 text-lg border border-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-300"
                 placeholder="Who Do You Appreciate?"
               />
             </div>
             
-            <div className="flex mt-4 space-x-2">
-              <button className="flex items-center justify-center py-2 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full flex-1">
-                <div className="bg-amber-500 text-white rounded-full p-1 mr-2">
-                  <Star className="h-4 w-4" />
+            <div className="flex gap-4">
+              <div className="flex-1 bg-amber-50 rounded-full py-3 px-4 flex items-center">
+                <div className="bg-amber-500 text-white rounded-full p-2 mr-2">
+                  <Star className="h-5 w-5" />
                 </div>
-                <span className="text-sm font-medium">Share a Highlight</span>
-              </button>
+                <span className="text-amber-800 font-medium whitespace-nowrap">Share a Highlight</span>
+              </div>
               
-              <button 
-                className="flex items-center justify-center py-2 px-3 bg-green-100 hover:bg-green-200 text-green-800 rounded-full flex-1"
+              <div 
+                className="flex-1 bg-green-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
                 onClick={() => setIsRecognitionModalOpen(true)}
               >
-                <div className="bg-green-500 text-white rounded-full p-1 mr-2">
-                  <Award className="h-4 w-4" />
+                <div className="bg-green-500 text-white rounded-full p-2 mr-2">
+                  <Award className="h-5 w-5" />
                 </div>
-                <span className="text-sm font-medium">Give a Spot Bonus</span>
-              </button>
+                <span className="text-green-800 font-medium whitespace-nowrap">Give a Spot Bonus</span>
+              </div>
               
-              <div className="flex-1 relative">
-                <button 
-                  className="flex items-center justify-center py-2 px-3 bg-red-100 hover:bg-red-200 text-red-800 rounded-full w-full"
-                  onClick={() => setIsPollModalOpen(true)}
-                >
-                  <div className="bg-red-500 text-white rounded-full p-1 mr-2">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium whitespace-nowrap">1 on 1 with {user?.name?.split(' ')[0] || 'Admin'}</span>
-                </button>
-                <button className="absolute right-0 top-0 -mr-2 -mt-2 bg-white shadow-md rounded-full p-1 border border-gray-200 hover:bg-gray-100">
-                  <Plus className="h-4 w-4 text-gray-600" />
-                </button>
+              <div 
+                className="flex-1 bg-red-50 rounded-full py-3 px-4 flex items-center cursor-pointer"
+                onClick={() => setIsPollModalOpen(true)}
+              >
+                <div className="bg-red-500 text-white rounded-full p-2 mr-2">
+                  <Users className="h-5 w-5" />
+                </div>
+                <span className="text-red-800 font-medium whitespace-nowrap">1 on 1 with Admin</span>
+              </div>
+                
+              <div className="bg-blue-50 text-blue-500 p-3 rounded-full flex items-center justify-center cursor-pointer">
+                <Plus className="h-6 w-6" />
               </div>
             </div>
           </div>
