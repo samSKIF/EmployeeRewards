@@ -4,13 +4,13 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from 'url';
 
-// Create dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Create uploads directory in the root of the project
+const uploadsDir = path.join(process.cwd(), 'server', 'uploads');
+console.log('Using uploads directory:', uploadsDir);
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
+  console.log('Creating uploads directory at:', uploadsDir);
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
