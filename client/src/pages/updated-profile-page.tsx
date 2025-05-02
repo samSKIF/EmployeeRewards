@@ -305,7 +305,7 @@ const UpdatedProfilePage = () => {
       {/* Main grid layout - matching front page layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-4 max-w-[2200px] mx-auto justify-center">
         {/* Left column - Picture area, contact, responsibilities */}
-        <div className="lg:col-span-6 w-full space-y-6 max-w-[1800px] 4xl:max-w-[1800px] 3xl:max-w-[1600px] 2xl:max-w-[1400px] xl:max-w-[1200px] lg:max-w-[1000px]">
+        <div className="lg:col-span-9 w-full space-y-6 max-w-[1800px] 4xl:max-w-[1800px] 3xl:max-w-[1600px] 2xl:max-w-[1400px] xl:max-w-[1200px] lg:max-w-[1000px]">
           {/* Profile picture card with tabs */}
           <Card className="overflow-hidden shadow-sm">
             {/* Cover Image & Profile Picture */}
@@ -573,8 +573,8 @@ const UpdatedProfilePage = () => {
           </Card>
         </div>
         
-        {/* Right sidebar - exactly 42% of center width, matching front page */}
-        <div className="lg:col-span-3 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "750px" }}>
+        {/* Right sidebar - exactly 22% of center width, matching front page */}
+        <div className="lg:col-span-2 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "400px" }}>
           {/* Personality Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
