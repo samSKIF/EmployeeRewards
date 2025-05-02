@@ -573,8 +573,8 @@ const UpdatedProfilePage = () => {
           </Card>
         </div>
         
-        {/* Right sidebar - exactly 22% of center width, matching front page */}
-        <div className="lg:col-span-2 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "400px" }}>
+        {/* Right sidebar - 3/12 columns matching front page layout */}
+        <div className="lg:col-span-3 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "400px" }}>
           {/* Personality Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
