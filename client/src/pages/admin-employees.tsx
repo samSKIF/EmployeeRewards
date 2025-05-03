@@ -104,7 +104,7 @@ export default function AdminEmployeesPage() {
     }
     
     // Use direct window location navigation for the download
-    window.location.href = `/api/hr/template/download-test?token=${token}`;
+    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
     
     // Show success message
     toast({

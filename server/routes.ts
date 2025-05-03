@@ -8,7 +8,7 @@ import { z } from "zod";
 import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
-import { upload, getPublicUrl } from './file-upload';
+import { upload, documentUpload, getPublicUrl } from './file-upload';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -2115,7 +2115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload handler for employee bulk upload - using custom auth to support token in form data
-  app.post("/api/admin/employees/bulk-upload", upload.single('file'), async (req: Request, res: Response) => {
+  app.post("/api/admin/employees/bulk-upload", documentUpload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });

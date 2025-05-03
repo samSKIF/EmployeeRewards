@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// Initialize upload
+// Initialize upload for images
 export const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
@@ -40,6 +40,24 @@ export const upload = multer({
       return cb(null, true);
     } else {
       cb(new Error('Error: Images Only!'));
+    }
+  }
+});
+
+// Initialize upload for CSV and Excel files
+export const documentUpload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: function (_req, file, cb) {
+    // Allow CSV and Excel files
+    const filetypes = /csv|xlsx|xls/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = /text\/csv|application\/vnd.ms-excel|application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application\/octet-stream/.test(file.mimetype);
+
+    if (mimetype || extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Error: Only CSV and Excel files are allowed!'));
     }
   }
 });
