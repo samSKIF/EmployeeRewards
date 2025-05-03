@@ -474,6 +474,30 @@ const EmployeeManagement = () => {
     if (!file) return;
     
     try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/employees/bulk-upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('firebaseToken')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload file');
+      }
+
+      const result = await response.json();
+      toast({
+        title: "Success",
+        description: `${result.success} employees imported successfully`
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/hr/employees'] });
+      setIsBulkUploadOpen(false);
       const data = await readExcelFile(file);
       if (data && data.length > 0) {
         setBulkUploadStatus({

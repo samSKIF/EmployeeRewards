@@ -2115,19 +2115,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload handler for employee bulk upload
-  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, upload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
-      // Note: This is a placeholder. In a real implementation, you would:
-      // 1. Use multer or another middleware to handle file uploads
-      // 2. Parse the CSV file
-      // 3. Validate each record
-      // 4. Create users in a transaction
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
 
-      res.status(501).json({ 
-        message: "Bulk upload functionality not yet implemented",
-        count: 0
+      // Read the uploaded file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(worksheet);
+
+      // Process each employee record
+      const results = await Promise.all(data.map(async (row: any) => {
+        try {
+          const hashedPassword = await hash(row.password || 'password123', 10);
+          
+          return await db.insert(employees).values({
+            name: row.name,
+            surname: row.surname || '',
+            email: row.email,
+            password: hashedPassword,
+            dateOfBirth: row.dateOfBirth ? new Date(row.dateOfBirth) : null,
+            dateJoined: row.dateJoined ? new Date(row.dateJoined) : new Date(),
+            jobTitle: row.jobTitle || '',
+            department: row.department || '',
+            isManager: row.isManager === 'Yes' || false,
+            status: 'active',
+            createdById: req.user!.id,
+            createdAt: new Date()
+          });
+        } catch (err) {
+          console.error('Error creating employee:', err);
+          return null;
+        }
+      }));
+
+      const successCount = results.filter(r => r !== null).length;
+
+      res.status(200).json({
+        message: `Successfully imported ${successCount} employees`,
+        success: successCount,
+        total: data.length
       });
     } catch (error: any) {
+      console.error("Bulk upload error:", error);
       res.status(500).json({ message: error.message || "Failed to process bulk upload" });
     }
   });
