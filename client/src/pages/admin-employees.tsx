@@ -93,12 +93,13 @@ export default function AdminEmployeesPage() {
     const token = localStorage.getItem("firebaseToken");
     
     // Use direct window location navigation for the download
-    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
+    // Use the verified working URL from hr-config
+    window.location.href = `/api/hr/template/download-test?token=${token}`;
     
     // Show success message
     toast({
       title: "Template Downloading",
-      description: "Employee CSV template is being downloaded to your device"
+      description: "Employee template is being downloaded to your device"
     });
   };
 
