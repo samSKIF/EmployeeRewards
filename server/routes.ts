@@ -2240,8 +2240,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint for downloading employee template CSV/Excel
-app.get("/api/file-templates/employee_import/download", verifyToken, async (req: AuthenticatedRequest, res) => {
+app.get("/api/file-templates/employee_import/download", async (req: AuthenticatedRequest, res) => {
   try {
+    // Get token from query parameter
+    const token = req.query.token as string;
+    
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
     // Create a new workbook
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Employee Template');
@@ -2275,6 +2282,7 @@ app.get("/api/file-templates/employee_import/download", verifyToken, async (req:
     // Set headers for Excel file download
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
+    res.setHeader('Cache-Control', 'no-cache');
 
     // Write workbook to response
     await workbook.xlsx.write(res);
