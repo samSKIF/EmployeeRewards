@@ -89,11 +89,21 @@ export default function AdminEmployeesPage() {
 
   // Download template function
   const downloadTemplate = () => {
-    // Get the Firebase token for authentication
-    const token = localStorage.getItem("firebaseToken");
+    // Get Firebase token first, then fallback to JWT token (matching queryClient.ts approach)
+    const firebaseToken = localStorage.getItem("firebaseToken");
+    const jwtToken = localStorage.getItem("token");
+    const token = firebaseToken || jwtToken;
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You need to be logged in to download the template",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Use direct window location navigation for the download
-    // Use the verified working URL from hr-config
     window.location.href = `/api/hr/template/download-test?token=${token}`;
     
     // Show success message
@@ -186,11 +196,16 @@ export default function AdminEmployeesPage() {
   // Bulk upload mutation
   const bulkUploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      // Get Firebase token first, then fallback to JWT token
+      const firebaseToken = localStorage.getItem("firebaseToken");
+      const jwtToken = localStorage.getItem("token");
+      const token = firebaseToken || jwtToken;
+      
       const response = await fetch('/api/admin/employees/bulk-upload', {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
