@@ -198,7 +198,7 @@ export default function AdminEmployeesPage() {
     mutationFn: async (formData: FormData) => {
       // Get Firebase token first, then fallback to JWT token
       const firebaseToken = localStorage.getItem("firebaseToken");
-      const jwtToken = localStorage.getItem("token");
+      const jwtToken = localStorage.getItem("token"); 
       const token = firebaseToken || jwtToken;
       
       if (!token) {
@@ -213,11 +213,14 @@ export default function AdminEmployeesPage() {
         size: file.size
       });
       
-      // Add token to the formData instead of using headers for multipart/form-data
-      formData.append('token', token);
-      
+      // Instead of using formData for the token, let's try a different approach
+      // Create a new endpoint specifically for authenticated file uploads
       try {
-        const response = await fetch('/api/admin/employees/bulk-upload', {
+        // Create a URL with the token as a query parameter
+        const url = `/api/admin/employees/bulk-upload?token=${encodeURIComponent(token)}`;
+        console.log("Using URL with token parameter");
+        
+        const response = await fetch(url, {
           method: 'POST',
           body: formData,
           // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
@@ -340,7 +343,21 @@ export default function AdminEmployeesPage() {
     const formData = new FormData();
     formData.append('file', bulkUploadFile);
     formData.append('token', token);
-    console.log("Sending bulk upload with token");
+    
+    // Log the token for debugging (masked for security)
+    const tokenPreview = token.substring(0, 10) + '...' + token.substring(token.length - 10);
+    console.log("Sending bulk upload with token:", tokenPreview);
+    
+    // Let's check what's in the FormData
+    console.log("Form data entries:");
+    for (const pair of formData.entries()) {
+      if (pair[0] === 'token') {
+        console.log(`${pair[0]}: ${pair[1].toString().substring(0, 10)}...`);
+      } else {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
+    }
+    
     bulkUploadMutation.mutate(formData);
   }
 

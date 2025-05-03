@@ -2148,8 +2148,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      // Get token from form data 
-      const token = req.body.token;
+      // First try to get token from query parameter, then fall back to form data
+      let token = req.query.token as string;
+      
+      if (!token && req.body.token) {
+        token = req.body.token;
+      }
+      
+      console.log("Token source:", token ? (req.query.token ? "query parameter" : "form data") : "none");
+      
       if (!token) {
         return res.status(401).json({ message: "Unauthorized: No token provided" });
       }
