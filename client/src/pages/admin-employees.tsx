@@ -201,15 +201,23 @@ export default function AdminEmployeesPage() {
       const jwtToken = localStorage.getItem("token");
       const token = firebaseToken || jwtToken;
       
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+      
+      // Add token to the formData instead of using headers for multipart/form-data
+      formData.append('token', token);
+      
       const response = await fetch('/api/admin/employees/bulk-upload', {
         method: 'POST',
         body: formData,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Invalid authentication token');
+        }
         const error = await response.json();
         throw new Error(error.message || 'Bulk upload failed');
       }
