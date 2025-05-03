@@ -2207,10 +2207,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint for downloading employee template CSV
-  // Alternative endpoint without admin check for testing purposes
-  // Create or update file template
-  app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  // Endpoint for downloading employee template CSV/Excel
+app.get("/api/file-templates/employee_import/download", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    // Create a new workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Employee Template');
+
+    // Add headers
+    const headers = [
+      'name', 'surname', 'email', 'password', 'dateOfBirth', 'dateJoined',
+      'jobTitle', 'isManager', 'managerEmail', 'status', 'sex', 'nationality', 'phoneNumber'
+    ];
+    worksheet.addRow(headers);
+
+    // Add sample data
+    worksheet.addRow([
+      'John', 'Doe', 'john.doe@company.com', 'password123', '1990-01-01', '2023-01-01',
+      'Software Engineer', 'No', 'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
+    ]);
+
+    // Format header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Auto-size columns
+    worksheet.columns.forEach(column => {
+      column.width = 15;
+    });
+
+    // Set headers for Excel file download
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="employee_template.xlsx"');
+
+    // Write workbook to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error generating template:", error);
+    res.status(500).json({ message: "Failed to generate template" });
+  }
+});
+
+// Create or update file template
+app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
