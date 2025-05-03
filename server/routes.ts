@@ -2435,11 +2435,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Template test download request received, user:", req.user?.email);
 
-      // Use the same Microsoft sample Excel file
-      const cdnUrl = 'https://docs.microsoft.com/en-us/azure/open-datasets/media/sample-data/employee_data.xlsx';
+      // Simple employee template content as CSV
+      const csvContent = 'Username,Name,Surname,Email,Password,Phone Number,Job Title,Department,Status\n' +
+                        'john.doe,John,Doe,john.doe@example.com,password123,123-456-7890,Developer,IT,active\n' +
+                        'jane.smith,Jane,Smith,jane.smith@example.com,password123,098-765-4321,Designer,Marketing,active';
 
-      // Redirect to the CDN file
-      res.redirect(cdnUrl);
+      // Set headers for file download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=employee_template.csv');
+      
+      // Send CSV content directly
+      res.send(csvContent);
     } catch (error: any) {
       console.error("Error generating template:", error);
       res.status(500).json({ message: "Failed to generate template" });
