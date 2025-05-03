@@ -2148,14 +2148,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      // First try to get token from query parameter, then fall back to form data
-      let token = req.query.token as string;
+      // Try to get token from Authorization header, query parameter, or form data
+      let token: string | undefined;
       
-      if (!token && req.body.token) {
-        token = req.body.token;
+      // Check Authorization header first
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7); // Remove 'Bearer ' prefix
       }
       
-      console.log("Token source:", token ? (req.query.token ? "query parameter" : "form data") : "none");
+      // Fall back to query parameter if no Authorization header
+      if (!token && req.query.token) {
+        token = req.query.token as string;
+      }
+      
+      // Finally check form data
+      if (!token && req.body.token) {
+        token = req.body.token as string;
+      }
+      
+      console.log("Token source:", 
+        token 
+          ? (authHeader ? "authorization header" : (req.query.token ? "query parameter" : "form data")) 
+          : "none"
+      );
       
       if (!token) {
         return res.status(401).json({ message: "Unauthorized: No token provided" });
@@ -2316,8 +2332,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint for downloading employee template CSV/Excel
 app.get("/api/file-templates/employee_import/download", async (req: AuthenticatedRequest, res) => {
   try {
-    // Get token from query parameter
-    const token = req.query.token as string;
+    // Try to get token from Authorization header or query parameter
+    let token: string | undefined;
+    
+    // Check Authorization header first
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    }
+    
+    // Fall back to query parameter if no Authorization header
+    if (!token && req.query.token) {
+      token = req.query.token as string;
+    }
+    
+    console.log("Template download token source:", 
+      token 
+        ? (authHeader ? "authorization header" : "query parameter") 
+        : "none"
+    );
     
     if (!token) {
       return res.status(401).json({ message: "No token provided" });

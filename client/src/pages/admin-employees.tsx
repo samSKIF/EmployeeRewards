@@ -88,7 +88,7 @@ export default function AdminEmployeesPage() {
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
   // Download template function
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
     // Get Firebase token first, then fallback to JWT token (matching queryClient.ts approach)
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
@@ -103,14 +103,48 @@ export default function AdminEmployeesPage() {
       return;
     }
     
-    // Use direct window location navigation for the download
-    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
-    
-    // Show success message
-    toast({
-      title: "Template Downloading",
-      description: "Employee template is being downloaded to your device"
-    });
+    try {
+      // Use fetch with Authorization header instead of direct URL navigation
+      const response = await fetch('/api/file-templates/employee_import/download', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Template download failed with status: ${response.status}`);
+      }
+      
+      // Convert the response to a blob
+      const blob = await response.blob();
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'employee_template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Show success message
+      toast({
+        title: "Template Downloaded",
+        description: "Employee template has been downloaded to your device"
+      });
+    } catch (error) {
+      console.error("Template download error:", error);
+      toast({
+        title: "Download Failed",
+        description: error instanceof Error ? error.message : "Failed to download template. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Fetch employees
@@ -213,15 +247,15 @@ export default function AdminEmployeesPage() {
         size: file.size
       });
       
-      // Instead of using formData for the token, let's try a different approach
-      // Create a new endpoint specifically for authenticated file uploads
       try {
-        // Create a URL with the token as a query parameter
-        const url = `/api/admin/employees/bulk-upload?token=${encodeURIComponent(token)}`;
-        console.log("Using URL with token parameter");
+        // Use Authorization header instead of form data or query parameter
+        console.log("Using Authorization header for authentication");
         
-        const response = await fetch(url, {
+        const response = await fetch('/api/admin/employees/bulk-upload', {
           method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           body: formData,
           // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
         });
@@ -342,21 +376,9 @@ export default function AdminEmployeesPage() {
 
     const formData = new FormData();
     formData.append('file', bulkUploadFile);
-    formData.append('token', token);
     
-    // Log the token for debugging (masked for security)
-    const tokenPreview = token.substring(0, 10) + '...' + token.substring(token.length - 10);
-    console.log("Sending bulk upload with token:", tokenPreview);
-    
-    // Let's check what's in the FormData
-    console.log("Form data entries:");
-    for (const pair of formData.entries()) {
-      if (pair[0] === 'token') {
-        console.log(`${pair[0]}: ${pair[1].toString().substring(0, 10)}...`);
-      } else {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-    }
+    // Token is sent via Authorization header in the mutationFn
+    console.log("Sending bulk upload with file:", bulkUploadFile.name);
     
     bulkUploadMutation.mutate(formData);
   }
