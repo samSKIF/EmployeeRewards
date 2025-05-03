@@ -2119,16 +2119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File upload handler for employee bulk upload - using custom auth to support token in form data
   // Create a special instance of multer just for this route
   const csvUpload = multer({
-    storage: multer.diskStorage({
-      destination: function (_req, _file, cb) {
-        cb(null, path.join(process.cwd(), 'server', 'uploads'));
-      },
-      filename: function (_req, file, cb) {
-        const fileExt = path.extname(file.originalname);
-        const uniqueFilename = `${uuidv4()}${fileExt}`;
-        cb(null, uniqueFilename);
-      }
-    }),
+    storage: multer.memoryStorage(), // Use memory storage for processing the file directly
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: function (_req, file, cb) {
       console.log("Bulk upload file info:", {
@@ -2136,8 +2127,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mimetype: file.mimetype
       });
       
-      // Accept any file for now to test if this resolves the issue
-      return cb(null, true);
+      // Accept CSV and Excel files
+      const filetypes = /csv|xlsx|xls/;
+      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = /text\/csv|application\/vnd.ms-excel|application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application\/octet-stream/.test(file.mimetype);
+      
+      console.log("File check:", { extname, mimetype });
+      
+      if (mimetype || extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Error: Only CSV and Excel files are allowed!'));
+      }
     }
   });
   

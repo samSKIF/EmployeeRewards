@@ -323,8 +323,24 @@ export default function AdminEmployeesPage() {
       return;
     }
 
+    // Get Firebase token directly from auth
+    const firebaseToken = localStorage.getItem("firebaseToken");
+    const jwtToken = localStorage.getItem("token");
+    const token = firebaseToken || jwtToken;
+    
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "Authentication token not found. Please log in again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', bulkUploadFile);
+    formData.append('token', token);
+    console.log("Sending bulk upload with token");
     bulkUploadMutation.mutate(formData);
   }
 
