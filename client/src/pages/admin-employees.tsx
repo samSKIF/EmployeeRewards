@@ -205,24 +205,48 @@ export default function AdminEmployeesPage() {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
+      // Log file information for debugging
+      const file = formData.get('file') as File;
+      console.log("Uploading file:", {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+      
       // Add token to the formData instead of using headers for multipart/form-data
       formData.append('token', token);
       
-      const response = await fetch('/api/admin/employees/bulk-upload', {
-        method: 'POST',
-        body: formData,
-        // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized: Invalid authentication token');
+      try {
+        const response = await fetch('/api/admin/employees/bulk-upload', {
+          method: 'POST',
+          body: formData,
+          // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Unauthorized: Invalid authentication token');
+          }
+          const errorText = await response.text();
+          let errorMessage = 'Bulk upload failed';
+          
+          try {
+            // Try to parse as JSON
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.message || errorMessage;
+          } catch (e) {
+            // If not JSON, use the raw text
+            errorMessage = errorText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
         }
-        const error = await response.json();
-        throw new Error(error.message || 'Bulk upload failed');
+        
+        return await response.json();
+      } catch (error) {
+        console.error("File upload error:", error);
+        throw error;
       }
-      
-      return await response.json();
     },
     onSuccess: (data) => {
       toast({

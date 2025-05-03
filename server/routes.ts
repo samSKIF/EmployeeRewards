@@ -9,6 +9,8 @@ import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -2115,7 +2117,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload handler for employee bulk upload - using custom auth to support token in form data
-  app.post("/api/admin/employees/bulk-upload", documentUpload.single('file'), async (req: Request, res: Response) => {
+  // Create a special instance of multer just for this route
+  const csvUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (_req, _file, cb) {
+        cb(null, path.join(process.cwd(), 'server', 'uploads'));
+      },
+      filename: function (_req, file, cb) {
+        const fileExt = path.extname(file.originalname);
+        const uniqueFilename = `${uuidv4()}${fileExt}`;
+        cb(null, uniqueFilename);
+      }
+    }),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: function (_req, file, cb) {
+      console.log("Bulk upload file info:", {
+        originalname: file.originalname,
+        mimetype: file.mimetype
+      });
+      
+      // Accept any file for now to test if this resolves the issue
+      return cb(null, true);
+    }
+  });
+  
+  app.post("/api/admin/employees/bulk-upload", csvUpload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
