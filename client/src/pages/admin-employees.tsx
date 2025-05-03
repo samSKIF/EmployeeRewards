@@ -87,6 +87,21 @@ export default function AdminEmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
+  // Download template function
+  const downloadTemplate = () => {
+    // Get the Firebase token for authentication
+    const token = localStorage.getItem("firebaseToken");
+    
+    // Use direct window location navigation for the download
+    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
+    
+    // Show success message
+    toast({
+      title: "Template Downloading",
+      description: "Employee CSV template is being downloaded to your device"
+    });
+  };
+
   // Fetch employees
   const { data: employees, isLoading } = useQuery({
     queryKey: ['/api/admin/employees'],
@@ -838,7 +853,7 @@ export default function AdminEmployeesPage() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <Button variant="outline" size="sm" className="w-full justify-start">
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={downloadTemplate}>
               <FileText className="mr-2 h-4 w-4" />
               Download template CSV
             </Button>
