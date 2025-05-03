@@ -2217,14 +2217,14 @@ app.get("/api/file-templates/employee_import/download", verifyToken, async (req:
     // Add headers
     const headers = [
       'name', 'surname', 'email', 'password', 'dateOfBirth', 'dateJoined',
-      'jobTitle', 'isManager', 'managerEmail', 'status', 'sex', 'nationality', 'phoneNumber'
+      'jobTitle', 'department', 'isManager', 'managerEmail', 'status', 'sex', 'nationality', 'phoneNumber'
     ];
     worksheet.addRow(headers);
 
     // Add sample data
     worksheet.addRow([
       'John', 'Doe', 'john.doe@company.com', 'password123', '1990-01-01', '2023-01-01',
-      'Software Engineer', 'No', 'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
+      'Software Engineer', 'Engineering', 'No', 'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
     ]);
 
     // Format header row
