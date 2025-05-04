@@ -2347,15 +2347,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }));
       
-      // Prepare response
+      // Count successes
       const successCount = results.filter(r => r !== null).length;
       
+      // Prepare detailed response
       const response = {
         message: `Processed ${successCount} of ${data.length} employees`,
         success: successCount,
         total: data.length,
-        errors: validationErrors.length > 0 ? validationErrors : undefined
+        count: successCount, // Keep for backwards compatibility
+        errors: validationErrors.length > 0 ? validationErrors : []
       };
+      
+      // Log the import summary for debugging
+      console.log("Employee import summary:", {
+        success: successCount,
+        total: data.length,
+        errorCount: validationErrors.length
+      });
       
       // If no records imported successfully but we have errors, return 400 status
       if (successCount === 0 && validationErrors.length > 0) {

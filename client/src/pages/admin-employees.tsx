@@ -299,7 +299,13 @@ export default function AdminEmployeesPage() {
       }
     },
     onSuccess: (data) => {
-      const { success, total, errors } = data;
+      // Extract data with fallbacks to handle different response formats
+      const success = data.success ?? data.count ?? 0;
+      const total = data.total ?? 0;
+      const errors = data.errors ?? [];
+      const errorCount = Array.isArray(errors) ? errors.length : 0;
+      
+      console.log("Bulk upload response:", data);
       
       if (success === total) {
         toast({
@@ -309,12 +315,19 @@ export default function AdminEmployeesPage() {
       } else {
         toast({
           title: "Upload Partially Complete",
-          description: `Imported ${success} of ${total} employees. ${errors?.length || 0} errors found.`,
-          variant: "warning",
+          description: `Imported ${success} of ${total} employees. ${errorCount} errors found.`,
+          variant: "destructive",
         });
       }
       
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
+      // Force a full refetch to ensure we get updated data
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'], refetchType: 'all' });
+      
+      // Slight delay to ensure the server has time to process before the UI refetches
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
+      }, 300);
+      
       setIsUploadDialogOpen(false);
       setBulkUploadFile(null);
     },
