@@ -2154,13 +2154,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userData = req.user;
 
-      // Import XLSX functionality
-      const XLSX = require('xlsx');
+      // Use the already imported ExcelJS for reading the file
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(req.file.buffer);
       
-      // Read the uploaded file
-      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(worksheet);
+      // Get the first worksheet
+      const worksheet = workbook.getWorksheet(1);
+      
+      // Convert ExcelJS worksheet to JSON
+      const data = [];
+      const headers = [];
+      
+      // Get headers from the first row
+      worksheet.getRow(1).eachCell((cell, colNumber) => {
+        headers[colNumber - 1] = cell.value;
+      });
+      
+      // Get data from remaining rows
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) { // Skip header row
+          const rowData = {};
+          row.eachCell((cell, colNumber) => {
+            rowData[headers[colNumber - 1]] = cell.value;
+          });
+          data.push(rowData);
+        }
+      });
 
       // Process each employee record
       const results = await Promise.all(data.map(async (row: any) => {
