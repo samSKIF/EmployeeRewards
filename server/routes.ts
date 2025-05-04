@@ -2155,7 +2155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = req.user;
 
       // Import XLSX functionality
-      const XLSX = require('xlsx');
+      import XLSX from 'xlsx';
       
       // Read the uploaded file
       const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
