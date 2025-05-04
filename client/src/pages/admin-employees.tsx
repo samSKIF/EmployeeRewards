@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload } from "lucide-react";
+import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Check } from "lucide-react";
 import { format } from "date-fns";
 
 // Define employee form data type
@@ -1087,13 +1087,26 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Upload CSV, XLS, or XLSX files containing employee information. Download a template in your preferred format below.
+              Upload CSV, XLS, or XLSX files containing employee information. Follow these steps for successful imports.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
+            <div className="bg-accent/30 rounded-md p-3 border border-accent">
+              <h4 className="font-medium text-sm mb-2">Import Instructions:</h4>
+              <ol className="text-sm space-y-1 text-muted-foreground list-decimal pl-5">
+                <li>Download the template in your preferred format</li>
+                <li>Fill in employee information (leave ID blank for new employees)</li>
+                <li>Required fields: name, email, username, and password</li>
+                <li>Save your file and upload using the form below</li>
+              </ol>
+            </div>
+            
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Download Template (select format):</p>
+              <Label className="text-base">Step 1: Download Template</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Choose your preferred file format:
+              </p>
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
@@ -1116,8 +1129,11 @@ export default function AdminEmployeesPage() {
               </div>
             </div>
 
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="file-upload">Select CSV, XLS, or XLSX File</Label>
+            <div className="space-y-2">
+              <Label className="text-base" htmlFor="file-upload">Step 2: Upload Your File</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Select your completed employee data file (CSV, XLS, or XLSX format)
+              </p>
               <Input 
                 id="file-upload" 
                 type="file" 
@@ -1127,9 +1143,15 @@ export default function AdminEmployeesPage() {
             </div>
 
             {bulkUploadFile && (
-              <p className="text-sm text-muted-foreground">
-                Selected file: {bulkUploadFile.name}
-              </p>
+              <div className="bg-primary/5 border border-primary/10 rounded-md p-3">
+                <p className="text-sm font-medium flex items-center">
+                  <Check className="h-4 w-4 mr-2 text-primary" />
+                  File selected: {bulkUploadFile.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {bulkUploadFile.type || (bulkUploadFile.name.endsWith('.csv') ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')} | {Math.round(bulkUploadFile.size / 1024)} KB
+                </p>
+              </div>
             )}
           </div>
 
