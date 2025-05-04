@@ -87,8 +87,8 @@ export default function AdminEmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
-  // Download template function
-  const downloadTemplate = async () => {
+  // Download template function with format option
+  const downloadTemplate = async (format: 'csv' | 'xlsx' = 'xlsx') => {
     // Get Firebase token first, then fallback to JWT token (matching queryClient.ts approach)
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
@@ -104,8 +104,11 @@ export default function AdminEmployeesPage() {
     }
 
     try {
-      // Use fetch with Authorization header instead of direct URL navigation
-      const response = await fetch('/api/file-templates/employee_import/download', {
+      // Add format query parameter to the request
+      const url = `/api/file-templates/employee_import/download?format=${format}`;
+      
+      // Use fetch with Authorization header
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -115,27 +118,37 @@ export default function AdminEmployeesPage() {
         throw new Error(`Template download failed with status: ${response.status}`);
       }
 
+      // Get the filename from the Content-Disposition header if available
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = format === 'csv' ? 'employee_template.csv' : 'employee_template.xlsx';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+
       // Convert the response to a blob
       const blob = await response.blob();
 
       // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob);
+      const url2 = window.URL.createObjectURL(blob);
 
       // Create a temporary link element to trigger the download
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'employee_template.xlsx';
+      a.href = url2;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
 
       // Clean up
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url2);
       document.body.removeChild(a);
-
-      // Show success message
+      
       toast({
         title: "Template Downloaded",
-        description: "Employee template has been downloaded to your device"
+        description: `Employee template has been downloaded in ${format.toUpperCase()} format.`
       });
     } catch (error) {
       console.error("Template download error:", error);
@@ -286,10 +299,21 @@ export default function AdminEmployeesPage() {
       }
     },
     onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: `Uploaded ${data.count} employees successfully`,
-      });
+      const { success, total, errors } = data;
+      
+      if (success === total) {
+        toast({
+          title: "Upload Complete",
+          description: `Successfully imported all ${total} employees.`,
+        });
+      } else {
+        toast({
+          title: "Upload Partially Complete",
+          description: `Imported ${success} of ${total} employees. ${errors?.length || 0} errors found.`,
+          variant: "warning",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
       setIsUploadDialogOpen(false);
       setBulkUploadFile(null);
@@ -951,18 +975,37 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Upload a CSV file containing employee information. Download a template to see the required format.
+              Upload CSV, XLS, or XLSX files containing employee information. Download a template in your preferred format below.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <Button variant="outline" size="sm" className="w-full justify-start" onClick={downloadTemplate}>
-              <FileText className="mr-2 h-4 w-4" />
-              Download template CSV
-            </Button>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium">Download Template (select format):</p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 justify-center" 
+                  onClick={() => downloadTemplate('xlsx')}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Excel (XLSX)
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 justify-center" 
+                  onClick={() => downloadTemplate('csv')}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  CSV
+                </Button>
+              </div>
+            </div>
 
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="file-upload">Upload CSV or Excel File</Label>
+              <Label htmlFor="file-upload">Select CSV, XLS, or XLSX File</Label>
               <Input 
                 id="file-upload" 
                 type="file" 
