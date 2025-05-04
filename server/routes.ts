@@ -2142,71 +2142,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/admin/employees/bulk-upload", csvUpload.single('file'), async (req: Request, res: Response) => {
+  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, csvUpload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      // Try to get token from Authorization header, query parameter, or form data
-      let token: string | undefined;
-      
-      // Check Authorization header first
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized: User not found" });
       }
       
-      // Fall back to query parameter if no Authorization header
-      if (!token && req.query.token) {
-        token = req.query.token as string;
-      }
-      
-      // Finally check form data
-      if (!token && req.body.token) {
-        token = req.body.token as string;
-      }
-      
-      console.log("Token source:", 
-        token 
-          ? (authHeader ? "authorization header" : (req.query.token ? "query parameter" : "form data")) 
-          : "none"
-      );
-      
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
-      }
-      
-      // Verify the token
-      let userData;
-      try {
-        // Decode the token without verification first to get the UID
-        const decodedPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        
-        if (decodedPayload && decodedPayload.sub) {
-          // Get user from database
-          const firebaseUid = decodedPayload.sub;
-          const user = await db.select()
-            .from(users)
-            .where(eq(users.firebaseUid, firebaseUid))
-            .then(rows => rows[0]);
-          
-          if (!user) {
-            return res.status(401).json({ message: "Unauthorized: User not found" });
-          }
-          
-          if (!user.isAdmin) {
-            return res.status(403).json({ message: "Forbidden: Admin access required" });
-          }
-          
-          userData = user;
-        } else {
-          return res.status(401).json({ message: "Unauthorized: Invalid token format" });
-        }
-      } catch (error) {
-        console.error("Token verification error:", error);
-        return res.status(401).json({ message: "Unauthorized: Token verification failed" });
-      }
+      const userData = req.user;
 
       // Import XLSX functionality
       const XLSX = require('xlsx');
@@ -2330,31 +2276,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint for downloading employee template CSV/Excel
-app.get("/api/file-templates/employee_import/download", async (req: AuthenticatedRequest, res) => {
+app.get("/api/file-templates/employee_import/download", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    // Try to get token from Authorization header or query parameter
-    let token: string | undefined;
-    
-    // Check Authorization header first
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    // User is already authenticated via verifyToken middleware
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
     }
     
-    // Fall back to query parameter if no Authorization header
-    if (!token && req.query.token) {
-      token = req.query.token as string;
-    }
-    
-    console.log("Template download token source:", 
-      token 
-        ? (authHeader ? "authorization header" : "query parameter") 
-        : "none"
-    );
-    
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
-    }
+    console.log("Template download authorized for user:", req.user.email);
 
     // Create a new workbook
     const workbook = new ExcelJS.Workbook();
