@@ -292,7 +292,24 @@ export default function AdminEmployeesPage() {
           throw new Error(errorMessage);
         }
 
-        return await response.json();
+        // Check for JSON content type in response
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return await response.json();
+        } else {
+          // If not JSON, try to get text and then parse it as JSON with fallback to text message
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.log("Response was not JSON, returning as text in message property:", text);
+            return { 
+              success: 0, 
+              total: 0, 
+              message: text || "Upload completed, but response format is unknown" 
+            };
+          }
+        }
       } catch (error) {
         console.error("File upload error:", error);
         throw error;
@@ -312,31 +329,113 @@ export default function AdminEmployeesPage() {
           title: "Upload Complete",
           description: `Successfully imported all ${total} employees.`,
         });
-      } else {
+      } else if (success > 0) {
+        // Show partial success alert with error details available
         toast({
           title: "Upload Partially Complete",
-          description: `Imported ${success} of ${total} employees. ${errorCount} errors found.`,
+          description: `Imported ${success} of ${total} employees. ${errorCount} validation errors found.`,
           variant: "destructive",
         });
+        
+        // Also log detailed errors to console for debugging
+        if (Array.isArray(errors) && errors.length > 0) {
+          console.log("Validation errors:", errors);
+          
+          // Show the first few errors in a separate toast for visibility
+          const errorSample = errors.slice(0, 3).join('\n');
+          const hasMoreErrors = errors.length > 3;
+          
+          toast({
+            title: "Import Error Examples",
+            description: `${errorSample}${hasMoreErrors ? `\n...and ${errors.length - 3} more errors` : ''}`,
+            variant: "destructive",
+            duration: 10000 // Show longer for user to read
+          });
+        }
+      } else {
+        // Complete failure
+        toast({
+          title: "Upload Failed",
+          description: `None of the ${total} employee records could be imported. Please check the file format.`,
+          variant: "destructive",
+        });
+        
+        // Also log detailed errors to console for debugging
+        if (Array.isArray(errors) && errors.length > 0) {
+          console.log("Validation errors:", errors);
+          
+          // Show the first few errors in a separate toast for visibility
+          const errorSample = errors.slice(0, 3).join('\n');
+          const hasMoreErrors = errors.length > 3;
+          
+          toast({
+            title: "Import Errors",
+            description: `${errorSample}${hasMoreErrors ? `\n...and ${errors.length - 3} more errors` : ''}`,
+            variant: "destructive",
+            duration: 10000 // Show longer for user to read
+          });
+        }
       }
       
-      // Force a full refetch to ensure we get updated data
+      // Force a full refetch to ensure we get updated data - use three different approaches for reliability
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'], refetchType: 'all' });
       
-      // Slight delay to ensure the server has time to process before the UI refetches
+      // Immediate refetch to get updated data
+      queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
+      
+      // Scheduled refetch after a delay to ensure server had time to process
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
       }, 300);
+      
+      // Third approach: scheduled refresh of all HR-related queries
+      setTimeout(() => {
+        console.log("Performing extra refresh of HR data");
+        queryClient.invalidateQueries({ queryKey: ['/api/hr'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
+      }, 500);
       
       setIsUploadDialogOpen(false);
       setBulkUploadFile(null);
     },
     onError: (error: any) => {
+      console.error("Bulk upload error:", error);
+      
+      // Get a meaningful error message
+      let errorMessage = "Failed to bulk upload employees";
+      
+      if (error.message) {
+        // Try to extract a structured error if it's in JSON format inside the message
+        try {
+          if (error.message.includes('{') && error.message.includes('}')) {
+            const jsonStartIndex = error.message.indexOf('{');
+            const jsonString = error.message.substring(jsonStartIndex);
+            const jsonError = JSON.parse(jsonString);
+            
+            if (jsonError.message) {
+              errorMessage = jsonError.message;
+            } else if (jsonError.error) {
+              errorMessage = jsonError.error;
+            } else {
+              errorMessage = error.message;
+            }
+          } else {
+            errorMessage = error.message;
+          }
+        } catch (e) {
+          // If JSON parsing fails, just use the original message
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to bulk upload employees",
+        title: "Upload Failed",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      setIsUploadDialogOpen(false);
+      setBulkUploadFile(null);
     }
   });
 
