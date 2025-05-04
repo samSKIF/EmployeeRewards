@@ -8,7 +8,7 @@ import { z } from "zod";
 import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
-import { upload, documentUpload, getPublicUrl } from './file-upload';
+import { upload, documentUpload, csvMemoryUpload, getPublicUrl } from './file-upload';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -2142,7 +2142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, csvUpload.single('file'), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, csvMemoryUpload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });

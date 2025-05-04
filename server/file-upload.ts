@@ -74,6 +74,35 @@ export const documentUpload = multer({
   }
 });
 
+// Initialize memory storage upload for CSV and Excel files (for processing in memory)
+export const csvMemoryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: function (_req, file, cb) {
+    console.log("CSV memory upload attempted - file information:", {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      extension: path.extname(file.originalname).toLowerCase()
+    });
+    
+    // Allow CSV and Excel files
+    const filetypes = /csv|xlsx|xls/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = /text\/csv|application\/vnd.ms-excel|application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application\/octet-stream/.test(file.mimetype);
+
+    console.log("File validation results:", {
+      extname_valid: extname,
+      mimetype_valid: mimetype
+    });
+
+    if (mimetype || extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Error: Only CSV and Excel files are allowed!'));
+    }
+  }
+});
+
 // Get public URL for file
 export function getPublicUrl(filename: string) {
   // This would be replaced with a cloud storage URL in production
