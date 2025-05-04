@@ -2311,13 +2311,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Validate headers - check for required fields
       const requiredFields = ['name', 'email'];
-      const missingFields = requiredFields.filter(field => !headers.includes(field));
+      
+      // First normalize header names (lowercase and trim for case-insensitive comparison)
+      const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+      console.log("Normalized headers for checking:", normalizedHeaders);
+      
+      // Check for missing fields using normalized names
+      const missingFields = requiredFields.filter(field => 
+        !normalizedHeaders.includes(field.toLowerCase().trim())
+      );
       
       if (missingFields.length > 0) {
         return res.status(400).json({ 
           message: `Missing required header columns: ${missingFields.join(', ')}. Please download the template file for reference.`
         });
       }
+      
+      // Create a map for case-insensitive field lookup
+      const headerMap: Record<string, string> = {};
+      headers.forEach((header, index) => {
+        headerMap[header.toLowerCase().trim()] = header;
+      });
+      console.log("Header mapping:", headerMap);
       
       // Process each employee record
       const validationErrors: string[] = [];
@@ -2328,8 +2343,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const results = await Promise.all(data.map(async (row, index) => {
         try {
+          // Use header map for case-insensitive field access
+          const getName = () => {
+            const nameField = headerMap['name'];
+            return nameField ? row[nameField] : null;
+          };
+          
+          const getEmail = () => {
+            const emailField = headerMap['email'];
+            return emailField ? row[emailField] : null;
+          };
+          
           // Validate required fields
-          if (!row.name || !row.email) {
+          const name = getName();
+          const email = getEmail();
+          
+          if (!name || !email) {
             const rowNum = index + 2; // +2 because index is 0-based and we need to account for header row
             validationErrors.push(`Row ${rowNum}: Missing required fields (name or email)`);
             return null;
@@ -2337,61 +2366,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Check email format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(String(row.email))) {
+          if (!emailRegex.test(String(email))) {
             const rowNum = index + 2;
-            validationErrors.push(`Row ${rowNum}: Invalid email format for ${row.email}`);
+            validationErrors.push(`Row ${rowNum}: Invalid email format for ${email}`);
             return null;
           }
           
           // Check if email already exists in database
-          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, String(row.email)));
+          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, String(email)));
           if (existingEmployee) {
             const rowNum = index + 2;
-            validationErrors.push(`Row ${rowNum}: Email ${row.email} already exists in the system`);
+            validationErrors.push(`Row ${rowNum}: Email ${email} already exists in the system`);
             return null;
           }
           
+          // Helper functions for accessing other fields
+          const getField = (fieldName: string) => {
+            const field = headerMap[fieldName.toLowerCase()];
+            return field && row[field] ? row[field] : null;
+          };
+          
+          // Get other fields
+          const surname = getField('surname');
+          const password = getField('password');
+          const jobTitle = getField('jobTitle');
+          const department = getField('department');
+          const isManager = getField('isManager');
+          
           // Hash password or use default
-          const hashedPassword = await hash(row.password || 'password123', 10);
+          const hashedPassword = await hash(password || 'password123', 10);
           
           // Format dates
           let dateOfBirth = null;
-          if (row.dateOfBirth) {
+          const dobField = getField('dateOfBirth');
+          if (dobField) {
             try {
-              dateOfBirth = new Date(row.dateOfBirth);
+              dateOfBirth = new Date(dobField);
               // Check if date is valid
               if (isNaN(dateOfBirth.getTime())) {
+                console.log(`Invalid date format for dateOfBirth: ${dobField}`);
                 dateOfBirth = null;
               }
             } catch (e) {
+              console.log(`Error parsing dateOfBirth: ${dobField}`, e);
               dateOfBirth = null;
             }
           }
           
           let dateJoined = new Date();
-          if (row.dateJoined) {
+          const djField = getField('dateJoined');
+          if (djField) {
             try {
-              const parsedDate = new Date(row.dateJoined);
+              const parsedDate = new Date(djField);
               if (!isNaN(parsedDate.getTime())) {
                 dateJoined = parsedDate;
+              } else {
+                console.log(`Invalid date format for dateJoined: ${djField}`);
               }
             } catch (e) {
+              console.log(`Error parsing dateJoined: ${djField}`, e);
               // Keep default date if parsing fails
             }
           }
           
+          // Determine status from field if available
+          const status = getField('status') || 'active';
+          
+          // Determine if manager flag is set
+          const isManagerFlag = 
+            isManager && String(isManager).toLowerCase() === 'yes' || 
+            isManager === true || 
+            isManager === 1 || 
+            isManager === '1';
+          
+          // Print row values for debugging
+          console.log(`Row ${index + 2} pre-insert values:`, { 
+            name, email, surname, jobTitle, department, 
+            isManager: isManagerFlag,
+            dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
+            dateJoined: dateJoined.toISOString()
+          });
+          
           // Insert employee record
           return await db.insert(employees).values({
-            name: String(row.name),
-            surname: row.surname ? String(row.surname) : '',
-            email: String(row.email),
+            name: String(name),
+            surname: surname ? String(surname) : '',
+            email: String(email),
             password: hashedPassword,
             dateOfBirth,
             dateJoined,
-            jobTitle: row.jobTitle ? String(row.jobTitle) : '',
-            department: row.department ? String(row.department) : '',
-            isManager: String(row.isManager).toLowerCase() === 'yes' || false,
-            status: 'active',
+            jobTitle: jobTitle ? String(jobTitle) : '',
+            department: department ? String(department) : '',
+            isManager: isManagerFlag,
+            status: String(status),
             createdById: userData.id,
             createdAt: new Date()
           });
