@@ -2182,6 +2182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isCSV) {
         try {
           const csvString = req.file.buffer.toString('utf8');
+          // Log first few lines of the CSV file for debugging
+          console.log("CSV file content (first 500 chars):", csvString.substring(0, 500));
+          
           const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
           
           if (lines.length === 0) {
@@ -2190,19 +2193,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Parse headers from first line
           const headerLine = lines[0];
-          headerLine.split(',').forEach(header => {
-            headers.push(header.trim());
-          });
+          console.log("CSV headers line:", headerLine);
           
-          // Parse data rows
+          // More robust header parsing
+          const headerRegex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
+          let match;
+          while ((match = headerRegex.exec(headerLine + ',')) !== null) {
+            let header = match[1];
+            // Remove quotes if present
+            if (header.startsWith('"') && header.endsWith('"')) {
+              header = header.substring(1, header.length - 1).replace(/""/g, '"');
+            }
+            if (header) {
+              headers.push(header.trim());
+            }
+          }
+          
+          console.log("Parsed headers:", headers);
+          
+          // Parse data rows with better CSV handling
           for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(value => value.trim());
-            if (values.length === headers.length) {
+            const line = lines[i];
+            // Skip empty lines
+            if (!line.trim()) continue;
+            
+            // More robust value parsing
+            const rowValues: string[] = [];
+            let currentPos = 0;
+            let inQuotes = false;
+            let currentValue = '';
+            
+            while (currentPos < line.length) {
+              const char = line[currentPos];
+              
+              if (char === '"' && (currentPos === 0 || line[currentPos - 1] !== '\\')) {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                rowValues.push(currentValue.trim());
+                currentValue = '';
+              } else {
+                currentValue += char;
+              }
+              
+              currentPos++;
+            }
+            
+            // Add the last value
+            rowValues.push(currentValue.trim());
+            
+            // Only process rows with the right number of columns
+            if (rowValues.length >= headers.length) {
               const rowData: Record<string, any> = {};
               headers.forEach((header, index) => {
-                rowData[header] = values[index];
+                let value = rowValues[index] || '';
+                // Remove quotes if present
+                if (value.startsWith('"') && value.endsWith('"')) {
+                  value = value.substring(1, value.length - 1).replace(/""/g, '"');
+                }
+                rowData[header] = value;
               });
               data.push(rowData);
+            } else {
+              console.log(`Skipping row ${i+1}: expected ${headers.length} columns, got ${rowValues.length}`);
             }
           }
         } catch (error) {
@@ -2269,6 +2321,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Process each employee record
       const validationErrors: string[] = [];
+      
+      // Log the first few records to debug
+      console.log("First row data:", data.length > 0 ? JSON.stringify(data[0]) : "No data");
+      console.log("Fields in first row:", data.length > 0 ? Object.keys(data[0]) : "No data");
       
       const results = await Promise.all(data.map(async (row, index) => {
         try {
