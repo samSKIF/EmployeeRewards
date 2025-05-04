@@ -962,11 +962,11 @@ export default function AdminEmployeesPage() {
             </Button>
             
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="file-upload">Upload CSV</Label>
+              <Label htmlFor="file-upload">Upload CSV or Excel File</Label>
               <Input 
                 id="file-upload" 
                 type="file" 
-                accept=".csv" 
+                accept=".csv,.xlsx,.xls" 
                 onChange={handleFileChange}
               />
             </div>
