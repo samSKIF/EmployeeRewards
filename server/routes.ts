@@ -2144,104 +2144,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, csvMemoryUpload.single('file'), async (req: AuthenticatedRequest, res) => {
     try {
+      // File validation
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
+      // User validation
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized: User not found" });
       }
       
       const userData = req.user;
-
-      let data = [];
-      let headers = [];
       
-      // Get file extension
-      const originalFileName = req.file.originalname;
-      const fileExtension = originalFileName.slice(originalFileName.lastIndexOf('.')).toLowerCase();
+      // Track file info for debugging
+      console.log("CSV memory upload attempted - file information:", {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        extension: path.extname(req.file.originalname).toLowerCase()
+      });
       
-      // Process based on file type
-      if (fileExtension === '.csv') {
-        // For CSV files, parse the buffer as text
-        const csvString = req.file.buffer.toString('utf8');
-        
-        // Basic CSV parsing (you might want to use a library for more complex CSVs)
-        const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
-        
-        if (lines.length === 0) {
-          return res.status(400).json({ message: "CSV file is empty." });
-        }
-        
-        // Extract headers from first line
-        headers = lines[0].split(',').map(header => header.trim());
-        
-        // Parse data rows
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map(value => value.trim());
-          if (values.length === headers.length) {
-            const row = {};
-            headers.forEach((header, index) => {
-              row[header] = values[index];
-            });
-            data.push(row);
-          }
-        }
-      } else {
-        // For Excel files, use ExcelJS
-        const workbook = new ExcelJS.Workbook();
-        
-        try {
-          await workbook.xlsx.load(req.file.buffer);
-        } catch (err) {
-          console.error("Error parsing Excel file:", err);
-          return res.status(400).json({ message: "Invalid Excel format. Please check your file and try again." });
-        }
-        
-        // Get the first worksheet
-        const worksheet = workbook.getWorksheet(1);
-        
-        if (!worksheet) {
-          return res.status(400).json({ message: "Excel file has no worksheets or is empty." });
-        }
-        
-        // Extract headers from first row
-        worksheet.getRow(1).eachCell((cell, colNumber) => {
-          headers[colNumber - 1] = cell.value;
-        });
-        
-        // Extract data from remaining rows
-        worksheet.eachRow((row, rowNumber) => {
-          if (rowNumber > 1) { // Skip header row
-            const rowData = {};
-            row.eachCell((cell, colNumber) => {
-              rowData[headers[colNumber - 1]] = cell.value;
-            });
-            data.push(rowData);
-          }
+      // File type detection and processing
+      const fileExtension = path.extname(req.file.originalname).toLowerCase();
+      const isCSV = fileExtension === '.csv';
+      const isExcel = ['.xlsx', '.xls'].includes(fileExtension);
+      
+      if (!isCSV && !isExcel) {
+        return res.status(400).json({ 
+          message: "Unsupported file format. Please upload CSV, XLSX, or XLS files only."
         });
       }
-
-      // Validate the data before processing
+      
+      // Process the file to extract data
+      const data: Record<string, any>[] = [];
+      const headers: string[] = [];
+      
+      // Handle CSV files
+      if (isCSV) {
+        try {
+          const csvString = req.file.buffer.toString('utf8');
+          const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
+          
+          if (lines.length === 0) {
+            return res.status(400).json({ message: "CSV file is empty" });
+          }
+          
+          // Parse headers from first line
+          const headerLine = lines[0];
+          headerLine.split(',').forEach(header => {
+            headers.push(header.trim());
+          });
+          
+          // Parse data rows
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(value => value.trim());
+            if (values.length === headers.length) {
+              const rowData: Record<string, any> = {};
+              headers.forEach((header, index) => {
+                rowData[header] = values[index];
+              });
+              data.push(rowData);
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing CSV file:", error);
+          return res.status(400).json({ message: "Failed to parse CSV file. Please check the file format." });
+        }
+      }
+      
+      // Handle Excel files
+      if (isExcel) {
+        try {
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(req.file.buffer);
+          
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            return res.status(400).json({ message: "Excel file has no worksheets or is empty" });
+          }
+          
+          // Get headers from first row
+          const headerRow = worksheet.getRow(1);
+          headerRow.eachCell((cell: any, colNumber: number) => {
+            if (cell.value !== null && cell.value !== undefined) {
+              headers[colNumber - 1] = String(cell.value).trim();
+            }
+          });
+          
+          // Get data from remaining rows
+          for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+            const row = worksheet.getRow(rowNumber);
+            if (row.hasValues) {
+              const rowData: Record<string, any> = {};
+              row.eachCell((cell: any, colNumber: number) => {
+                if (headers[colNumber - 1]) {
+                  rowData[headers[colNumber - 1]] = cell.value;
+                }
+              });
+              // Only add row if it has data
+              if (Object.keys(rowData).length > 0) {
+                data.push(rowData);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing Excel file:", error);
+          return res.status(400).json({ message: "Failed to parse Excel file. Please check the file format." });
+        }
+      }
+      
+      // Validate the data
       if (data.length === 0) {
         return res.status(400).json({ message: "No data found in the uploaded file. Make sure it has rows of data." });
       }
       
-      // Check required fields in the first row to provide better error messages
+      // Validate headers - check for required fields
       const requiredFields = ['name', 'email'];
       const missingFields = requiredFields.filter(field => !headers.includes(field));
       
       if (missingFields.length > 0) {
         return res.status(400).json({ 
-          message: `The uploaded file is missing required header columns: ${missingFields.join(', ')}. Please download the template and use the correct format.`
+          message: `Missing required header columns: ${missingFields.join(', ')}. Please download the template file for reference.`
         });
       }
       
       // Process each employee record
-      // Track validation errors 
-      const validationErrors = [];
+      const validationErrors: string[] = [];
       
-      const results = await Promise.all(data.map(async (row: any, index) => {
+      const results = await Promise.all(data.map(async (row, index) => {
         try {
           // Validate required fields
           if (!row.name || !row.email) {
@@ -2252,47 +2281,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Check email format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(row.email)) {
+          if (!emailRegex.test(String(row.email))) {
             const rowNum = index + 2;
             validationErrors.push(`Row ${rowNum}: Invalid email format for ${row.email}`);
             return null;
           }
           
           // Check if email already exists in database
-          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, row.email));
+          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, String(row.email)));
           if (existingEmployee) {
             const rowNum = index + 2;
             validationErrors.push(`Row ${rowNum}: Email ${row.email} already exists in the system`);
             return null;
           }
           
+          // Hash password or use default
           const hashedPassword = await hash(row.password || 'password123', 10);
           
+          // Format dates
+          let dateOfBirth = null;
+          if (row.dateOfBirth) {
+            try {
+              dateOfBirth = new Date(row.dateOfBirth);
+              // Check if date is valid
+              if (isNaN(dateOfBirth.getTime())) {
+                dateOfBirth = null;
+              }
+            } catch (e) {
+              dateOfBirth = null;
+            }
+          }
+          
+          let dateJoined = new Date();
+          if (row.dateJoined) {
+            try {
+              const parsedDate = new Date(row.dateJoined);
+              if (!isNaN(parsedDate.getTime())) {
+                dateJoined = parsedDate;
+              }
+            } catch (e) {
+              // Keep default date if parsing fails
+            }
+          }
+          
+          // Insert employee record
           return await db.insert(employees).values({
-            name: row.name,
-            surname: row.surname || '',
-            email: row.email,
+            name: String(row.name),
+            surname: row.surname ? String(row.surname) : '',
+            email: String(row.email),
             password: hashedPassword,
-            dateOfBirth: row.dateOfBirth ? new Date(row.dateOfBirth) : null,
-            dateJoined: row.dateJoined ? new Date(row.dateJoined) : new Date(),
-            jobTitle: row.jobTitle || '',
-            department: row.department || '',
-            isManager: row.isManager === 'Yes' || false,
+            dateOfBirth,
+            dateJoined,
+            jobTitle: row.jobTitle ? String(row.jobTitle) : '',
+            department: row.department ? String(row.department) : '',
+            isManager: String(row.isManager).toLowerCase() === 'yes' || false,
             status: 'active',
-            createdById: userData.id, // Use the userData from token verification
+            createdById: userData.id,
             createdAt: new Date()
           });
-        } catch (err) {
-          console.error('Error creating employee:', err);
+        } catch (error: any) {
+          console.error('Error creating employee:', error);
           const rowNum = index + 2;
-          validationErrors.push(`Row ${rowNum}: Database error: ${err.message || 'Unknown error'}`);
+          validationErrors.push(`Row ${rowNum}: Database error: ${error.message || 'Unknown error'}`);
           return null;
         }
       }));
-
+      
+      // Prepare response
       const successCount = results.filter(r => r !== null).length;
       
-      // Create appropriate response based on success/failure counts
       const response = {
         message: `Processed ${successCount} of ${data.length} employees`,
         success: successCount,
@@ -2300,11 +2357,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         errors: validationErrors.length > 0 ? validationErrors : undefined
       };
       
+      // If no records imported successfully but we have errors, return 400 status
       if (successCount === 0 && validationErrors.length > 0) {
-        // If no records were successfully imported, return 400 with validation errors
         return res.status(400).json(response);
       }
       
+      // Return 200 even if some records failed but at least one succeeded
       res.status(200).json(response);
     } catch (error: any) {
       console.error("Bulk upload error:", error);
@@ -2396,23 +2454,46 @@ app.get("/api/file-templates/employee_import/download", verifyToken, async (req:
     }
     
     console.log("Template download authorized for user:", req.user.email);
-
-    // Create a new workbook
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Employee Template');
-
-    // Add headers
+    
+    // Get desired format from query parameter (default to xlsx if not specified)
+    const format = req.query.format as string || 'xlsx';
+    
+    // Define headers and sample data
     const headers = [
       'name', 'surname', 'email', 'password', 'dateOfBirth', 'dateJoined',
       'jobTitle', 'department', 'isManager', 'managerEmail', 'status', 'sex', 'nationality', 'phoneNumber'
     ];
+    
+    const sampleData = [
+      'John', 'Doe', 'john.doe@company.com', 'password123', '1990-01-01', '2023-01-01',
+      'Software Engineer', 'Engineering', 'No', 'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
+    ];
+
+    // Handle CSV format request
+    if (format.toLowerCase() === 'csv') {
+      // Generate CSV content
+      let csvContent = headers.join(',') + '\n';
+      csvContent += sampleData.join(',');
+      
+      // Set response headers for CSV download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+      res.setHeader('Cache-Control', 'no-cache');
+      
+      // Send CSV response
+      res.send(csvContent);
+      return;
+    } 
+    
+    // Default: Generate Excel file (xlsx)
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Employee Template');
+
+    // Add headers
     worksheet.addRow(headers);
 
     // Add sample data
-    worksheet.addRow([
-      'John', 'Doe', 'john.doe@company.com', 'password123', '1990-01-01', '2023-01-01',
-      'Software Engineer', 'Engineering', 'No', 'manager@company.com', 'active', 'male', 'American', '+1 (555) 123-4567'
-    ]);
+    worksheet.addRow(sampleData);
 
     // Format header row
     worksheet.getRow(1).font = { bold: true };
