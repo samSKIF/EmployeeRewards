@@ -93,7 +93,7 @@ export default function AdminEmployeesPage() {
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
     const token = firebaseToken || jwtToken;
-    
+
     if (!token) {
       toast({
         title: "Authentication Error",
@@ -102,7 +102,7 @@ export default function AdminEmployeesPage() {
       });
       return;
     }
-    
+
     try {
       // Use fetch with Authorization header instead of direct URL navigation
       const response = await fetch('/api/file-templates/employee_import/download', {
@@ -110,28 +110,28 @@ export default function AdminEmployeesPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`Template download failed with status: ${response.status}`);
       }
-      
+
       // Convert the response to a blob
       const blob = await response.blob();
-      
+
       // Create a URL for the blob
       const url = window.URL.createObjectURL(blob);
-      
+
       // Create a temporary link element to trigger the download
       const a = document.createElement('a');
       a.href = url;
       a.download = 'employee_template.xlsx';
       document.body.appendChild(a);
       a.click();
-      
+
       // Clean up
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       // Show success message
       toast({
         title: "Template Downloaded",
@@ -234,11 +234,11 @@ export default function AdminEmployeesPage() {
       const firebaseToken = localStorage.getItem("firebaseToken");
       const jwtToken = localStorage.getItem("token"); 
       const token = firebaseToken || jwtToken;
-      
+
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
-      
+
       // Log file information for debugging
       const file = formData.get('file') as File;
       console.log("Uploading file:", {
@@ -246,11 +246,11 @@ export default function AdminEmployeesPage() {
         type: file.type,
         size: file.size
       });
-      
+
       try {
         // Use Authorization header instead of form data or query parameter
         console.log("Using Authorization header for authentication");
-        
+
         const response = await fetch('/api/admin/employees/bulk-upload', {
           method: 'POST',
           headers: {
@@ -259,14 +259,14 @@ export default function AdminEmployeesPage() {
           body: formData,
           // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
         });
-        
+
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('Unauthorized: Invalid authentication token');
           }
           const errorText = await response.text();
           let errorMessage = 'Bulk upload failed';
-          
+
           try {
             // Try to parse as JSON
             const errorJson = JSON.parse(errorText);
@@ -275,10 +275,10 @@ export default function AdminEmployeesPage() {
             // If not JSON, use the raw text
             errorMessage = errorText || errorMessage;
           }
-          
+
           throw new Error(errorMessage);
         }
-        
+
         return await response.json();
       } catch (error) {
         console.error("File upload error:", error);
@@ -364,7 +364,7 @@ export default function AdminEmployeesPage() {
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
     const token = firebaseToken || jwtToken;
-    
+
     if (!token) {
       toast({
         title: "Error",
@@ -376,17 +376,17 @@ export default function AdminEmployeesPage() {
 
     const formData = new FormData();
     formData.append('file', bulkUploadFile);
-    
+
     // Token is sent via Authorization header in the mutationFn
     console.log("Sending bulk upload with file:", bulkUploadFile.name);
-    
+
     bulkUploadMutation.mutate(formData);
   }
 
   function getInitials(name: string, surname: string | null) {
     return `${name.charAt(0)}${surname ? surname.charAt(0) : ''}`.toUpperCase();
   }
-  
+
   // Filter employees based on search query
   const filteredEmployees = employees?.filter(employee => {
     const searchLower = searchQuery.toLowerCase();
@@ -431,7 +431,7 @@ export default function AdminEmployeesPage() {
               className="max-w-sm"
             />
           </div>
-          
+
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -505,7 +505,7 @@ export default function AdminEmployeesPage() {
               Create a new employee account. All fields marked with * are required.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">First Name *</Label>
@@ -517,7 +517,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="surname">Last Name *</Label>
               <Input
@@ -528,7 +528,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="email">Email *</Label>
               <Input
@@ -540,7 +540,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="username">Username *</Label>
               <Input
@@ -551,7 +551,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="password">Default Password *</Label>
               <Input
@@ -563,7 +563,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
@@ -573,7 +573,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="jobTitle">Job Title</Label>
               <Input
@@ -583,7 +583,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="department">Department</Label>
               <Input
@@ -593,7 +593,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="sex">Gender</Label>
               <Select name="sex" value={formData.sex} onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
@@ -608,7 +608,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="nationality">Nationality</Label>
               <Input
@@ -618,7 +618,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="birthDate">Date of Birth</Label>
               <Input
@@ -629,7 +629,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="hireDate">Hire Date</Label>
               <Input
@@ -640,7 +640,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
               <Select name="status" value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
@@ -654,7 +654,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="avatarUrl">Profile Picture URL</Label>
               <Input
@@ -665,7 +665,7 @@ export default function AdminEmployeesPage() {
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2 mt-8">
               <Checkbox 
                 id="isAdmin" 
@@ -675,7 +675,7 @@ export default function AdminEmployeesPage() {
               <Label htmlFor="isAdmin">Admin privileges</Label>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button 
               variant="outline" 
@@ -706,7 +706,7 @@ export default function AdminEmployeesPage() {
               Update employee information. Leave password blank to keep the current password.
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Same form fields as Create Dialog but with current values */}
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="grid gap-2">
@@ -719,7 +719,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-surname">Last Name *</Label>
               <Input
@@ -730,7 +730,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-email">Email *</Label>
               <Input
@@ -742,7 +742,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-username">Username *</Label>
               <Input
@@ -753,7 +753,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-password">New Password (optional)</Label>
               <Input
@@ -765,7 +765,7 @@ export default function AdminEmployeesPage() {
                 placeholder="Leave blank to keep current password"
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-phoneNumber">Phone Number</Label>
               <Input
@@ -775,7 +775,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-jobTitle">Job Title</Label>
               <Input
@@ -785,7 +785,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-department">Department</Label>
               <Input
@@ -795,7 +795,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-sex">Gender</Label>
               <Select name="sex" value={formData.sex} onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
@@ -810,7 +810,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-nationality">Nationality</Label>
               <Input
@@ -820,7 +820,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-birthDate">Date of Birth</Label>
               <Input
@@ -831,7 +831,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-hireDate">Hire Date</Label>
               <Input
@@ -842,7 +842,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
               <Select name="status" value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
@@ -856,7 +856,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-avatarUrl">Profile Picture URL</Label>
               <Input
@@ -867,7 +867,7 @@ export default function AdminEmployeesPage() {
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2 mt-8">
               <Checkbox 
                 id="edit-isAdmin" 
@@ -877,7 +877,7 @@ export default function AdminEmployeesPage() {
               <Label htmlFor="edit-isAdmin">Admin privileges</Label>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button 
               variant="outline" 
@@ -896,7 +896,7 @@ export default function AdminEmployeesPage() {
                   if (!updatedData.password) {
                     delete updatedData.password;
                   }
-                  
+
                   updateMutation.mutate({
                     id: currentEmployee.id, 
                     data: updatedData
@@ -921,7 +921,7 @@ export default function AdminEmployeesPage() {
               Are you sure you want to delete {currentEmployee?.name} {currentEmployee?.surname}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          
+
           <DialogFooter>
             <Button 
               variant="outline" 
@@ -954,13 +954,13 @@ export default function AdminEmployeesPage() {
               Upload a CSV file containing employee information. Download a template to see the required format.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <Button variant="outline" size="sm" className="w-full justify-start" onClick={downloadTemplate}>
               <FileText className="mr-2 h-4 w-4" />
               Download template CSV
             </Button>
-            
+
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="file-upload">Upload CSV or Excel File</Label>
               <Input 
@@ -970,14 +970,14 @@ export default function AdminEmployeesPage() {
                 onChange={handleFileChange}
               />
             </div>
-            
+
             {bulkUploadFile && (
               <p className="text-sm text-muted-foreground">
                 Selected file: {bulkUploadFile.name}
               </p>
             )}
           </div>
-          
+
           <DialogFooter>
             <Button 
               variant="outline" 
