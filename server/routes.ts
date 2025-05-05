@@ -9,8 +9,6 @@ import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
-import multer from 'multer';
-import { v4 as uuidv4 } from 'uuid';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -2117,42 +2115,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload handler for employee bulk upload - using custom auth to support token in form data
-  // Create a special instance of multer just for this route
-  const csvUpload = multer({
-    storage: multer.memoryStorage(), // Use memory storage for processing the file directly
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    fileFilter: function (_req, file, cb) {
-      console.log("Bulk upload file info:", {
-        originalname: file.originalname,
-        mimetype: file.mimetype
-      });
-      
-      // Accept CSV and Excel files
-      const filetypes = /csv|xlsx|xls/;
-      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-      const mimetype = /text\/csv|application\/vnd.ms-excel|application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application\/octet-stream/.test(file.mimetype);
-      
-      console.log("File check:", { extname, mimetype });
-      
-      if (mimetype || extname) {
-        return cb(null, true);
-      } else {
-        cb(new Error('Error: Only CSV and Excel files are allowed!'));
-      }
-    }
-  });
-  
-  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, csvUpload.single('file'), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/admin/employees/bulk-upload", documentUpload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      if (!req.user) {
-        return res.status(401).json({ message: "Unauthorized: User not found" });
+      // Get token from form data 
+      const token = req.body.token;
+      if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });
       }
       
-      const userData = req.user;
+      // Verify the token
+      let userData;
+      try {
+        // Decode the token without verification first to get the UID
+        const decodedPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        
+        if (decodedPayload && decodedPayload.sub) {
+          // Get user from database
+          const firebaseUid = decodedPayload.sub;
+          const user = await db.select()
+            .from(users)
+            .where(eq(users.firebaseUid, firebaseUid))
+            .then(rows => rows[0]);
+          
+          if (!user) {
+            return res.status(401).json({ message: "Unauthorized: User not found" });
+          }
+          
+          if (!user.isAdmin) {
+            return res.status(403).json({ message: "Forbidden: Admin access required" });
+          }
+          
+          userData = user;
+        } else {
+          return res.status(401).json({ message: "Unauthorized: Invalid token format" });
+        }
+      } catch (error) {
+        console.error("Token verification error:", error);
+        return res.status(401).json({ message: "Unauthorized: Token verification failed" });
+      }
 
       // Import XLSX functionality
       const XLSX = require('xlsx');
@@ -2276,14 +2280,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint for downloading employee template CSV/Excel
-app.get("/api/file-templates/employee_import/download", verifyToken, async (req: AuthenticatedRequest, res) => {
+app.get("/api/file-templates/employee_import/download", async (req: AuthenticatedRequest, res) => {
   try {
-    // User is already authenticated via verifyToken middleware
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized: User not found" });
-    }
+    // Get token from query parameter
+    const token = req.query.token as string;
     
-    console.log("Template download authorized for user:", req.user.email);
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
 
     // Create a new workbook
     const workbook = new ExcelJS.Workbook();

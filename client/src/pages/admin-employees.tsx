@@ -88,7 +88,7 @@ export default function AdminEmployeesPage() {
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
   // Download template function
-  const downloadTemplate = async () => {
+  const downloadTemplate = () => {
     // Get Firebase token first, then fallback to JWT token (matching queryClient.ts approach)
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
@@ -103,48 +103,14 @@ export default function AdminEmployeesPage() {
       return;
     }
     
-    try {
-      // Use fetch with Authorization header instead of direct URL navigation
-      const response = await fetch('/api/file-templates/employee_import/download', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Template download failed with status: ${response.status}`);
-      }
-      
-      // Convert the response to a blob
-      const blob = await response.blob();
-      
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary link element to trigger the download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'employee_template.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      // Show success message
-      toast({
-        title: "Template Downloaded",
-        description: "Employee template has been downloaded to your device"
-      });
-    } catch (error) {
-      console.error("Template download error:", error);
-      toast({
-        title: "Download Failed",
-        description: error instanceof Error ? error.message : "Failed to download template. Please try again.",
-        variant: "destructive"
-      });
-    }
+    // Use direct window location navigation for the download
+    window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
+    
+    // Show success message
+    toast({
+      title: "Template Downloading",
+      description: "Employee template is being downloaded to your device"
+    });
   };
 
   // Fetch employees
@@ -232,58 +198,31 @@ export default function AdminEmployeesPage() {
     mutationFn: async (formData: FormData) => {
       // Get Firebase token first, then fallback to JWT token
       const firebaseToken = localStorage.getItem("firebaseToken");
-      const jwtToken = localStorage.getItem("token"); 
+      const jwtToken = localStorage.getItem("token");
       const token = firebaseToken || jwtToken;
       
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
-      // Log file information for debugging
-      const file = formData.get('file') as File;
-      console.log("Uploading file:", {
-        name: file.name,
-        type: file.type,
-        size: file.size
+      // Add token to the formData instead of using headers for multipart/form-data
+      formData.append('token', token);
+      
+      const response = await fetch('/api/admin/employees/bulk-upload', {
+        method: 'POST',
+        body: formData,
+        // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
       });
       
-      try {
-        // Use Authorization header instead of form data or query parameter
-        console.log("Using Authorization header for authentication");
-        
-        const response = await fetch('/api/admin/employees/bulk-upload', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData,
-          // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Unauthorized: Invalid authentication token');
-          }
-          const errorText = await response.text();
-          let errorMessage = 'Bulk upload failed';
-          
-          try {
-            // Try to parse as JSON
-            const errorJson = JSON.parse(errorText);
-            errorMessage = errorJson.message || errorMessage;
-          } catch (e) {
-            // If not JSON, use the raw text
-            errorMessage = errorText || errorMessage;
-          }
-          
-          throw new Error(errorMessage);
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Invalid authentication token');
         }
-        
-        return await response.json();
-      } catch (error) {
-        console.error("File upload error:", error);
-        throw error;
+        const error = await response.json();
+        throw new Error(error.message || 'Bulk upload failed');
       }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -360,26 +299,8 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    // Get Firebase token directly from auth
-    const firebaseToken = localStorage.getItem("firebaseToken");
-    const jwtToken = localStorage.getItem("token");
-    const token = firebaseToken || jwtToken;
-    
-    if (!token) {
-      toast({
-        title: "Error",
-        description: "Authentication token not found. Please log in again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const formData = new FormData();
     formData.append('file', bulkUploadFile);
-    
-    // Token is sent via Authorization header in the mutationFn
-    console.log("Sending bulk upload with file:", bulkUploadFile.name);
-    
     bulkUploadMutation.mutate(formData);
   }
 

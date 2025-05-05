@@ -49,22 +49,10 @@ export const documentUpload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: function (_req, file, cb) {
-    // Log file information for debugging
-    console.log("Document upload attempted - file information:", {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      extension: path.extname(file.originalname).toLowerCase()
-    });
-    
     // Allow CSV and Excel files
     const filetypes = /csv|xlsx|xls/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = /text\/csv|application\/vnd.ms-excel|application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application\/octet-stream/.test(file.mimetype);
-
-    console.log("File validation results:", {
-      extname_valid: extname,
-      mimetype_valid: mimetype
-    });
 
     if (mimetype || extname) {
       return cb(null, true);
