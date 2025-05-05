@@ -2182,9 +2182,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isCSV) {
         try {
           const csvString = req.file.buffer.toString('utf8');
-          // Log first few lines of the CSV file for debugging
-          console.log("CSV file content (first 500 chars):", csvString.substring(0, 500));
-          
           const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
           
           if (lines.length === 0) {
@@ -2193,68 +2190,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Parse headers from first line
           const headerLine = lines[0];
-          console.log("CSV headers line:", headerLine);
+          headerLine.split(',').forEach(header => {
+            headers.push(header.trim());
+          });
           
-          // More robust header parsing
-          const headerRegex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
-          let match;
-          while ((match = headerRegex.exec(headerLine + ',')) !== null) {
-            let header = match[1];
-            // Remove quotes if present
-            if (header.startsWith('"') && header.endsWith('"')) {
-              header = header.substring(1, header.length - 1).replace(/""/g, '"');
-            }
-            if (header) {
-              headers.push(header.trim());
-            }
-          }
-          
-          console.log("Parsed headers:", headers);
-          
-          // Parse data rows with better CSV handling
+          // Parse data rows
           for (let i = 1; i < lines.length; i++) {
-            const line = lines[i];
-            // Skip empty lines
-            if (!line.trim()) continue;
-            
-            // More robust value parsing
-            const rowValues: string[] = [];
-            let currentPos = 0;
-            let inQuotes = false;
-            let currentValue = '';
-            
-            while (currentPos < line.length) {
-              const char = line[currentPos];
-              
-              if (char === '"' && (currentPos === 0 || line[currentPos - 1] !== '\\')) {
-                inQuotes = !inQuotes;
-              } else if (char === ',' && !inQuotes) {
-                rowValues.push(currentValue.trim());
-                currentValue = '';
-              } else {
-                currentValue += char;
-              }
-              
-              currentPos++;
-            }
-            
-            // Add the last value
-            rowValues.push(currentValue.trim());
-            
-            // Only process rows with the right number of columns
-            if (rowValues.length >= headers.length) {
+            const values = lines[i].split(',').map(value => value.trim());
+            if (values.length === headers.length) {
               const rowData: Record<string, any> = {};
               headers.forEach((header, index) => {
-                let value = rowValues[index] || '';
-                // Remove quotes if present
-                if (value.startsWith('"') && value.endsWith('"')) {
-                  value = value.substring(1, value.length - 1).replace(/""/g, '"');
-                }
-                rowData[header] = value;
+                rowData[header] = values[index];
               });
               data.push(rowData);
-            } else {
-              console.log(`Skipping row ${i+1}: expected ${headers.length} columns, got ${rowValues.length}`);
             }
           }
         } catch (error) {
@@ -2311,15 +2259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Validate headers - check for required fields
       const requiredFields = ['name', 'email'];
-      
-      // First normalize header names (lowercase and trim for case-insensitive comparison)
-      const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
-      console.log("Normalized headers for checking:", normalizedHeaders);
-      
-      // Check for missing fields using normalized names
-      const missingFields = requiredFields.filter(field => 
-        !normalizedHeaders.includes(field.toLowerCase().trim())
-      );
+      const missingFields = requiredFields.filter(field => !headers.includes(field));
       
       if (missingFields.length > 0) {
         return res.status(400).json({ 
@@ -2327,38 +2267,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Create a map for case-insensitive field lookup
-      const headerMap: Record<string, string> = {};
-      headers.forEach((header, index) => {
-        headerMap[header.toLowerCase().trim()] = header;
-      });
-      console.log("Header mapping:", headerMap);
-      
       // Process each employee record
       const validationErrors: string[] = [];
       
-      // Log the first few records to debug
-      console.log("First row data:", data.length > 0 ? JSON.stringify(data[0]) : "No data");
-      console.log("Fields in first row:", data.length > 0 ? Object.keys(data[0]) : "No data");
-      
       const results = await Promise.all(data.map(async (row, index) => {
         try {
-          // Use header map for case-insensitive field access
-          const getName = () => {
-            const nameField = headerMap['name'];
-            return nameField ? row[nameField] : null;
-          };
-          
-          const getEmail = () => {
-            const emailField = headerMap['email'];
-            return emailField ? row[emailField] : null;
-          };
-          
           // Validate required fields
-          const name = getName();
-          const email = getEmail();
-          
-          if (!name || !email) {
+          if (!row.name || !row.email) {
             const rowNum = index + 2; // +2 because index is 0-based and we need to account for header row
             validationErrors.push(`Row ${rowNum}: Missing required fields (name or email)`);
             return null;
@@ -2366,99 +2281,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Check email format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(String(email))) {
+          if (!emailRegex.test(String(row.email))) {
             const rowNum = index + 2;
-            validationErrors.push(`Row ${rowNum}: Invalid email format for ${email}`);
+            validationErrors.push(`Row ${rowNum}: Invalid email format for ${row.email}`);
             return null;
           }
           
           // Check if email already exists in database
-          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, String(email)));
+          const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, String(row.email)));
           if (existingEmployee) {
             const rowNum = index + 2;
-            validationErrors.push(`Row ${rowNum}: Email ${email} already exists in the system`);
+            validationErrors.push(`Row ${rowNum}: Email ${row.email} already exists in the system`);
             return null;
           }
           
-          // Helper functions for accessing other fields
-          const getField = (fieldName: string) => {
-            const field = headerMap[fieldName.toLowerCase()];
-            return field && row[field] ? row[field] : null;
-          };
-          
-          // Get other fields
-          const surname = getField('surname');
-          const password = getField('password');
-          const jobTitle = getField('jobTitle');
-          const department = getField('department');
-          const isManager = getField('isManager');
-          
           // Hash password or use default
-          const hashedPassword = await hash(password || 'password123', 10);
+          const hashedPassword = await hash(row.password || 'password123', 10);
           
           // Format dates
           let dateOfBirth = null;
-          const dobField = getField('dateOfBirth');
-          if (dobField) {
+          if (row.dateOfBirth) {
             try {
-              dateOfBirth = new Date(dobField);
+              dateOfBirth = new Date(row.dateOfBirth);
               // Check if date is valid
               if (isNaN(dateOfBirth.getTime())) {
-                console.log(`Invalid date format for dateOfBirth: ${dobField}`);
                 dateOfBirth = null;
               }
             } catch (e) {
-              console.log(`Error parsing dateOfBirth: ${dobField}`, e);
               dateOfBirth = null;
             }
           }
           
           let dateJoined = new Date();
-          const djField = getField('dateJoined');
-          if (djField) {
+          if (row.dateJoined) {
             try {
-              const parsedDate = new Date(djField);
+              const parsedDate = new Date(row.dateJoined);
               if (!isNaN(parsedDate.getTime())) {
                 dateJoined = parsedDate;
-              } else {
-                console.log(`Invalid date format for dateJoined: ${djField}`);
               }
             } catch (e) {
-              console.log(`Error parsing dateJoined: ${djField}`, e);
               // Keep default date if parsing fails
             }
           }
           
-          // Determine status from field if available
-          const status = getField('status') || 'active';
-          
-          // Determine if manager flag is set
-          const isManagerFlag = 
-            isManager && String(isManager).toLowerCase() === 'yes' || 
-            isManager === true || 
-            isManager === 1 || 
-            isManager === '1';
-          
-          // Print row values for debugging
-          console.log(`Row ${index + 2} pre-insert values:`, { 
-            name, email, surname, jobTitle, department, 
-            isManager: isManagerFlag,
-            dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
-            dateJoined: dateJoined.toISOString()
-          });
-          
           // Insert employee record
           return await db.insert(employees).values({
-            name: String(name),
-            surname: surname ? String(surname) : '',
-            email: String(email),
+            name: String(row.name),
+            surname: row.surname ? String(row.surname) : '',
+            email: String(row.email),
             password: hashedPassword,
             dateOfBirth,
             dateJoined,
-            jobTitle: jobTitle ? String(jobTitle) : '',
-            department: department ? String(department) : '',
-            isManager: isManagerFlag,
-            status: String(status),
+            jobTitle: row.jobTitle ? String(row.jobTitle) : '',
+            department: row.department ? String(row.department) : '',
+            isManager: String(row.isManager).toLowerCase() === 'yes' || false,
+            status: 'active',
             createdById: userData.id,
             createdAt: new Date()
           });
@@ -2470,24 +2347,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }));
       
-      // Count successes
+      // Prepare response
       const successCount = results.filter(r => r !== null).length;
       
-      // Prepare detailed response
       const response = {
         message: `Processed ${successCount} of ${data.length} employees`,
         success: successCount,
         total: data.length,
-        count: successCount, // Keep for backwards compatibility
-        errors: validationErrors.length > 0 ? validationErrors : []
+        errors: validationErrors.length > 0 ? validationErrors : undefined
       };
-      
-      // Log the import summary for debugging
-      console.log("Employee import summary:", {
-        success: successCount,
-        total: data.length,
-        errorCount: validationErrors.length
-      });
       
       // If no records imported successfully but we have errors, return 400 status
       if (successCount === 0 && validationErrors.length > 0) {

@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Check } from "lucide-react";
+import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload } from "lucide-react";
 import { format } from "date-fns";
 
 // Define employee form data type
@@ -292,150 +292,38 @@ export default function AdminEmployeesPage() {
           throw new Error(errorMessage);
         }
 
-        // Check for JSON content type in response
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          return await response.json();
-        } else {
-          // If not JSON, try to get text and then parse it as JSON with fallback to text message
-          const text = await response.text();
-          try {
-            return JSON.parse(text);
-          } catch (e) {
-            console.log("Response was not JSON, returning as text in message property:", text);
-            return { 
-              success: 0, 
-              total: 0, 
-              message: text || "Upload completed, but response format is unknown" 
-            };
-          }
-        }
+        return await response.json();
       } catch (error) {
         console.error("File upload error:", error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      // Extract data with fallbacks to handle different response formats
-      const success = data.success ?? data.count ?? 0;
-      const total = data.total ?? 0;
-      const errors = data.errors ?? [];
-      const errorCount = Array.isArray(errors) ? errors.length : 0;
-      
-      console.log("Bulk upload response:", data);
+      const { success, total, errors } = data;
       
       if (success === total) {
         toast({
           title: "Upload Complete",
           description: `Successfully imported all ${total} employees.`,
         });
-      } else if (success > 0) {
-        // Show partial success alert with error details available
+      } else {
         toast({
           title: "Upload Partially Complete",
-          description: `Imported ${success} of ${total} employees. ${errorCount} validation errors found.`,
-          variant: "destructive",
+          description: `Imported ${success} of ${total} employees. ${errors?.length || 0} errors found.`,
+          variant: "warning",
         });
-        
-        // Also log detailed errors to console for debugging
-        if (Array.isArray(errors) && errors.length > 0) {
-          console.log("Validation errors:", errors);
-          
-          // Show the first few errors in a separate toast for visibility
-          const errorSample = errors.slice(0, 3).join('\n');
-          const hasMoreErrors = errors.length > 3;
-          
-          toast({
-            title: "Import Error Examples",
-            description: `${errorSample}${hasMoreErrors ? `\n...and ${errors.length - 3} more errors` : ''}`,
-            variant: "destructive",
-            duration: 10000 // Show longer for user to read
-          });
-        }
-      } else {
-        // Complete failure
-        toast({
-          title: "Upload Failed",
-          description: `None of the ${total} employee records could be imported. Please check the file format.`,
-          variant: "destructive",
-        });
-        
-        // Also log detailed errors to console for debugging
-        if (Array.isArray(errors) && errors.length > 0) {
-          console.log("Validation errors:", errors);
-          
-          // Show the first few errors in a separate toast for visibility
-          const errorSample = errors.slice(0, 3).join('\n');
-          const hasMoreErrors = errors.length > 3;
-          
-          toast({
-            title: "Import Errors",
-            description: `${errorSample}${hasMoreErrors ? `\n...and ${errors.length - 3} more errors` : ''}`,
-            variant: "destructive",
-            duration: 10000 // Show longer for user to read
-          });
-        }
       }
       
-      // Force a full refetch to ensure we get updated data - use three different approaches for reliability
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'], refetchType: 'all' });
-      
-      // Immediate refetch to get updated data
-      queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
-      
-      // Scheduled refetch after a delay to ensure server had time to process
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
-      }, 300);
-      
-      // Third approach: scheduled refresh of all HR-related queries
-      setTimeout(() => {
-        console.log("Performing extra refresh of HR data");
-        queryClient.invalidateQueries({ queryKey: ['/api/hr'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
-      }, 500);
-      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
       setIsUploadDialogOpen(false);
       setBulkUploadFile(null);
     },
     onError: (error: any) => {
-      console.error("Bulk upload error:", error);
-      
-      // Get a meaningful error message
-      let errorMessage = "Failed to bulk upload employees";
-      
-      if (error.message) {
-        // Try to extract a structured error if it's in JSON format inside the message
-        try {
-          if (error.message.includes('{') && error.message.includes('}')) {
-            const jsonStartIndex = error.message.indexOf('{');
-            const jsonString = error.message.substring(jsonStartIndex);
-            const jsonError = JSON.parse(jsonString);
-            
-            if (jsonError.message) {
-              errorMessage = jsonError.message;
-            } else if (jsonError.error) {
-              errorMessage = jsonError.error;
-            } else {
-              errorMessage = error.message;
-            }
-          } else {
-            errorMessage = error.message;
-          }
-        } catch (e) {
-          // If JSON parsing fails, just use the original message
-          errorMessage = error.message;
-        }
-      }
-      
       toast({
-        title: "Upload Failed",
-        description: errorMessage,
+        title: "Error",
+        description: error.message || "Failed to bulk upload employees",
         variant: "destructive",
       });
-      
-      setIsUploadDialogOpen(false);
-      setBulkUploadFile(null);
     }
   });
 
@@ -1087,26 +975,13 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Upload CSV, XLS, or XLSX files containing employee information. Follow these steps for successful imports.
+              Upload CSV, XLS, or XLSX files containing employee information. Download a template in your preferred format below.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="bg-accent/30 rounded-md p-3 border border-accent">
-              <h4 className="font-medium text-sm mb-2">Import Instructions:</h4>
-              <ol className="text-sm space-y-1 text-muted-foreground list-decimal pl-5">
-                <li>Download the template in your preferred format</li>
-                <li>Fill in employee information (leave ID blank for new employees)</li>
-                <li>Required fields: name, email, username, and password</li>
-                <li>Save your file and upload using the form below</li>
-              </ol>
-            </div>
-            
+          <div className="space-y-4 py-4">
             <div className="flex flex-col gap-2">
-              <Label className="text-base">Step 1: Download Template</Label>
-              <p className="text-sm text-muted-foreground mb-2">
-                Choose your preferred file format:
-              </p>
+              <p className="text-sm font-medium">Download Template (select format):</p>
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
@@ -1129,11 +1004,8 @@ export default function AdminEmployeesPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-base" htmlFor="file-upload">Step 2: Upload Your File</Label>
-              <p className="text-sm text-muted-foreground mb-2">
-                Select your completed employee data file (CSV, XLS, or XLSX format)
-              </p>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="file-upload">Select CSV, XLS, or XLSX File</Label>
               <Input 
                 id="file-upload" 
                 type="file" 
@@ -1143,15 +1015,9 @@ export default function AdminEmployeesPage() {
             </div>
 
             {bulkUploadFile && (
-              <div className="bg-primary/5 border border-primary/10 rounded-md p-3">
-                <p className="text-sm font-medium flex items-center">
-                  <Check className="h-4 w-4 mr-2 text-primary" />
-                  File selected: {bulkUploadFile.name}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {bulkUploadFile.type || (bulkUploadFile.name.endsWith('.csv') ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')} | {Math.round(bulkUploadFile.size / 1024)} KB
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Selected file: {bulkUploadFile.name}
+              </p>
             )}
           </div>
 
