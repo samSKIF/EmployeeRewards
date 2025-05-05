@@ -2160,31 +2160,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Import XLSX functionality
       const XLSX = require('xlsx');
+      const fs = require('fs');
       
-      // Read the uploaded file
-      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      console.log("Uploaded file:", req.file);
+      
+      // Read the uploaded file - handling both buffer and file path
+      let workbook;
+      if (req.file.buffer) {
+        // If the file is available as a buffer
+        workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      } else if (req.file.path) {
+        // If multer saved it to disk
+        const fileData = fs.readFileSync(req.file.path);
+        workbook = XLSX.read(fileData, { type: 'buffer' });
+      } else {
+        return res.status(400).json({ message: "Invalid file format or empty file" });
+      }
+      
+      // Check if we have any worksheets
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        return res.status(400).json({ message: "Could not process file - no worksheets found" });
+      }
+      
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json(worksheet);
 
+      // Log the data we're processing
+      console.log("CSV data parsed:", data);
+      
       // Process each employee record
-      const results = await Promise.all(data.map(async (row: any) => {
+      const results = await Promise.all(data.map(async (row: any, index: number) => {
         try {
+          // validate required fields
+          if (!row.name || !row.email) {
+            console.error(`Row ${index + 1}: Missing required field (name or email)`);
+            return null;
+          }
+          
           const hashedPassword = await hash(row.password || 'password123', 10);
           
-          return await db.insert(employees).values({
+          // Check if the email already exists
+          const [existingUser] = await db
+            .select()
+            .from(employees)
+            .where(eq(employees.email, row.email));
+            
+          if (existingUser) {
+            console.error(`Row ${index + 1}: Email ${row.email} already exists in database`);
+            return null;
+          }
+          
+          // Convert date strings to Date objects, with validation
+          let dateOfBirth = null;
+          if (row.dateOfBirth) {
+            try {
+              dateOfBirth = new Date(row.dateOfBirth);
+              // Check if valid date
+              if (isNaN(dateOfBirth.getTime())) {
+                dateOfBirth = null;
+              }
+            } catch (err) {
+              console.error(`Invalid date format for dateOfBirth: ${row.dateOfBirth}`);
+              dateOfBirth = null;
+            }
+          }
+          
+          let dateJoined = new Date();
+          if (row.dateJoined) {
+            try {
+              dateJoined = new Date(row.dateJoined);
+              // Check if valid date
+              if (isNaN(dateJoined.getTime())) {
+                dateJoined = new Date();
+              }
+            } catch (err) {
+              console.error(`Invalid date format for dateJoined: ${row.dateJoined}`);
+            }
+          }
+          
+          // Construct the employee record from CSV data
+          const employeeData = {
             name: row.name,
             surname: row.surname || '',
             email: row.email,
             password: hashedPassword,
-            dateOfBirth: row.dateOfBirth ? new Date(row.dateOfBirth) : null,
-            dateJoined: row.dateJoined ? new Date(row.dateJoined) : new Date(),
+            username: row.username || row.email.split('@')[0], // default to email prefix if username not provided
+            phoneNumber: row.phoneNumber || null,
             jobTitle: row.jobTitle || '',
             department: row.department || '',
-            isManager: row.isManager === 'Yes' || false,
-            status: 'active',
-            createdById: userData.id, // Use the userData from token verification
-            createdAt: new Date()
-          });
+            dateOfBirth: dateOfBirth,
+            dateJoined: dateJoined,
+            status: row.status || 'active',
+            isManager: row.isManager === 'Yes',
+            sex: row.sex || null,
+            nationality: row.nationality || null,
+            createdAt: new Date(),
+            createdById: userData.id // Use the userData from token verification
+          };
+          
+          console.log(`Importing employee: ${row.name} (${row.email})`);
+          
+          // Insert the employee record
+          const result = await db.insert(employees).values(employeeData);
+          return result;
         } catch (err) {
           console.error('Error creating employee:', err);
           return null;
@@ -2290,9 +2368,9 @@ app.get("/api/file-templates/employee_import/download", async (req: Authenticate
     }
 
     // Simple employee template content as CSV
-    const csvContent = 'Username,Name,Surname,Email,Password,Phone Number,Job Title,Department,Status\n' +
-                      'john.doe,John,Doe,john.doe@example.com,password123,123-456-7890,Developer,IT,active\n' +
-                      'jane.smith,Jane,Smith,jane.smith@example.com,password123,098-765-4321,Designer,Marketing,active';
+    const csvContent = 'name,surname,email,password,dateOfBirth,dateJoined,jobTitle,department,isManager,status,phoneNumber,username\n' +
+                      'John,Doe,john.doe@example.com,password123,1990-01-01,2023-01-01,Developer,IT,No,active,123-456-7890,john.doe\n' +
+                      'Jane,Smith,jane.smith@example.com,password123,1985-05-15,2022-03-01,Designer,Marketing,No,active,098-765-4321,jane.smith';
 
     // Set headers for file download
     res.setHeader('Content-Type', 'text/csv');
