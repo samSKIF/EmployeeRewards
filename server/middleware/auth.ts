@@ -4,7 +4,7 @@ import { User } from "@shared/schema";
 import { auth as firebaseAuth } from "../firebase-admin";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
-import { users } from "@shared/schema";
+import { users, employees } from "@shared/schema";
 
 // JWT secret - should be stored in environment variables (keeping for backward compatibility)
 const JWT_SECRET = process.env.JWT_SECRET || "rewardhub-secret-key";
@@ -84,9 +84,9 @@ export const verifyToken = async (
             console.error("Custom token decode failed:", error);
           }
           
-          // If not found by UID, try finding by email as fallback
+          // If not found by UID, try finding by email as fallback in users table
           if (!user && decodedPayload.email) {
-            console.log("User not found by UID, trying email:", decodedPayload.email);
+            console.log("User not found by UID, trying email in users table:", decodedPayload.email);
             try {
               user = await db.select()
                 .from(users)
@@ -112,6 +112,82 @@ export const verifyToken = async (
             } catch (error) {
               const emailLookupErr = error as { message?: string };
               console.error("Error looking up user by email:", emailLookupErr.message || "Unknown error");
+            }
+          }
+          
+          // If still not found, check the employees table
+          if (!user && decodedPayload.email) {
+            console.log("User not found in users table, checking employees table:", decodedPayload.email);
+            try {
+              // First try by Firebase UID in employees table
+              let employee = await db.select()
+                .from(employees)
+                .where(eq(employees.firebaseUid, firebaseUid))
+                .then(rows => rows[0]);
+                
+              // If not found by UID, try by email
+              if (!employee) {
+                employee = await db.select()
+                  .from(employees)
+                  .where(eq(employees.email, decodedPayload.email))
+                  .then(rows => rows[0]);
+                  
+                // Update Firebase UID if found and it doesn't match  
+                if (employee && employee.firebaseUid !== firebaseUid) {
+                  try {
+                    console.log(`Updating Firebase UID for employee ${employee.id} with email ${employee.email}`);
+                    await db.update(employees)
+                      .set({ firebaseUid: firebaseUid })
+                      .where(eq(employees.id, employee.id));
+                      
+                    // Update the employee object
+                    employee.firebaseUid = firebaseUid;
+                  } catch (error) {
+                    const updateErr = error as { message?: string };
+                    console.error("Error updating Firebase UID for employee:", updateErr.message || "Unknown error");
+                  }
+                }
+              }
+              
+              // If employee was found, create a user-compatible object
+              if (employee) {
+                console.log(`Employee found: ${employee.name} ${employee.surname || ''} (${employee.email})`);
+                
+                // Map employee fields to user fields with all required properties
+                user = {
+                  id: employee.id,
+                  email: employee.email,
+                  name: `${employee.name} ${employee.surname || ''}`.trim(),
+                  username: employee.email.split('@')[0],
+                  firebaseUid: employee.firebaseUid,
+                  password: employee.password || '', // Include password for type compatibility
+                  isAdmin: false,
+                  department: employee.department,
+                  jobTitle: employee.jobTitle,
+                  location: employee.location,
+                  // Add any other required fields with defaults
+                  birthDate: null,
+                  sex: employee.sex,
+                  title: employee.jobTitle,
+                  nationality: employee.nationality,
+                  phoneNumber: employee.phoneNumber,
+                  createdAt: employee.createdAt || new Date(),
+                  status: employee.status,
+                  avatarUrl: employee.photoUrl,
+                  surname: employee.surname,
+                  roleType: 'employee',
+                  createdBy: employee.createdById || null,
+                  organizationId: 1,
+                  hireDate: employee.dateJoined || null,
+                  // Add remaining missing fields required by the user type
+                  permissions: [],
+                  responsibilities: [],
+                  coverPhotoUrl: null
+                };
+              }
+            } catch (error) {
+              const employeeLookupErr = error as { message?: string };
+              console.error("Error looking up employee:", employeeLookupErr.message || "Unknown error");
             }
           }
           
@@ -152,29 +228,93 @@ export const verifyToken = async (
             .where(eq(users.firebaseUid, decodedToken.uid))
             .then(rows => rows[0]);
             
-          // If not found by Firebase UID, look in employee table
+          // If not found by Firebase UID, try looking by email in users table first
           if (!user) {
-            console.log("User not found by Firebase UID in users table, checking employees table by email:", decodedToken.email);
+            console.log("User not found by Firebase UID in users table, checking by email:", decodedToken.email);
             
-            // Check if user exists in employees table by email 
-            const employee = await db.select()
+            user = await db.select()
               .from(users)
               .where(eq(users.email, decodedToken.email))
               .then(rows => rows[0]);
               
-            if (employee) {
-              user = employee;
-              
+            if (user) {
               // Update Firebase UID if it doesn't match
-              if (employee.firebaseUid !== decodedToken.uid) {
-                console.log(`Updating Firebase UID for employee ${employee.id} with email ${employee.email}`);
+              if (user.firebaseUid !== decodedToken.uid) {
+                console.log(`Updating Firebase UID for user ${user.id} with email ${user.email}`);
                 await db.update(users)
                   .set({ firebaseUid: decodedToken.uid })
-                  .where(eq(users.id, employee.id));
+                  .where(eq(users.id, user.id));
                   
                 // Update the user object for this request
                 user.firebaseUid = decodedToken.uid;
               }
+            }
+          }
+          
+          // If still not found, look in the employees table
+          if (!user) {
+            console.log("User not found in users table, checking employees table:", decodedToken.email);
+            
+            // Try to find by Firebase UID first in employees table
+            let employee = await db.select()
+              .from(employees)
+              .where(eq(employees.firebaseUid, decodedToken.uid))
+              .then(rows => rows[0]);
+              
+            // If not found by UID, try by email
+            if (!employee) {
+              employee = await db.select()
+                .from(employees)
+                .where(eq(employees.email, decodedToken.email))
+                .then(rows => rows[0]);
+                
+              // Update Firebase UID if found and it doesn't match
+              if (employee && employee.firebaseUid !== decodedToken.uid) {
+                console.log(`Updating Firebase UID for employee ${employee.id} with email ${employee.email}`);
+                await db.update(employees)
+                  .set({ firebaseUid: decodedToken.uid })
+                  .where(eq(employees.id, employee.id));
+                  
+                // Update the employee object
+                employee.firebaseUid = decodedToken.uid;
+              }
+            }
+            
+            // If employee was found, create a user-compatible object
+            if (employee) {
+              console.log(`Employee found: ${employee.name} ${employee.surname || ''} (${employee.email})`);
+              
+              // Map employee fields to user fields with all required properties
+              user = {
+                id: employee.id,
+                email: employee.email,
+                name: `${employee.name} ${employee.surname || ''}`.trim(),
+                username: employee.email.split('@')[0],
+                firebaseUid: employee.firebaseUid,
+                password: employee.password || '', // Include password for type compatibility
+                isAdmin: false,
+                department: employee.department,
+                jobTitle: employee.jobTitle,
+                location: employee.location,
+                // Add any other required fields with defaults
+                birthDate: null,
+                sex: employee.sex,
+                title: employee.jobTitle,
+                nationality: employee.nationality,
+                phoneNumber: employee.phoneNumber,
+                createdAt: employee.createdAt || new Date(),
+                status: employee.status,
+                avatarUrl: employee.photoUrl,
+                surname: employee.surname,
+                roleType: 'employee',
+                createdBy: employee.createdById || null,
+                organizationId: 1,
+                hireDate: employee.dateJoined || null,
+                // Add remaining missing fields required by the user type
+                permissions: [],
+                responsibilities: [],
+                coverPhotoUrl: null
+              };
             }
           }
           
