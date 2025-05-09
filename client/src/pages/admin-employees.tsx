@@ -128,7 +128,17 @@ export default function AdminEmployeesPage() {
   // Create employee mutation
   const createMutation = useMutation({
     mutationFn: async (data: EmployeeFormData) => {
-      const response = await apiRequest('POST', '/api/auth/register', data);
+      // Generate a username from the email address (take everything before the @ symbol)
+      const emailParts = data.email.split('@');
+      const baseUsername = emailParts[0].toLowerCase().replace(/[^a-z0-9]/g, '.');
+      
+      // Add the username field to the data
+      const dataWithUsername = {
+        ...data,
+        username: baseUsername
+      };
+      
+      const response = await apiRequest('POST', '/api/auth/register', dataWithUsername);
       return await response.json();
     },
     onSuccess: () => {
@@ -152,6 +162,18 @@ export default function AdminEmployeesPage() {
   // Update employee mutation
   const updateMutation = useMutation({
     mutationFn: async (data: { id: number, data: Partial<EmployeeFormData> }) => {
+      // If we have an email, also generate a username
+      if (data.data.email) {
+        const emailParts = data.data.email.split('@');
+        const baseUsername = emailParts[0].toLowerCase().replace(/[^a-z0-9]/g, '.');
+        
+        // Add the username field to the data
+        data.data = {
+          ...data.data,
+          username: baseUsername
+        };
+      }
+      
       const response = await apiRequest('PATCH', `/api/admin/employees/${data.id}`, data.data);
       return await response.json();
     },
