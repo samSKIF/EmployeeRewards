@@ -96,10 +96,13 @@ export const verifyToken = async (
               // If found by email but Firebase UID doesn't match, update it
               if (user && user.firebaseUid !== firebaseUid) {
                 try {
-                  console.log("Updating Firebase UID for user:", user.id);
+                  console.log(`Updating Firebase UID for ${user.email} (ID: ${user.id})`);
                   await db.update(users)
                     .set({ firebaseUid: firebaseUid })
                     .where(eq(users.id, user.id));
+                    
+                  // Update the user object for this request
+                  user.firebaseUid = firebaseUid;
                 } catch (error) {
                   const updateErr = error as { message?: string };
                   console.error("Error updating Firebase UID - field may not exist:", updateErr.message || "Unknown error");
@@ -113,6 +116,7 @@ export const verifyToken = async (
           }
           
           if (user) {
+            console.log(`User found: ${user.name} (${user.email}), isAdmin: ${user.isAdmin}`);
             // Remove password from user object
             const { password: _, ...userWithoutPassword } = user;
             req.user = userWithoutPassword;
@@ -142,9 +146,41 @@ export const verifyToken = async (
       // Get the user from database by email
       if (decodedToken.email) {
         try {
-          const user = await db.select().from(users).where(eq(users.email, decodedToken.email)).then(rows => rows[0]);
+          // First, try to find the user by Firebase UID which is the most reliable way
+          let user = await db.select()
+            .from(users)
+            .where(eq(users.firebaseUid, decodedToken.uid))
+            .then(rows => rows[0]);
+            
+          // If not found by Firebase UID, look in employee table
+          if (!user) {
+            console.log("User not found by Firebase UID in users table, checking employees table by email:", decodedToken.email);
+            
+            // Check if user exists in employees table by email 
+            const employee = await db.select()
+              .from(users)
+              .where(eq(users.email, decodedToken.email))
+              .then(rows => rows[0]);
+              
+            if (employee) {
+              user = employee;
+              
+              // Update Firebase UID if it doesn't match
+              if (employee.firebaseUid !== decodedToken.uid) {
+                console.log(`Updating Firebase UID for employee ${employee.id} with email ${employee.email}`);
+                await db.update(users)
+                  .set({ firebaseUid: decodedToken.uid })
+                  .where(eq(users.id, employee.id));
+                  
+                // Update the user object for this request
+                user.firebaseUid = decodedToken.uid;
+              }
+            }
+          }
           
+          // If user is found in either table
           if (user) {
+            console.log(`User found: ${user.name} (${user.email}), isAdmin: ${user.isAdmin}`);
             // Remove password from user object
             const { password: _, ...userWithoutPassword } = user;
             req.user = userWithoutPassword;

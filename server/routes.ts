@@ -546,6 +546,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
+      console.log(`/api/users/me: Returning data for user ${req.user.id} (${req.user.name}, ${req.user.email})`);
+      
+      if (req.firebaseUid) {
+        console.log(`Firebase UID associated with request: ${req.firebaseUid}`);
+      }
+
       // Get the user's balance
       const balance = await storage.getUserBalance(req.user.id);
       
