@@ -138,7 +138,8 @@ export default function AdminEmployeesPage() {
         username: baseUsername
       };
       
-      const response = await apiRequest('POST', '/api/auth/register', dataWithUsername);
+      // Use the specific HR employees endpoint to ensure Firebase user creation
+      const response = await apiRequest('POST', '/api/hr/employees', dataWithUsername);
       return await response.json();
     },
     onSuccess: () => {
