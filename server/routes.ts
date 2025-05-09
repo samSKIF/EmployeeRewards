@@ -2349,15 +2349,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create Firebase user for the employee
       let firebaseUser = null;
       try {
-        firebaseUser = await auth.createUser({
-          email: validatedData.email,
-          password: validatedData.password, // Use the password before hashing
-          displayName: `${validatedData.name} ${validatedData.surname || ''}`.trim(),
-          emailVerified: true
-        });
-        console.log(`Created Firebase user for employee: ${validatedData.email} with UID: ${firebaseUser.uid}`);
+        // Important: Create Firebase user with the original password
+        // Firebase handles its own password hashing internally
+        console.log(`Creating Firebase user for employee: ${validatedData.email}`);
+        
+        // First, check if the user might already exist in Firebase
+        try {
+          const existingFirebaseUser = await auth.getUserByEmail(validatedData.email);
+          console.log(`User already exists in Firebase with UID: ${existingFirebaseUser.uid}`);
+          firebaseUser = existingFirebaseUser;
+        } catch (notFoundError) {
+          // User doesn't exist, create a new one
+          firebaseUser = await auth.createUser({
+            email: validatedData.email,
+            password: validatedData.password, // Use the password before hashing for DB
+            displayName: `${validatedData.name} ${validatedData.surname || ''}`.trim(),
+            emailVerified: true
+          });
+          console.log(`Created Firebase user for employee: ${validatedData.email} with UID: ${firebaseUser.uid}`);
+        }
       } catch (firebaseError) {
-        console.error(`Error creating Firebase user for employee: ${validatedData.email}`, firebaseError);
+        console.error(`Error with Firebase user for employee: ${validatedData.email}`, firebaseError);
         // Don't block database creation if Firebase fails
         // This helps with development and testing
       }
