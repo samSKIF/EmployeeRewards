@@ -467,13 +467,14 @@ export default function AdminEmployeesPage() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="username">Username *</Label>
+              <Label htmlFor="managerEmail">Manager's Email</Label>
               <Input
-                id="username"
-                name="username"
-                value={formData.username}
+                id="managerEmail"
+                name="managerEmail"
+                type="email"
+                value={formData.managerEmail}
                 onChange={handleInputChange}
-                required
+                placeholder="manager@company.com"
               />
             </div>
             
@@ -516,6 +517,17 @@ export default function AdminEmployeesPage() {
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="New York Office"
               />
             </div>
             
@@ -669,13 +681,14 @@ export default function AdminEmployeesPage() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="edit-username">Username *</Label>
+              <Label htmlFor="edit-managerEmail">Manager's Email</Label>
               <Input
-                id="edit-username"
-                name="username"
-                value={formData.username}
+                id="edit-managerEmail"
+                name="managerEmail"
+                type="email"
+                value={formData.managerEmail}
                 onChange={handleInputChange}
-                required
+                placeholder="manager@company.com"
               />
             </div>
             
@@ -718,6 +731,17 @@ export default function AdminEmployeesPage() {
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="edit-location">Location</Label>
+              <Input
+                id="edit-location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="New York Office"
               />
             </div>
             
