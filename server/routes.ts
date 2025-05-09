@@ -304,8 +304,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(409).json({ message: "Username already taken" });
         }
 
-        // Create the user
-        const user = await storage.createUser(validatedUserData);
+        // Create Firebase user first
+        let firebaseUid = null;
+        try {
+          // First, check if the user already exists in Firebase
+          try {
+            const existingFirebaseUser = await auth.getUserByEmail(validatedUserData.email);
+            console.log(`User already exists in Firebase with UID: ${existingFirebaseUser.uid}`);
+            firebaseUid = existingFirebaseUser.uid;
+          } catch (notFoundError) {
+            // User doesn't exist in Firebase, create a new one
+            const firebaseUser = await auth.createUser({
+              email: validatedUserData.email,
+              password: validatedUserData.password, // Use provided password before hashing
+              displayName: `${validatedUserData.name} ${validatedUserData.surname || ''}`.trim(),
+              emailVerified: true
+            });
+            
+            console.log(`Created Firebase user: ${validatedUserData.email} with UID: ${firebaseUser.uid}`);
+            firebaseUid = firebaseUser.uid;
+          }
+        } catch (firebaseError) {
+          console.error(`Error creating Firebase user for: ${validatedUserData.email}`, firebaseError);
+          // Continue with database creation even if Firebase fails for development/testing
+        }
+
+        // Add the Firebase UID to the user data
+        const enhancedUserData = {
+          ...validatedUserData,
+          firebaseUid
+        };
+
+        // Create the user in the database
+        const user = await storage.createUser(enhancedUserData);
 
         // Remove password from response
         const { password: _, ...userWithoutPassword } = user;
