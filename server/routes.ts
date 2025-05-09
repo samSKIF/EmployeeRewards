@@ -2078,8 +2078,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin API - Employee Management
   app.get("/api/admin/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
-      const allUsers = await db.select().from(users);
-      res.json(allUsers);
+      // Get all employees from both the users table and the employees table
+      const [allUsers, allEmployees] = await Promise.all([
+        db.select().from(users),
+        db.select().from(employees)
+      ]);
+      
+      // Combine the results, making sure to avoid duplicates
+      // Users from the users table may be admins or regular users
+      // Users from the employees table are specifically employees
+      const combinedEmployees = [...allUsers];
+      
+      // Add employees that aren't already in the users list
+      for (const employee of allEmployees) {
+        // Check if this employee already exists in the users list by email
+        const existsInUsers = combinedEmployees.some(user => user.email === employee.email);
+        if (!existsInUsers) {
+          combinedEmployees.push(employee);
+        }
+      }
+      
+      res.json(combinedEmployees);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get employees" });
     }
