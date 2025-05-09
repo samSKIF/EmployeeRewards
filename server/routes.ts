@@ -2106,6 +2106,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot delete the primary admin user" });
       }
 
+      // If the user has a Firebase UID, delete the Firebase user first
+      if (user.firebaseUid) {
+        try {
+          await auth.deleteUser(user.firebaseUid);
+          console.log(`Deleted Firebase user with UID: ${user.firebaseUid}`);
+        } catch (firebaseError) {
+          console.error(`Error deleting Firebase user: ${user.firebaseUid}`, firebaseError);
+          // Continue with database deletion even if Firebase deletion fails
+        }
+      }
+
       // Delete user
       await db.delete(users).where(eq(users.id, userId));
 
@@ -2739,6 +2750,17 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       if (!employee) {
         return res.status(404).json({ message: "Employee not found" });
+      }
+
+      // If the employee has a Firebase UID, delete the Firebase user first
+      if (employee.firebaseUid) {
+        try {
+          await auth.deleteUser(employee.firebaseUid);
+          console.log(`Deleted Firebase user with UID: ${employee.firebaseUid}`);
+        } catch (firebaseError) {
+          console.error(`Error deleting Firebase user: ${employee.firebaseUid}`, firebaseError);
+          // Continue with database deletion even if Firebase deletion fails
+        }
       }
 
       // Delete employee record
