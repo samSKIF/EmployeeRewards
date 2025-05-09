@@ -20,7 +20,6 @@ import { format } from "date-fns";
 
 // Define employee form data type
 interface EmployeeFormData {
-  username: string;
   password: string;
   name: string;
   surname: string;
@@ -28,6 +27,8 @@ interface EmployeeFormData {
   phoneNumber: string;
   jobTitle: string;
   department: string;
+  location: string;
+  managerEmail: string;
   sex: string;
   nationality: string;
   birthDate: string;
@@ -40,13 +41,14 @@ interface EmployeeFormData {
 // Define our user type
 interface Employee {
   id: number;
-  username: string;
   name: string;
   surname: string | null;
   email: string;
   phoneNumber: string | null;
   jobTitle: string | null;
   department: string | null;
+  location: string | null;
+  managerEmail: string | null;
   sex: string | null;
   nationality: string | null;
   birthDate: string | null;
@@ -58,7 +60,6 @@ interface Employee {
 }
 
 const defaultEmployeeFormData: EmployeeFormData = {
-  username: "",
   password: "changeme123",
   name: "",
   surname: "",
@@ -66,6 +67,8 @@ const defaultEmployeeFormData: EmployeeFormData = {
   phoneNumber: "",
   jobTitle: "",
   department: "",
+  location: "",
+  managerEmail: "",
   sex: "",
   nationality: "",
   birthDate: "",
@@ -259,7 +262,6 @@ export default function AdminEmployeesPage() {
   function openEditDialog(employee: Employee) {
     setCurrentEmployee(employee);
     setFormData({
-      username: employee.username,
       password: "", // We don't show or set the password when editing
       name: employee.name,
       surname: employee.surname || "",
@@ -267,6 +269,8 @@ export default function AdminEmployeesPage() {
       phoneNumber: employee.phoneNumber || "",
       jobTitle: employee.jobTitle || "",
       department: employee.department || "",
+      location: employee.location || "",
+      managerEmail: employee.managerEmail || "",
       sex: employee.sex || "",
       nationality: employee.nationality || "",
       birthDate: employee.birthDate ? format(new Date(employee.birthDate), 'yyyy-MM-dd') : "",

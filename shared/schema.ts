@@ -346,9 +346,11 @@ export const employees = pgTable("employees", {
   dateOfBirth: date("date_of_birth"),              // Date of birth
   dateJoined: date("date_joined"),                 // Date joining company
   jobTitle: text("job_title"),                     // Role name
+  department: text("department"),                  // Department
   status: text("status").default("active"),        // active/inactive
   isManager: boolean("is_manager").default(false), // Manager status
   managerEmail: text("manager_email"),             // Direct manager's email
+  location: text("location"),                      // Office/work location
   sex: text("sex"),                                // Gender (optional)
   nationality: text("nationality"),                // Nationality (optional)
   phoneNumber: text("phone_number"),               // Contact phone (optional)
