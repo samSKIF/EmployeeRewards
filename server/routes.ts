@@ -2065,16 +2065,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Employee not found" });
       }
 
-      const updateData = { ...req.body };
-
-      // If password is provided, hash it
-      if (updateData.password) {
-        updateData.password = await hash(updateData.password, 10);
-      } else {
-        delete updateData.password; // Don't update password if not provided
+      const { password, email, ...otherUpdateData } = req.body;
+      const updateData: any = { ...otherUpdateData };
+      
+      // Handle email update if it's changing
+      if (email && email !== user.email && user.firebaseUid) {
+        try {
+          console.log(`Updating Firebase user email from ${user.email} to ${email}`);
+          await auth.updateUser(user.firebaseUid, {
+            email: email,
+            emailVerified: true
+          });
+          console.log(`Firebase user email updated successfully for UID: ${user.firebaseUid}`);
+          
+          // Add email to the updateData
+          updateData.email = email;
+        } catch (firebaseError) {
+          console.error(`Error updating Firebase user email: ${user.firebaseUid}`, firebaseError);
+          return res.status(400).json({ 
+            message: `Failed to update email in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
+            field: 'email'
+          });
+        }
+      } else if (email) {
+        // If user doesn't have Firebase UID or email isn't changing
+        updateData.email = email;
       }
 
-      // Update user
+      // Handle password update if provided
+      if (password) {
+        // Update password in Firebase if the user has a Firebase UID
+        if (user.firebaseUid) {
+          try {
+            console.log(`Updating Firebase user password for UID: ${user.firebaseUid}`);
+            await auth.updateUser(user.firebaseUid, {
+              password: password
+            });
+            console.log(`Firebase user password updated successfully for UID: ${user.firebaseUid}`);
+          } catch (firebaseError) {
+            console.error(`Error updating Firebase user password: ${user.firebaseUid}`, firebaseError);
+            return res.status(400).json({ 
+              message: `Failed to update password in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
+              field: 'password'
+            });
+          }
+        }
+        
+        // Hash password for database storage
+        updateData.password = await hash(password, 10);
+      }
+
+      // Update user in database
       const [updatedUser] = await db
         .update(users)
         .set(updateData)
@@ -2082,7 +2123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
 
       // Remove password from response
-      const { password, ...userWithoutPassword } = updatedUser;
+      const { password: _, ...userWithoutPassword } = updatedUser;
 
       res.json(userWithoutPassword);
     } catch (error: any) {
@@ -2253,18 +2294,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create Firebase user for the employee
           let firebaseUid = null;
           try {
-            // Attempt to create Firebase user
-            const firebaseUser = await auth.createUser({
-              email: row.email,
-              password: row.password || 'password123', // Use provided password or default
-              displayName: `${row.name} ${row.surname || ''}`.trim(),
-              emailVerified: true
-            });
+            console.log(`Processing Firebase user for bulk upload: ${row.email}`);
             
-            console.log(`Created Firebase user for bulk upload: ${row.email} with UID: ${firebaseUser.uid}`);
-            firebaseUid = firebaseUser.uid;
+            // First, check if the user might already exist in Firebase
+            try {
+              const existingFirebaseUser = await auth.getUserByEmail(row.email);
+              console.log(`User already exists in Firebase with UID: ${existingFirebaseUser.uid}`);
+              firebaseUid = existingFirebaseUser.uid;
+            } catch (notFoundError) {
+              // User doesn't exist, create a new one
+              const firebaseUser = await auth.createUser({
+                email: row.email,
+                password: row.password || 'password123', // Use provided password or default
+                displayName: `${row.name} ${row.surname || ''}`.trim(),
+                emailVerified: true
+              });
+              
+              console.log(`Created Firebase user for bulk upload: ${row.email} with UID: ${firebaseUser.uid}`);
+              firebaseUid = firebaseUser.uid;
+            }
           } catch (firebaseError) {
-            console.error(`Error creating Firebase user during bulk upload for: ${row.email}`, firebaseError);
+            console.error(`Error processing Firebase user during bulk upload for: ${row.email}`, firebaseError);
             // Continue with database creation even if Firebase fails
           }
           
@@ -2724,12 +2774,47 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         if (existingEmail) {
           return res.status(409).json({ message: "Email already registered for another employee" });
         }
+        
+        // If employee has a Firebase UID, update the email in Firebase
+        if (employee.firebaseUid) {
+          try {
+            console.log(`Updating Firebase user email from ${employee.email} to ${updateData.email}`);
+            await auth.updateUser(employee.firebaseUid, {
+              email: updateData.email,
+              emailVerified: true
+            });
+            console.log(`Firebase user email updated successfully for UID: ${employee.firebaseUid}`);
+          } catch (firebaseError) {
+            console.error(`Error updating Firebase user email: ${employee.firebaseUid}`, firebaseError);
+            return res.status(400).json({ 
+              message: `Failed to update email in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
+              field: 'email'
+            });
+          }
+        }
       }
 
       // Prepare update data
       const dataToUpdate: any = { ...updateData };
 
-      // Hash new password if provided
+      // Update Firebase user password if provided and employee has a Firebase UID
+      if (password && employee.firebaseUid) {
+        try {
+          console.log(`Updating Firebase user password for UID: ${employee.firebaseUid}`);
+          await auth.updateUser(employee.firebaseUid, {
+            password: password
+          });
+          console.log(`Firebase user password updated successfully for UID: ${employee.firebaseUid}`);
+        } catch (firebaseError) {
+          console.error(`Error updating Firebase user password: ${employee.firebaseUid}`, firebaseError);
+          return res.status(400).json({ 
+            message: `Failed to update password in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
+            field: 'password'
+          });
+        }
+      }
+      
+      // Hash new password for database storage if provided
       if (password) {
         dataToUpdate.password = await hash(password, 10);
       }
