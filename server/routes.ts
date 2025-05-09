@@ -9,6 +9,7 @@ import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
+import { auth } from './firebase-admin';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -2238,6 +2239,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
+          // Create Firebase user for the employee
+          let firebaseUid = null;
+          try {
+            // Attempt to create Firebase user
+            const firebaseUser = await auth.createUser({
+              email: row.email,
+              password: row.password || 'password123', // Use provided password or default
+              displayName: `${row.name} ${row.surname || ''}`.trim(),
+              emailVerified: true
+            });
+            
+            console.log(`Created Firebase user for bulk upload: ${row.email} with UID: ${firebaseUser.uid}`);
+            firebaseUid = firebaseUser.uid;
+          } catch (firebaseError) {
+            console.error(`Error creating Firebase user during bulk upload for: ${row.email}`, firebaseError);
+            // Continue with database creation even if Firebase fails
+          }
+          
           // Construct the employee record from CSV data
           const employeeData = {
             name: row.name,
@@ -2255,10 +2274,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sex: row.sex || null,
             nationality: row.nationality || null,
             createdAt: new Date(),
-            createdById: userData.id // Use the userData from token verification
+            createdById: userData.id, // Use the userData from token verification
+            firebaseUid: firebaseUid // Add Firebase UID if available
           };
           
-          console.log(`Importing employee: ${row.name} (${row.email})`);
+          console.log(`Importing employee: ${row.name} (${row.email})${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
           
           // Insert the employee record
           const result = await db.insert(employees).values(employeeData);
@@ -2315,13 +2335,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash the password
       const hashedPassword = await hash(validatedData.password, 10);
 
-      // Create employee record
+      // Create Firebase user for the employee
+      let firebaseUser = null;
+      try {
+        firebaseUser = await auth.createUser({
+          email: validatedData.email,
+          password: validatedData.password, // Use the password before hashing
+          displayName: `${validatedData.name} ${validatedData.surname || ''}`.trim(),
+          emailVerified: true
+        });
+        console.log(`Created Firebase user for employee: ${validatedData.email} with UID: ${firebaseUser.uid}`);
+      } catch (firebaseError) {
+        console.error(`Error creating Firebase user for employee: ${validatedData.email}`, firebaseError);
+        // Don't block database creation if Firebase fails
+        // This helps with development and testing
+      }
+
+      // Create employee record in database
       const [newEmployee] = await db.insert(employees)
         .values({
           ...validatedData,
           password: hashedPassword,
           createdById: req.user.id,
-          createdAt: new Date()
+          createdAt: new Date(),
+          firebaseUid: firebaseUser?.uid // Add Firebase UID if available
         })
         .returning();
 
