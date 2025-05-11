@@ -24,6 +24,7 @@ import AdminDashboard from "@/pages/admin/admin-dashboard";
 import BrandingPage from "@/pages/admin/branding";
 import ShopConfigPage from "@/pages/admin/shop-config";
 import OnboardingPage from "@/pages/admin/onboarding";
+import AdminLeaveManagement from "@/pages/admin/leave-management";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -154,6 +155,11 @@ function App() {
               <Route path="/admin/branding">
                 <SocialLayout>
                   <BrandingPage />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/leave-management">
+                <SocialLayout>
+                  <AdminLeaveManagement />
                 </SocialLayout>
               </Route>
               <Route path="/admin/shop/config">

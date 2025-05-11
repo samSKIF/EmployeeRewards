@@ -114,6 +114,11 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
       onClick: () => navigateTo('/admin/employees')
     },
     { 
+      icon: CalendarDays, 
+      label: "Leave Management", 
+      onClick: () => navigateTo('/admin/leave-management')
+    },
+    { 
       icon: ClipboardList, 
       label: "Onboarding", 
       onClick: () => navigateTo('/admin/onboarding')
