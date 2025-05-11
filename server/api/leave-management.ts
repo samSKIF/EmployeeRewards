@@ -8,13 +8,13 @@ import {
   insertHolidaySchema, insertLeavePolicySchema
 } from "@shared/schema";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
-import { requireAuth, isAdmin } from "../middleware/auth";
+import { verifyToken, verifyAdmin, AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
 // Leave Types API endpoints
 // Get all leave types for organization
-router.get("/types", requireAuth, async (req, res) => {
+router.get("/types", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { organizationId } = req.user!;
     const types = await db.query.leaveTypes.findMany({

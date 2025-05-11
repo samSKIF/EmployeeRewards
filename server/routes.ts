@@ -3988,6 +3988,10 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Leave Management Routes
+  import leaveManagementRoutes from './api/leave-management';
+  app.use('/api/leave', leaveManagementRoutes);
+
   // Initialize the server
   const httpServer = createServer(app);
 
