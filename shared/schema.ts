@@ -553,6 +553,51 @@ export const leavePolicies = pgTable("leave_policies", {
   isActive: boolean("is_active").default(true),
 });
 
+// Define leave management relationships
+export const leaveTypesRelations = relations(leaveTypes, ({ one, many }) => ({
+  organization: one(organizations, { fields: [leaveTypes.organizationId], references: [organizations.id] }),
+  creator: one(users, { fields: [leaveTypes.createdBy], references: [users.id], relationName: "leaveTypeCreator" }),
+  entitlements: many(leaveEntitlements),
+  leaveRequests: many(leaveRequests),
+}));
+
+export const leaveEntitlementsRelations = relations(leaveEntitlements, ({ one, many }) => ({
+  user: one(users, { fields: [leaveEntitlements.userId], references: [users.id] }),
+  leaveType: one(leaveTypes, { fields: [leaveEntitlements.leaveTypeId], references: [leaveTypes.id] }),
+  creator: one(users, { fields: [leaveEntitlements.createdBy], references: [users.id] }),
+  adjustments: many(leaveAdjustments),
+}));
+
+export const leaveRequestsRelations = relations(leaveRequests, ({ one }) => ({
+  user: one(users, { fields: [leaveRequests.userId], references: [users.id] }),
+  leaveType: one(leaveTypes, { fields: [leaveRequests.leaveTypeId], references: [leaveTypes.id] }),
+  approver: one(users, { fields: [leaveRequests.approverId], references: [users.id], relationName: "approver" }),
+}));
+
+export const leaveAdjustmentsRelations = relations(leaveAdjustments, ({ one }) => ({
+  entitlement: one(leaveEntitlements, { fields: [leaveAdjustments.entitlementId], references: [leaveEntitlements.id] }),
+  performer: one(users, { fields: [leaveAdjustments.performedBy], references: [users.id], relationName: "performer" }),
+}));
+
+export const holidaysRelations = relations(holidays, ({ one }) => ({
+  organization: one(organizations, { fields: [holidays.organizationId], references: [organizations.id] }),
+  creator: one(users, { fields: [holidays.createdBy], references: [users.id], relationName: "holidayCreator" }),
+}));
+
+export const leaveCalendarSubscriptionsRelations = relations(leaveCalendarSubscriptions, ({ one }) => ({
+  user: one(users, { fields: [leaveCalendarSubscriptions.userId], references: [users.id] }),
+}));
+
+export const leaveNotificationsRelations = relations(leaveNotifications, ({ one }) => ({
+  leaveRequest: one(leaveRequests, { fields: [leaveNotifications.leaveRequestId], references: [leaveRequests.id] }),
+  recipient: one(users, { fields: [leaveNotifications.recipientId], references: [users.id], relationName: "recipient" }),
+}));
+
+export const leavePoliciesRelations = relations(leavePolicies, ({ one }) => ({
+  organization: one(organizations, { fields: [leavePolicies.organizationId], references: [organizations.id] }),
+  creator: one(users, { fields: [leavePolicies.createdBy], references: [users.id], relationName: "leavePolicyCreator" }),
+}));
+
 // Define relationships
 export const organizationsRelations = relations(organizations, ({ one, many }) => ({
   parent: one(organizations, { fields: [organizations.parentOrgId], references: [organizations.id] }),
@@ -560,6 +605,9 @@ export const organizationsRelations = relations(organizations, ({ one, many }) =
   features: many(organizationFeatures),
   users: many(users),
   sellers: many(sellers),
+  leaveTypes: many(leaveTypes),
+  holidays: many(holidays),
+  leavePolicies: many(leavePolicies),
   orders: many(orders),
   brandingSettings: many(brandingSettings),
 }));
@@ -591,6 +639,16 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   orders: many(orders),
   approvedSellers: many(sellers, { relationName: "approvedSellers" }),
   reviewedProducts: many(products, { relationName: "reviewedProducts" }),
+  // Leave management relationships
+  leaveRequests: many(leaveRequests),
+  leaveEntitlements: many(leaveEntitlements),
+  leaveApprovals: many(leaveRequests, { relationName: "approver" }),
+  leaveNotifications: many(leaveNotifications, { relationName: "recipient" }),
+  leaveCalendarSubscriptions: many(leaveCalendarSubscriptions),
+  leaveAdjustmentsPerformed: many(leaveAdjustments, { relationName: "performer" }),
+  createdLeaveTypes: many(leaveTypes, { relationName: "leaveTypeCreator" }),
+  createdHolidays: many(holidays, { relationName: "holidayCreator" }),
+  createdLeavePolicies: many(leavePolicies, { relationName: "leavePolicyCreator" }),
 }));
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
@@ -857,11 +915,15 @@ export const conversationsRelations = relations(conversations, ({ many }) => ({
 }));
 
 // Employees relations
-export const employeesRelations = relations(employees, ({ one }) => ({
+export const employeesRelations = relations(employees, ({ one, many }) => ({
   creator: one(users, {
     fields: [employees.createdById],
     references: [users.id],
   }),
+  // Leave management relationships for employees
+  leaveRequests: many(leaveRequests),
+  leaveEntitlements: many(leaveEntitlements),
+  leaveApprovals: many(leaveRequests, { relationName: "employeeApprover" }),
 }));
 
 // Branding settings relations
