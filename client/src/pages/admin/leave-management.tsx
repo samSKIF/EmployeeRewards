@@ -136,6 +136,34 @@ const leavePolicySchema = z.object({
   minNoticeDays: z.coerce.number().min(0, "Must be 0 or higher"),
   carryOverLimit: z.coerce.number().min(0, "Must be 0 or higher"),
   isActive: z.boolean().default(true),
+  settings: z.object({
+    country: z.string().optional(),
+    effectiveDate: z.string().optional(),
+    workWeekDefinition: z.string().optional(),
+    fiscalYearStart: z.string().optional(),
+    holidayCalendar: z.string().optional(),
+    minimumEmploymentPeriodWeeks: z.coerce.number().min(0).optional(),
+    halfDayLeaveAllowed: z.boolean().optional(),
+    restrictPublicHolidays: z.boolean().optional(),
+    annualLeave: z.object({
+      totalDays: z.coerce.number().min(0).optional(),
+      accrualType: z.string().optional()
+    }).optional(),
+    sickLeave: z.object({
+      totalDays: z.coerce.number().min(0).optional(),
+      requiresMedicalCertificate: z.boolean().optional(),
+      medicalCertificateAfterDays: z.coerce.number().min(0).optional()
+    }).optional(),
+    maternityLeave: z.object({
+      days: z.coerce.number().min(0).optional()
+    }).optional(),
+    paternityLeave: z.object({
+      days: z.coerce.number().min(0).optional()
+    }).optional(),
+    parentalLeave: z.object({
+      adoptionDays: z.coerce.number().min(0).optional()
+    }).optional()
+  }).optional(),
 });
 
 const leaveEntitlementSchema = z.object({
@@ -325,11 +353,40 @@ export default function AdminLeaveManagement() {
   const policyForm = useForm<z.infer<typeof leavePolicySchema>>({
     resolver: zodResolver(leavePolicySchema),
     defaultValues: {
+      name: "",
+      description: "",
       approvalsRequired: 1,
       maxConsecutiveDays: 20,
       minNoticeDays: 7,
       carryOverLimit: 5,
       isActive: true,
+      settings: {
+        country: "global",
+        workWeekDefinition: "monday-friday",
+        fiscalYearStart: "january",
+        holidayCalendar: "default",
+        halfDayLeaveAllowed: true,
+        restrictPublicHolidays: false,
+        minimumEmploymentPeriodWeeks: 0,
+        annualLeave: {
+          totalDays: 20,
+          accrualType: "upfront"
+        },
+        sickLeave: {
+          totalDays: 10,
+          requiresMedicalCertificate: true,
+          medicalCertificateAfterDays: 3
+        },
+        maternityLeave: {
+          days: 90
+        },
+        paternityLeave: {
+          days: 10
+        },
+        parentalLeave: {
+          adoptionDays: 90
+        }
+      }
     },
   });
 
