@@ -109,7 +109,7 @@ const Sidebar = () => {
     { 
       path: "/leave-request", 
       label: "Leave Request", 
-      icon: <Calendar className="w-5 h-5 mr-3" /> 
+      icon: <FileText className="w-5 h-5 mr-3" /> 
     },
     {
       path: "/admin/surveys",
