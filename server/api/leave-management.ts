@@ -336,9 +336,20 @@ router.patch("/requests/:id/cancel", verifyToken, async (req: AuthenticatedReque
 router.get("/holidays", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { organizationId } = req.user;
+    const { country } = req.query;
+    
+    let query = eq(holidays.organizationId, organizationId);
+    
+    // If country is specified, filter by that country or global holidays
+    if (country) {
+      query = and(
+        eq(holidays.organizationId, organizationId),
+        sql`(${holidays.country} = ${country as string} OR ${holidays.country} = 'Global')`
+      );
+    }
     
     const allHolidays = await db.query.holidays.findMany({
-      where: eq(holidays.organizationId, organizationId),
+      where: query,
       orderBy: [holidays.date],
     });
     
