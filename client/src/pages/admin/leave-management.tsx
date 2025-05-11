@@ -116,6 +116,9 @@ interface LeavePolicy {
     minimumEmploymentPeriodWeeks?: number;
     halfDayLeaveAllowed?: boolean;
     restrictPublicHolidays?: boolean;
+    usesWorkingDays?: boolean;
+    carryOverRequiresApproval?: boolean;
+    terminationPolicy?: string; // 'paid-out', 'must-be-consumed', 'lost'
     annualLeave?: {
       totalDays?: number;
       accrualType?: string;
