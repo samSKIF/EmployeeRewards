@@ -578,11 +578,11 @@ export default function AdminLeaveManagement() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Leave Policies</CardTitle>
-                  <CardDescription>Configure organization-wide leave policies</CardDescription>
+                  <CardTitle>Leave Policies by Country</CardTitle>
+                  <CardDescription>Configure country-specific leave laws and policies</CardDescription>
                 </div>
                 <Button onClick={() => setIsNewPolicyDialogOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Policy
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Country Policy
                 </Button>
               </CardHeader>
               <CardContent>
@@ -596,53 +596,71 @@ export default function AdminLeaveManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Approvals Required</TableHead>
-                        <TableHead>Max Days</TableHead>
-                        <TableHead>Notice Days</TableHead>
+                        <TableHead>Country</TableHead>
+                        <TableHead>Policy Name</TableHead>
+                        <TableHead>Effective Date</TableHead>
+                        <TableHead>Annual Leave</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {leavePolicies.map((policy) => (
-                        <TableRow key={policy.id}>
-                          <TableCell>
-                            <div className="font-medium">{policy.name}</div>
-                          </TableCell>
-                          <TableCell>{policy.description}</TableCell>
-                          <TableCell>{policy.approvalsRequired}</TableCell>
-                          <TableCell>{policy.maxConsecutiveDays}</TableCell>
-                          <TableCell>{policy.minNoticeDays}</TableCell>
-                          <TableCell>
-                            {policy.isActive ? (
-                              <Badge variant="outline" className="bg-green-100 text-green-800">Active</Badge>
-                            ) : (
-                              <Badge variant="outline" className="bg-red-100 text-red-800">Inactive</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-red-500">
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {leavePolicies.map((policy) => {
+                        const settings = policy.settings as any || {};
+                        return (
+                          <TableRow key={policy.id}>
+                            <TableCell>
+                              <div className="font-medium">{settings.country || 'Global'}</div>
+                            </TableCell>
+                            <TableCell>{policy.name}</TableCell>
+                            <TableCell>
+                              {settings.effectiveDate ? 
+                                format(parseISO(settings.effectiveDate), 'MMM dd, yyyy') : 
+                                'Immediate'}
+                            </TableCell>
+                            <TableCell>
+                              {settings.annualLeave?.totalDays || settings.annualLeave?.accrualRate ? 
+                                `${settings.annualLeave.totalDays || settings.annualLeave.accrualRate} days` : 
+                                'Not specified'}
+                            </TableCell>
+                            <TableCell>
+                              {policy.isActive ? (
+                                <Badge variant="outline" className="bg-green-100 text-green-800">Active</Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-red-100 text-red-800">Inactive</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditPolicy(policy)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" /> Edit
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-500"
+                                  onClick={() => handleDeletePolicy(policy.id)}
+                                >
+                                  <Trash className="h-4 w-4 mr-1" /> Delete
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 ) : (
                   <div className="text-center py-10">
-                    <div className="text-6xl opacity-20 mb-3">📜</div>
-                    <h3 className="text-xl font-medium mb-2">No leave policies defined</h3>
-                    <p className="text-muted-foreground mb-4">Create leave policies to standardize leave management</p>
+                    <div className="text-6xl opacity-20 mb-3">🌎</div>
+                    <h3 className="text-xl font-medium mb-2">No country leave policies defined</h3>
+                    <p className="text-muted-foreground mb-4">Create country-specific leave policies to comply with local regulations</p>
                     <Button onClick={() => setIsNewPolicyDialogOpen(true)}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Policy
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add First Country Policy
                     </Button>
                   </div>
                 )}
@@ -1081,139 +1099,531 @@ export default function AdminLeaveManagement() {
 
         {/* Create Policy Dialog */}
         <Dialog open={isNewPolicyDialogOpen} onOpenChange={setIsNewPolicyDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create Leave Policy</DialogTitle>
+              <DialogTitle>Create Country-Specific Leave Policy</DialogTitle>
               <DialogDescription>
-                Define organization-wide leave policies.
+                Define leave policies that comply with local labor laws and regulations.
               </DialogDescription>
             </DialogHeader>
             <Form {...policyForm}>
-              <form onSubmit={policyForm.handleSubmit(onSubmitPolicy)} className="space-y-4">
-                <FormField
-                  control={policyForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Policy Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="E.g. Standard Policy, Manager Policy, etc." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <form onSubmit={policyForm.handleSubmit(onSubmitPolicy)} className="space-y-6">
+                <Tabs defaultValue="general" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="general">General Information</TabsTrigger>
+                    <TabsTrigger value="leave-types">Leave Types</TabsTrigger>
+                    <TabsTrigger value="rules">Rules & Compliance</TabsTrigger>
+                  </TabsList>
+                  
+                  {/* General Information Tab */}
+                  <TabsContent value="general" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Policy Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="E.g. US Leave Policy, UK Employment Law, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                <FormField
-                  control={policyForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of this policy"
-                          className="resize-none"
-                          {...field} 
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="US">United States</SelectItem>
+                                <SelectItem value="UK">United Kingdom</SelectItem>
+                                <SelectItem value="CA">Canada</SelectItem>
+                                <SelectItem value="AU">Australia</SelectItem>
+                                <SelectItem value="DE">Germany</SelectItem>
+                                <SelectItem value="FR">France</SelectItem>
+                                <SelectItem value="IN">India</SelectItem>
+                                <SelectItem value="SG">Singapore</SelectItem>
+                                <SelectItem value="JP">Japan</SelectItem>
+                                <SelectItem value="BR">Brazil</SelectItem>
+                                <SelectItem value="ZA">South Africa</SelectItem>
+                                <SelectItem value="global">Global (Default)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={policyForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Brief description of this country's leave policy"
+                              className="resize-none"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.effectiveDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Effective Date</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(new Date(field.value), "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value ? new Date(field.value) : undefined}
+                                  onSelect={(date) => field.onChange(date ? date.toISOString() : null)}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormDescription>
+                              When this policy goes into effect
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.workWeekDefinition"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Work Week Definition</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select work week pattern" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="monday-friday">Monday-Friday</SelectItem>
+                                <SelectItem value="sunday-thursday">Sunday-Thursday</SelectItem>
+                                <SelectItem value="custom">Custom</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>Standard working days in the week</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.fiscalYearStart"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fiscal Year Start</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select month" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="january">January</SelectItem>
+                                <SelectItem value="april">April</SelectItem>
+                                <SelectItem value="july">July</SelectItem>
+                                <SelectItem value="october">October</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>When the fiscal year begins</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.holidayCalendar"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Holiday Calendar</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select holiday calendar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="default">Default National Holidays</SelectItem>
+                                <SelectItem value="custom">Custom Calendar</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>Which holiday calendar to use</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </TabsContent>
+
+                  {/* Leave Types Tab */}
+                  <TabsContent value="leave-types" className="space-y-6 mt-4">
+                    <div className="rounded-md border p-4">
+                      <h3 className="text-lg font-semibold mb-2">Annual Leave</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.annualLeave.totalDays"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Total Days Per Year</FormLabel>
+                              <FormControl>
+                                <Input type="number" min="0" {...field} />
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Standard annual leave allowance
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={policyForm.control}
-                    name="approvalsRequired"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Approvals Required</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-xs">
-                          Number of approvals needed
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={policyForm.control}
-                    name="maxConsecutiveDays"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Max Consecutive Days</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-xs">
-                          Maximum days per request
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={policyForm.control}
-                    name="minNoticeDays"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Notice</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-xs">
-                          Days of notice required
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={policyForm.control}
-                    name="carryOverLimit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Carry Over Limit</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-xs">
-                          Max days to carry to next year
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={policyForm.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                      <div className="space-y-0.5">
-                        <FormLabel>Active</FormLabel>
-                        <FormDescription>
-                          Policy is currently in effect
-                        </FormDescription>
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.annualLeave.accrualType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Accrual Method</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select accrual method" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="upfront">Upfront Allocation</SelectItem>
+                                  <SelectItem value="monthly">Monthly Accrual</SelectItem>
+                                  <SelectItem value="biweekly">Bi-weekly Accrual</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+
+                      <FormField
+                        control={policyForm.control}
+                        name="carryOverLimit"
+                        render={({ field }) => (
+                          <FormItem className="mt-4">
+                            <FormLabel>Carry Over Limit</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Maximum days that can be carried over to next year
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="rounded-md border p-4">
+                      <h3 className="text-lg font-semibold mb-2">Sick Leave</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.sickLeave.totalDays"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Total Days Per Year</FormLabel>
+                              <FormControl>
+                                <Input type="number" min="0" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.sickLeave.requiresMedicalCertificate"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 mt-1">
+                              <div className="space-y-0.5">
+                                <FormLabel>Requires Medical Certificate</FormLabel>
+                                <FormDescription>
+                                  Medical proof needed for sick leave
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.sickLeave.medicalCertificateAfterDays"
+                        render={({ field }) => (
+                          <FormItem className="mt-4">
+                            <FormLabel>Days Before Certificate Required</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Certificate required after this many consecutive days
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="rounded-md border p-4">
+                      <h3 className="text-lg font-semibold mb-2">Parental Leave</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.maternityLeave.days"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Maternity Leave (Days)</FormLabel>
+                              <FormControl>
+                                <Input type="number" min="0" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={policyForm.control}
+                          name="settings.paternityLeave.days"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Paternity Leave (Days)</FormLabel>
+                              <FormControl>
+                                <Input type="number" min="0" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.parentalLeave.adoptionDays"
+                        render={({ field }) => (
+                          <FormItem className="mt-4">
+                            <FormLabel>Adoption Leave (Days)</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </TabsContent>
+
+                  {/* Rules Tab */}
+                  <TabsContent value="rules" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="approvalsRequired"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Approvals Required</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" max="3" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Number of manager approvals needed
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="minNoticeDays"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Minimum Notice</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Days notice required before taking leave
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="maxConsecutiveDays"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Max Consecutive Days</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Maximum consecutive days per request
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.minimumEmploymentPeriodWeeks"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Min. Employment Period (Weeks)</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Weeks worked before eligible for leave
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={policyForm.control}
+                      name="settings.halfDayLeaveAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel>Allow Half-Day Leave</FormLabel>
+                            <FormDescription>
+                              Employees can take leave in half-day increments
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={policyForm.control}
+                      name="settings.restrictPublicHolidays"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel>Restrict Leave Around Public Holidays</FormLabel>
+                            <FormDescription>
+                              Require special approval for leaves adjacent to holidays
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={policyForm.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel>Active Policy</FormLabel>
+                            <FormDescription>
+                              Policy is currently in effect
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsNewPolicyDialogOpen(false)}>
