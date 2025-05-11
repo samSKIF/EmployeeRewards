@@ -520,7 +520,7 @@ router.get("/reports/balances", verifyToken, verifyAdmin, async (req: Authentica
 router.get("/calendar", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { organizationId } = req.user;
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, country } = req.query;
     
     if (!startDate || !endDate) {
       return res.status(400).json({ error: "Start date and end date are required" });
@@ -551,13 +551,23 @@ router.get("/calendar", verifyToken, async (req: AuthenticatedRequest, res) => {
       event => event.user?.organizationId === organizationId
     );
     
+    // Build base holiday query conditions
+    const holidayConditions = [
+      eq(holidays.organizationId, organizationId),
+      sql`${holidays.date} >= ${startDate as string}`,
+      sql`${holidays.date} <= ${endDate as string}`
+    ];
+    
+    // If country is specified, filter by that country or include global holidays
+    if (country) {
+      holidayConditions.push(
+        sql`(${holidays.country} = ${country as string} OR ${holidays.country} = 'Global')`
+      );
+    }
+    
     // Get holidays in the date range
     const holidayEvents = await db.query.holidays.findMany({
-      where: and(
-        eq(holidays.organizationId, organizationId),
-        sql`${holidays.date} >= ${startDate as string}`,
-        sql`${holidays.date} <= ${endDate as string}`
-      ),
+      where: and(...holidayConditions),
     });
     
     // Combine leave requests and holidays into a single calendar
@@ -579,6 +589,7 @@ router.get("/calendar", verifyToken, async (req: AuthenticatedRequest, res) => {
         start: holiday.date,
         end: holiday.date,
         description: holiday.description,
+        country: holiday.country,
         color: "#FF9800", // Default holiday color
       })),
     ];
