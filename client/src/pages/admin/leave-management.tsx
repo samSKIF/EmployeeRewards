@@ -396,31 +396,31 @@ export default function AdminLeaveManagement() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Leave Management</h1>
           <p className="text-muted-foreground">Configure and manage organization leave settings</p>
-          </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="leave-types">
-              <FileText className="mr-2 h-4 w-4" />
-              Leave Types
-            </TabsTrigger>
-            <TabsTrigger value="holidays">
-              <Calendar className="mr-2 h-4 w-4" />
-              Holidays
-            </TabsTrigger>
-            <TabsTrigger value="policies">
-              <FileText className="mr-2 h-4 w-4" />
-              Policies
-            </TabsTrigger>
-            <TabsTrigger value="entitlements">
-              <Users className="mr-2 h-4 w-4" />
-              Entitlements
-            </TabsTrigger>
-            <TabsTrigger value="requests">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Leave Requests
-            </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="leave-types">
+            <FileText className="mr-2 h-4 w-4" />
+            Leave Types
+          </TabsTrigger>
+          <TabsTrigger value="holidays">
+            <Calendar className="mr-2 h-4 w-4" />
+            Holidays
+          </TabsTrigger>
+          <TabsTrigger value="policies">
+            <FileText className="mr-2 h-4 w-4" />
+            Policies
+          </TabsTrigger>
+          <TabsTrigger value="entitlements">
+            <Users className="mr-2 h-4 w-4" />
+            Entitlements
+          </TabsTrigger>
+          <TabsTrigger value="requests">
+            <CalendarDays className="mr-2 h-4 w-4" />
+            Leave Requests
+          </TabsTrigger>
           </TabsList>
 
           {/* Leave Types Tab */}
