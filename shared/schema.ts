@@ -437,6 +437,122 @@ export const surveyAnswers = pgTable("survey_answers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Leave Types table - defines different kinds of leave (vacation, sick, etc.)
+export const leaveTypes = pgTable("leave_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  color: text("color").notNull().default("#4A90E2"), // For calendar display
+  defaultDays: integer("default_days"), // Default entitlement per year
+  requiresApproval: boolean("requires_approval").default(true),
+  allowsHalfDay: boolean("allows_half_day").default(true),
+  isPaidLeave: boolean("is_paid_leave").default(true),
+  documentationRequired: boolean("documentation_required").default(false),
+  maxConsecutiveDays: integer("max_consecutive_days"), // Optional limit
+  minAdvanceNotice: integer("min_advance_notice"), // Days required before leave
+  organizationId: integer("organization_id").references(() => organizations.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+  isActive: boolean("is_active").default(true),
+});
+
+// Leave Entitlements table - tracks how many days of each leave type an employee has
+export const leaveEntitlements = pgTable("leave_entitlements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  leaveTypeId: integer("leave_type_id").references(() => leaveTypes.id).notNull(),
+  year: integer("year").notNull(), // The year this entitlement is for
+  totalDays: doublePrecision("total_days").notNull(), // Total allocated days
+  usedDays: doublePrecision("used_days").default(0).notNull(), // Days used so far
+  remainingDays: doublePrecision("remaining_days"), // Days remaining
+  adjustedDays: doublePrecision("adjusted_days").default(0), // Additional days granted
+  expiryDate: date("expiry_date"), // When this entitlement expires
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
+// Leave Requests table - stores leave applications
+export const leaveRequests = pgTable("leave_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  leaveTypeId: integer("leave_type_id").references(() => leaveTypes.id).notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  startTime: time("start_time"), // For half-day or hourly leaves
+  endTime: time("end_time"), // For half-day or hourly leaves
+  duration: doublePrecision("duration").notNull(), // In days
+  reason: text("reason"),
+  status: text("status").default("pending").notNull(), // pending, approved, rejected, cancelled
+  attachmentUrl: text("attachment_url"), // For supporting documents
+  approverId: integer("approver_id").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  cancellationReason: text("cancellation_reason"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+});
+
+// Leave Adjustments table - tracks manual adjustments to leave balances
+export const leaveAdjustments = pgTable("leave_adjustments", {
+  id: serial("id").primaryKey(),
+  entitlementId: integer("entitlement_id").references(() => leaveEntitlements.id, { onDelete: 'cascade' }).notNull(),
+  adjustmentDays: doublePrecision("adjustment_days").notNull(), // Can be positive or negative
+  reason: text("reason").notNull(),
+  performedBy: integer("performed_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Holiday Calendar table - tracks company holidays
+export const holidays = pgTable("holidays", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  date: date("date").notNull(),
+  description: text("description"),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  isRecurringYearly: boolean("is_recurring_yearly").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
+// Leave Calendar Subscription table - for external calendar integration
+export const leaveCalendarSubscriptions = pgTable("leave_calendar_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  token: text("token").notNull().unique(), // Unique token for feed access
+  isEnabled: boolean("is_enabled").default(true),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Leave Notifications table - tracks notifications sent regarding leaves
+export const leaveNotifications = pgTable("leave_notifications", {
+  id: serial("id").primaryKey(),
+  leaveRequestId: integer("leave_request_id").references(() => leaveRequests.id, { onDelete: 'cascade' }),
+  recipientId: integer("recipient_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: text("type").notNull(), // request_submitted, request_approved, request_rejected, reminder
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Leave Policy table - for organization-specific leave policies
+export const leavePolicies = pgTable("leave_policies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  settings: jsonb("settings"), // JSON of policy settings
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+  isActive: boolean("is_active").default(true),
+});
+
 // Define relationships
 export const organizationsRelations = relations(organizations, ({ one, many }) => ({
   parent: one(organizations, { fields: [organizations.parentOrgId], references: [organizations.id] }),
@@ -937,6 +1053,39 @@ export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 
 export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
 export type InsertSurveyAnswer = z.infer<typeof insertSurveyAnswerSchema>;
+
+// Leave Management Schema
+export type LeaveType = typeof leaveTypes.$inferSelect;
+export const insertLeaveTypeSchema = createInsertSchema(leaveTypes);
+export type InsertLeaveType = z.infer<typeof insertLeaveTypeSchema>;
+
+export type LeaveEntitlement = typeof leaveEntitlements.$inferSelect;
+export const insertLeaveEntitlementSchema = createInsertSchema(leaveEntitlements);
+export type InsertLeaveEntitlement = z.infer<typeof insertLeaveEntitlementSchema>;
+
+export type LeaveRequest = typeof leaveRequests.$inferSelect;
+export const insertLeaveRequestSchema = createInsertSchema(leaveRequests);
+export type InsertLeaveRequest = z.infer<typeof insertLeaveRequestSchema>;
+
+export type LeaveAdjustment = typeof leaveAdjustments.$inferSelect;
+export const insertLeaveAdjustmentSchema = createInsertSchema(leaveAdjustments);
+export type InsertLeaveAdjustment = z.infer<typeof insertLeaveAdjustmentSchema>;
+
+export type Holiday = typeof holidays.$inferSelect;
+export const insertHolidaySchema = createInsertSchema(holidays);
+export type InsertHoliday = z.infer<typeof insertHolidaySchema>;
+
+export type LeaveCalendarSubscription = typeof leaveCalendarSubscriptions.$inferSelect;
+export const insertLeaveCalendarSubscriptionSchema = createInsertSchema(leaveCalendarSubscriptions);
+export type InsertLeaveCalendarSubscription = z.infer<typeof insertLeaveCalendarSubscriptionSchema>;
+
+export type LeaveNotification = typeof leaveNotifications.$inferSelect;
+export const insertLeaveNotificationSchema = createInsertSchema(leaveNotifications);
+export type InsertLeaveNotification = z.infer<typeof insertLeaveNotificationSchema>;
+
+export type LeavePolicy = typeof leavePolicies.$inferSelect;
+export const insertLeavePolicySchema = createInsertSchema(leavePolicies);
+export type InsertLeavePolicy = z.infer<typeof insertLeavePolicySchema>;
 
 // Export Onboarding Schema
 export * from './onboarding';
