@@ -392,7 +392,6 @@ export default function AdminLeaveManagement() {
   };
 
   return (
-    <SocialLayout>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -1403,6 +1402,5 @@ export default function AdminLeaveManagement() {
           </DialogContent>
         </Dialog>
       </div>
-    </SocialLayout>
   );
 }
