@@ -4,7 +4,7 @@ import { CalendarDays, Briefcase, FileText, Calendar, PlusCircle, CheckCircle, X
 import { format, parseISO, isAfter, isBefore, addMonths } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import AdminLayout from '@/layouts/AdminLayout';
+// import AdminLayout from '@/layouts/AdminLayout'; // Using SocialLayout for all users
 import SocialLayout from '@/layouts/SocialLayout';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -337,11 +337,9 @@ export default function LeaveManagement() {
     }, 0);
   };
 
-  // Layout based on user role
-  const Layout = isAdmin ? AdminLayout : SocialLayout;
-
+  // We're using SocialLayout for all users (set in App.tsx routes)
   return (
-    <Layout>
+    <div>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -1052,6 +1050,6 @@ export default function LeaveManagement() {
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
+    </div>
   );
 }

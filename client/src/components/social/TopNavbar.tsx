@@ -97,7 +97,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: Eye, label: "Insights", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
-    { icon: Users, label: "Manage", onClick: () => navigateTo('/manage'), isActive: location === '/manage' },
+    { icon: CalendarDays, label: "Leave", onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
     { icon: Settings, label: "Setup", onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
   ];
 

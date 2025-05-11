@@ -18,6 +18,7 @@ import AdminSurveyCreator from "@/pages/admin-survey-creator";
 import AdminSurveyTemplates from "@/pages/admin-survey-templates";
 import AdminSurveyTemplatePreview from "@/pages/admin-survey-template-preview";
 import AdminSurveyEditor from "@/pages/admin-survey-editor";
+import LeaveManagement from "@/pages/leave-management";
 import HRConfig from "@/pages/hr-config";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import BrandingPage from "@/pages/admin/branding";
@@ -232,6 +233,12 @@ function App() {
               <Route path="/user/profile">
                 <SocialLayout>
                   <UpdatedProfilePage />
+                </SocialLayout>
+              </Route>
+              
+              <Route path="/leave-management">
+                <SocialLayout>
+                  <LeaveManagement />
                 </SocialLayout>
               </Route>
 
