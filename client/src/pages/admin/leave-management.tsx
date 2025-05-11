@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -106,6 +106,34 @@ interface LeavePolicy {
   minNoticeDays: number;
   carryOverLimit: number;
   isActive: boolean;
+  settings?: {
+    country?: string;
+    effectiveDate?: string;
+    workWeekDefinition?: string;
+    fiscalYearStart?: string;
+    holidayCalendar?: string;
+    minimumEmploymentPeriodWeeks?: number;
+    halfDayLeaveAllowed?: boolean;
+    restrictPublicHolidays?: boolean;
+    annualLeave?: {
+      totalDays?: number;
+      accrualType?: string;
+    };
+    sickLeave?: {
+      totalDays?: number;
+      requiresMedicalCertificate?: boolean;
+      medicalCertificateAfterDays?: number;
+    };
+    maternityLeave?: {
+      days?: number;
+    };
+    paternityLeave?: {
+      days?: number;
+    };
+    parentalLeave?: {
+      adoptionDays?: number;
+    };
+  };
 }
 
 // Form schemas
@@ -469,10 +497,9 @@ export default function AdminLeaveManagement() {
 
   const onSubmitPolicy = (values: z.infer<typeof leavePolicySchema>) => {
     // Add organizational context
-    const { user } = useAuth();
     const policyData = {
       ...values,
-      organizationId: user?.organizationId || 1,
+      organizationId: 1, // Default to the first organization
     };
     
     if (editingPolicy) {
