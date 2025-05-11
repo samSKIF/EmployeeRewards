@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Users, FileText, Calendar as CalendarIcon, PlusCircle, CheckCircle, XCircle, Trash, Edit } from 'lucide-react';
+import { CalendarDays, Users, FileText, Calendar as CalendarIcon, PlusCircle, CheckCircle, XCircle, Trash, Edit, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { countries } from '@/data/countries';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -1197,18 +1198,58 @@ export default function AdminLeaveManagement() {
                 <FormField
                   control={holidayForm.control}
                   name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. Global, USA, UK, France, etc." {...field} />
-                      </FormControl>
-                      <FormDescription className="text-xs">
-                        Specify the country for this holiday or use "Global" for all countries
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const [searchQuery, setSearchQuery] = useState('');
+                    
+                    // Filter countries based on search query
+                    const filteredCountries = countries.filter(country => 
+                      country.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Country</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-80">
+                            <div className="flex items-center px-2 pb-2 border-b">
+                              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                              <input
+                                className="flex w-full rounded-md bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Search country..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                              />
+                            </div>
+                            <div className="max-h-64 overflow-y-auto">
+                              {filteredCountries.length > 0 ? (
+                                filteredCountries.map(country => (
+                                  <SelectItem key={country.code} value={country.code}>
+                                    {country.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <div className="py-6 text-center text-sm text-muted-foreground">
+                                  No countries found.
+                                </div>
+                              )}
+                            </div>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-xs">
+                          Specify the country for this holiday or use "Global" for all countries
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
@@ -1339,36 +1380,58 @@ export default function AdminLeaveManagement() {
                       <FormField
                         control={policyForm.control}
                         name="settings.country"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Country</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select country" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="US">United States</SelectItem>
-                                <SelectItem value="UK">United Kingdom</SelectItem>
-                                <SelectItem value="CA">Canada</SelectItem>
-                                <SelectItem value="AU">Australia</SelectItem>
-                                <SelectItem value="DE">Germany</SelectItem>
-                                <SelectItem value="FR">France</SelectItem>
-                                <SelectItem value="IN">India</SelectItem>
-                                <SelectItem value="SG">Singapore</SelectItem>
-                                <SelectItem value="JP">Japan</SelectItem>
-                                <SelectItem value="BR">Brazil</SelectItem>
-                                <SelectItem value="ZA">South Africa</SelectItem>
-                                <SelectItem value="global">Global (Default)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const [searchQuery, setSearchQuery] = useState('');
+                          
+                          // Filter countries based on search query
+                          const filteredCountries = countries.filter(country => 
+                            country.name.toLowerCase().includes(searchQuery.toLowerCase())
+                          );
+
+                          return (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select country" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-80">
+                                  <div className="flex items-center px-2 pb-2 border-b">
+                                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                    <input
+                                      className="flex w-full rounded-md bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                      placeholder="Search country..."
+                                      value={searchQuery}
+                                      onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="max-h-64 overflow-y-auto">
+                                    {filteredCountries.length > 0 ? (
+                                      filteredCountries.map(country => (
+                                        <SelectItem key={country.code} value={country.code}>
+                                          {country.name}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <div className="py-6 text-center text-sm text-muted-foreground">
+                                        No countries found.
+                                      </div>
+                                    )}
+                                  </div>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-xs">
+                                Select a specific country or "Global (Default)" for global policies
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
 
