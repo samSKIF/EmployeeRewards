@@ -4,7 +4,6 @@ import { CalendarDays, Users, FileText, Calendar, PlusCircle, CheckCircle, XCirc
 import { format, parseISO } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import SocialLayout from '@/layouts/SocialLayout';
 import { useAuth } from '@/hooks/useAuth';
 
 // UI Components
@@ -392,11 +391,11 @@ export default function AdminLeaveManagement() {
   };
 
   return (
-      <div className="container py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin Leave Management</h1>
-            <p className="text-muted-foreground">Configure and manage organization leave settings</p>
+    <div className="container py-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Leave Management</h1>
+          <p className="text-muted-foreground">Configure and manage organization leave settings</p>
           </div>
         </div>
 
@@ -1401,6 +1400,6 @@ export default function AdminLeaveManagement() {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
+    </div>
   );
 }
