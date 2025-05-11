@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Users, FileText, Calendar, PlusCircle, CheckCircle, XCircle, Trash, Edit } from 'lucide-react';
+import { CalendarDays, Users, FileText, Calendar as CalendarIcon, PlusCircle, CheckCircle, XCircle, Trash, Edit } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -295,11 +296,60 @@ export default function AdminLeaveManagement() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/leave/policies'] });
       setIsNewPolicyDialogOpen(false);
+      setEditingPolicy(null);
       policyForm.reset();
     },
     onError: (error) => {
       toast({
         title: "Failed to create leave policy",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Update policy mutation
+  const updatePolicyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const { id, ...updateData } = data;
+      const response = await apiRequest('PUT', `/api/leave/policies/${id}`, updateData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Leave policy updated",
+        description: "Leave policy has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/leave/policies'] });
+      setIsNewPolicyDialogOpen(false);
+      setEditingPolicy(null);
+      policyForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating leave policy",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Delete policy mutation
+  const deletePolicyMutation = useMutation({
+    mutationFn: async (policyId: number) => {
+      const response = await apiRequest('DELETE', `/api/leave/policies/${policyId}`);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Leave policy deleted",
+        description: "Leave policy has been deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/leave/policies'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting leave policy",
         description: error.message,
         variant: "destructive",
       });
@@ -418,7 +468,77 @@ export default function AdminLeaveManagement() {
   };
 
   const onSubmitPolicy = (values: z.infer<typeof leavePolicySchema>) => {
-    createPolicyMutation.mutate(values);
+    // Add organizational context
+    const { user } = useAuth();
+    const policyData = {
+      ...values,
+      organizationId: user?.organizationId || 1,
+    };
+    
+    if (editingPolicy) {
+      // Update existing policy
+      updatePolicyMutation.mutate({
+        id: editingPolicy.id,
+        ...policyData
+      });
+    } else {
+      // Create new policy
+      createPolicyMutation.mutate(policyData);
+    }
+  };
+  
+  const [editingPolicy, setEditingPolicy] = useState<LeavePolicy | null>(null);
+  
+  // Handler for editing a policy
+  const handleEditPolicy = (policy: LeavePolicy) => {
+    setEditingPolicy(policy);
+    
+    // Set form values from existing policy
+    policyForm.reset({
+      name: policy.name,
+      description: policy.description || '',
+      approvalsRequired: policy.approvalsRequired,
+      maxConsecutiveDays: policy.maxConsecutiveDays,
+      minNoticeDays: policy.minNoticeDays,
+      carryOverLimit: policy.carryOverLimit,
+      isActive: policy.isActive,
+      settings: policy.settings || {
+        country: "global",
+        workWeekDefinition: "monday-friday",
+        fiscalYearStart: "january",
+        holidayCalendar: "default",
+        halfDayLeaveAllowed: true,
+        restrictPublicHolidays: false,
+        minimumEmploymentPeriodWeeks: 0,
+        annualLeave: {
+          totalDays: 20,
+          accrualType: "upfront"
+        },
+        sickLeave: {
+          totalDays: 10,
+          requiresMedicalCertificate: true,
+          medicalCertificateAfterDays: 3
+        },
+        maternityLeave: {
+          days: 90
+        },
+        paternityLeave: {
+          days: 10
+        },
+        parentalLeave: {
+          adoptionDays: 90
+        }
+      }
+    });
+    
+    setIsNewPolicyDialogOpen(true);
+  };
+  
+  // Handler for deleting a policy
+  const handleDeletePolicy = (policyId: number) => {
+    if (confirm('Are you sure you want to delete this leave policy? This cannot be undone.')) {
+      deletePolicyMutation.mutate(policyId);
+    }
   };
 
   const onSubmitEntitlement = (values: z.infer<typeof leaveEntitlementSchema>) => {
