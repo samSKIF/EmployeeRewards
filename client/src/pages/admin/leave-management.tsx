@@ -610,7 +610,7 @@ export default function AdminLeaveManagement() {
             Leave Types
           </TabsTrigger>
           <TabsTrigger value="holidays">
-            <Calendar className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 h-4 w-4" />
             Holidays
           </TabsTrigger>
           <TabsTrigger value="policies">
@@ -625,7 +625,7 @@ export default function AdminLeaveManagement() {
             <CalendarDays className="mr-2 h-4 w-4" />
             Leave Requests
           </TabsTrigger>
-          </TabsList>
+        </TabsList>
 
           {/* Leave Types Tab */}
           <TabsContent value="leave-types">
@@ -909,7 +909,7 @@ export default function AdminLeaveManagement() {
                         <TableRow key={entitlement.id}>
                           <TableCell>
                             <div className="font-medium">
-                              {users?.find(u => u.id === entitlement.userId)?.name || 'Unknown'}
+                              {users?.find((u: any) => u.id === entitlement.userId)?.name || 'Unknown'}
                             </div>
                           </TableCell>
                           <TableCell>{entitlement.leaveType?.name || 'Unknown'}</TableCell>
@@ -1866,7 +1866,7 @@ export default function AdminLeaveManagement() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {users?.map(user => (
+                          {users?.map((user: any) => (
                             <SelectItem key={user.id} value={user.id.toString()}>
                               {user.name}
                             </SelectItem>
