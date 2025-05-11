@@ -512,6 +512,7 @@ export const holidays = pgTable("holidays", {
   name: text("name").notNull(),
   date: date("date").notNull(),
   description: text("description"),
+  country: text("country").notNull().default("Global"), // For country-specific holidays
   organizationId: integer("organization_id").references(() => organizations.id),
   isRecurringYearly: boolean("is_recurring_yearly").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),

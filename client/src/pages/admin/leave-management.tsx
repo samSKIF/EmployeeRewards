@@ -91,6 +91,7 @@ interface Holiday {
   name: string;
   date: string;
   description: string;
+  country: string;
   organizationId: number;
   recurring: boolean;
 }
@@ -124,6 +125,7 @@ const holidaySchema = z.object({
     required_error: "Date is required",
   }),
   description: z.string().optional(),
+  country: z.string().min(1, "Country is required"),
   recurring: z.boolean().default(false),
 });
 
@@ -317,6 +319,7 @@ export default function AdminLeaveManagement() {
     resolver: zodResolver(holidaySchema),
     defaultValues: {
       recurring: false,
+      country: "Global",
     },
   });
 
@@ -353,6 +356,8 @@ export default function AdminLeaveManagement() {
     createHolidayMutation.mutate({
       ...values,
       date: values.date.toISOString().split('T')[0],
+      recurring: values.recurring,
+      country: values.country,
     });
   };
 
@@ -525,6 +530,7 @@ export default function AdminLeaveManagement() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
+                        <TableHead>Country</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Description</TableHead>
                         <TableHead>Recurring</TableHead>
@@ -537,6 +543,7 @@ export default function AdminLeaveManagement() {
                           <TableCell>
                             <div className="font-medium">{holiday.name}</div>
                           </TableCell>
+                          <TableCell>{holiday.country}</TableCell>
                           <TableCell>{format(parseISO(holiday.date), 'MMMM d, yyyy')}</TableCell>
                           <TableCell>{holiday.description}</TableCell>
                           <TableCell>{holiday.recurring ? 'Yes' : 'No'}</TableCell>
@@ -962,6 +969,23 @@ export default function AdminLeaveManagement() {
                       <FormControl>
                         <Input placeholder="E.g. New Year's Day, Christmas, etc." {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={holidayForm.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Global, USA, UK, France, etc." {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Specify the country for this holiday or use "Global" for all countries
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
