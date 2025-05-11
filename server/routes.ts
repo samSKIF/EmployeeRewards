@@ -10,6 +10,7 @@ import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
 import { auth } from './firebase-admin';
+import leaveManagementRoutes from './api/leave-management';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -3989,7 +3990,6 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
   });
 
   // Leave Management Routes
-  import leaveManagementRoutes from './api/leave-management';
   app.use('/api/leave', leaveManagementRoutes);
 
   // Initialize the server

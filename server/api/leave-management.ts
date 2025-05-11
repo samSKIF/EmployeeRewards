@@ -2,12 +2,12 @@ import { Router } from "express";
 import { db } from "../db";
 import { 
   leaveTypes, leaveEntitlements, leaveRequests, 
-  leaveAdjustments, holidays, leavePolicies,
+  leaveAdjustments, holidays, leavePolicies, users,
   insertLeaveTypeSchema, insertLeaveEntitlementSchema,
   insertLeaveRequestSchema, insertLeaveAdjustmentSchema,
   insertHolidaySchema, insertLeavePolicySchema
 } from "@shared/schema";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
@@ -16,7 +16,7 @@ const router = Router();
 // Get all leave types for organization
 router.get("/types", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     const types = await db.query.leaveTypes.findMany({
       where: eq(leaveTypes.organizationId, organizationId),
       orderBy: [leaveTypes.name],
@@ -29,9 +29,9 @@ router.get("/types", verifyToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // Create a new leave type
-router.post("/types", requireAuth, isAdmin, async (req, res) => {
+router.post("/types", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId, id: userId } = req.user!;
+    const { organizationId, id: userId } = req.user;
     const validatedData = insertLeaveTypeSchema.parse({
       ...req.body,
       organizationId,
@@ -47,10 +47,10 @@ router.post("/types", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Update a leave type
-router.patch("/types/:id", requireAuth, isAdmin, async (req, res) => {
+router.patch("/types/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     
     // First check if leave type exists and belongs to user's organization
     const existingType = await db.query.leaveTypes.findFirst({
@@ -80,9 +80,9 @@ router.patch("/types/:id", requireAuth, isAdmin, async (req, res) => {
 
 // Leave Entitlements API endpoints
 // Get all leave entitlements for a user
-router.get("/entitlements", requireAuth, async (req, res) => {
+router.get("/entitlements", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: userId } = req.user!;
+    const { id: userId } = req.user;
     
     const entitlements = await db.query.leaveEntitlements.findMany({
       where: eq(leaveEntitlements.userId, userId),
@@ -99,9 +99,9 @@ router.get("/entitlements", requireAuth, async (req, res) => {
 });
 
 // Create a new leave entitlement
-router.post("/entitlements", requireAuth, isAdmin, async (req, res) => {
+router.post("/entitlements", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: adminId } = req.user!;
+    const { id: adminId } = req.user;
     const validatedData = insertLeaveEntitlementSchema.parse({
       ...req.body,
       createdBy: adminId,
@@ -117,9 +117,9 @@ router.post("/entitlements", requireAuth, isAdmin, async (req, res) => {
 
 // Leave Requests API endpoints
 // Get all leave requests for a user
-router.get("/requests", requireAuth, async (req, res) => {
+router.get("/requests", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: userId } = req.user!;
+    const { id: userId } = req.user;
     
     const requests = await db.query.leaveRequests.findMany({
       where: eq(leaveRequests.userId, userId),
@@ -144,9 +144,9 @@ router.get("/requests", requireAuth, async (req, res) => {
 });
 
 // Get leave requests for approval (for managers)
-router.get("/requests/pending-approval", requireAuth, async (req, res) => {
+router.get("/requests/pending-approval", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: managerId } = req.user!;
+    const { id: managerId } = req.user;
     
     const pendingRequests = await db.query.leaveRequests.findMany({
       where: and(
@@ -174,9 +174,9 @@ router.get("/requests/pending-approval", requireAuth, async (req, res) => {
 });
 
 // Submit a new leave request
-router.post("/requests", requireAuth, async (req, res) => {
+router.post("/requests", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: userId } = req.user!;
+    const { id: userId } = req.user;
     
     // Calculate total days based on start and end date
     const startDate = new Date(req.body.startDate);
@@ -209,10 +209,10 @@ router.post("/requests", requireAuth, async (req, res) => {
 });
 
 // Approve or reject a leave request
-router.patch("/requests/:id/status", requireAuth, async (req, res) => {
+router.patch("/requests/:id/status", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const { id: approverId } = req.user!;
+    const { id: approverId } = req.user;
     const { status, rejectionReason } = req.body;
     
     if (status !== "APPROVED" && status !== "REJECTED") {
@@ -236,7 +236,7 @@ router.patch("/requests/:id/status", requireAuth, async (req, res) => {
       .update(leaveRequests)
       .set({ 
         status, 
-        approvalDate: new Date(),
+        approvedAt: status === "APPROVED" ? new Date() : null,
         rejectionReason: status === "REJECTED" ? rejectionReason : null,
         updatedAt: new Date()
       })
@@ -256,7 +256,7 @@ router.patch("/requests/:id/status", requireAuth, async (req, res) => {
         await db
           .update(leaveEntitlements)
           .set({ 
-            consumedDays: entitlement.consumedDays + leaveRequest.totalDays 
+            usedDays: entitlement.usedDays + leaveRequest.totalDays 
           })
           .where(eq(leaveEntitlements.id, entitlement.id));
       }
@@ -270,10 +270,10 @@ router.patch("/requests/:id/status", requireAuth, async (req, res) => {
 });
 
 // Cancel a leave request
-router.patch("/requests/:id/cancel", requireAuth, async (req, res) => {
+router.patch("/requests/:id/cancel", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const { id: userId } = req.user!;
+    const { id: userId } = req.user;
     const { cancellationReason } = req.body;
     
     // Check if the request exists and belongs to the user
@@ -306,7 +306,7 @@ router.patch("/requests/:id/cancel", requireAuth, async (req, res) => {
         await db
           .update(leaveEntitlements)
           .set({ 
-            consumedDays: entitlement.consumedDays - leaveRequest.totalDays 
+            usedDays: entitlement.usedDays - leaveRequest.totalDays 
           })
           .where(eq(leaveEntitlements.id, entitlement.id));
       }
@@ -318,6 +318,7 @@ router.patch("/requests/:id/cancel", requireAuth, async (req, res) => {
       .set({ 
         status: "CANCELLED", 
         cancellationReason,
+        cancelledAt: new Date(),
         updatedAt: new Date()
       })
       .where(eq(leaveRequests.id, parseInt(id)))
@@ -332,16 +333,16 @@ router.patch("/requests/:id/cancel", requireAuth, async (req, res) => {
 
 // Holidays API endpoints
 // Get all holidays for an organization
-router.get("/holidays", requireAuth, async (req, res) => {
+router.get("/holidays", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     
-    const holidays = await db.query.holidays.findMany({
+    const allHolidays = await db.query.holidays.findMany({
       where: eq(holidays.organizationId, organizationId),
       orderBy: [holidays.date],
     });
     
-    res.json(holidays);
+    res.json(allHolidays);
   } catch (error) {
     console.error("Error fetching holidays:", error);
     res.status(500).json({ error: "Failed to fetch holidays" });
@@ -349,9 +350,9 @@ router.get("/holidays", requireAuth, async (req, res) => {
 });
 
 // Create a new holiday
-router.post("/holidays", requireAuth, isAdmin, async (req, res) => {
+router.post("/holidays", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId, id: userId } = req.user!;
+    const { organizationId, id: userId } = req.user;
     const validatedData = insertHolidaySchema.parse({
       ...req.body,
       organizationId,
@@ -368,9 +369,9 @@ router.post("/holidays", requireAuth, isAdmin, async (req, res) => {
 
 // Leave Adjustments API endpoints
 // Create a leave adjustment
-router.post("/adjustments", requireAuth, isAdmin, async (req, res) => {
+router.post("/adjustments", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: performerId } = req.user!;
+    const { id: performerId } = req.user;
     const validatedData = insertLeaveAdjustmentSchema.parse({
       ...req.body,
       performedBy: performerId,
@@ -385,14 +386,16 @@ router.post("/adjustments", requireAuth, isAdmin, async (req, res) => {
     });
     
     if (entitlement) {
-      let newAllowedDays = entitlement.allowedDays;
-      
       // Add the adjustment (can be positive or negative)
-      newAllowedDays += validatedData.adjustmentDays;
+      const newAdjustedDays = (entitlement.adjustedDays || 0) + validatedData.adjustmentDays;
       
       await db
         .update(leaveEntitlements)
-        .set({ allowedDays: newAllowedDays })
+        .set({ 
+          adjustedDays: newAdjustedDays,
+          // Update remaining days
+          remainingDays: entitlement.totalDays - entitlement.usedDays + newAdjustedDays
+        })
         .where(eq(leaveEntitlements.id, entitlement.id));
     }
     
@@ -405,9 +408,9 @@ router.post("/adjustments", requireAuth, isAdmin, async (req, res) => {
 
 // Leave Policies API endpoints
 // Get all leave policies for an organization
-router.get("/policies", requireAuth, async (req, res) => {
+router.get("/policies", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     
     const policies = await db.query.leavePolicies.findMany({
       where: and(
@@ -425,9 +428,9 @@ router.get("/policies", requireAuth, async (req, res) => {
 });
 
 // Create a new leave policy
-router.post("/policies", requireAuth, isAdmin, async (req, res) => {
+router.post("/policies", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId, id: userId } = req.user!;
+    const { organizationId, id: userId } = req.user;
     const validatedData = insertLeavePolicySchema.parse({
       ...req.body,
       organizationId,
@@ -444,12 +447,12 @@ router.post("/policies", requireAuth, isAdmin, async (req, res) => {
 
 // Reports and Analytics endpoints
 // Get leave balance report for all employees (admin only)
-router.get("/reports/balances", requireAuth, isAdmin, async (req, res) => {
+router.get("/reports/balances", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     
     // Get all users in the organization
-    const users = await db.query.users.findMany({
+    const allUsers = await db.query.users.findMany({
       where: eq(users.organizationId, organizationId),
       columns: {
         id: true,
@@ -465,7 +468,7 @@ router.get("/reports/balances", requireAuth, isAdmin, async (req, res) => {
     
     // For each user, get their leave entitlements
     const report = await Promise.all(
-      users.map(async (user) => {
+      allUsers.map(async (user) => {
         const entitlements = await db.query.leaveEntitlements.findMany({
           where: eq(leaveEntitlements.userId, user.id),
           with: {
@@ -479,9 +482,10 @@ router.get("/reports/balances", requireAuth, isAdmin, async (req, res) => {
           return {
             leaveTypeId: type.id,
             leaveTypeName: type.name,
-            allowedDays: entitlement?.allowedDays || 0,
-            consumedDays: entitlement?.consumedDays || 0,
-            remainingDays: entitlement ? entitlement.allowedDays - entitlement.consumedDays : 0,
+            totalDays: entitlement?.totalDays || 0,
+            usedDays: entitlement?.usedDays || 0,
+            adjustedDays: entitlement?.adjustedDays || 0,
+            remainingDays: entitlement?.remainingDays || 0,
           };
         });
         
@@ -502,9 +506,9 @@ router.get("/reports/balances", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Get leave calendar (all approved leave requests for a date range)
-router.get("/calendar", requireAuth, async (req, res) => {
+router.get("/calendar", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { organizationId } = req.user!;
+    const { organizationId } = req.user;
     const { startDate, endDate } = req.query;
     
     if (!startDate || !endDate) {
@@ -515,8 +519,8 @@ router.get("/calendar", requireAuth, async (req, res) => {
     const leaveEvents = await db.query.leaveRequests.findMany({
       where: and(
         eq(leaveRequests.status, "APPROVED"),
-        gte(leaveRequests.startDate, new Date(startDate as string)),
-        lte(leaveRequests.endDate, new Date(endDate as string))
+        sql`${leaveRequests.startDate} >= ${startDate as string}`,
+        sql`${leaveRequests.endDate} <= ${endDate as string}`
       ),
       with: {
         user: {
@@ -533,15 +537,15 @@ router.get("/calendar", requireAuth, async (req, res) => {
     
     // Filter to only include users from the same organization
     const filteredEvents = leaveEvents.filter(
-      event => event.user.organizationId === organizationId
+      event => event.user?.organizationId === organizationId
     );
     
     // Get holidays in the date range
     const holidayEvents = await db.query.holidays.findMany({
       where: and(
         eq(holidays.organizationId, organizationId),
-        gte(holidays.date, new Date(startDate as string)),
-        lte(holidays.date, new Date(endDate as string))
+        sql`${holidays.date} >= ${startDate as string}`,
+        sql`${holidays.date} <= ${endDate as string}`
       ),
     });
     
@@ -550,12 +554,12 @@ router.get("/calendar", requireAuth, async (req, res) => {
       ...filteredEvents.map(event => ({
         type: "LEAVE",
         id: event.id,
-        title: `${event.user.name} - ${event.leaveType.name}`,
+        title: `${event.user?.name || "Unknown"} - ${event.leaveType?.name || "Leave"}`,
         start: event.startDate,
         end: event.endDate,
         userId: event.userId,
         leaveTypeId: event.leaveTypeId,
-        color: event.leaveType.color,
+        color: event.leaveType?.color || "#2196F3",
       })),
       ...holidayEvents.map(holiday => ({
         type: "HOLIDAY",
