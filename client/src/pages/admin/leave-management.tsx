@@ -178,6 +178,9 @@ const leavePolicySchema = z.object({
     minimumEmploymentPeriodWeeks: z.coerce.number().min(0).optional(),
     halfDayLeaveAllowed: z.boolean().optional(),
     restrictPublicHolidays: z.boolean().optional(),
+    usesWorkingDays: z.boolean().optional(),
+    carryOverRequiresApproval: z.boolean().optional(),
+    terminationPolicy: z.string().optional(),
     annualLeave: z.object({
       totalDays: z.coerce.number().min(0).optional(),
       accrualType: z.string().optional()
@@ -449,6 +452,9 @@ export default function AdminLeaveManagement() {
         holidayCalendar: "default",
         halfDayLeaveAllowed: true,
         restrictPublicHolidays: false,
+        usesWorkingDays: true,
+        carryOverRequiresApproval: false,
+        terminationPolicy: "paid-out",
         minimumEmploymentPeriodWeeks: 0,
         annualLeave: {
           totalDays: 20,
@@ -1357,10 +1363,11 @@ export default function AdminLeaveManagement() {
             <Form {...policyForm}>
               <form onSubmit={policyForm.handleSubmit(onSubmitPolicy)} className="space-y-6">
                 <Tabs defaultValue="general" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="general">General Information</TabsTrigger>
                     <TabsTrigger value="leave-types">Leave Types</TabsTrigger>
                     <TabsTrigger value="rules">Rules & Compliance</TabsTrigger>
+                    <TabsTrigger value="termination">Termination & Carryover</TabsTrigger>
                   </TabsList>
                   
                   {/* General Information Tab */}
@@ -1892,6 +1899,99 @@ export default function AdminLeaveManagement() {
                         </FormItem>
                       )}
                     />
+                  </TabsContent>
+
+                  {/* Termination & Carryover Tab */}
+                  <TabsContent value="termination" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.terminationPolicy"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Leave Termination Policy</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select termination policy" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="paid-out">Paid Out (Compensated)</SelectItem>
+                                <SelectItem value="must-be-consumed">Must Be Consumed Before Leaving</SelectItem>
+                                <SelectItem value="lost">Lost (No Compensation)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              How unused leave is handled when an employee leaves the company
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.usesWorkingDays"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel>Count Working Days Only</FormLabel>
+                              <FormDescription>
+                                When enabled, leave calculations exclude weekends and holidays
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="carryOverLimit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Carry Over Limit</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} />
+                            </FormControl>
+                            <FormDescription className="text-xs">
+                              Maximum days that can be carried over to next year
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={policyForm.control}
+                        name="settings.carryOverRequiresApproval"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel>Require Approval for Carry Over</FormLabel>
+                              <FormDescription>
+                                Employees must submit a request for approval by manager and HR to carry over leave
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
 
