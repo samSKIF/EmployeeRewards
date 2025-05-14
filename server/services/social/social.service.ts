@@ -1,8 +1,7 @@
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { db } from '../../db';
+import { desc, eq } from 'drizzle-orm';
 import { posts, comments, reactions } from '@shared/schema';
 
 @Injectable()
