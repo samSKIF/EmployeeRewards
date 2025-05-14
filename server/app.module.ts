@@ -1,14 +1,13 @@
 
 import { Module } from '@nestjs/common';
 import { SocialModule } from './services/social/social.module';
-import * as admin from 'firebase-admin';
+import { RecognitionModule } from './services/recognition/recognition.module';
+import { initializeFirebase } from './firebase-admin';
 
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
+// Initialize Firebase
+initializeFirebase();
 
 @Module({
-  imports: [SocialModule],
+  imports: [SocialModule, RecognitionModule],
 })
 export class AppModule {}
