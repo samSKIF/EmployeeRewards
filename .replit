@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start Dev Server"
+runButton = "Start NestJS Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -46,6 +46,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "NODE_ENV=development tsx server/index.ts"
+
+[[workflows.workflow]]
+name = "Start NestJS Server"
+author = 39751827
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development tsx server/main.ts"
 
 [[ports]]
 localPort = 5000
