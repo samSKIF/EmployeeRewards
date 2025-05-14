@@ -1,6 +1,6 @@
 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { auth } from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const decodedToken = await auth().verifyIdToken(token);
+      const decodedToken = await getAuth().verifyIdToken(token);
       request.user = decodedToken;
       return true;
     } catch (error) {

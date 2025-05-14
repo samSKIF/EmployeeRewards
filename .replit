@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start NestJS Server"
+runButton = "Start Dev Server"
 
 [[workflows.workflow]]
 name = "Project"
