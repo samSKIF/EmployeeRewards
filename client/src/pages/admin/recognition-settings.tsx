@@ -127,17 +127,23 @@ export default function RecognitionSettingsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const currentUser = data?.id || 1; // Default to 1 if user data not loaded yet
+    
     const settingsData = {
-      costPerPoint,
+      organizationId: 1, // Default to org 1 since we're already using that in most places
+      costPerPoint: parseFloat(costPerPoint.toString()),
       peerEnabled,
       peerRequiresApproval,
-      peerPointsPerRecognition,
-      peerMaxRecognitionsPerMonth,
+      peerPointsPerRecognition: parseInt(peerPointsPerRecognition.toString()),
+      peerMaxRecognitionsPerMonth: parseInt(peerMaxRecognitionsPerMonth.toString()),
       managerEnabled,
       managerRequiresApproval,
-      managerApprovalEmail: managerApprovalEmail || null
+      managerApprovalEmail: managerApprovalEmail || null,
+      createdBy: currentUser,
+      updatedBy: currentUser
     };
     
+    console.log("Submitting settings data:", settingsData);
     saveSettingsMutation.mutate(settingsData);
   };
   
