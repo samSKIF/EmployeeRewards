@@ -150,19 +150,6 @@ export default function SocialPage() {
   });
   
   // Create post mutation
-  useEffect(() => {
-    const socket = io('ws://0.0.0.0:3002');
-    
-    socket.on('newPost', (post) => {
-      console.log('Received real-time post update:', post);
-      queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
   const createPostMutation = useMutation({
     mutationFn: async (content: string) => {
       const res = await apiRequest("POST", "/api/social/posts", {
