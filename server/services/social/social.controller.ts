@@ -19,6 +19,12 @@ export class SocialController {
   @Post('posts') 
   async createPost(@Body() data: any) {
     console.log('Controller: Sending post creation to microservice');
-    return this.client.send('social.post.create', { userId: data.userId, postData: data }).toPromise();
+    const postData = {
+      userId: data.userId,
+      content: data.content,
+      type: data.type || 'standard',
+      imageUrl: data.imageUrl
+    };
+    return this.client.send('social.post.create', postData).toPromise();
   }
 }
