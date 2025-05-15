@@ -16,8 +16,9 @@ export class SocialController {
     return this.client.send('social.post.get', { limit, offset }).toPromise();
   }
 
-  @Post('posts')
+  @Post('posts') 
   async createPost(@Body() data: any) {
-    return this.client.send('social.post.create', data).toPromise();
+    console.log('Controller: Sending post creation to microservice');
+    return this.client.send('social.post.create', { userId: data.userId, postData: data }).toPromise();
   }
 }

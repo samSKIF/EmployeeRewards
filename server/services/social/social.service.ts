@@ -12,7 +12,10 @@ export class SocialService {
 
   @MessagePattern('social.post.create')
   async handlePostCreate(data: any) {
-    return await this.createPost(data.userId, data.postData);
+    console.log('Social microservice: Handling post creation:', data);
+    const post = await this.createPost(data);
+    this.socialGateway.notifyNewPost(data.userId, post);
+    return post;
   }
 
   @MessagePattern('social.post.get')
