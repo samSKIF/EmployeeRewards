@@ -309,6 +309,49 @@ export const recognitions = pgTable("recognitions", {
   points: integer("points").notNull().default(0),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  type: text("type", { enum: ["peer", "manager", "system"] }).default("peer"),
+  status: text("status", { enum: ["pending", "approved", "rejected"] }).default("pending"),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectedReason: text("rejected_reason"),
+});
+
+// Recognition Settings schema for the recognition microservice
+export const recognitionSettings = pgTable("recognition_settings", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: 'cascade' }).notNull(),
+  costPerPoint: doublePrecision("cost_per_point").notNull().default(0.10),
+  
+  // Peer-to-peer recognition settings
+  peerEnabled: boolean("peer_enabled").notNull().default(true),
+  peerRequiresApproval: boolean("peer_requires_approval").notNull().default(true),
+  peerPointsPerRecognition: integer("peer_points_per_recognition").notNull().default(10),
+  peerMaxRecognitionsPerMonth: integer("peer_max_recognitions_per_month").notNull().default(5),
+  
+  // Manager recognition settings
+  managerEnabled: boolean("manager_enabled").notNull().default(true),
+  managerRequiresApproval: boolean("manager_requires_approval").notNull().default(false),
+  managerApprovalEmail: text("manager_approval_email"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
+// Manager budgets schema for tracking point allocations
+export const managerBudgets = pgTable("manager_budgets", {
+  id: serial("id").primaryKey(),
+  managerId: integer("manager_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: 'cascade' }).notNull(),
+  totalPoints: integer("total_points").notNull().default(0),
+  remainingPoints: integer("remaining_points").notNull().default(0),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
 });
 
 // Chat schema
@@ -1015,6 +1058,8 @@ export const insertReactionSchema = createInsertSchema(reactions).omit({ id: tru
 export const insertPollSchema = createInsertSchema(polls).omit({ id: true, createdAt: true });
 export const insertPollVoteSchema = createInsertSchema(pollVotes).omit({ id: true, createdAt: true });
 export const insertRecognitionSchema = createInsertSchema(recognitions).omit({ id: true, createdAt: true });
+export const insertRecognitionSettingsSchema = createInsertSchema(recognitionSettings).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertManagerBudgetSchema = createInsertSchema(managerBudgets).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertConversationSchema = createInsertSchema(conversations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertConversationParticipantSchema = createInsertSchema(conversationParticipants).omit({ id: true, joinedAt: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
