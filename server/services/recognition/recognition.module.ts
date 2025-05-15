@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { WebSocketModule } from '@nestjs/websockets';
 import { RecognitionController } from './recognition.controller';
 import { RecognitionService } from './recognition.service';
 import { RecognitionGateway } from './recognition.gateway';
@@ -7,6 +8,7 @@ import { auth } from '../../firebase-admin';
 
 @Module({
   imports: [
+    WebSocketModule,
     ClientsModule.register([
       {
         name: 'RECOGNITION_SERVICE',

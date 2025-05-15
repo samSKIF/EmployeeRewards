@@ -1,6 +1,7 @@
 
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { WebSocketModule } from '@nestjs/websockets';
 import { SocialController } from './social.controller';
 import { SocialService } from './social.service';
 import { SocialGateway } from './social.gateway';
@@ -8,6 +9,7 @@ import { auth } from '../../firebase-admin';
 
 @Module({
   imports: [
+    WebSocketModule,
     ClientsModule.register([
       {
         name: 'SOCIAL_SERVICE',
