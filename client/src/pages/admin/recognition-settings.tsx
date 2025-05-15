@@ -18,11 +18,16 @@ import {
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { RecognitionSetting } from "@shared/schema";
+import { RecognitionSetting, User } from "@shared/schema";
 
 export default function RecognitionSettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get current user data
+  const { data: userData } = useQuery<User>({
+    queryKey: ["/api/users/me"],
+  });
   
   // Create states for the form
   const [costPerPoint, setCostPerPoint] = useState<number>(0.10);
@@ -127,7 +132,7 @@ export default function RecognitionSettingsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentUser = data?.id || 1; // Default to 1 if user data not loaded yet
+    const currentUser = userData?.id || 1; // Default to 1 if user data not loaded yet
     
     const settingsData = {
       organizationId: 1, // Default to org 1 since we're already using that in most places
@@ -149,11 +154,26 @@ export default function RecognitionSettingsPage() {
   
   // Budget form submission handler
   const handleAddBudget = (managerId: number, points: number) => {
+    const currentUser = userData?.id || 1; // Default to 1 if user data not loaded yet
+    
     addBudgetMutation.mutate({
+      organizationId: 1, // Default to org 1 since we're already using that in most places
+      managerId,
+      totalPoints: parseInt(points.toString()),
+      remainingPoints: parseInt(points.toString()), // Initially, remaining points equals total points
+      month: selectedMonth,
+      year: selectedYear,
+      createdBy: currentUser
+    });
+    
+    console.log("Submitting budget data:", {
+      organizationId: 1,
       managerId,
       totalPoints: points,
+      remainingPoints: points,
       month: selectedMonth,
-      year: selectedYear
+      year: selectedYear,
+      createdBy: currentUser
     });
   };
   
