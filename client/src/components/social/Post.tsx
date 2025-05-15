@@ -343,7 +343,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
             <Avatar className="w-10 h-10 mr-3 border-2 border-gray-100">
               <AvatarImage src={post.user?.avatarUrl || post.userProfileImage || post.avatarUrl} alt={post.user?.name || post.userName || 'User'} />
               <AvatarFallback className="bg-blue-100 text-blue-700">
-                {(post.user?.name || post.userName || 'User').split(' ').map(n => n[0]).join('')}
+                {(post.user?.name || post.userName || 'User').split(' ').map((n: string) => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -404,20 +404,20 @@ export const Post = ({ post, currentUser }: PostProps) => {
         )}
         
         {/* Reaction counts summary */}
-        {Object.keys(post.reactionCounts).length > 0 && (
+        {post.reactionCounts && Object.keys(post.reactionCounts).length > 0 && (
           <div className="flex items-center text-sm text-gray-500 mb-3 pb-3 border-b">
             <div className="flex -space-x-1 mr-2">
-              {post.reactionCounts['like'] > 0 && (
+              {post.reactionCounts && post.reactionCounts['like'] > 0 && (
                 <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center">
                   <ThumbsUp className="text-teal-600 w-3 h-3" />
                 </div>
               )}
-              {post.reactionCounts['celebrate'] > 0 && (
+              {post.reactionCounts && post.reactionCounts['celebrate'] > 0 && (
                 <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
                   <Award className="text-amber-600 w-3 h-3" />
                 </div>
               )}
-              {post.reactionCounts['insightful'] > 0 && (
+              {post.reactionCounts && post.reactionCounts['insightful'] > 0 && (
                 <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center">
                   <Sparkles className="text-purple-600 w-3 h-3" />
                 </div>
@@ -433,13 +433,13 @@ export const Post = ({ post, currentUser }: PostProps) => {
             <ReactionButton 
               type="like" 
               icon={<ThumbsUp className="h-4 w-4" />} 
-              count={post.reactionCounts['like'] || 0} 
+              count={(post.reactionCounts && post.reactionCounts['like']) || post.reactionCount || 0} 
               label="Like"
             />
             <ReactionButton 
               type="celebrate" 
               icon={<Award className="h-4 w-4" />} 
-              count={post.reactionCounts['celebrate'] || 0} 
+              count={(post.reactionCounts && post.reactionCounts['celebrate']) || 0} 
               label="Celebrate"
             />
             <button 
@@ -460,9 +460,9 @@ export const Post = ({ post, currentUser }: PostProps) => {
         </div>
         
         {/* Comments section */}
-        {(showComments || isCommenting || post.commentCount > 0) && (
+        {(showComments || isCommenting || (post.commentCount && post.commentCount > 0)) && (
           <div>
-            {post.commentCount > 0 && !showComments && (
+            {post.commentCount && post.commentCount > 0 && !showComments && (
               <button 
                 className="text-sm text-teal-600 font-medium mb-3 hover:underline"
                 onClick={() => setShowComments(true)}
