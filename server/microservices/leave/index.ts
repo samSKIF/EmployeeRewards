@@ -14,6 +14,25 @@ import {
 } from "@shared/schema";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 
+// Define extended interface for authenticated request user
+// Extended AuthenticatedRequest type with proper user fields
+interface LeaveManagementAuthRequest extends Omit<AuthenticatedRequest, 'user'> {
+  user: {
+    id: number;
+    username: string;
+    name: string;
+    surname: string | null;
+    email: string;
+    organizationId: number;
+    isAdmin: boolean;
+    roleType: string;
+    phoneNumber?: string | null;
+    jobTitle?: string | null;
+    department?: string | null;
+    [key: string]: any;
+  }
+}
+
 const router = express.Router();
 
 /**
@@ -21,7 +40,7 @@ const router = express.Router();
  */
 
 // Get all leave types for organization
-router.get("/types", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/types", verifyToken, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling get leave types request');
     const { organizationId } = req.user;
@@ -42,7 +61,7 @@ router.get("/types", verifyToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // Create a new leave type
-router.post("/types", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.post("/types", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling create leave type request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -66,7 +85,7 @@ router.post("/types", verifyToken, verifyAdmin, async (req: AuthenticatedRequest
 });
 
 // Update a leave type
-router.patch("/types/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.patch("/types/:id", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling update leave type request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -105,7 +124,7 @@ router.patch("/types/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRe
 });
 
 // Delete a leave type
-router.delete("/types/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.delete("/types/:id", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling delete leave type request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -152,7 +171,7 @@ router.delete("/types/:id", verifyToken, verifyAdmin, async (req: AuthenticatedR
  */
 
 // Get all leave requests for a user
-router.get("/requests", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/requests", verifyToken, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling get leave requests request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -185,7 +204,7 @@ router.get("/requests", verifyToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // Create a new leave request
-router.post("/requests", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.post("/requests", verifyToken, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling create leave request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -236,7 +255,7 @@ router.post("/requests", verifyToken, async (req: AuthenticatedRequest, res) => 
 });
 
 // Update a leave request status (approve/reject)
-router.patch("/requests/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.patch("/requests/:id", verifyToken, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling update leave request status');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -297,7 +316,7 @@ router.patch("/requests/:id", verifyToken, async (req: AuthenticatedRequest, res
  */
 
 // Get all leave policies for organization
-router.get("/policies", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.get("/policies", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling get leave policies request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -319,7 +338,7 @@ router.get("/policies", verifyToken, verifyAdmin, async (req: AuthenticatedReque
 });
 
 // Create or update leave policy
-router.post("/policies", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.post("/policies", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling create/update leave policy request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -383,7 +402,7 @@ router.post("/policies", verifyToken, verifyAdmin, async (req: AuthenticatedRequ
  */
 
 // Get holidays for organization and country
-router.get("/holidays", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/holidays", verifyToken, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling get holidays request');
     // Mark request as handled by microservice to prevent duplicate processing
@@ -426,7 +445,7 @@ router.get("/holidays", verifyToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // Create a new holiday
-router.post("/holidays", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+router.post("/holidays", verifyToken, verifyAdmin, async (req: LeaveManagementAuthRequest, res) => {
   try {
     console.log('Leave microservice: Handling create holiday request');
     // Mark request as handled by microservice to prevent duplicate processing
