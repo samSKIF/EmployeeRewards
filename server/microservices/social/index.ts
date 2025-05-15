@@ -83,6 +83,7 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
         p.updated_at AS "updatedAt",
         u.name AS "userName",
         u.avatar_url AS "userProfileImage",
+        u.avatar_url AS "avatarUrl",
         (
           SELECT COUNT(*) 
           FROM reactions 
