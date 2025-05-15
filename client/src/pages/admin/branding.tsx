@@ -203,6 +203,11 @@ const BrandingPage = () => {
         title: "Branding updated",
         description: "Your branding settings have been saved.",
       });
+      
+      // Force refresh to ensure theme is applied fully
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error) => {
       toast({
