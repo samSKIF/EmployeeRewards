@@ -13,6 +13,8 @@ const router = express.Router();
  * Create a new post with image upload support
  */
 router.post('/posts', verifyToken, upload.single('image'), async (req: AuthenticatedRequest, res: Response) => {
+  // Mark request as handled by microservice to prevent duplicate processing
+  (req as any)._routeHandledByMicroservice = true;
   // Check if user exists
   if (!req.user) {
     return res.status(401).json({ error: 'User not authenticated' });

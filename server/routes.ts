@@ -3176,8 +3176,15 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
-  // Handle file upload for social posts
+  // Handle file upload for social posts (Legacy route - redirects to microservice if not processed)
   app.post("/api/social/posts", verifyToken, upload.single('image'), async (req: AuthenticatedRequest, res) => {
+    // Check if request was already handled by the microservice
+    if ((req as any)._routeHandledByMicroservice) {
+      return; // Request was already handled by microservice
+    }
+    
+    console.log("Warning: Using legacy social posts endpoint. Should be handled by microservice.");
+    
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
