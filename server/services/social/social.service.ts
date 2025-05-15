@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { desc, eq } from 'drizzle-orm';
 import { EventPattern, MessagePattern } from '@nestjs/microservices';
 import { posts, comments, reactions } from '@shared/schema';
