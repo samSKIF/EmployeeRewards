@@ -159,19 +159,30 @@ const BrandingPage = () => {
     mutationFn: async () => {
       if (!logoFile) return null;
       
-      const formData = new FormData();
-      formData.append('logo', logoFile);
-      
-      const res = await fetch('/api/hr/branding/logo', {
-        method: 'POST',
-        body: formData,
+      // Convert the uploaded file to base64
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(logoFile);
+        reader.onload = async () => {
+          try {
+            const logoUrl = reader.result as string;
+            
+            // Send the base64 data instead of FormData
+            const res = await apiRequest('POST', '/api/hr/branding/logo', { logoUrl });
+            
+            if (!res.ok) {
+              throw new Error('Failed to upload logo');
+            }
+            
+            return resolve(await res.json());
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => {
+          reject(new Error('Failed to read logo file'));
+        };
       });
-      
-      if (!res.ok) {
-        throw new Error('Failed to upload logo');
-      }
-      
-      return await res.json();
     },
     onSuccess: (data) => {
       if (data && data.logoUrl) {
