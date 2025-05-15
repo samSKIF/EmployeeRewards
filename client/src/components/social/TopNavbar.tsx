@@ -119,6 +119,11 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
       onClick: () => navigateTo('/admin/leave-management')
     },
     { 
+      icon: Award, 
+      label: "Recognition Settings", 
+      onClick: () => navigateTo('/admin/recognition-settings')
+    },
+    { 
       icon: ClipboardList, 
       label: "Onboarding", 
       onClick: () => navigateTo('/admin/onboarding')
