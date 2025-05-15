@@ -1,5 +1,4 @@
-
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Inject } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { AuthGuard } from '../auth/auth.guard';
 
