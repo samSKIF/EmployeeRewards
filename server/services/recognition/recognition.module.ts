@@ -3,10 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RecognitionController } from './recognition.controller';
 import { RecognitionService } from './recognition.service';
 import { RecognitionGateway } from './recognition.gateway';
-import { initializeFirebase } from '../../firebase-admin';
-
-// Ensure Firebase is initialized
-initializeFirebase();
+import { auth } from '../../firebase-admin';
 
 @Module({
   imports: [

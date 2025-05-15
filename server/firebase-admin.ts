@@ -1,7 +1,9 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
-export function initializeFirebase() {
+// Initialize Firebase only if no apps exist
+const initializeFirebase = (appName?: string) => {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
   }
@@ -9,19 +11,20 @@ export function initializeFirebase() {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
   const projectId = process.env.VITE_FIREBASE_PROJECT_ID || serviceAccount.project_id || "fripl-d2c13";
 
-  console.log("Server Firebase projectId from service account:", serviceAccount.project_id);
-  console.log("Using project ID:", projectId);
+  // Only initialize if no default app exists or if a specific name is provided
+  if (getApps().length === 0 || appName) {
+    console.log(`Initializing Firebase app${appName ? ` (${appName})` : ''} with project ID: ${projectId}`);
+    return initializeApp({
+      credential: cert(serviceAccount),
+      projectId: projectId
+    }, appName);
+  }
 
-  const app = initializeApp({
-    credential: cert(serviceAccount),
-    projectId: projectId
-  });
+  return getApps()[0];
+};
 
-  console.log("Server using Firebase projectId:", projectId);
-  
-  return app;
-}
-
+// Initialize default app
 const app = initializeFirebase();
-export const auth = getAuth(app);
-export { app };
+const auth = getAuth(app);
+
+export { app, auth };
