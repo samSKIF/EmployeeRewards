@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useBranding } from '@/context/BrandingContext';
 import { 
   ShoppingCart, 
   Shield, 
@@ -60,6 +61,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
   const [, navigate] = useLocation();
   const [isAdminConsoleOpen, setIsAdminConsoleOpen] = useState(false);
   const [location] = useLocation();
+  const { branding } = useBranding();
 
   // Navigation helper
   const navigateTo = (path: string) => {
@@ -145,15 +147,23 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     <aside className="bg-white text-gray-800 w-64 p-4 h-full overflow-y-auto border-r border-gray-200">
       {/* Logo/Brand area */}
       <div className="flex items-center mb-6 pl-2">
-        <div className="text-teal-500 mr-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M9 9H9.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M15 9H15.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <h1 className="font-bold text-xl">ThrivioHR</h1>
+        {branding?.logoUrl ? (
+          <img 
+            src={branding.logoUrl} 
+            alt={branding.organizationName || "Company Logo"} 
+            className="h-8 w-8 mr-2 object-contain" 
+          />
+        ) : (
+          <div className="text-teal-500 mr-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 9H9.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 9H15.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        )}
+        <h1 className="font-bold text-xl">{branding?.organizationName || "ThrivioHR"}</h1>
       </div>
 
       {/* User profile summary */}

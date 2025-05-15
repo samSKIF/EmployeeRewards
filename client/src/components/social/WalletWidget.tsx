@@ -2,6 +2,7 @@ import React from 'react';
 import { Gift, CreditCard, ChevronRight, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useBranding } from '@/context/BrandingContext';
 
 interface WalletWidgetProps {
   balance?: number;
@@ -16,13 +17,16 @@ const WalletWidget: React.FC<WalletWidgetProps> = ({ balance = 0 }) => {
       return res.json();
     }
   });
+  
+  // Get branding information
+  const { branding } = useBranding();
 
   const userBalance = balanceData?.balance || balance;
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
       <div className="px-6 pt-5 pb-4">
-        <h2 className="font-bold text-gray-800 text-lg mb-4">ThrivioHR Points</h2>
+        <h2 className="font-bold text-gray-800 text-lg mb-4">{branding?.organizationName || "ThrivioHR"} Points</h2>
         
         {/* To Give section */}
         <div className="border-b border-gray-100 pb-4 mb-4">
