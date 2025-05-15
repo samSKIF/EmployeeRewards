@@ -423,7 +423,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
                 </div>
               )}
             </div>
-            <span>{Object.values(post.reactionCounts).reduce((a, b) => a + b, 0)}</span>
+            <span>{post.reactionCounts ? Object.values(post.reactionCounts).reduce((a, b) => a + b, 0) : 0}</span>
           </div>
         )}
         
