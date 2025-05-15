@@ -43,10 +43,10 @@ router.post('/posts', verifyToken, upload.single('image'), async (req: Authentic
 
     // Execute the query to create a post
     const query = `
-      INSERT INTO posts (user_id, content, image_url, post_type, tags, created_at, updated_at)
+      INSERT INTO posts (user_id, content, image_url, type, tags, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING id, user_id AS "userId", content, image_url AS "imageUrl", 
-        post_type AS "postType", tags, created_at AS "createdAt", updated_at AS "updatedAt"
+        type, tags, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
     
     const result = await pool.query(query, [
@@ -80,7 +80,8 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
         p.id, 
         p.user_id AS "userId", 
         p.content, 
-        p.image_url AS "imageUrl", 
+        p.image_url AS "imageUrl",
+        p.type,
         p.created_at AS "createdAt", 
         p.updated_at AS "updatedAt",
         u.name AS "userName",

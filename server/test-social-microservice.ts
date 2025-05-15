@@ -28,15 +28,16 @@ async function testSocialMicroservice() {
     console.log('Login successful, token obtained');
     
     // Create a post without an image
+    const formData = new FormData();
+    formData.append('content', 'Test post from social microservice test script');
+    formData.append('type', 'standard');
+    
     const textPostResponse = await fetch('http://localhost:5000/api/social/posts', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${loginData.token}`
       },
-      body: JSON.stringify({
-        content: 'Test post from social microservice test script'
-      })
+      body: formData
     });
 
     if (!textPostResponse.ok) {
