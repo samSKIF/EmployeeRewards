@@ -26,7 +26,8 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
   await app.listen(5000, '0.0.0.0');
-  console.log('Application and microservices running');
+  console.log('Main application listening on http://0.0.0.0:5000');
+  console.log('All microservices started');
 }
 
 bootstrap();

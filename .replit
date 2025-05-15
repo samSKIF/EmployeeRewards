@@ -67,7 +67,7 @@ args = "NODE_ENV=development tsx server/services/recognition/main.ts"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_ENV=development tsx server/services/social/main.ts"
+args = "NODE_ENV=development tsx server/services/social/main.ts  "
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -88,11 +88,3 @@ externalPort = 80
 [[ports]]
 localPort = 5001
 externalPort = 3000
-
-[[ports]]
-localPort = 40617
-externalPort = 3001
-
-[[ports]]
-localPort = 41217
-externalPort = 3003
