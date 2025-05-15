@@ -1,11 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { db } from '../../db';
 import { desc, eq } from 'drizzle-orm';
 import { recognitions, users, posts } from '@shared/schema';
 
 @Injectable()
 export class RecognitionService {
-  constructor(private readonly recognitionGateway: RecognitionGateway) {}
+  constructor(
+    private readonly recognitionGateway: RecognitionGateway,
+    @Inject('RECOGNITION_SERVICE') private readonly client: ClientProxy,
+  ) {}
+
+  @MessagePattern('recognition.create')
+  async handleRecognitionCreate(data: any) {
+    return await this.createRecognition(data.userId, data.recognitionData);
+  }
+
+  @MessagePattern('recognition.get')
+  async handleGetRecognitions(data: any) {
+    return await this.getRecognitionsReceived(data.userId);
+  }
 
   async getRecognitionsReceived(userId: number) {
     const recognitionsData = await db.select({
