@@ -109,6 +109,13 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       className: "whitespace-nowrap",
     },
     { 
+      icon: Award, 
+      label: "Recognition Settings", 
+      onClick: () => navigateTo('/admin/recognition-settings'),
+      isActive: location === '/admin/recognition-settings',
+      className: "whitespace-nowrap",
+    },
+    { 
       icon: Briefcase, 
       label: "Onboarding", 
       onClick: () => navigateTo('/admin/onboarding'),
