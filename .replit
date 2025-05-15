@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Microservices"
+runButton = "All Microservices"
 
 [[workflows.workflow]]
 name = "Project"
@@ -103,6 +103,27 @@ args = "NODE_ENV=development tsx server/services/social/main.ts"
 task = "shell.exec"
 args = "NODE_ENV=development tsx server/services/recognition/main.ts"
 
+[[workflows.workflow]]
+name = "All Microservices"
+author = 39751827
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development tsx server/main.ts"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development tsx server/services/social/main.ts"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development tsx server/services/recognition/main.ts"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development tsx server/services/leave/main.ts"
+
 [[ports]]
 localPort = 3001
 externalPort = 3002
@@ -122,10 +143,6 @@ externalPort = 3000
 [[ports]]
 localPort = 35789
 externalPort = 3001
-
-[[ports]]
-localPort = 36591
-externalPort = 5173
 
 [[ports]]
 localPort = 40091
