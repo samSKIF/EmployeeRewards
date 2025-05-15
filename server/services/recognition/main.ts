@@ -13,6 +13,6 @@ async function bootstrap() {
   });
 
   await app.listen();
-  console.log('Recognition Microservice is listening');
+  console.log('Recognition Microservice is listening on port 3001');
 }
 bootstrap();

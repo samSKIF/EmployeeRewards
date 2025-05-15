@@ -13,6 +13,6 @@ async function bootstrap() {
   });
 
   await app.listen();
-  console.log('Social Microservice is listening');
+  console.log('Social Microservice is listening on port 3002');
 }
 bootstrap();
