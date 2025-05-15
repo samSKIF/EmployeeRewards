@@ -155,12 +155,12 @@ const BrandingPage = () => {
   };
 
   // Logo upload mutation
-  const logoUploadMutation = useMutation({
+  const logoUploadMutation = useMutation<any, Error, void>({
     mutationFn: async () => {
       if (!logoFile) return null;
       
       // Convert the uploaded file to base64
-      return new Promise((resolve, reject) => {
+      return new Promise<any>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(logoFile);
         reader.onload = async () => {
@@ -184,7 +184,7 @@ const BrandingPage = () => {
         };
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data && data.logoUrl) {
         form.setValue('logoUrl', data.logoUrl);
         toast({
