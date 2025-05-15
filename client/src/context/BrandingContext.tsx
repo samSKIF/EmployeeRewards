@@ -125,26 +125,26 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     let secondaryColor = "#232E3E";
     let accentColor = "#FFA500";
     
+    // Define all color presets to match the UI options
+    const COLOR_PRESETS = [
+      { id: "default", primary: "#00A389", secondary: "#232E3E", accent: "#FFA500" },
+      { id: "ocean", primary: "#1E88E5", secondary: "#0D47A1", accent: "#4FC3F7" },
+      { id: "forest", primary: "#388E3C", secondary: "#1B5E20", accent: "#81C784" },
+      { id: "sunset", primary: "#E64A19", secondary: "#BF360C", accent: "#FFAB91" },
+      { id: "lavender", primary: "#7B1FA2", secondary: "#4A148C", accent: "#CE93D8" },
+      { id: "blue", primary: "#1E40AF", secondary: "#1E3A8A", accent: "#60A5FA" },
+      { id: "green", primary: "#15803D", secondary: "#166534", accent: "#4ADE80" },
+      { id: "purple", primary: "#7E22CE", secondary: "#6B21A8", accent: "#C084FC" },
+      { id: "red", primary: "#DC2626", secondary: "#B91C1C", accent: "#FCA5A5" }
+    ];
+    
     // Use preset colors if they're set
     if (branding.colorScheme && branding.colorScheme !== "custom") {
-      // Find the preset in the COLOR_PRESETS
-      const COLOR_PRESETS = [
-        { id: "default", primary: "#00A389", secondary: "#232E3E", accent: "#FFA500" },
-        { id: "blue", primary: "#1E40AF", secondary: "#1E3A8A", accent: "#60A5FA" },
-        { id: "green", primary: "#15803D", secondary: "#166534", accent: "#4ADE80" },
-        { id: "purple", primary: "#7E22CE", secondary: "#6B21A8", accent: "#C084FC" },
-        { id: "red", primary: "#DC2626", secondary: "#B91C1C", accent: "#FCA5A5" }
-      ];
-      
       const preset = COLOR_PRESETS.find(p => p.id === branding.colorScheme);
       if (preset) {
         primaryColor = preset.primary;
         secondaryColor = preset.secondary;
         accentColor = preset.accent;
-        
-        root.style.setProperty('--primary', hexToHSL(primaryColor));
-        root.style.setProperty('--secondary', hexToHSL(secondaryColor));
-        root.style.setProperty('--accent', hexToHSL(accentColor));
       }
     } 
     // Otherwise use the custom colors
@@ -152,29 +152,54 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
       // Apply primary colors
       if (branding.primaryColor) {
         primaryColor = branding.primaryColor;
-        root.style.setProperty('--primary', hexToHSL(primaryColor));
-        root.style.setProperty('--primary-foreground', '0 0% 100%');
       }
       
       // Apply secondary colors
       if (branding.secondaryColor) {
         secondaryColor = branding.secondaryColor;
-        root.style.setProperty('--secondary', hexToHSL(secondaryColor));
-        root.style.setProperty('--secondary-foreground', '0 0% 100%');
       }
       
       // Apply accent colors
       if (branding.accentColor) {
         accentColor = branding.accentColor;
-        root.style.setProperty('--accent', hexToHSL(accentColor));
-        root.style.setProperty('--accent-foreground', '0 0% 0%');
       }
     }
+    
+    // Set all CSS variables
+    root.style.setProperty('--primary', hexToHSL(primaryColor));
+    root.style.setProperty('--primary-foreground', '0 0% 100%');
+    root.style.setProperty('--secondary', hexToHSL(secondaryColor));
+    root.style.setProperty('--secondary-foreground', '0 0% 100%');
+    root.style.setProperty('--accent', hexToHSL(accentColor));
+    root.style.setProperty('--accent-foreground', '0 0% 0%');
     
     // Also set the raw color values as CSS variables for SVGs and other direct usage
     root.style.setProperty('--primary-color', primaryColor);
     root.style.setProperty('--secondary-color', secondaryColor);
     root.style.setProperty('--accent-color', accentColor);
+    
+    // Force update to apply the changes
+    const existingStyle = document.getElementById('dynamic-branding-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    const style = document.createElement('style');
+    style.id = 'dynamic-branding-style';
+    style.innerHTML = `
+      :root {
+        --primary: ${hexToHSL(primaryColor)};
+        --primary-foreground: 0 0% 100%;
+        --secondary: ${hexToHSL(secondaryColor)};
+        --secondary-foreground: 0 0% 100%;
+        --accent: ${hexToHSL(accentColor)};
+        --accent-foreground: 0 0% 0%;
+        --primary-color: ${primaryColor};
+        --secondary-color: ${secondaryColor};
+        --accent-color: ${accentColor};
+      }
+    `;
+    document.head.appendChild(style);
     
     document.title = branding.organizationName || "ThrivioHR";
     setCssApplied(true);
