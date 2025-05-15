@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { db } from '../../db';
 import { eq } from 'drizzle-orm';
-import { leaveRequests, leaveTypes } from '../../db/schema';
+import { leaveRequests, leaveTypes } from '@shared/schema';
 
 @Injectable()
 export class LeaveService {
