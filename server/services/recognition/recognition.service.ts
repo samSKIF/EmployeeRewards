@@ -6,6 +6,7 @@ import { recognitions, users, posts } from '@shared/schema';
 
 @Injectable()
 export class RecognitionService {
+  constructor(private readonly recognitionGateway: RecognitionGateway) {}
   async getRecognitionsReceived(userId: number) {
     return await db.select()
       .from(recognitions)
@@ -45,6 +46,18 @@ export class RecognitionService {
       })
       .returning();
 
+    // Notify through WebSocket
+    this.recognitionGateway.notifyNewRecognition({ ...recognition, post });
     return { post, recognition };
+  }
+
+  async updatePoints(userId: number, points: number) {
+    // Update points in database
+    await db.update(users)
+      .set({ points: points })
+      .where(eq(users.id, userId));
+
+    // Notify through WebSocket
+    this.recognitionGateway.notifyPointsUpdate(userId, points);
   }
 }
