@@ -27,4 +27,14 @@ export class RecognitionController {
   }) {
     return this.recognitionService.createRecognition(req.user.id, data);
   }
+
+  @Get('top-recognizers')
+  async getTopRecognizers() {
+    return this.recognitionService.getTopRecognizers();
+  }
+
+  @Get('stats')
+  async getRecognitionStats(@Req() req: any) {
+    return this.recognitionService.getRecognitionStats(req.user.id);
+  }
 }

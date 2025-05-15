@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { db } from '../../db';
 import { desc, eq } from 'drizzle-orm';
@@ -7,11 +6,25 @@ import { recognitions, users, posts } from '@shared/schema';
 @Injectable()
 export class RecognitionService {
   constructor(private readonly recognitionGateway: RecognitionGateway) {}
+
   async getRecognitionsReceived(userId: number) {
-    return await db.select()
-      .from(recognitions)
-      .where(eq(recognitions.recipientId, userId))
-      .orderBy(desc(recognitions.createdAt));
+    const recognitionsData = await db.select({
+      recognition: recognitions,
+      recognizer: users,
+    })
+    .from(recognitions)
+    .leftJoin(users, eq(recognitions.recognizerId, users.id))
+    .where(eq(recognitions.recipientId, userId))
+    .orderBy(desc(recognitions.createdAt));
+
+    return recognitionsData.map(r => ({
+      ...r.recognition,
+      recognizer: {
+        id: r.recognizer.id,
+        name: r.recognizer.name,
+        avatarUrl: r.recognizer.avatarUrl
+      }
+    }));
   }
 
   async getRecognitionsGiven(userId: number) {
