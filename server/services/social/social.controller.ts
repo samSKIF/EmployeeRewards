@@ -10,11 +10,11 @@ export class SocialController {
 
   @Get('posts')
   async getPosts(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.socialService.getPosts(limit, offset);
+    return this.client.send('social.post.get', { limit, offset }).toPromise();
   }
 
   @Post('posts')
   async createPost(@Body() data: any) {
-    return this.socialService.createPost(data);
+    return this.client.send('social.post.create', data).toPromise();
   }
 }

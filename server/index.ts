@@ -4,10 +4,19 @@ import { setupVite, serveStatic, log } from "./vite";
 import { createAdminUser } from "./create-admin-user";
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport, ClientProxy } from '@nestjs/microservices';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
+
+const socialClient = ClientsModule.register([{
+  name: 'SOCIAL_SERVICE',
+  transport: Transport.TCP,
+  options: {
+    host: '0.0.0.0',
+    port: 3002,
+  },
+}]);
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Set up static file serving for uploaded files
