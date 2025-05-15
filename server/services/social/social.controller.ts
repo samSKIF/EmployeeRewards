@@ -6,7 +6,10 @@ import { AuthGuard } from '../auth/auth.guard';
 @Controller('social')
 @UseGuards(AuthGuard)
 export class SocialController {
-  constructor(private readonly socialService: SocialService) {}
+  constructor(
+    private readonly socialService: SocialService,
+    @Inject('SOCIAL_SERVICE') private readonly client: ClientProxy,
+  ) {}
 
   @Get('posts')
   async getPosts(@Query('limit') limit: number, @Query('offset') offset: number) {
