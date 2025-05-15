@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy, MessagePattern } from '@nestjs/microservices';
-import { db } from '../../db';
 import { desc, eq } from 'drizzle-orm';
 import { recognitions, users, posts } from '@shared/schema';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
 
 @Injectable()
 export class RecognitionService {

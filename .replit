@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start Dev Server"
+runButton = "Start Microservices"
 
 [[workflows.workflow]]
 name = "Project"
