@@ -11,6 +11,7 @@ import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
 import { auth } from './firebase-admin';
 import leaveManagementRoutes from './api/leave-management';
+import socialRoutes from './microservices/social/index';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -31,6 +32,11 @@ import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register microservices routes
+  app.use('/api/social', socialRoutes);
+  
+  // Register API routes
+  app.use('/api/leave', leaveManagementRoutes);
   // Create corporate admin account
   app.post("/api/admin/corporate-account", async (req, res) => {
     try {
