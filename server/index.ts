@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { createAdminUser } from "./create-admin-user";
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
