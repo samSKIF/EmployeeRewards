@@ -1130,6 +1130,10 @@ export type InsertPollVote = z.infer<typeof insertPollVoteSchema>;
 
 export type Recognition = typeof recognitions.$inferSelect;
 export type InsertRecognition = z.infer<typeof insertRecognitionSchema>;
+export type RecognitionSetting = typeof recognitionSettings.$inferSelect;
+export type InsertRecognitionSetting = z.infer<typeof insertRecognitionSettingsSchema>;
+export type ManagerBudget = typeof managerBudgets.$inferSelect;
+export type InsertManagerBudget = z.infer<typeof insertManagerBudgetSchema>;
 
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;

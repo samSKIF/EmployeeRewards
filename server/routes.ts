@@ -12,6 +12,7 @@ import { upload, documentUpload, getPublicUrl } from './file-upload';
 import { auth } from './firebase-admin';
 import socialRoutes from './microservices/social/index';
 import leaveRoutes from './microservices/leave/index';
+import recognitionRoutes from './microservices/recognition/index';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -35,6 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register microservices routes
   app.use('/api/social', socialRoutes);
   app.use('/api/leave', leaveRoutes);
+  app.use('/api/recognition', recognitionRoutes);
   // Create corporate admin account
   app.post("/api/admin/corporate-account", async (req, res) => {
     try {
