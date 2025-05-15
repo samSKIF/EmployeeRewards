@@ -105,9 +105,13 @@ export interface Post {
 }
 
 export interface PostWithDetails extends Post {
-  user: User;
-  commentCount: number;
-  reactionCounts: Record<string, number>;
+  user?: User;
+  userName?: string;
+  userProfileImage?: string;
+  avatarUrl?: string;
+  commentCount?: number;
+  reactionCount?: number;
+  reactionCounts?: Record<string, number>;
   userReaction?: string;
   poll?: PollWithVotes;
   recognition?: RecognitionWithDetails;

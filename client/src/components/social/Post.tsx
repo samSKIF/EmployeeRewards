@@ -341,13 +341,13 @@ export const Post = ({ post, currentUser }: PostProps) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
             <Avatar className="w-10 h-10 mr-3 border-2 border-gray-100">
-              <AvatarImage src={post.user.avatarUrl} alt={post.user.name} />
+              <AvatarImage src={post.user?.avatarUrl || post.userProfileImage || post.avatarUrl} alt={post.user?.name || post.userName || 'User'} />
               <AvatarFallback className="bg-blue-100 text-blue-700">
-                {post.user.name.split(' ').map(n => n[0]).join('')}
+                {(post.user?.name || post.userName || 'User').split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium text-gray-900">{post.user.name}</div>
+              <div className="font-medium text-gray-900">{post.user?.name || post.userName || 'User'}</div>
               <div className="text-xs text-gray-500">{formattedDate}</div>
             </div>
           </div>
@@ -393,7 +393,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
         )}
         
         {/* Post tags */}
-        {post.tags && post.tags.length > 0 && (
+        {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {post.tags.map((tag, index) => (
               <Badge key={index} variant="secondary" className="bg-gray-100">
