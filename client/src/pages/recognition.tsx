@@ -132,9 +132,9 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-8">
                       <Send className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium mb-1">No sent recognitions yet</p>
+                      <p className="text-lg font-medium mb-1">{t('recognition.noSentRecognitions')}</p>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Recognize your colleagues for their great work
+                        {t('recognition.recognizeColleaguesPrompt')}
                       </p>
                     </CardContent>
                   </Card>
@@ -154,9 +154,9 @@ export default function RecognitionPage() {
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-8">
                       <Star className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium mb-1">No received recognitions yet</p>
+                      <p className="text-lg font-medium mb-1">{t('recognition.noReceivedRecognitions')}</p>
                       <p className="text-sm text-muted-foreground">
-                        Your recognitions will appear here when colleagues recognize your work
+                        {t('recognition.receivedRecognitionsDescription')}
                       </p>
                     </CardContent>
                   </Card>
@@ -170,7 +170,7 @@ export default function RecognitionPage() {
               <CardHeader>
                 <CardTitle>{t('recognition.peerToPeer')}</CardTitle>
                 <CardDescription>
-                  Recognize your colleagues and share points for outstanding work
+                  {t('recognition.peerToPeerDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -178,9 +178,9 @@ export default function RecognitionPage() {
                   <div className="flex items-start gap-2">
                     <ThumbsUp className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">Appreciate Your Peers</h4>
+                      <h4 className="font-medium">{t('recognition.appreciatePeers')}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Recognize the contributions of your colleagues and express your gratitude
+                        {t('recognition.appreciatePeersDescription')}
                       </p>
                     </div>
                   </div>
@@ -188,9 +188,9 @@ export default function RecognitionPage() {
                   <div className="flex items-start gap-2">
                     <Gift className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">Share Your Points</h4>
+                      <h4 className="font-medium">{t('recognition.sharePoints')}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Give points to colleagues that they can redeem for rewards in the shop
+                        {t('recognition.sharePointsDescription')}
                       </p>
                     </div>
                   </div>
@@ -198,9 +198,9 @@ export default function RecognitionPage() {
                   <div className="flex items-start gap-2">
                     <Star className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">Foster Team Spirit</h4>
+                      <h4 className="font-medium">{t('recognition.fosterTeamSpirit')}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Build a positive team culture by celebrating achievements and milestones
+                        {t('recognition.fosterTeamSpiritDescription')}
                       </p>
                     </div>
                   </div>
