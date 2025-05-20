@@ -357,26 +357,26 @@ export default function LeaveManagement() {
           <TabsList className="mb-4">
             <TabsTrigger value="my-leaves">
               <CalendarDays className="mr-2 h-4 w-4" />
-              My Leaves
+              {t('leave.myLeaves')}
             </TabsTrigger>
             {(user?.isManager || isAdmin) && (
               <TabsTrigger value="approvals">
                 <CheckCircle className="mr-2 h-4 w-4" />
-                Approval Queue
+                {t('leave.approvalQueue')}
               </TabsTrigger>
             )}
             <TabsTrigger value="balance">
               <Briefcase className="mr-2 h-4 w-4" />
-              Leave Balance
+              {t('leave.leaveBalance')}
             </TabsTrigger>
             <TabsTrigger value="calendar">
               <Calendar className="mr-2 h-4 w-4" />
-              Calendar
+              {t('leave.calendar')}
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="settings">
                 <Settings className="mr-2 h-4 w-4" />
-                Settings
+                {t('leave.settings')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -385,8 +385,8 @@ export default function LeaveManagement() {
           <TabsContent value="my-leaves">
             <Card>
               <CardHeader>
-                <CardTitle>My Leave Requests</CardTitle>
-                <CardDescription>View and manage your leave requests</CardDescription>
+                <CardTitle>{t('leave.myLeaveRequests')}</CardTitle>
+                <CardDescription>{t('leave.viewManageLeaveRequests')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoadingRequests ? (
@@ -399,12 +399,12 @@ export default function LeaveManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Dates</TableHead>
-                        <TableHead>Days</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Notes</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{t('leave.type')}</TableHead>
+                        <TableHead>{t('leave.dates')}</TableHead>
+                        <TableHead>{t('leave.days')}</TableHead>
+                        <TableHead>{t('leave.status')}</TableHead>
+                        <TableHead>{t('leave.notes')}</TableHead>
+                        <TableHead>{t('leave.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
