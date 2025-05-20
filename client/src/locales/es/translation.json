@@ -5,14 +5,15 @@
     "points": "Puntos"
   },
   "dashboard": {
-    "insights": "إحصائيات",
+    "insights": "Insights",
     "awards": "Awards",
     "milestones": "Milestones",
     "explore": "Explorar",
     "homepage": "Página Principal",
     "setup": "Setup",
-    "manager": "المدير",
-    "home": "الرئيسية"
+    "accueil": "Accueil",
+    "boutique": "Boutique",
+    "congés": "Congés"
   },
   "navigation": {
     "home": "Inicio",

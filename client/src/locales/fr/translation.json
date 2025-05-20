@@ -4,14 +4,15 @@
     "points": "Points"
   },
   "dashboard": {
-    "insights": "إحصائيات",
+    "insights": "Insights",
     "awards": "Awards",
     "milestones": "Milestones",
     "explore": "Explorer",
     "homepage": "Page d'Accueil",
     "setup": "Setup",
-    "manager": "المدير",
-    "home": "الرئيسية"
+    "congés": "Congés",
+    "boutique": "Boutique",
+    "accueil": "Accueil"
   },
   "navigation": {
     "home": "Accueil",

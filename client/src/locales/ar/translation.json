@@ -4,14 +4,12 @@
     "points": "نقاط"
   },
   "dashboard": {
-    "insights": "إحصائيات",
-    "awards": "Awards",
-    "milestones": "Milestones",
+    "insights": "الرؤى",
+    "awards": "الجوائز",
+    "milestones": "الإنجازات",
     "explore": "استكشاف",
     "homepage": "الصفحة الرئيسية",
-    "setup": "Setup",
-    "manager": "المدير",
-    "home": "الرئيسية"
+    "setup": "إعدادات"
   },
   "navigation": {
     "home": "الرئيسية",
