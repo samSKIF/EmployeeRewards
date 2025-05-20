@@ -5,13 +5,6 @@
     "points": "نقاط"
   },
   "dashboard": {
-    "insights": "تحليلات",
-    "awards": "جوائز",
-    "milestones": "إنجازات",
-    "explore": "استكشاف",
-    "homepage": "الصفحة الرئيسية"
-  },
-  "dashboard": {
     "insights": "الرؤى",
     "awards": "الجوائز",
     "milestones": "الإنجازات",
@@ -120,7 +113,9 @@
     "managerRecognition": "تقدير المديرين",
     "approvalWorkflow": "سير عمل الموافقة",
     "monthlyLimit": "الحد الشهري",
-    "budgetAllocation": "تخصيص الميزانية"
+    "budgetAllocation": "تخصيص الميزانية",
+    "youveRecognized": "لقد قدرت",
+    "ofYourTeam": "من فريقك هذا الشهر"
   },
   "wallet": {
     "points": "النقاط",
@@ -143,10 +138,6 @@
     "priorities": "الأولويات",
     "clickHere": "انقر هنا لإضافة أولوية جديدة",
     "campingTrip": "رحلة تخييم للقسم"
-  },
-  "recognition": {
-    "youveRecognized": "لقد قدرت",
-    "ofYourTeam": "من فريقك هذا الشهر"
   },
   "language": {
     "english": "الإنجليزية",
