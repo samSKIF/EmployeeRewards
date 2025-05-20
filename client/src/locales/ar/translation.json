@@ -1,4 +1,3 @@
-
 {
   "app": {
     "name": "ThrivioHR",
@@ -146,5 +145,8 @@
     "spanish": "الإسبانية",
     "russian": "الروسية",
     "selectLanguage": "اختر اللغة"
+  },
+  "shop": {
+    "shop": "المتجر"
   }
 }
