@@ -23,6 +23,8 @@ import {
   ListChecks,
   CalendarDays
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '@/components/LanguageSelector';
 import { useBranding } from '@/context/BrandingContext';
 import {
   DropdownMenu,
@@ -79,6 +81,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const [, navigate] = useLocation();
   const [location] = useLocation();
   const { branding } = useBranding();
+  const { t } = useTranslation();
 
   // Navigation helper
   const navigateTo = (path: string) => {
@@ -94,12 +97,12 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
   // Main navigation items
   const navItems = [
-    { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
-    { icon: Store, label: "Store", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
+    { icon: Home, label: t('navigation.home'), onClick: () => navigateTo('/social'), isActive: location === '/social' },
+    { icon: Store, label: t('navigation.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
     { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: Eye, label: "Insights", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
-    { icon: CalendarDays, label: "Leave", onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
+    { icon: CalendarDays, label: t('navigation.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
     { icon: Settings, label: "Setup", onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
   ];
 
@@ -107,42 +110,42 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const adminItems = [
     { 
       icon: Shield, 
-      label: "Admin Dashboard", 
+      label: t('admin.dashboard'), 
       onClick: () => navigateTo('/admin/dashboard')
     },
     { 
       icon: Users, 
-      label: "Employee Management", 
+      label: t('admin.employees'), 
       onClick: () => navigateTo('/admin/employees')
     },
     { 
       icon: CalendarDays, 
-      label: "Leave Management", 
+      label: t('admin.leaveManagement'), 
       onClick: () => navigateTo('/admin/leave-management')
     },
     { 
       icon: Award, 
-      label: "Recognition Settings", 
+      label: t('admin.recognitionSettings'), 
       onClick: () => navigateTo('/admin/recognition-settings')
     },
     { 
       icon: ClipboardList, 
-      label: "Onboarding", 
+      label: t('admin.onboarding'), 
       onClick: () => navigateTo('/admin/onboarding')
     },
     { 
       icon: Palette, 
-      label: "Brand Identity", 
+      label: t('admin.branding'), 
       onClick: () => navigateTo('/admin/branding')
     },
     { 
       icon: Store, 
-      label: "Shop Configuration", 
+      label: t('admin.shop'), 
       onClick: () => navigateTo('/admin/shop/config')
     },
     { 
       icon: FileText, 
-      label: "Surveys", 
+      label: t('admin.surveys'), 
       onClick: () => navigateTo('/admin/surveys')
     }
   ];
@@ -179,7 +182,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
           <input 
             type="search" 
             className="block w-full py-1 px-2 pl-7 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-teal-400 focus:border-transparent"
-            placeholder="Search..." 
+            placeholder={t('common.search') + "..."} 
           />
         </div>
 
@@ -198,6 +201,9 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
         {/* User actions */}
         <div className="flex items-center space-x-3">
+          {/* Language Selector */}
+          <LanguageSelector />
+          
           {/* Notifications */}
           <button className="relative p-0.5">
             <Bell className="w-4 h-4 text-gray-600" />
@@ -220,13 +226,13 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => navigateTo('/user/profile')}>
                 <User className="w-4 h-4 mr-2" />
-                <span>Profile</span>
+                <span>{t('navigation.profile')}</span>
               </DropdownMenuItem>
               
               {user?.isAdmin && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Admin</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('navigation.admin')}</DropdownMenuLabel>
                   {adminItems.map((item, index) => (
                     <DropdownMenuItem key={index} onClick={item.onClick}>
                       <item.icon className="w-4 h-4 mr-2" />
@@ -239,7 +245,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="w-4 h-4 mr-2" />
-                <span>Logout</span>
+                <span>{t('common.logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
