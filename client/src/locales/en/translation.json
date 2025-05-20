@@ -196,6 +196,7 @@
     "errorDescription": "There was an error sending your recognition",
     "costPerPoint": "Cost Per Point",
     "peerToPeer": "Peer-to-Peer Recognition",
+    "peerToPeerDescription": "Recognize your colleagues and share points for outstanding work",
     "managerRecognition": "Manager Recognition",
     "approvalWorkflow": "Approval Workflow",
     "monthlyLimit": "Monthly Limit",
@@ -203,7 +204,17 @@
     "youveRecognized": "You've recognized",
     "ofYourTeam": "of your team this month",
     "sentRecognitions": "Sent Recognitions",
-    "receivedRecognitions": "Received Recognitions"
+    "receivedRecognitions": "Received Recognitions",
+    "noSentRecognitions": "No sent recognitions yet",
+    "recognizeColleaguesPrompt": "Recognize your colleagues for their great work",
+    "noReceivedRecognitions": "No received recognitions yet",
+    "receivedRecognitionsDescription": "Your recognitions will appear here when colleagues recognize your work",
+    "appreciatePeers": "Appreciate Your Peers",
+    "appreciatePeersDescription": "Recognize the contributions of your colleagues and express your gratitude",
+    "sharePoints": "Share Your Points",
+    "sharePointsDescription": "Give points to colleagues that they can redeem for rewards in the shop",
+    "fosterTeamSpirit": "Foster Team Spirit",
+    "fosterTeamSpiritDescription": "Build a positive team culture by celebrating achievements and milestones"
   },
   "wallet": {
     "points": "Points",
