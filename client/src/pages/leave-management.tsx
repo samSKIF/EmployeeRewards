@@ -772,9 +772,9 @@ export default function LeaveManagement() {
         <Dialog open={isNewLeaveDialogOpen} onOpenChange={setIsNewLeaveDialogOpen}>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>Request Leave</DialogTitle>
+              <DialogTitle>{t('leave.requestLeave')}</DialogTitle>
               <DialogDescription>
-                Submit a new leave request for approval.
+                {t('leave.submitLeaveRequest')}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -784,11 +784,11 @@ export default function LeaveManagement() {
                   name="leaveTypeId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Leave Type</FormLabel>
+                      <FormLabel>{t('leave.leaveType')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select leave type" />
+                            <SelectValue placeholder={t('leave.selectLeaveType')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -810,7 +810,7 @@ export default function LeaveManagement() {
                     name="startDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Start Date</FormLabel>
+                        <FormLabel>{t('leave.startDate')}</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -847,7 +847,7 @@ export default function LeaveManagement() {
                     name="endDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel>{t('leave.endDate')}</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -891,10 +891,10 @@ export default function LeaveManagement() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Half Day Start
+                            {t('leave.halfDayStart')}
                           </FormLabel>
                           <FormDescription>
-                            Start in the afternoon
+                            {t('leave.startInAfternoon')}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -913,10 +913,10 @@ export default function LeaveManagement() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
-                            Half Day End
+                            {t('leave.halfDayEnd')}
                           </FormLabel>
                           <FormDescription>
-                            End at noon
+                            {t('leave.endAtNoon')}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -935,11 +935,11 @@ export default function LeaveManagement() {
                   name="approverId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Approver</FormLabel>
+                      <FormLabel>{t('leave.approver')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select approver" />
+                            <SelectValue placeholder={t('leave.selectApprover')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -960,10 +960,10 @@ export default function LeaveManagement() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>{t('leave.notes')}</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Additional notes about your leave request..."
+                          placeholder={t('leave.additionalNotes')}
                           className="resize-none"
                           {...field}
                         />
