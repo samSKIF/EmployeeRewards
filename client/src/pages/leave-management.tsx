@@ -975,9 +975,9 @@ export default function LeaveManagement() {
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsNewLeaveDialogOpen(false)}>
-                    Cancel
+                    {t('leave.cancel')}
                   </Button>
-                  <Button type="submit" loading={createLeaveMutation.isPending}>Submit Request</Button>
+                  <Button type="submit" loading={createLeaveMutation.isPending}>{t('leave.submitRequest')}</Button>
                 </DialogFooter>
               </form>
             </Form>
