@@ -114,7 +114,7 @@ args = "NODE_ENV=development tsx server/main.ts"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_ENV=development tsx server/services/social/main.ts"
+args = "NODE_ENV=development tsx server/services/social/main.ts  "
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -153,10 +153,6 @@ localPort = 35843
 externalPort = 6000
 
 [[ports]]
-localPort = 37441
-externalPort = 8081
-
-[[ports]]
 localPort = 37697
 externalPort = 8000
 
@@ -167,6 +163,10 @@ externalPort = 8080
 [[ports]]
 localPort = 40091
 externalPort = 5000
+
+[[ports]]
+localPort = 40103
+externalPort = 8081
 
 [[ports]]
 localPort = 40873
