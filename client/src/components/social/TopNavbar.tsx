@@ -97,13 +97,12 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
   // Main navigation items
   const navItems = [
-    { icon: Home, label: t('navigation.home'), onClick: () => navigateTo('/social'), isActive: location === '/social' },
-    { icon: Store, label: t('navigation.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
-    { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
-    { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
-    { icon: Eye, label: "Insights", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
-    { icon: CalendarDays, label: t('navigation.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
     { icon: Settings, label: "Setup", onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
+    { icon: Eye, label: "إحصائيات", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
+    { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
+    { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
+    { icon: User, label: "المدير", onClick: () => navigateTo('/manager'), isActive: location === '/manager' },
+    { icon: Home, label: "الرئيسية", onClick: () => navigateTo('/social'), isActive: location === '/social' },
   ];
 
   // Admin dropdown menu items
