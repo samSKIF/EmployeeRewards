@@ -308,7 +308,7 @@ const Shop = () => {
                      }}>
                     <Award className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Featured Rewards</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{t('shop.featuredRewards')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -330,7 +330,7 @@ const Shop = () => {
                   <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-2 sm:mr-3">
                     <Tag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Popular Rewards</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{t('shop.popularRewards')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -370,7 +370,7 @@ const Shop = () => {
                   <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-2 sm:mr-3">
                     <Award className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Premium Collection</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{t('shop.premium')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -448,7 +448,7 @@ const Shop = () => {
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-2 sm:mr-3">
                   <Gift className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </div>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Gift Cards</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{t('shop.giftCards')}</h2>
               </div>
               
               {featuredCategoryProducts.giftCards.length > 0 ? (
@@ -507,12 +507,12 @@ const Shop = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0 text-center md:text-left">
               <h3 className="text-base sm:text-lg font-semibold">{branding?.organizationName || "ThrivioHR"}</h3>
-              <p className="text-xs sm:text-sm text-gray-400">© {new Date().getFullYear()} All rights reserved</p>
+              <p className="text-xs sm:text-sm text-gray-400">© {new Date().getFullYear()} {t('shop.allRightsReserved')}</p>
             </div>
             <div className="flex flex-wrap justify-center md:justify-end gap-3 sm:gap-6">
-              <a href="#" className="text-xs sm:text-sm hover:text-white">Terms &amp; Conditions</a>
-              <a href="#" className="text-xs sm:text-sm hover:text-white">Privacy Policy</a>
-              <a href="#" className="text-xs sm:text-sm hover:text-white">Contact Support</a>
+              <a href="#" className="text-xs sm:text-sm hover:text-white">{t('shop.termsAndConditions')}</a>
+              <a href="#" className="text-xs sm:text-sm hover:text-white">{t('shop.privacyPolicy')}</a>
+              <a href="#" className="text-xs sm:text-sm hover:text-white">{t('shop.contactSupport')}</a>
             </div>
           </div>
         </div>
