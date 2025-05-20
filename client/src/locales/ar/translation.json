@@ -4,6 +4,13 @@
     "name": "ThrivioHR",
     "points": "نقاط"
   },
+  "dashboard": {
+    "insights": "الرؤى",
+    "awards": "الجوائز",
+    "milestones": "الإنجازات",
+    "explore": "استكشاف",
+    "homepage": "الصفحة الرئيسية"
+  },
   "navigation": {
     "home": "الرئيسية",
     "profile": "الملف الشخصي",
@@ -38,7 +45,17 @@
     "like": "إعجاب",
     "poll": "استطلاع",
     "recognition": "تقدير",
-    "announcement": "إعلان"
+    "announcement": "إعلان",
+    "appreciate": "تقدير",
+    "celebrate": "احتفال",
+    "actionItems": "عناصر العمل",
+    "lastThanked": "آخر شكر",
+    "yourDirectReports": "تقاريرك المباشرة",
+    "days": "أيام",
+    "ago": "مضت",
+    "filterBy": "تصفية حسب",
+    "myCompany": "شركتي",
+    "showDetails": "عرض التفاصيل"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -102,7 +119,27 @@
     "points": "النقاط",
     "transactions": "المعاملات",
     "rewards": "المكافآت",
-    "history": "السجل"
+    "history": "السجل",
+    "toGive": "للإعطاء",
+    "toSpend": "للإنفاق",
+    "currentBonus": "المكافأة الحالية",
+    "thanksmatter": "الشكر مهم#"
+  },
+  "meetings": {
+    "oneOnOne": "اجتماع فردي مع",
+    "isComing": "قادم قريباً",
+    "reviewThe": "مراجعة جدول الأعمال",
+    "expand": "توسيع",
+    "hide": "إخفاء"
+  },
+  "priorities": {
+    "priorities": "الأولويات",
+    "clickHere": "انقر هنا لإضافة أولوية جديدة",
+    "campingTrip": "رحلة تخييم للقسم"
+  },
+  "recognition": {
+    "youveRecognized": "لقد قدرت",
+    "ofYourTeam": "من فريقك هذا الشهر"
   },
   "language": {
     "english": "الإنجليزية",

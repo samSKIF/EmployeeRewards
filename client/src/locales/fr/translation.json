@@ -3,6 +3,13 @@
     "name": "ThrivioHR",
     "points": "Points"
   },
+  "dashboard": {
+    "insights": "Aperçus",
+    "awards": "Récompenses",
+    "milestones": "Étapes Clés",
+    "explore": "Explorer",
+    "homepage": "Page d'Accueil"
+  },
   "navigation": {
     "home": "Accueil",
     "profile": "Profil",
@@ -37,7 +44,17 @@
     "like": "J'aime",
     "poll": "Sondage",
     "recognition": "Reconnaissance",
-    "announcement": "Annonce"
+    "announcement": "Annonce",
+    "appreciate": "Apprécier",
+    "celebrate": "Célébrer",
+    "actionItems": "Éléments d'Action",
+    "lastThanked": "Dernier Remerciement",
+    "yourDirectReports": "Vos Subordonnés Directs",
+    "days": "jours",
+    "ago": "il y a",
+    "filterBy": "Filtrer par",
+    "myCompany": "Mon Entreprise",
+    "showDetails": "Afficher les Détails"
   },
   "profile": {
     "editProfile": "Modifier le Profil",

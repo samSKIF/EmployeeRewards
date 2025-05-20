@@ -3,6 +3,13 @@
     "name": "ThrivioHR",
     "points": "Points"
   },
+  "dashboard": {
+    "insights": "Insights",
+    "awards": "Awards",
+    "milestones": "Milestones",
+    "explore": "Explore",
+    "homepage": "Homepage"
+  },
   "navigation": {
     "home": "Home",
     "profile": "Profile",
@@ -37,7 +44,17 @@
     "like": "Like",
     "poll": "Poll",
     "recognition": "Recognition",
-    "announcement": "Announcement"
+    "announcement": "Announcement",
+    "appreciate": "Appreciate",
+    "celebrate": "Celebrate",
+    "actionItems": "Action Items",
+    "lastThanked": "Last Thanked",
+    "yourDirectReports": "Your Direct Reports",
+    "days": "days",
+    "ago": "ago",
+    "filterBy": "Filter by",
+    "myCompany": "My Company",
+    "showDetails": "Show Details"
   },
   "profile": {
     "editProfile": "Edit Profile",
@@ -101,7 +118,27 @@
     "points": "Points",
     "transactions": "Transactions",
     "rewards": "Rewards",
-    "history": "History"
+    "history": "History",
+    "toGive": "To Give",
+    "toSpend": "To Spend",
+    "currentBonus": "Current Bonus",
+    "thanksmatter": "thanksmatter#"
+  },
+  "meetings": {
+    "oneOnOne": "1 on 1 with",
+    "isComing": "is coming soon",
+    "reviewThe": "Review the agenda",
+    "expand": "Expand",
+    "hide": "Hide"
+  },
+  "priorities": {
+    "priorities": "Priorities",
+    "clickHere": "Click here to add a new priority",
+    "campingTrip": "Camping trip for the department"
+  },
+  "recognition": {
+    "youveRecognized": "You've recognized",
+    "ofYourTeam": "of your team this month"
   },
   "language": {
     "english": "English",
