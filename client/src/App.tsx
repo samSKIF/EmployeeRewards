@@ -26,6 +26,7 @@ import ShopConfigPage from "@/pages/admin/shop-config";
 import OnboardingPage from "@/pages/admin/onboarding";
 import AdminLeaveManagement from "@/pages/admin/leave-management";
 import RecognitionSettingsPage from "@/pages/admin/recognition-settings";
+import Recognition from "@/pages/recognition";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -245,6 +246,12 @@ function App() {
               <Route path="/user/profile">
                 <SocialLayout>
                   <UpdatedProfilePage />
+                </SocialLayout>
+              </Route>
+              
+              <Route path="/recognition">
+                <SocialLayout>
+                  <Recognition />
                 </SocialLayout>
               </Route>
               

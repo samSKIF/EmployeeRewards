@@ -227,10 +227,7 @@
     "clickHere": "Click here to add a new priority",
     "campingTrip": "Camping trip for the department"
   },
-  "recognition": {
-    "youveRecognized": "You've recognized",
-    "ofYourTeam": "of your team this month"
-  },
+
   "language": {
     "english": "English",
     "french": "French",

@@ -143,11 +143,11 @@ export function RecognitionForm({ onSuccess }: RecognitionFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {users?.filter((user: any) => !user.isAdmin).map((user: any) => (
+                      {users && Array.isArray(users) ? users.filter((user: any) => !user.isAdmin).map((user: any) => (
                         <SelectItem key={user.id} value={user.id.toString()}>
                           {user.name} {user.surname || ""}
                         </SelectItem>
-                      ))}
+                      )) : null}
                     </SelectContent>
                   </Select>
                   <FormMessage />

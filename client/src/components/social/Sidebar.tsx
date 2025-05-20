@@ -87,7 +87,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
   // Main menu items
   const mainMenuItems = [
     { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
-    { icon: Award, label: "Recognize & Reward", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
+    { icon: Award, label: "Recognition", onClick: () => navigateTo('/recognition'), isActive: location === '/recognition' },
     { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
     { icon: ShoppingCart, label: "Rewards", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
     { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
