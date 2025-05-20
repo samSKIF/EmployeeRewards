@@ -1277,6 +1277,102 @@ export class DatabaseStorage implements IStorage {
 
     return recognition;
   }
+  
+  async createPeerRecognitionWithPoints(
+    recognizerId: number, 
+    recipientId: number, 
+    points: number, 
+    badgeType: string, 
+    message: string
+  ): Promise<{ recognition: Recognition, transaction: Transaction | null }> {
+    // First check recognition settings
+    const [settings] = await db
+      .select()
+      .from(recognitionSettings)
+      .orderBy(desc(recognitionSettings.createdAt))
+      .limit(1);
+
+    if (!settings || !settings.peerToPeerEnabled) {
+      throw new Error("Peer-to-peer recognition is disabled");
+    }
+
+    // Check if recognizer has sent too many recognitions this month
+    const currentDate = new Date();
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    
+    const [recognitionsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(recognitions)
+      .where(
+        and(
+          eq(recognitions.recognizerId, recognizerId),
+          gt(recognitions.createdAt, startOfMonth)
+        )
+      );
+
+    if (recognitionsCount.count >= settings.peerMaxRecognitionsPerMonth) {
+      throw new Error(`You have reached the maximum number of recognitions (${settings.peerMaxRecognitionsPerMonth}) for this month`);
+    }
+
+    // Check if points exceed the configured amount
+    const pointsToGive = Math.min(points, settings.peerPointsPerRecognition);
+
+    // Create recognition
+    const [recognition] = await db.insert(recognitions)
+      .values({
+        recognizerId,
+        recipientId,
+        badgeType,
+        points: pointsToGive,
+        message,
+      })
+      .returning();
+
+    // Process point transfer if points are greater than 0
+    let transaction = null;
+    if (pointsToGive > 0) {
+      // Get user accounts
+      const senderAccount = await this.getAccountByUserId(recognizerId);
+      const recipientAccount = await this.getAccountByUserId(recipientId);
+
+      if (!senderAccount || !recipientAccount) {
+        throw new Error("User account not found");
+      }
+
+      // Check if sender has enough balance
+      if (senderAccount.balance < pointsToGive) {
+        throw new Error("Insufficient points balance for peer recognition");
+      }
+
+      // Create transaction
+      const [createdTransaction] = await db.insert(transactions)
+        .values({
+          fromAccountId: senderAccount.id,
+          toAccountId: recipientAccount.id,
+          amount: pointsToGive,
+          reason: "peer_recognition",
+          description: `Recognition: ${message}`,
+          createdBy: recognizerId,
+          recognitionId: recognition.id
+        })
+        .returning();
+
+      // Update account balances
+      await db
+        .update(accounts)
+        .set({ balance: senderAccount.balance - pointsToGive })
+        .where(eq(accounts.id, senderAccount.id));
+
+      await db
+        .update(accounts)
+        .set({ balance: recipientAccount.balance + pointsToGive })
+        .where(eq(accounts.id, recipientAccount.id));
+
+      transaction = createdTransaction;
+    }
+
+    return { recognition, transaction };
+  }
 
   async getUserRecognitionsGiven(userId: number): Promise<RecognitionWithDetails[]> {
     const recognitionsData = await db.select({
