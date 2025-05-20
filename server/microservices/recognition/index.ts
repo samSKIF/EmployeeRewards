@@ -5,6 +5,7 @@
 import { db, pool } from '../../db';
 import express, { Request, Response } from 'express';
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from '../../middleware/auth';
+import { storage } from '../../storage';
 import { 
   recognitionSettings, recognitions, managerBudgets, users, organizations,
   insertRecognitionSettingsSchema, insertRecognitionSchema, insertManagerBudgetSchema,
@@ -260,6 +261,122 @@ router.post("/manager-budgets", verifyToken, verifyAdmin, async (req: Recognitio
   } catch (error) {
     console.error('Error updating manager budget:', error);
     return res.status(500).json({ error: 'Failed to update manager budget' });
+  }
+});
+
+/**
+ * Peer-to-Peer Recognition API endpoints
+ */
+
+// Create a peer recognition
+router.post("/peer", verifyToken, async (req: RecognitionAuthRequest, res) => {
+  try {
+    console.log('Recognition microservice: Handling peer recognition request');
+    const { id: userId, organizationId } = req.user;
+    // Mark request as handled by microservice to prevent duplicate processing
+    (req as any)._routeHandledByMicroservice = true;
+    
+    const { recipientId, badgeType, message, points } = req.body;
+    
+    if (!recipientId || !badgeType || !message) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Validate recipient exists and belongs to the same organization
+    const recipient = await db.query.users.findFirst({
+      where: and(
+        eq(users.id, recipientId),
+        eq(users.organizationId, organizationId)
+      )
+    });
+    
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found in this organization' });
+    }
+    
+    // Don't allow self-recognition
+    if (userId === recipientId) {
+      return res.status(400).json({ error: 'You cannot recognize yourself' });
+    }
+    
+    // Check settings
+    const settings = await db.query.recognitionSettings.findFirst({
+      where: eq(recognitionSettings.organizationId, organizationId)
+    });
+    
+    if (!settings || !settings.peerEnabled) {
+      return res.status(403).json({ error: 'Peer-to-peer recognition is not enabled for your organization' });
+    }
+    
+    try {
+      // Create recognition with points - this will handle all validation and transactions
+      const { recognition, transaction } = await storage.createPeerRecognitionWithPoints(
+        userId,
+        recipientId,
+        points || settings.peerPointsPerRecognition,
+        badgeType,
+        message
+      );
+      
+      // Create a recognition post
+      const post = await storage.createRecognitionPost(
+        userId,
+        {
+          content: message,
+          type: "recognition"
+        },
+        {
+          recognizerId: userId,
+          recipientId,
+          badgeType,
+          points: recognition.points,
+          message
+        }
+      );
+      
+      return res.status(201).json({
+        recognition,
+        transaction,
+        post: post.post
+      });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  } catch (error) {
+    console.error('Error creating peer recognition:', error);
+    return res.status(500).json({ error: 'Failed to create peer recognition' });
+  }
+});
+
+// Get user's sent recognitions
+router.get("/sent", verifyToken, async (req: RecognitionAuthRequest, res) => {
+  try {
+    console.log('Recognition microservice: Handling get sent recognitions request');
+    const { id: userId } = req.user;
+    // Mark request as handled by microservice to prevent duplicate processing
+    (req as any)._routeHandledByMicroservice = true;
+    
+    const recognitions = await storage.getUserRecognitionsGiven(userId);
+    return res.status(200).json(recognitions);
+  } catch (error) {
+    console.error('Error getting sent recognitions:', error);
+    return res.status(500).json({ error: 'Failed to get sent recognitions' });
+  }
+});
+
+// Get user's received recognitions
+router.get("/received", verifyToken, async (req: RecognitionAuthRequest, res) => {
+  try {
+    console.log('Recognition microservice: Handling get received recognitions request');
+    const { id: userId } = req.user;
+    // Mark request as handled by microservice to prevent duplicate processing
+    (req as any)._routeHandledByMicroservice = true;
+    
+    const recognitions = await storage.getUserRecognitionsReceived(userId);
+    return res.status(200).json(recognitions);
+  } catch (error) {
+    console.error('Error getting received recognitions:', error);
+    return res.status(500).json({ error: 'Failed to get received recognitions' });
   }
 });
 
