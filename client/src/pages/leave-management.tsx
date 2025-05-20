@@ -442,9 +442,9 @@ export default function LeaveManagement() {
                 ) : (
                   <div className="text-center py-10">
                     <div className="text-6xl opacity-20 mb-3">🏝️</div>
-                    <h3 className="text-xl font-medium mb-2">No leave requests yet</h3>
-                    <p className="text-muted-foreground mb-4">You haven't submitted any leave requests yet.</p>
-                    <Button onClick={() => setIsNewLeaveDialogOpen(true)}>Request leave</Button>
+                    <h3 className="text-xl font-medium mb-2">{t('leave.noLeaveRequestsYet')}</h3>
+                    <p className="text-muted-foreground mb-4">{t('leave.noLeaveRequestsYetDescription')}</p>
+                    <Button onClick={() => setIsNewLeaveDialogOpen(true)}>{t('leave.requestLeaveButton')}</Button>
                   </div>
                 )}
               </CardContent>
@@ -456,8 +456,8 @@ export default function LeaveManagement() {
             <TabsContent value="approvals">
               <Card>
                 <CardHeader>
-                  <CardTitle>Leave Requests Pending Approval</CardTitle>
-                  <CardDescription>Manage leave requests from your team members</CardDescription>
+                  <CardTitle>{t('leave.approvalQueue')}</CardTitle>
+                  <CardDescription>{t('leave.manageLeaveRequests')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {isLoadingApprovals ? (
