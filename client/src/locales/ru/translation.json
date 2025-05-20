@@ -1,3 +1,4 @@
+
 {
   "app": {
     "name": "ThrivioHR",
@@ -15,8 +16,8 @@
   "common": {
     "search": "Поиск",
     "notifications": "Уведомления",
-    "logout": "Выйти",
-    "login": "Войти",
+    "logout": "Выход",
+    "login": "Вход",
     "submit": "Отправить",
     "save": "Сохранить",
     "cancel": "Отмена",
@@ -24,12 +25,12 @@
     "delete": "Удалить",
     "loading": "Загрузка...",
     "balance": "Баланс",
-    "toGive": "Для Отправки",
-    "toSpend": "Для Трат",
-    "viewAll": "Смотреть Все"
+    "toGive": "Для отправки",
+    "toSpend": "Для траты",
+    "viewAll": "Показать все"
   },
   "social": {
-    "createPost": "Создать Публикацию",
+    "createPost": "Создать пост",
     "whatOnYourMind": "О чём вы думаете?",
     "share": "Поделиться",
     "comment": "Комментировать",
@@ -40,62 +41,62 @@
     "announcement": "Объявление"
   },
   "profile": {
-    "editProfile": "Редактировать Профиль",
-    "personalInfo": "Личная Информация",
-    "workInfo": "Рабочая Информация",
-    "skills": "Навыки и Опыт",
+    "editProfile": "Редактировать профиль",
+    "personalInfo": "Личная информация",
+    "workInfo": "Рабочая информация",
+    "skills": "Навыки и опыт",
     "achievements": "Достижения",
-    "activity": "Последняя Активность",
+    "activity": "Недавняя активность",
     "department": "Отдел",
     "location": "Местоположение",
-    "joinDate": "Дата Присоединения",
-    "email": "Электронная Почта",
+    "joinDate": "Дата присоединения",
+    "email": "Электронная почта",
     "phone": "Телефон"
   },
   "admin": {
-    "dashboard": "Панель Управления",
+    "dashboard": "Панель управления",
     "employees": "Сотрудники",
-    "branding": "Фирменный Стиль",
-    "shop": "Настройка Магазина",
+    "branding": "Фирменный стиль",
+    "shop": "Настройка магазина",
     "surveys": "Опросы",
     "onboarding": "Адаптация",
-    "recognitionSettings": "Настройки Признания",
-    "leaveManagement": "Управление Отпусками"
+    "recognitionSettings": "Настройки признания",
+    "leaveManagement": "Управление отпусками"
   },
   "branding": {
-    "organizationName": "Название Организации",
-    "logoUpload": "Загрузка Логотипа",
-    "uploadLogo": "Загрузить Логотип",
-    "primaryColor": "Основной Цвет",
-    "secondaryColor": "Второстепенный Цвет",
-    "accentColor": "Акцентный Цвет",
-    "colorScheme": "Цветовая Схема",
-    "saveChanges": "Сохранить Изменения",
+    "organizationName": "Название организации",
+    "logoUpload": "Загрузка логотипа",
+    "uploadLogo": "Загрузить логотип",
+    "primaryColor": "Основной цвет",
+    "secondaryColor": "Второстепенный цвет",
+    "accentColor": "Акцентный цвет",
+    "colorScheme": "Цветовая схема",
+    "saveChanges": "Сохранить изменения",
     "brandingUpdated": "Фирменный стиль успешно обновлен"
   },
   "leave": {
-    "requestLeave": "Запросить Отпуск",
-    "leaveType": "Тип Отпуска",
-    "startDate": "Дата Начала",
-    "endDate": "Дата Окончания",
+    "requestLeave": "Запросить отпуск",
+    "leaveType": "Тип отпуска",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
     "status": "Статус",
     "approved": "Одобрено",
-    "pending": "В Ожидании",
+    "pending": "В ожидании",
     "rejected": "Отклонено",
-    "myRequests": "Мои Запросы",
+    "myRequests": "Мои запросы",
     "approvals": "Одобрения",
     "calendar": "Календарь",
-    "leaveBalance": "Баланс Отпуска",
+    "leaveBalance": "Баланс отпуска",
     "apply": "Применить"
   },
   "recognition": {
-    "recognizeColleague": "Признать Коллегу",
-    "costPerPoint": "Стоимость За Балл",
-    "peerToPeer": "Признание Между Коллегами",
-    "managerRecognition": "Признание Руководителя",
-    "approvalWorkflow": "Процесс Одобрения",
-    "monthlyLimit": "Ежемесячный Лимит",
-    "budgetAllocation": "Распределение Бюджета"
+    "recognizeColleague": "Отметить коллегу",
+    "costPerPoint": "Стоимость за балл",
+    "peerToPeer": "Признание между коллегами",
+    "managerRecognition": "Признание от руководителя",
+    "approvalWorkflow": "Процесс одобрения",
+    "monthlyLimit": "Месячный лимит",
+    "budgetAllocation": "Распределение бюджета"
   },
   "wallet": {
     "points": "Баллы",
@@ -109,6 +110,6 @@
     "arabic": "Арабский",
     "spanish": "Испанский",
     "russian": "Русский",
-    "selectLanguage": "Выбрать Язык"
+    "selectLanguage": "Выбрать язык"
   }
 }

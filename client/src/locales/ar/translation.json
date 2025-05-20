@@ -1,13 +1,14 @@
+
 {
   "app": {
-    "name": "ثرايفيو إتش آر",
+    "name": "ThrivioHR",
     "points": "نقاط"
   },
   "navigation": {
     "home": "الرئيسية",
     "profile": "الملف الشخصي",
     "shop": "المتجر",
-    "feed": "آخر المستجدات",
+    "feed": "المنشورات",
     "leaderboard": "لوحة المتصدرين",
     "leave": "الإجازات",
     "admin": "الإدارة"
@@ -24,13 +25,13 @@
     "delete": "حذف",
     "loading": "جاري التحميل...",
     "balance": "الرصيد",
-    "toGive": "للإعطاء",
+    "toGive": "للإهداء",
     "toSpend": "للإنفاق",
     "viewAll": "عرض الكل"
   },
   "social": {
     "createPost": "إنشاء منشور",
-    "whatOnYourMind": "بماذا تفكر؟",
+    "whatOnYourMind": "ماذا يدور في ذهنك؟",
     "share": "مشاركة",
     "comment": "تعليق",
     "comments": "التعليقات",
@@ -91,8 +92,8 @@
   "recognition": {
     "recognizeColleague": "تقدير زميل",
     "costPerPoint": "تكلفة النقطة",
-    "peerToPeer": "التقدير بين الزملاء",
-    "managerRecognition": "تقدير المدير",
+    "peerToPeer": "تقدير الزملاء",
+    "managerRecognition": "تقدير المديرين",
     "approvalWorkflow": "سير عمل الموافقة",
     "monthlyLimit": "الحد الشهري",
     "budgetAllocation": "تخصيص الميزانية"
@@ -109,6 +110,6 @@
     "arabic": "العربية",
     "spanish": "الإسبانية",
     "russian": "الروسية",
-    "selectLanguage": "اختيار اللغة"
+    "selectLanguage": "اختر اللغة"
   }
 }
