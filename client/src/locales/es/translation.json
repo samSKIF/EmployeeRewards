@@ -4,6 +4,13 @@
     "name": "ThrivioHR",
     "points": "Puntos"
   },
+  "dashboard": {
+    "insights": "Información",
+    "awards": "Premios",
+    "milestones": "Hitos",
+    "explore": "Explorar",
+    "homepage": "Página Principal"
+  },
   "navigation": {
     "home": "Inicio",
     "profile": "Perfil",
@@ -38,7 +45,17 @@
     "like": "Me gusta",
     "poll": "Encuesta",
     "recognition": "Reconocimiento",
-    "announcement": "Anuncio"
+    "announcement": "Anuncio",
+    "appreciate": "Apreciar",
+    "celebrate": "Celebrar",
+    "actionItems": "Elementos de Acción",
+    "lastThanked": "Último Agradecimiento",
+    "yourDirectReports": "Tus Reportes Directos",
+    "days": "días",
+    "ago": "atrás",
+    "filterBy": "Filtrar por",
+    "myCompany": "Mi Empresa",
+    "showDetails": "Mostrar Detalles"
   },
   "profile": {
     "editProfile": "Editar Perfil",
@@ -102,7 +119,27 @@
     "points": "Puntos",
     "transactions": "Transacciones",
     "rewards": "Recompensas",
-    "history": "Historial"
+    "history": "Historial",
+    "toGive": "Para Dar",
+    "toSpend": "Para Gastar",
+    "currentBonus": "Bono Actual",
+    "thanksmatter": "graciasimportan#"
+  },
+  "meetings": {
+    "oneOnOne": "1 a 1 con",
+    "isComing": "está por venir",
+    "reviewThe": "Revisar la agenda",
+    "expand": "Expandir",
+    "hide": "Ocultar"
+  },
+  "priorities": {
+    "priorities": "Prioridades",
+    "clickHere": "Haz clic aquí para añadir una nueva prioridad",
+    "campingTrip": "Viaje de camping para el departamento"
+  },
+  "recognition": {
+    "youveRecognized": "Has reconocido al",
+    "ofYourTeam": "de tu equipo este mes"
   },
   "language": {
     "english": "Inglés",

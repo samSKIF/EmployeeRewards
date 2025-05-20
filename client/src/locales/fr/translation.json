@@ -118,7 +118,27 @@
     "points": "Points",
     "transactions": "Transactions",
     "rewards": "Récompenses",
-    "history": "Historique"
+    "history": "Historique",
+    "toGive": "À Donner",
+    "toSpend": "À Dépenser",
+    "currentBonus": "Bonus Actuel",
+    "thanksmatter": "merciimportant#"
+  },
+  "meetings": {
+    "oneOnOne": "1 à 1 avec",
+    "isComing": "arrive bientôt",
+    "reviewThe": "Révisez l'agenda",
+    "expand": "Développer",
+    "hide": "Cacher"
+  },
+  "priorities": {
+    "priorities": "Priorités",
+    "clickHere": "Cliquez ici pour ajouter une nouvelle priorité",
+    "campingTrip": "Sortie camping pour le département"
+  },
+  "recognition": {
+    "youveRecognized": "Vous avez reconnu",
+    "ofYourTeam": "de votre équipe ce mois-ci"
   },
   "language": {
     "english": "Anglais",

@@ -4,6 +4,13 @@
     "name": "ThrivioHR",
     "points": "Баллы"
   },
+  "dashboard": {
+    "insights": "Аналитика",
+    "awards": "Награды",
+    "milestones": "Достижения",
+    "explore": "Обзор",
+    "homepage": "Главная"
+  },
   "navigation": {
     "home": "Главная",
     "profile": "Профиль",
@@ -38,7 +45,17 @@
     "like": "Нравится",
     "poll": "Опрос",
     "recognition": "Признание",
-    "announcement": "Объявление"
+    "announcement": "Объявление",
+    "appreciate": "Оценить",
+    "celebrate": "Отпраздновать",
+    "actionItems": "Задачи",
+    "lastThanked": "Последняя Благодарность",
+    "yourDirectReports": "Ваши Подчиненные",
+    "days": "дней",
+    "ago": "назад",
+    "filterBy": "Фильтровать по",
+    "myCompany": "Моя Компания",
+    "showDetails": "Показать Детали"
   },
   "profile": {
     "editProfile": "Редактировать профиль",
@@ -102,7 +119,27 @@
     "points": "Баллы",
     "transactions": "Транзакции",
     "rewards": "Награды",
-    "history": "История"
+    "history": "История",
+    "toGive": "Для Отправки",
+    "toSpend": "Для Траты",
+    "currentBonus": "Текущий Бонус",
+    "thanksmatter": "спасибоважно#"
+  },
+  "meetings": {
+    "oneOnOne": "1 на 1 с",
+    "isComing": "скоро",
+    "reviewThe": "Просмотреть повестку",
+    "expand": "Развернуть",
+    "hide": "Свернуть"
+  },
+  "priorities": {
+    "priorities": "Приоритеты",
+    "clickHere": "Нажмите здесь, чтобы добавить новый приоритет",
+    "campingTrip": "Поход для отдела"
+  },
+  "recognition": {
+    "youveRecognized": "Вы отметили",
+    "ofYourTeam": "вашей команды в этом месяце"
   },
   "language": {
     "english": "Английский",

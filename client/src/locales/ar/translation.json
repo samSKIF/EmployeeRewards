@@ -5,6 +5,13 @@
     "points": "نقاط"
   },
   "dashboard": {
+    "insights": "تحليلات",
+    "awards": "جوائز",
+    "milestones": "إنجازات",
+    "explore": "استكشاف",
+    "homepage": "الصفحة الرئيسية"
+  },
+  "dashboard": {
     "insights": "الرؤى",
     "awards": "الجوائز",
     "milestones": "الإنجازات",
