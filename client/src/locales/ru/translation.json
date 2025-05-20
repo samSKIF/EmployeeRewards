@@ -220,5 +220,27 @@
     "spanish": "Испанский",
     "russian": "Русский",
     "selectLanguage": "Выбрать язык"
+  },
+  "shop": {
+    "featuredRewards": "Популярные Награды",
+    "popularRewards": "Популярные Награды",
+    "searchRewards": "Поиск наград...",
+    "returnToSocial": "Вернуться в Ленту",
+    "allCategories": "Все",
+    "giftCards": "Подарочные Карты",
+    "electronics": "Электроника",
+    "rewards": "Награды",
+    "experiences": "Впечатления",
+    "gifts": "Подарки",
+    "premium": "Премиум",
+    "points": "Баллы",
+    "unavailable": "Недоступно",
+    "inStock": "В наличии",
+    "outOfStock": "Нет в наличии",
+    "redeemPoints": "Обменять Баллы",
+    "termsAndConditions": "Правила и условия",
+    "privacyPolicy": "Политика конфиденциальности",
+    "contactSupport": "Связаться с поддержкой",
+    "allRightsReserved": "Все права защищены"
   }
 }

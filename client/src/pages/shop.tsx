@@ -11,8 +11,10 @@ import { LogOut, Search, CreditCard, Tag, Gift, Ticket, ShoppingBag, Home, Award
 import { Input } from "@/components/ui/input";
 import { useBranding } from "@/context/BrandingContext";
 import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+import { useTranslation } from "react-i18next";
 
 const Shop = () => {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [shopDesign, setShopDesign] = useState("design1");
 
@@ -159,7 +161,7 @@ const Shop = () => {
           <div className="flex items-center space-x-2 sm:space-x-6">
             <div className="bg-white/20 rounded-full px-2 sm:px-4 py-1 sm:py-2 flex items-center">
               <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="font-bold text-xs sm:text-base">{balanceData?.balance || 0} <span className="hidden xs:inline">Points</span></span>
+              <span className="font-bold text-xs sm:text-base">{balanceData?.balance || 0} <span className="hidden xs:inline">{t('shop.points')}</span></span>
             </div>
             <Button 
               variant="ghost" 
@@ -168,7 +170,7 @@ const Shop = () => {
               onClick={() => window.close()}
             >
               <Home className="h-4 w-4 mr-2" />
-              Return to Social
+              {t('shop.returnToSocial')}
             </Button>
             <Button 
               variant="ghost" 
@@ -185,7 +187,7 @@ const Shop = () => {
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              {t('common.logout')}
             </Button>
             <Button 
               variant="ghost" 
@@ -234,7 +236,7 @@ const Shop = () => {
             <div className="relative w-full md:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search rewards..."
+                placeholder={t('shop.searchRewards')}
                 className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -250,7 +252,7 @@ const Shop = () => {
                 style={selectedCategory === "all" && branding?.primaryColor ? 
                   { background: branding.primaryColor } : undefined}
               >
-                All
+                {t('shop.allCategories')}
               </Button>
               {categories.map(category => (
                 <Button
@@ -274,21 +276,21 @@ const Shop = () => {
           <TabsList className="grid w-full grid-cols-4 h-auto p-0.5 sm:p-1">
             <TabsTrigger value="all" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
               <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">All</span> <span className="hidden sm:inline">Rewards</span>
+              <span className="hidden xs:inline">{t('shop.allCategories')}</span> <span className="hidden sm:inline">{t('shop.rewards')}</span>
             </TabsTrigger>
             <TabsTrigger value="experiences" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
               <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">Experiences</span>
+              <span className="hidden xs:inline">{t('shop.experiences')}</span>
               <span className="xs:hidden">Exp</span>
             </TabsTrigger>
             <TabsTrigger value="giftcards" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
               <Gift className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">Gift Cards</span>
-              <span className="xs:hidden">Gifts</span>
+              <span className="hidden xs:inline">{t('shop.giftCards')}</span>
+              <span className="xs:hidden">{t('shop.gifts')}</span>
             </TabsTrigger>
             <TabsTrigger value="premium" className="py-2 sm:py-3 text-xs sm:text-sm px-1">
               <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden xs:inline">Premium</span>
+              <span className="hidden xs:inline">{t('shop.premium')}</span>
               <span className="xs:hidden">Prem</span>
             </TabsTrigger>
           </TabsList>
