@@ -220,6 +220,25 @@
     "selectLanguage": "اختر اللغة"
   },
   "shop": {
-    "shop": "المتجر"
+    "featuredRewards": "المكافآت المميزة",
+    "popularRewards": "المكافآت الشائعة",
+    "searchRewards": "البحث عن مكافآت...",
+    "returnToSocial": "العودة إلى الاجتماعي",
+    "allCategories": "الكل",
+    "giftCards": "بطاقات الهدايا",
+    "electronics": "الإلكترونيات",
+    "rewards": "المكافآت",
+    "experiences": "التجارب",
+    "gifts": "الهدايا",
+    "premium": "المميز",
+    "points": "النقاط",
+    "unavailable": "غير متوفر",
+    "inStock": "متوفر",
+    "outOfStock": "نفذت الكمية",
+    "redeemPoints": "استبدال النقاط",
+    "termsAndConditions": "الشروط والأحكام",
+    "privacyPolicy": "سياسة الخصوصية",
+    "contactSupport": "اتصل بالدعم",
+    "allRightsReserved": "جميع الحقوق محفوظة"
   }
 }

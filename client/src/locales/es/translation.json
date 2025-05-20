@@ -222,5 +222,27 @@
     "spanish": "Español",
     "russian": "Ruso",
     "selectLanguage": "Seleccionar Idioma"
+  },
+  "shop": {
+    "featuredRewards": "Recompensas Destacadas",
+    "popularRewards": "Recompensas Populares",
+    "searchRewards": "Buscar recompensas...",
+    "returnToSocial": "Volver a Social",
+    "allCategories": "Todas",
+    "giftCards": "Tarjetas de Regalo",
+    "electronics": "Electrónica",
+    "rewards": "Recompensas",
+    "experiences": "Experiencias",
+    "gifts": "Regalos",
+    "premium": "Premium",
+    "points": "Puntos",
+    "unavailable": "No Disponible",
+    "inStock": "En Existencia",
+    "outOfStock": "Agotado",
+    "redeemPoints": "Canjear Puntos",
+    "termsAndConditions": "Términos y Condiciones",
+    "privacyPolicy": "Política de Privacidad",
+    "contactSupport": "Contactar Soporte",
+    "allRightsReserved": "Todos los derechos reservados"
   }
 }

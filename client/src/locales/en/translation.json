@@ -221,5 +221,27 @@
     "spanish": "Spanish",
     "russian": "Russian",
     "selectLanguage": "Select Language"
+  },
+  "shop": {
+    "featuredRewards": "Featured Rewards",
+    "popularRewards": "Popular Rewards",
+    "searchRewards": "Search rewards...",
+    "returnToSocial": "Return to Social",
+    "allCategories": "All",
+    "giftCards": "Gift Cards",
+    "electronics": "Electronics",
+    "rewards": "Rewards",
+    "experiences": "Experiences",
+    "gifts": "Gifts",
+    "premium": "Premium",
+    "points": "Points",
+    "unavailable": "Unavailable",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "redeemPoints": "Redeem Points",
+    "termsAndConditions": "Terms & Conditions",
+    "privacyPolicy": "Privacy Policy",
+    "contactSupport": "Contact Support",
+    "allRightsReserved": "All rights reserved"
   }
 }

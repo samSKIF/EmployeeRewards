@@ -221,5 +221,27 @@
     "spanish": "Espagnol",
     "russian": "Russe",
     "selectLanguage": "Choisir la Langue"
+  },
+  "shop": {
+    "featuredRewards": "Récompenses en Vedette",
+    "popularRewards": "Récompenses Populaires",
+    "searchRewards": "Rechercher des récompenses...",
+    "returnToSocial": "Retour au Social",
+    "allCategories": "Tout",
+    "giftCards": "Cartes Cadeaux",
+    "electronics": "Électronique",
+    "rewards": "Récompenses",
+    "experiences": "Expériences",
+    "gifts": "Cadeaux",
+    "premium": "Premium",
+    "points": "Points",
+    "unavailable": "Indisponible",
+    "inStock": "En Stock",
+    "outOfStock": "Rupture de Stock",
+    "redeemPoints": "Échanger des Points",
+    "termsAndConditions": "Conditions Générales",
+    "privacyPolicy": "Politique de Confidentialité",
+    "contactSupport": "Contacter le Support",
+    "allRightsReserved": "Tous droits réservés"
   }
 }
