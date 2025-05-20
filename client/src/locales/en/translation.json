@@ -8,7 +8,11 @@
     "awards": "Awards",
     "milestones": "Milestones",
     "explore": "Explore",
-    "homepage": "Homepage"
+    "homepage": "Homepage",
+    "home": "Home",
+    "shop": "Shop",
+    "leave": "Leave",
+    "setup": "Setup"
   },
   "navigation": {
     "home": "Home",
