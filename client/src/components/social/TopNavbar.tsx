@@ -97,13 +97,13 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
 
   // Main navigation items
   const navItems = [
-    { icon: Home, label: t('navigation.home'), onClick: () => navigateTo('/social'), isActive: location === '/social' },
-    { icon: Store, label: t('navigation.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
-    { icon: ListChecks, label: "Milestones", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
-    { icon: Award, label: "Awards", onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
-    { icon: Eye, label: "Insights", onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
-    { icon: CalendarDays, label: t('navigation.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
-    { icon: Settings, label: "Setup", onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
+    { icon: Home, label: t('dashboard.home'), onClick: () => navigateTo('/social'), isActive: location === '/social' },
+    { icon: Store, label: t('dashboard.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
+    { icon: ListChecks, label: t('dashboard.milestones'), onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
+    { icon: Award, label: t('dashboard.awards'), onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
+    { icon: Eye, label: t('dashboard.insights'), onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
+    { icon: CalendarDays, label: t('dashboard.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
+    { icon: Settings, label: t('dashboard.setup'), onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
   ];
 
   // Admin dropdown menu items
