@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 // import AdminLayout from '@/layouts/AdminLayout'; // Using SocialLayout for all users
 import SocialLayout from '@/layouts/SocialLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -112,6 +113,7 @@ export default function LeaveManagement() {
   const [activeTab, setActiveTab] = useState('my-leaves');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // Fetch leave data
   const { data: leaveTypes, isLoading: isLoadingLeaveTypes } = useQuery({
@@ -343,11 +345,11 @@ export default function LeaveManagement() {
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
-            <p className="text-muted-foreground">Manage your leave requests and approvals</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('leave.leaveManagement')}</h1>
+            <p className="text-muted-foreground">{t('leave.manageLeaveRequests')}</p>
           </div>
           <Button onClick={() => setIsNewLeaveDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Request Leave
+            <PlusCircle className="mr-2 h-4 w-4" /> {t('leave.requestLeave')}
           </Button>
         </div>
 
