@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "ThrivioHR",
+    "points": "Points"
+  },
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "shop": "Shop",
+    "feed": "Feed",
+    "leaderboard": "Leaderboard",
+    "leave": "Leave",
+    "admin": "Admin"
+  },
+  "common": {
+    "search": "Search",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "login": "Login",
+    "submit": "Submit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "balance": "Balance",
+    "toGive": "To Give",
+    "toSpend": "To Spend",
+    "viewAll": "View All"
+  },
+  "social": {
+    "createPost": "Create Post",
+    "whatOnYourMind": "What's on your mind?",
+    "share": "Share",
+    "comment": "Comment",
+    "comments": "Comments",
+    "like": "Like",
+    "poll": "Poll",
+    "recognition": "Recognition",
+    "announcement": "Announcement"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "workInfo": "Work Information",
+    "skills": "Skills & Expertise",
+    "achievements": "Achievements",
+    "activity": "Recent Activity",
+    "department": "Department",
+    "location": "Location",
+    "joinDate": "Join Date",
+    "email": "Email",
+    "phone": "Phone"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "employees": "Employees",
+    "branding": "Brand Identity",
+    "shop": "Shop Configuration",
+    "surveys": "Surveys",
+    "onboarding": "Onboarding",
+    "recognitionSettings": "Recognition Settings",
+    "leaveManagement": "Leave Management"
+  },
+  "branding": {
+    "organizationName": "Organization Name",
+    "logoUpload": "Logo Upload",
+    "uploadLogo": "Upload Logo",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "accentColor": "Accent Color",
+    "colorScheme": "Color Scheme",
+    "saveChanges": "Save Changes",
+    "brandingUpdated": "Branding updated successfully"
+  },
+  "leave": {
+    "requestLeave": "Request Leave",
+    "leaveType": "Leave Type",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "approved": "Approved",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "myRequests": "My Requests",
+    "approvals": "Approvals",
+    "calendar": "Calendar",
+    "leaveBalance": "Leave Balance",
+    "apply": "Apply"
+  },
+  "recognition": {
+    "recognizeColleague": "Recognize a Colleague",
+    "costPerPoint": "Cost Per Point",
+    "peerToPeer": "Peer-to-Peer Recognition",
+    "managerRecognition": "Manager Recognition",
+    "approvalWorkflow": "Approval Workflow",
+    "monthlyLimit": "Monthly Limit",
+    "budgetAllocation": "Budget Allocation"
+  },
+  "wallet": {
+    "points": "Points",
+    "transactions": "Transactions",
+    "rewards": "Rewards",
+    "history": "History"
+  },
+  "language": {
+    "english": "English",
+    "french": "French",
+    "arabic": "Arabic",
+    "spanish": "Spanish",
+    "russian": "Russian",
+    "selectLanguage": "Select Language"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "ThrivioHR",
+    "points": "Баллы"
+  },
+  "navigation": {
+    "home": "Главная",
+    "profile": "Профиль",
+    "shop": "Магазин",
+    "feed": "Лента",
+    "leaderboard": "Рейтинг",
+    "leave": "Отпуск",
+    "admin": "Админ"
+  },
+  "common": {
+    "search": "Поиск",
+    "notifications": "Уведомления",
+    "logout": "Выйти",
+    "login": "Войти",
+    "submit": "Отправить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "loading": "Загрузка...",
+    "balance": "Баланс",
+    "toGive": "Для Отправки",
+    "toSpend": "Для Трат",
+    "viewAll": "Смотреть Все"
+  },
+  "social": {
+    "createPost": "Создать Публикацию",
+    "whatOnYourMind": "О чём вы думаете?",
+    "share": "Поделиться",
+    "comment": "Комментировать",
+    "comments": "Комментарии",
+    "like": "Нравится",
+    "poll": "Опрос",
+    "recognition": "Признание",
+    "announcement": "Объявление"
+  },
+  "profile": {
+    "editProfile": "Редактировать Профиль",
+    "personalInfo": "Личная Информация",
+    "workInfo": "Рабочая Информация",
+    "skills": "Навыки и Опыт",
+    "achievements": "Достижения",
+    "activity": "Последняя Активность",
+    "department": "Отдел",
+    "location": "Местоположение",
+    "joinDate": "Дата Присоединения",
+    "email": "Электронная Почта",
+    "phone": "Телефон"
+  },
+  "admin": {
+    "dashboard": "Панель Управления",
+    "employees": "Сотрудники",
+    "branding": "Фирменный Стиль",
+    "shop": "Настройка Магазина",
+    "surveys": "Опросы",
+    "onboarding": "Адаптация",
+    "recognitionSettings": "Настройки Признания",
+    "leaveManagement": "Управление Отпусками"
+  },
+  "branding": {
+    "organizationName": "Название Организации",
+    "logoUpload": "Загрузка Логотипа",
+    "uploadLogo": "Загрузить Логотип",
+    "primaryColor": "Основной Цвет",
+    "secondaryColor": "Второстепенный Цвет",
+    "accentColor": "Акцентный Цвет",
+    "colorScheme": "Цветовая Схема",
+    "saveChanges": "Сохранить Изменения",
+    "brandingUpdated": "Фирменный стиль успешно обновлен"
+  },
+  "leave": {
+    "requestLeave": "Запросить Отпуск",
+    "leaveType": "Тип Отпуска",
+    "startDate": "Дата Начала",
+    "endDate": "Дата Окончания",
+    "status": "Статус",
+    "approved": "Одобрено",
+    "pending": "В Ожидании",
+    "rejected": "Отклонено",
+    "myRequests": "Мои Запросы",
+    "approvals": "Одобрения",
+    "calendar": "Календарь",
+    "leaveBalance": "Баланс Отпуска",
+    "apply": "Применить"
+  },
+  "recognition": {
+    "recognizeColleague": "Признать Коллегу",
+    "costPerPoint": "Стоимость За Балл",
+    "peerToPeer": "Признание Между Коллегами",
+    "managerRecognition": "Признание Руководителя",
+    "approvalWorkflow": "Процесс Одобрения",
+    "monthlyLimit": "Ежемесячный Лимит",
+    "budgetAllocation": "Распределение Бюджета"
+  },
+  "wallet": {
+    "points": "Баллы",
+    "transactions": "Транзакции",
+    "rewards": "Награды",
+    "history": "История"
+  },
+  "language": {
+    "english": "Английский",
+    "french": "Французский",
+    "arabic": "Арабский",
+    "spanish": "Испанский",
+    "russian": "Русский",
+    "selectLanguage": "Выбрать Язык"
+  }
+}

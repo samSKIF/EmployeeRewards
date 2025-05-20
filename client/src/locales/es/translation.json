@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "ThrivioHR",
+    "points": "Puntos"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "profile": "Perfil",
+    "shop": "Tienda",
+    "feed": "Actividad",
+    "leaderboard": "Clasificación",
+    "leave": "Permisos",
+    "admin": "Admin"
+  },
+  "common": {
+    "search": "Buscar",
+    "notifications": "Notificaciones",
+    "logout": "Cerrar Sesión",
+    "login": "Iniciar Sesión",
+    "submit": "Enviar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "loading": "Cargando...",
+    "balance": "Balance",
+    "toGive": "Para Dar",
+    "toSpend": "Para Gastar",
+    "viewAll": "Ver Todo"
+  },
+  "social": {
+    "createPost": "Crear Publicación",
+    "whatOnYourMind": "¿Qué estás pensando?",
+    "share": "Compartir",
+    "comment": "Comentar",
+    "comments": "Comentarios",
+    "like": "Me gusta",
+    "poll": "Encuesta",
+    "recognition": "Reconocimiento",
+    "announcement": "Anuncio"
+  },
+  "profile": {
+    "editProfile": "Editar Perfil",
+    "personalInfo": "Información Personal",
+    "workInfo": "Información Laboral",
+    "skills": "Habilidades y Experiencia",
+    "achievements": "Logros",
+    "activity": "Actividad Reciente",
+    "department": "Departamento",
+    "location": "Ubicación",
+    "joinDate": "Fecha de Incorporación",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono"
+  },
+  "admin": {
+    "dashboard": "Panel de Control",
+    "employees": "Empleados",
+    "branding": "Identidad de Marca",
+    "shop": "Configuración de Tienda",
+    "surveys": "Encuestas",
+    "onboarding": "Incorporación",
+    "recognitionSettings": "Configuración de Reconocimientos",
+    "leaveManagement": "Gestión de Permisos"
+  },
+  "branding": {
+    "organizationName": "Nombre de la Organización",
+    "logoUpload": "Cargar Logo",
+    "uploadLogo": "Subir Logo",
+    "primaryColor": "Color Primario",
+    "secondaryColor": "Color Secundario",
+    "accentColor": "Color de Énfasis",
+    "colorScheme": "Esquema de Color",
+    "saveChanges": "Guardar Cambios",
+    "brandingUpdated": "Identidad de marca actualizada con éxito"
+  },
+  "leave": {
+    "requestLeave": "Solicitar Permiso",
+    "leaveType": "Tipo de Permiso",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "status": "Estado",
+    "approved": "Aprobado",
+    "pending": "Pendiente",
+    "rejected": "Rechazado",
+    "myRequests": "Mis Solicitudes",
+    "approvals": "Aprobaciones",
+    "calendar": "Calendario",
+    "leaveBalance": "Balance de Permisos",
+    "apply": "Aplicar"
+  },
+  "recognition": {
+    "recognizeColleague": "Reconocer a un Colega",
+    "costPerPoint": "Costo por Punto",
+    "peerToPeer": "Reconocimiento Entre Pares",
+    "managerRecognition": "Reconocimiento de Gerentes",
+    "approvalWorkflow": "Flujo de Aprobación",
+    "monthlyLimit": "Límite Mensual",
+    "budgetAllocation": "Asignación de Presupuesto"
+  },
+  "wallet": {
+    "points": "Puntos",
+    "transactions": "Transacciones",
+    "rewards": "Recompensas",
+    "history": "Historial"
+  },
+  "language": {
+    "english": "Inglés",
+    "french": "Francés",
+    "arabic": "Árabe",
+    "spanish": "Español",
+    "russian": "Ruso",
+    "selectLanguage": "Seleccionar Idioma"
+  }
+}

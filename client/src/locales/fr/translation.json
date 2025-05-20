@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "ThrivioHR",
+    "points": "Points"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "shop": "Boutique",
+    "feed": "Fil d'actualité",
+    "leaderboard": "Classement",
+    "leave": "Congés",
+    "admin": "Admin"
+  },
+  "common": {
+    "search": "Rechercher",
+    "notifications": "Notifications",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "submit": "Soumettre",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "loading": "Chargement...",
+    "balance": "Solde",
+    "toGive": "À Donner",
+    "toSpend": "À Dépenser",
+    "viewAll": "Voir Tout"
+  },
+  "social": {
+    "createPost": "Créer un Post",
+    "whatOnYourMind": "Quoi de neuf ?",
+    "share": "Partager",
+    "comment": "Commenter",
+    "comments": "Commentaires",
+    "like": "J'aime",
+    "poll": "Sondage",
+    "recognition": "Reconnaissance",
+    "announcement": "Annonce"
+  },
+  "profile": {
+    "editProfile": "Modifier le Profil",
+    "personalInfo": "Informations Personnelles",
+    "workInfo": "Informations Professionnelles",
+    "skills": "Compétences & Expertise",
+    "achievements": "Réalisations",
+    "activity": "Activité Récente",
+    "department": "Département",
+    "location": "Localisation",
+    "joinDate": "Date d'arrivée",
+    "email": "Email",
+    "phone": "Téléphone"
+  },
+  "admin": {
+    "dashboard": "Tableau de Bord",
+    "employees": "Employés",
+    "branding": "Identité de Marque",
+    "shop": "Configuration de la Boutique",
+    "surveys": "Sondages",
+    "onboarding": "Intégration",
+    "recognitionSettings": "Paramètres de Reconnaissance",
+    "leaveManagement": "Gestion des Congés"
+  },
+  "branding": {
+    "organizationName": "Nom de l'Organisation",
+    "logoUpload": "Télécharger un Logo",
+    "uploadLogo": "Télécharger un Logo",
+    "primaryColor": "Couleur Principale",
+    "secondaryColor": "Couleur Secondaire",
+    "accentColor": "Couleur d'Accent",
+    "colorScheme": "Schéma de Couleur",
+    "saveChanges": "Enregistrer les Modifications",
+    "brandingUpdated": "Identité de marque mise à jour avec succès"
+  },
+  "leave": {
+    "requestLeave": "Demander un Congé",
+    "leaveType": "Type de Congé",
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "status": "Statut",
+    "approved": "Approuvé",
+    "pending": "En Attente",
+    "rejected": "Refusé",
+    "myRequests": "Mes Demandes",
+    "approvals": "Approbations",
+    "calendar": "Calendrier",
+    "leaveBalance": "Solde de Congés",
+    "apply": "Appliquer"
+  },
+  "recognition": {
+    "recognizeColleague": "Reconnaître un Collègue",
+    "costPerPoint": "Coût par Point",
+    "peerToPeer": "Reconnaissance Entre Pairs",
+    "managerRecognition": "Reconnaissance des Managers",
+    "approvalWorkflow": "Processus d'Approbation",
+    "monthlyLimit": "Limite Mensuelle",
+    "budgetAllocation": "Allocation Budgétaire"
+  },
+  "wallet": {
+    "points": "Points",
+    "transactions": "Transactions",
+    "rewards": "Récompenses",
+    "history": "Historique"
+  },
+  "language": {
+    "english": "Anglais",
+    "french": "Français",
+    "arabic": "Arabe",
+    "spanish": "Espagnol",
+    "russian": "Russe",
+    "selectLanguage": "Choisir la Langue"
+  }
+}

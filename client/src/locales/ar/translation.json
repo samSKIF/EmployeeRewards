@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "ثرايفيو إتش آر",
+    "points": "نقاط"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "profile": "الملف الشخصي",
+    "shop": "المتجر",
+    "feed": "آخر المستجدات",
+    "leaderboard": "لوحة المتصدرين",
+    "leave": "الإجازات",
+    "admin": "الإدارة"
+  },
+  "common": {
+    "search": "بحث",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "submit": "إرسال",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "loading": "جاري التحميل...",
+    "balance": "الرصيد",
+    "toGive": "للإعطاء",
+    "toSpend": "للإنفاق",
+    "viewAll": "عرض الكل"
+  },
+  "social": {
+    "createPost": "إنشاء منشور",
+    "whatOnYourMind": "بماذا تفكر؟",
+    "share": "مشاركة",
+    "comment": "تعليق",
+    "comments": "التعليقات",
+    "like": "إعجاب",
+    "poll": "استطلاع",
+    "recognition": "تقدير",
+    "announcement": "إعلان"
+  },
+  "profile": {
+    "editProfile": "تعديل الملف الشخصي",
+    "personalInfo": "المعلومات الشخصية",
+    "workInfo": "معلومات العمل",
+    "skills": "المهارات والخبرات",
+    "achievements": "الإنجازات",
+    "activity": "النشاط الأخير",
+    "department": "القسم",
+    "location": "الموقع",
+    "joinDate": "تاريخ الانضمام",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف"
+  },
+  "admin": {
+    "dashboard": "لوحة التحكم",
+    "employees": "الموظفون",
+    "branding": "هوية العلامة التجارية",
+    "shop": "إعدادات المتجر",
+    "surveys": "الاستبيانات",
+    "onboarding": "التدريب التعريفي",
+    "recognitionSettings": "إعدادات التقدير",
+    "leaveManagement": "إدارة الإجازات"
+  },
+  "branding": {
+    "organizationName": "اسم المؤسسة",
+    "logoUpload": "تحميل الشعار",
+    "uploadLogo": "تحميل الشعار",
+    "primaryColor": "اللون الأساسي",
+    "secondaryColor": "اللون الثانوي",
+    "accentColor": "لون التمييز",
+    "colorScheme": "نظام الألوان",
+    "saveChanges": "حفظ التغييرات",
+    "brandingUpdated": "تم تحديث هوية العلامة التجارية بنجاح"
+  },
+  "leave": {
+    "requestLeave": "طلب إجازة",
+    "leaveType": "نوع الإجازة",
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "status": "الحالة",
+    "approved": "موافق عليه",
+    "pending": "قيد الانتظار",
+    "rejected": "مرفوض",
+    "myRequests": "طلباتي",
+    "approvals": "الموافقات",
+    "calendar": "التقويم",
+    "leaveBalance": "رصيد الإجازات",
+    "apply": "تقديم"
+  },
+  "recognition": {
+    "recognizeColleague": "تقدير زميل",
+    "costPerPoint": "تكلفة النقطة",
+    "peerToPeer": "التقدير بين الزملاء",
+    "managerRecognition": "تقدير المدير",
+    "approvalWorkflow": "سير عمل الموافقة",
+    "monthlyLimit": "الحد الشهري",
+    "budgetAllocation": "تخصيص الميزانية"
+  },
+  "wallet": {
+    "points": "النقاط",
+    "transactions": "المعاملات",
+    "rewards": "المكافآت",
+    "history": "السجل"
+  },
+  "language": {
+    "english": "الإنجليزية",
+    "french": "الفرنسية",
+    "arabic": "العربية",
+    "spanish": "الإسبانية",
+    "russian": "الروسية",
+    "selectLanguage": "اختيار اللغة"
+  }
+}
