@@ -5,15 +5,15 @@
     "points": "Puntos"
   },
   "dashboard": {
-    "insights": "Insights",
-    "awards": "Awards",
-    "milestones": "Milestones",
+    "insights": "Perspectivas",
+    "awards": "Premios",
+    "milestones": "Hitos",
     "explore": "Explorar",
     "homepage": "Página Principal",
-    "setup": "Setup",
-    "accueil": "Accueil",
-    "boutique": "Boutique",
-    "congés": "Congés"
+    "setup": "Configuración",
+    "leave": "Licencia",
+    "shop": "Tienda",
+    "home": "Inicio"
   },
   "navigation": {
     "home": "Inicio",

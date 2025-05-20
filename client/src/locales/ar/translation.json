@@ -6,10 +6,13 @@
   "dashboard": {
     "insights": "الرؤى",
     "awards": "الجوائز",
-    "milestones": "الإنجازات",
+    "milestones": "المعالم",
     "explore": "استكشاف",
     "homepage": "الصفحة الرئيسية",
-    "setup": "إعدادات"
+    "setup": "الإعدادات",
+    "leave": "إجازة",
+    "shop": "متجر",
+    "home": "الرئيسية"
   },
   "navigation": {
     "home": "الرئيسية",

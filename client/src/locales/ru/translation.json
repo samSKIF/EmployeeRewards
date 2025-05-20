@@ -4,12 +4,15 @@
     "points": "Баллы"
   },
   "dashboard": {
-    "insights": "Аналитика",
+    "insights": "Инсайты",
     "awards": "Награды",
-    "milestones": "Достижения",
+    "milestones": "Этапы",
     "explore": "Обзор",
-    "homepage": "Главная",
-    "setup": "Настройки"
+    "homepage": "Главная страница",
+    "setup": "Настройки",
+    "leave": "Отпуск",
+    "shop": "Магазин",
+    "home": "Главная страница"
   },
   "navigation": {
     "home": "Главная",
