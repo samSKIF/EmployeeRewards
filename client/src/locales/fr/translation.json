@@ -4,12 +4,15 @@
     "points": "Points"
   },
   "dashboard": {
-    "insights": "Aperçus",
-    "awards": "Récompenses",
-    "milestones": "Étapes Clés",
+    "insights": "Insights",
+    "awards": "Awards",
+    "milestones": "Milestones",
     "explore": "Explorer",
     "homepage": "Page d'Accueil",
-    "setup": "Configuration"
+    "setup": "Setup",
+    "congés": "Congés",
+    "boutique": "Boutique",
+    "accueil": "Accueil"
   },
   "navigation": {
     "home": "Accueil",
