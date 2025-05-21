@@ -320,6 +320,9 @@
     "target": "Objetivo",
     "allEmployees": "Todos los empleados",
     "responseRate": "Tasa de respuesta",
-    "draft": "Borrador"
+    "draft": "Borrador",
+    "created": "Creado",
+    "recently": "recientemente",
+    "noDescriptionProvided": "No se proporcionó descripción"
   }
 }

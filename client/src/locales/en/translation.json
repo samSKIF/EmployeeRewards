@@ -316,6 +316,9 @@
     "target": "Target",
     "allEmployees": "All employees",
     "responseRate": "Response rate",
-    "draft": "Draft"
+    "draft": "Draft",
+    "created": "Created",
+    "recently": "recently",
+    "noDescriptionProvided": "No description provided"
   }
 }

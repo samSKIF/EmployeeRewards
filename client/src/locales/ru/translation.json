@@ -318,6 +318,9 @@
     "target": "Целевая аудитория",
     "allEmployees": "Все сотрудники",
     "responseRate": "Уровень отклика",
-    "draft": "Черновик"
+    "draft": "Черновик",
+    "created": "Создано",
+    "recently": "недавно",
+    "noDescriptionProvided": "Описание не предоставлено"
   }
 }

@@ -314,6 +314,9 @@
     "target": "الجمهور المستهدف",
     "allEmployees": "جميع الموظفين",
     "responseRate": "معدل الاستجابة",
-    "draft": "مسودة"
+    "draft": "مسودة",
+    "created": "تم الإنشاء",
+    "recently": "مؤخراً",
+    "noDescriptionProvided": "لم يتم تقديم وصف"
   }
 }

@@ -319,6 +319,9 @@
     "target": "Cible",
     "allEmployees": "Tous les employés",
     "responseRate": "Taux de réponse",
-    "draft": "Brouillon"
+    "draft": "Brouillon",
+    "created": "Créé",
+    "recently": "récemment",
+    "noDescriptionProvided": "Aucune description fournie"
   }
 }

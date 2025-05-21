@@ -168,12 +168,12 @@ export default function AdminSurveysPage() {
                       </Badge>
                     </div>
                     <CardDescription>
-                      Created {survey.createdAt ? formatDistanceToNow(new Date(survey.createdAt), { addSuffix: true }) : 'recently'}
+                      {t("surveys.created")} {survey.createdAt ? formatDistanceToNow(new Date(survey.createdAt), { addSuffix: true }) : t("surveys.recently")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                      {survey.description || 'No description provided'}
+                      {survey.description || t("surveys.noDescriptionProvided")}
                     </p>
                     
                     <div className="grid grid-cols-2 gap-2 text-xs">
