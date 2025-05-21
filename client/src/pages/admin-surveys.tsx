@@ -142,14 +142,14 @@ export default function AdminSurveysPage() {
           ) : surveys.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">No surveys found</h3>
+              <h3 className="mt-2 text-lg font-medium text-gray-900">{t("surveys.noSurveysFound")}</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Get started by creating a new survey.
+                {t("surveys.getStartedText")}
               </p>
               <div className="mt-6">
                 <Button onClick={() => setIsCreateDialogOpen(true)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Create Survey
+                  {t("surveys.createSurvey")}
                 </Button>
               </div>
             </div>
@@ -249,31 +249,31 @@ export default function AdminSurveysPage() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create New Survey</DialogTitle>
+            <DialogTitle>{t("surveys.createNewSurvey")}</DialogTitle>
             <DialogDescription>
-              Start building your survey by entering basic information.
+              {t("surveys.startBuildingText")}
             </DialogDescription>
           </DialogHeader>
           
           <div className="py-4">
             <p className="text-center mb-6 text-sm text-gray-600">
-              Click below to start creating your survey with our step-by-step wizard.
+              {t("surveys.startBuildingText")}
             </p>
             
             <div className="grid grid-cols-1 gap-4">
               <Button asChild className="w-full h-auto py-6 flex flex-col">
                 <a href="/admin/surveys/new">
                   <PlusCircle className="h-8 w-8 mb-2" />
-                  <span className="font-bold">Create from Scratch</span>
-                  <span className="text-xs mt-1">Build a completely custom survey</span>
+                  <span className="font-bold">{t("surveys.createFromScratch")}</span>
+                  <span className="text-xs mt-1">{t("surveys.startBuildingText")}</span>
                 </a>
               </Button>
               
               <Button asChild variant="outline" className="w-full h-auto py-6 flex flex-col">
                 <a href="/admin/surveys/templates">
                   <FileText className="h-8 w-8 mb-2" />
-                  <span className="font-bold">Use Template</span>
-                  <span className="text-xs mt-1">Start with a pre-built survey template</span>
+                  <span className="font-bold">{t("surveys.surveyTemplates")}</span>
+                  <span className="text-xs mt-1">{t("surveys.templateSearchAdjust")}</span>
                 </a>
               </Button>
             </div>
