@@ -188,13 +188,13 @@ export default function AdminSurveysPage() {
                       {survey.publishedAt && (
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1 text-purple-500" />
-                          <span>Published: {new Date(survey.publishedAt).toLocaleDateString()}</span>
+                          <span>{t("surveys.published")}: {new Date(survey.publishedAt).toLocaleDateString()}</span>
                         </div>
                       )}
                       {(survey.pointsAwarded ?? 0) > 0 && (
                         <div className="flex items-center">
                           <span className="text-amber-500 mr-1">★</span>
-                          <span>{survey.pointsAwarded} Points reward</span>
+                          <span>{survey.pointsAwarded} {t("app.points")}</span>
                         </div>
                       )}
                     </div>
@@ -281,7 +281,7 @@ export default function AdminSurveysPage() {
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              Cancel
+              {t("surveys.cancel")}
             </Button>
           </DialogFooter>
         </DialogContent>
