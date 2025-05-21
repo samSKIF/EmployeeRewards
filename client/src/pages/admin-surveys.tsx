@@ -183,7 +183,7 @@ export default function AdminSurveysPage() {
                       </div>
                       <div className="flex items-center">
                         <BarChart4 className="h-3 w-3 mr-1 text-green-500" />
-                        <span>{survey.responseRate || 0}% Response rate</span>
+                        <span>{survey.responseRate || 0}% {t("surveys.responseRate")}</span>
                       </div>
                       {survey.publishedAt && (
                         <div className="flex items-center">

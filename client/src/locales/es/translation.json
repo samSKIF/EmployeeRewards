@@ -316,6 +316,10 @@
     "questionType": "Tipo de Pregunta",
     "save": "Guardar",
     "cancel": "Cancelar",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar esta encuesta? Esta acción no se puede deshacer."
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta encuesta? Esta acción no se puede deshacer.",
+    "target": "Objetivo",
+    "allEmployees": "Todos los empleados",
+    "responseRate": "Tasa de respuesta",
+    "draft": "Borrador"
   }
 }
