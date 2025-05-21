@@ -161,7 +161,10 @@ export default function AdminSurveysPage() {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-xl">{survey.title}</CardTitle>
                       <Badge className={getSurveyStatusColor(survey.status)}>
-                        {survey.status.charAt(0).toUpperCase() + survey.status.slice(1)}
+                        {survey.status === 'draft' ? t("surveys.drafts") : 
+                         survey.status === 'published' ? t("surveys.published") : 
+                         survey.status === 'closed' ? t("surveys.closed") : 
+                         survey.status.charAt(0).toUpperCase() + survey.status.slice(1)}
                       </Badge>
                     </div>
                     <CardDescription>
@@ -176,7 +179,7 @@ export default function AdminSurveysPage() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="flex items-center">
                         <Users className="h-3 w-3 mr-1 text-blue-500" />
-                        <span>Target: {survey.targetAudience || 'All employees'}</span>
+                        <span>{t("surveys.target")}: {survey.targetAudience || t("surveys.allEmployees")}</span>
                       </div>
                       <div className="flex items-center">
                         <BarChart4 className="h-3 w-3 mr-1 text-green-500" />
@@ -222,14 +225,14 @@ export default function AdminSurveysPage() {
                           onClick={() => handleDeleteSurvey(survey.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
+                          {t("surveys.delete")}
                         </Button>
                       )}
                       {survey.status === 'draft' && (
                         <Button size="sm" variant="outline" asChild className="ml-2">
                           <a href={`/admin/surveys/${survey.id}/edit`}>
                             <Edit className="h-3 w-3 mr-1" />
-                            Edit
+                            {t("surveys.edit")}
                           </a>
                         </Button>
                       )}

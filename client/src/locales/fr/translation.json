@@ -315,6 +315,10 @@
     "questionType": "Type de Question",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce sondage ? Cette action ne peut pas être annulée."
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce sondage ? Cette action ne peut pas être annulée.",
+    "target": "Cible",
+    "allEmployees": "Tous les employés",
+    "responseRate": "Taux de réponse",
+    "draft": "Brouillon"
   }
 }
