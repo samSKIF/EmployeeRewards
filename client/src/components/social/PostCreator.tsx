@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { User } from "@shared/types";
 import { 
   Smile, 
@@ -33,6 +34,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const actionButtons = [
     {
@@ -312,7 +314,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-3 cursor-pointer"
           onClick={() => setIsExpanded(true)}
         >
-          <span className="text-gray-500 text-md">What's on your mind?</span>
+          <span className="text-gray-500 text-md">{t("social.whatOnYourMind")}</span>
         </div>
       </div>
       
@@ -322,7 +324,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           className="flex items-center justify-center gap-1.5 bg-green-100 text-green-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
           <ImageIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
-          <span>Share</span>
+          <span>{t("social.share")}</span>
         </button>
         
         <button
@@ -330,7 +332,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           className="flex items-center justify-center gap-1.5 bg-amber-100 text-amber-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
           <Award className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          <span>Appreciate</span>
+          <span>{t("social.appreciate")}</span>
         </button>
         
         <button
@@ -338,7 +340,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           className="flex items-center justify-center gap-1.5 bg-purple-100 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium"
         >
           <BarChart className="h-4 w-4 text-purple-500 flex-shrink-0" />
-          <span>Poll</span>
+          <span>{t("social.poll")}</span>
         </button>
         
         <input
