@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { 
   Card,
   CardContent,
@@ -45,6 +46,7 @@ interface SurveyWithStats extends Survey {
 
 export default function AdminSurveysPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
@@ -102,19 +104,19 @@ export default function AdminSurveysPage() {
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Surveys</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("surveys.title")}</h1>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Create Survey
+          {t("surveys.createSurvey")}
         </Button>
       </div>
       
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
-          <TabsTrigger value="all">All Surveys</TabsTrigger>
-          <TabsTrigger value="draft">Drafts</TabsTrigger>
-          <TabsTrigger value="published">Published</TabsTrigger>
-          <TabsTrigger value="closed">Closed</TabsTrigger>
+          <TabsTrigger value="all">{t("surveys.allSurveys")}</TabsTrigger>
+          <TabsTrigger value="draft">{t("surveys.drafts")}</TabsTrigger>
+          <TabsTrigger value="published">{t("surveys.published")}</TabsTrigger>
+          <TabsTrigger value="closed">{t("surveys.closed")}</TabsTrigger>
         </TabsList>
         
         <TabsContent value={activeTab} className="mt-0">
@@ -199,7 +201,7 @@ export default function AdminSurveysPage() {
                       <Button size="sm" variant="outline" asChild className="mr-2">
                         <a href={`/admin/surveys/${survey.id}`}>
                           <Eye className="h-3 w-3 mr-1" />
-                          View
+                          {t("surveys.view")}
                         </a>
                       </Button>
                       {survey.status === 'published' && (
