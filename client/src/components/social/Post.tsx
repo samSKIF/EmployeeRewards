@@ -505,7 +505,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
                   ref={commentInputRef}
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Write a comment..."
+                  placeholder={t("social.writeComment")}
                   className="w-full py-2 pr-10 rounded-full bg-gray-100 border-gray-100 focus-visible:ring-offset-0 focus-visible:ring-teal-400"
                 />
                 <button 

@@ -61,7 +61,8 @@
     "showDetails": "عرض التفاصيل",
     "deletePost": "حذف المنشور",
     "aboutHoursAgo": "منذ حوالي {{hours}} ساعات",
-    "viewAllComments": "عرض جميع التعليقات {{count}}"
+    "viewAllComments": "عرض جميع التعليقات {{count}}",
+    "writeComment": "اكتب تعليقًا..."
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
