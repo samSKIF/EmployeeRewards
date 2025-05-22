@@ -28,6 +28,7 @@ import AdminLeaveManagement from "@/pages/admin/leave-management";
 import RecognitionSettingsPage from "@/pages/admin/recognition-settings";
 import Recognition from "@/pages/recognition";
 import AdminStatusTypes from "@/pages/admin-status-types";
+import StatusDemo from "@/pages/status-demo";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -264,6 +265,12 @@ function App() {
               <Route path="/leave-management">
                 <SocialLayout>
                   <LeaveManagement />
+                </SocialLayout>
+              </Route>
+              
+              <Route path="/status-demo">
+                <SocialLayout>
+                  <StatusDemo />
                 </SocialLayout>
               </Route>
 
