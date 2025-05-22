@@ -61,20 +61,21 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div className="relative inline-block">
-      <Avatar className={`${sizeClasses[size]} ${className}`}>
-        <AvatarImage src={user.avatarUrl || undefined} alt={user.name} />
-        <AvatarFallback>
-          {getInitials(user.name)}
-        </AvatarFallback>
-      </Avatar>
-      
-      {/* Show tenure ring if requested */}
-      {showTenure && (
-        <TenureRing 
-          yearsOfService={yearsOfService} 
-          className={sizeClasses[size]} 
-        />
-      )}
+      <div className="relative">
+        <Avatar className={`${sizeClasses[size]} ${className}`}>
+          <AvatarImage src={user.avatarUrl || undefined} alt={user.name} />
+          <AvatarFallback>
+            {getInitials(user.name)}
+          </AvatarFallback>
+        </Avatar>
+        
+        {/* Show tenure ring if requested */}
+        {showTenure && (
+          <TenureRing 
+            yearsOfService={yearsOfService} 
+          />
+        )}
+      </div>
       
       {/* Show status icons if requested */}
       {showStatus && (
