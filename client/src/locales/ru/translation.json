@@ -60,7 +60,9 @@
     "myCompany": "Моя Компания",
     "showDetails": "Показать Детали",
     "deletePost": "Удалить пост",
-    "aboutHoursAgo": "около {{hours}} часов назад"
+    "aboutHoursAgo": "около {{hours}} часов назад",
+    "viewAllComments": "Показать все {{count}} комментария",
+    "writeComment": "Напишите комментарий..."
   },
   "profile": {
     "editProfile": "Редактировать профиль",

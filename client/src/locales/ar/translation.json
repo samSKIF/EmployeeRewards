@@ -60,7 +60,8 @@
     "myCompany": "شركتي",
     "showDetails": "عرض التفاصيل",
     "deletePost": "حذف المنشور",
-    "aboutHoursAgo": "منذ حوالي {{hours}} ساعات"
+    "aboutHoursAgo": "منذ حوالي {{hours}} ساعات",
+    "viewAllComments": "عرض جميع التعليقات {{count}}"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",

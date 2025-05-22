@@ -482,7 +482,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
                 className="text-sm text-teal-600 font-medium mb-3 hover:underline"
                 onClick={() => setShowComments(true)}
               >
-                View all {post.commentCount} comments
+                {t("social.viewAllComments", { count: post.commentCount })}
               </button>
             )}
             

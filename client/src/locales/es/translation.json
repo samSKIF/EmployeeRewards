@@ -61,7 +61,9 @@
     "myCompany": "Mi Empresa",
     "showDetails": "Mostrar Detalles",
     "deletePost": "Eliminar publicación",
-    "aboutHoursAgo": "hace aproximadamente {{hours}} horas"
+    "aboutHoursAgo": "hace aproximadamente {{hours}} horas",
+    "viewAllComments": "Ver todos los {{count}} comentarios",
+    "writeComment": "Escribe un comentario..."
   },
   "profile": {
     "editProfile": "Editar Perfil",
