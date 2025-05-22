@@ -1,4 +1,16 @@
 {
+  "interests": {
+    "title": "Centres d'Intérêt",
+    "modify": "Modifier Vos Centres d'Intérêt", 
+    "search": "Rechercher des centres d'intérêt ou ajouter les vôtres...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "tip": "Astuce: Marquez jusqu'à 3 intérêts comme principaux (icône étoile) pour les mettre en avant",
+    "error": {
+      "save": "Impossible d'enregistrer vos centres d'intérêt. Veuillez réessayer plus tard."
+    },
+    "noInterests": "Vous n'avez pas encore ajouté de centres d'intérêt. Cliquez sur modifier pour en ajouter."
+  },
   "app": {
     "name": "ThrivioHR",
     "points": "Points"

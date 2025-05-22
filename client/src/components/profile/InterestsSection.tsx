@@ -56,7 +56,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
     { value: 'TEAM', label: t('interests.visibility.team', 'My Team') },
     { value: 'PRIVATE', label: t('interests.visibility.private', 'Only Me') }
   ];
-  
+
   return (
     <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-md mb-2 bg-white hover:bg-gray-50 transition-colors">
       <div 
@@ -65,7 +65,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
         {interest.icon && <span className="text-lg mr-1">{interest.icon}</span>}
         <span className="font-medium">{interest.customLabel || interest.label}</span>
       </div>
-      
+
       {onVisibilityChange && (
         <Select 
           value={interest.visibility} 
@@ -83,7 +83,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
           </SelectContent>
         </Select>
       )}
-      
+
       <div className="ml-auto flex items-center gap-2">
         {onTogglePrimary && (
           <Button 
@@ -96,7 +96,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
             <Sparkles className="h-4 w-4" />
           </Button>
         )}
-        
+
         {onRemove && (
           <Button 
             variant="ghost" 
@@ -192,7 +192,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       (item.id === interest.id) || 
       (item.label === interest.label && item.category === interest.category)
     );
-    
+
     if (exists) {
       toast({
         title: t('interests.alreadyAdded', 'Already added'),
@@ -207,7 +207,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       isPrimary: false, 
       visibility: 'EVERYONE' 
     }]);
-    
+
     toast({
       title: t('interests.addedSuccess', 'Interest added'),
       description: `${interest.label} ${t('interests.addedSuccessDescription', 'has been added to your interests.')}`,
@@ -217,7 +217,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   // Add custom interest
   const handleAddCustomInterest = () => {
     if (!searchTerm.trim()) return;
-    
+
     // Create a new custom interest
     const customInterest: Interest = {
       id: -Date.now(), // Temporary negative ID to identify custom interests
@@ -227,11 +227,11 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       isPrimary: false,
       visibility: 'EVERYONE'
     };
-    
+
     setEditableInterests([...editableInterests, customInterest]);
     setSearchTerm('');
     setSearchResults([]);
-    
+
     toast({
       title: t('interests.customAddedSuccess', 'Custom interest added'),
       description: `${searchTerm} ${t('interests.addedSuccessDescription', 'has been added to your interests.')}`,
@@ -271,7 +271,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      
+
       // Format the interests to match what the server expects
       // Server expects an array of interests with interestId field
       const formattedData = editableInterests.map(interest => ({
@@ -282,9 +282,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
         isPrimary: interest.isPrimary,
         visibility: interest.visibility
       }));
-      
+
       const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
-      
+
       if (response.ok) {
         const updatedInterests = await response.json();
         setInterests(updatedInterests);
@@ -380,7 +380,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
               {t('interests.editTitle', 'Edit Your Interests')}
             </DialogTitle>
           </DialogHeader>
-          
+
           {/* Search input */}
           <div className="space-y-4 my-4">
             <div className="relative">
@@ -473,9 +473,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         </Button>
                       </div>
                     </div>
-                    
+
                     <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">{activeCategory}</h4>
-                    
+
                     {activeCategory === 'Sports & Fitness' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🥾" label="Hiking" category="Sports & Fitness" onAdd={handleAddInterest} />
@@ -500,7 +500,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         <InterestItem icon="🏇" label="Horse Riding" category="Sports & Fitness" onAdd={handleAddInterest} />
                       </div>
                     )}
-                    
+
                     {activeCategory === 'Arts & Creativity' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🎨" label="Painting" category="Arts & Creativity" onAdd={handleAddInterest} />
@@ -523,7 +523,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         <InterestItem icon="🪕" label="Playing Ukulele" category="Arts & Creativity" onAdd={handleAddInterest} />
                       </div>
                     )}
-                    
+
                     {activeCategory === 'Technology & Gaming' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="💻" label="Coding" category="Technology & Gaming" onAdd={handleAddInterest} />
@@ -543,7 +543,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         <InterestItem icon="🖥️" label="PC Building" category="Technology & Gaming" onAdd={handleAddInterest} />
                       </div>
                     )}
-                    
+
                     {activeCategory === 'Food & Drink' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🍳" label="Cooking" category="Food & Drink" onAdd={handleAddInterest} />
@@ -557,7 +557,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         <InterestItem icon="☕" label="Coffee Brewing" category="Food & Drink" onAdd={handleAddInterest} />
                       </div>
                     )}
-                    
+
                     {activeCategory === 'Lifestyle & Wellness' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🧘‍♂️" label="Meditation" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
@@ -585,7 +585,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
               </div>
             </div>
           </div>
-          
+
           {/* Selected interests */}
           <div className="mt-6 mb-4">
             <h4 className="text-sm font-medium mb-3 flex items-center gap-2 border-b pb-2">
@@ -618,7 +618,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
               <p>{t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}</p>
             </div>
           </div>
-          
+
           <DialogFooter className="pt-3 mt-2 border-t flex justify-between">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               {t('common.cancel', 'Cancel')}
