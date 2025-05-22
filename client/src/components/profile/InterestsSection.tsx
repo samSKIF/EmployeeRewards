@@ -52,9 +52,9 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
 }) => {
   const { t } = useTranslation();
   const visibilityOptions = [
-    { value: 'EVERYONE', label: t('interests.visibilityEveryone', 'Everyone') },
-    { value: 'TEAM', label: t('interests.visibilityTeam', 'My Team') },
-    { value: 'PRIVATE', label: t('interests.visibilityPrivate', 'Only Me') }
+    { value: 'EVERYONE', label: t('interests.visibility.everyone', 'Everyone') },
+    { value: 'TEAM', label: t('interests.visibility.team', 'My Team') },
+    { value: 'PRIVATE', label: t('interests.visibility.private', 'Only Me') }
   ];
   
   return (
@@ -361,8 +361,11 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       {/* Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('interests.editTitle', 'Edit Your Interests')}</DialogTitle>
+          <DialogHeader className="pb-2 border-b">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {t('interests.editTitle', 'Edit Your Interests')}
+            </DialogTitle>
           </DialogHeader>
           
           {/* Search input */}
@@ -461,7 +464,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">{activeCategory}</h4>
                     
                     {activeCategory === 'Sports & Fitness' && (
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🥾" label="Hiking" category="Sports & Fitness" onAdd={handleAddInterest} />
                         <InterestItem icon="⚽" label="Football / Soccer" category="Sports & Fitness" onAdd={handleAddInterest} />
                         <InterestItem icon="🏃" label="Running" category="Sports & Fitness" onAdd={handleAddInterest} />
@@ -486,7 +489,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     )}
                     
                     {activeCategory === 'Arts & Creativity' && (
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🎨" label="Painting" category="Arts & Creativity" onAdd={handleAddInterest} />
                         <InterestItem icon="🖌️" label="Drawing" category="Arts & Creativity" onAdd={handleAddInterest} />
                         <InterestItem icon="🖼️" label="Art History" category="Arts & Creativity" onAdd={handleAddInterest} />
@@ -509,7 +512,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     )}
                     
                     {activeCategory === 'Technology & Gaming' && (
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="💻" label="Coding" category="Technology & Gaming" onAdd={handleAddInterest} />
                         <InterestItem icon="🤖" label="Robotics" category="Technology & Gaming" onAdd={handleAddInterest} />
                         <InterestItem icon="🕹️" label="Video Games" category="Technology & Gaming" onAdd={handleAddInterest} />
@@ -529,7 +532,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     )}
                     
                     {activeCategory === 'Food & Drink' && (
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🍳" label="Cooking" category="Food & Drink" onAdd={handleAddInterest} />
                         <InterestItem icon="🥘" label="World Cuisines" category="Food & Drink" onAdd={handleAddInterest} />
                         <InterestItem icon="🍞" label="Baking" category="Food & Drink" onAdd={handleAddInterest} />
@@ -543,7 +546,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     )}
                     
                     {activeCategory === 'Lifestyle & Wellness' && (
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                         <InterestItem icon="🧘‍♂️" label="Meditation" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
                         <InterestItem icon="🏕️" label="Camping" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
                         <InterestItem icon="🌿" label="Gardening" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
@@ -571,9 +574,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           </div>
           
           {/* Selected interests */}
-          <div className="my-4">
-            <h4 className="text-sm font-medium mb-2">{t('interests.selectedInterests', 'Selected Interests')}</h4>
-            <div className="max-h-60 overflow-y-auto">
+          <div className="mt-6 mb-4">
+            <h4 className="text-sm font-medium mb-3 flex items-center gap-2 border-b pb-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              {t('interests.selectedInterests', 'Selected Interests')}
+            </h4>
+            <div className="max-h-60 overflow-y-auto pr-1">
               {editableInterests.length > 0 ? (
                 editableInterests.map(interest => (
                   <InterestTag
@@ -586,28 +592,35 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                   />
                 ))
               ) : (
-                <div className="text-center py-4 text-gray-500">
-                  {t('interests.noInterestsSelected', 'No interests selected yet. Browse or search above to add interests.')}
+                <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                  <div className="text-gray-500 flex flex-col items-center">
+                    <Sparkles className="h-8 w-8 text-gray-300 mb-2" />
+                    {t('interests.noInterestsSelected', 'No interests selected yet. Browse or search above to add interests.')}
+                  </div>
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              {t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}
-            </p>
+            <div className="text-xs text-gray-500 mt-3 bg-yellow-50 p-2 rounded-md border border-yellow-100 flex items-start gap-2">
+              <Sparkles className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+              <p>{t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}</p>
+            </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="pt-3 mt-2 border-t flex justify-between">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button disabled={isLoading} onClick={handleSave}>
+            <Button disabled={isLoading} onClick={handleSave} className="gap-2">
               {isLoading ? (
                 <>
-                  <span className="mr-2">{t('common.saving', 'Saving...')}</span>
+                  <span>{t('common.saving', 'Saving...')}</span>
                   <div className="animate-spin h-4 w-4 border-2 border-current rounded-full border-t-transparent"></div>
                 </>
               ) : (
-                <>{t('common.save', 'Save')}</>
+                <>
+                  <Check className="h-4 w-4" />
+                  {t('common.save', 'Save')}
+                </>
               )}
             </Button>
           </DialogFooter>
