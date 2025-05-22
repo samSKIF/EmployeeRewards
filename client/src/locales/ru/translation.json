@@ -56,9 +56,11 @@
     "yourDirectReports": "Ваши Подчиненные",
     "days": "дней",
     "ago": "назад",
-    "filterBy": "Фильтровать по",
+    "filterBy": "Фильтровать по:",
     "myCompany": "Моя Компания",
-    "showDetails": "Показать Детали"
+    "showDetails": "Показать Детали",
+    "deletePost": "Удалить пост",
+    "aboutHoursAgo": "около {{hours}} часов назад"
   },
   "profile": {
     "editProfile": "Редактировать профиль",

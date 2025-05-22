@@ -56,9 +56,11 @@
     "yourDirectReports": "تقاريرك المباشرة",
     "days": "أيام",
     "ago": "مضت",
-    "filterBy": "تصفية حسب",
+    "filterBy": "تصفية حسب:",
     "myCompany": "شركتي",
-    "showDetails": "عرض التفاصيل"
+    "showDetails": "عرض التفاصيل",
+    "deletePost": "حذف المنشور",
+    "aboutHoursAgo": "منذ حوالي {{hours}} ساعات"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
