@@ -139,7 +139,7 @@ router.delete("/status-types/:id", async (req: AuthenticatedRequest, res) => {
     
     // Delete the status type
     await db
-      .delete(employeeStatusTypes)
+      .delete(statusTypes)
       .where(eq(employeeStatusTypes.id, statusTypeId));
     
     res.status(200).json({ message: "Status type deleted successfully" });
