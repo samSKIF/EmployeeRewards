@@ -272,17 +272,39 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     try {
       setIsLoading(true);
 
+      // Fix for empty interests - send empty array instead of nothing
+      if (editableInterests.length === 0) {
+        const response = await apiRequest('POST', `/api/employees/${userId}/interests`, []);
+        if (response.ok) {
+          setInterests([]);
+          setIsModalOpen(false);
+          toast({
+            title: t('interests.saveSuccess', 'Interests saved'),
+            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+          });
+        }
+        return;
+      }
+
       // Format the interests to match what the server expects
       // Server expects an array of interests with interestId field
-      const formattedData = editableInterests.map(interest => ({
-        // Use interestId field instead of id (this is what the server expects)
-        interestId: interest.id < 0 ? undefined : interest.id,
-        // For custom interests with negative IDs, pass the label as customLabel
-        customLabel: interest.id < 0 ? interest.label : interest.customLabel,
-        isPrimary: interest.isPrimary,
-        visibility: interest.visibility
-      }));
+      const formattedData = editableInterests.map(interest => {
+        // For custom interests (negative IDs), handle differently
+        const isCustom = interest.id < 0;
+        
+        return {
+          // Server expects interestId, not id
+          interestId: isCustom ? undefined : interest.id,
+          // For custom interests, use the label as customLabel
+          customLabel: isCustom ? interest.label : interest.customLabel,
+          // Make sure these are properly formatted
+          isPrimary: Boolean(interest.isPrimary),
+          visibility: interest.visibility || 'EVERYONE'
+        };
+      });
 
+      console.log('Saving interests:', formattedData);
+      
       const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
 
       if (response.ok) {
@@ -294,7 +316,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
         });
       } else {
+        console.error('Server response not OK:', response.status, response.statusText);
         const errorData = await response.json().catch(() => null);
+        console.error('Error data:', errorData);
         throw new Error(errorData?.message || 'Failed to save interests');
       }
     } catch (error) {
