@@ -584,7 +584,7 @@ const UpdatedProfilePage = () => {
                 <h3 className="text-md font-medium mb-4">{t('profile.contactInformation')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label htmlFor="email" className="text-sm text-gray-500">Email:</Label>
+                    <Label htmlFor="email" className="text-sm text-gray-500">{t('profile.email')}:</Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
@@ -604,7 +604,7 @@ const UpdatedProfilePage = () => {
                   </div>
                   
                   <div className="space-y-1">
-                    <Label htmlFor="title" className="text-sm text-gray-500">Title:</Label>
+                    <Label htmlFor="title" className="text-sm text-gray-500">{t('profile.title')}:</Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-2 text-gray-500" />
@@ -625,7 +625,7 @@ const UpdatedProfilePage = () => {
                   </div>
                   
                   <div className="space-y-1">
-                    <Label htmlFor="department" className="text-sm text-gray-500">Department:</Label>
+                    <Label htmlFor="department" className="text-sm text-gray-500">{t('profile.department')}:</Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <Award className="h-4 w-4 mr-2 text-gray-500" />
@@ -646,7 +646,7 @@ const UpdatedProfilePage = () => {
                   </div>
                   
                   <div className="space-y-1">
-                    <Label htmlFor="location" className="text-sm text-gray-500">Location:</Label>
+                    <Label htmlFor="location" className="text-sm text-gray-500">{t('profile.location')}:</Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-2 text-gray-500" />
