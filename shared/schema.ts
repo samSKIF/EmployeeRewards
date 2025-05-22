@@ -597,6 +597,35 @@ export const leavePolicies = pgTable("leave_policies", {
   isActive: boolean("is_active").default(true),
 });
 
+// Employee Status Icons - configurable status types with icons
+export const employeeStatusTypes = pgTable("employee_status_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  iconName: text("icon_name").notNull(), // Name of the icon from the library
+  description: text("description"),
+  color: text("color").default("#6366F1"), // Default color for the status icon
+  durationDays: integer("duration_days"), // How many days the status should last (null = indefinite)
+  isSystem: boolean("is_system").default(false), // Is this a system-defined status
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+  organizationId: integer("organization_id").references(() => organizations.id),
+});
+
+// Employee Statuses - assigns status to specific employees
+export const employeeStatuses = pgTable("employee_statuses", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  statusTypeId: integer("status_type_id").references(() => employeeStatusTypes.id).notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"), // If null, status is active until manually removed
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
 // Define leave management relationships
 export const leaveTypesRelations = relations(leaveTypes, ({ one, many }) => ({
   organization: one(organizations, { fields: [leaveTypes.organizationId], references: [organizations.id] }),
