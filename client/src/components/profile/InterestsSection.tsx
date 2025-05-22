@@ -24,7 +24,7 @@ const InterestItem = ({
 }) => {
   return (
     <div
-      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+      className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
       onClick={() => onAdd({ 
         id: Math.random(), // Temporary ID that will be replaced by the server
         label,
@@ -35,8 +35,8 @@ const InterestItem = ({
       })}
     >
       <div className="flex items-center gap-2">
-        <span>{icon}</span>
-        <span className="text-sm">{label}</span>
+        <span className="text-lg">{icon}</span>
+        <span className="text-sm font-medium">{label}</span>
       </div>
     </div>
   );
@@ -58,12 +58,12 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
   ];
   
   return (
-    <div className="flex items-center gap-2 p-2 border rounded-md mb-2">
+    <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-md mb-2 bg-white hover:bg-gray-50 transition-colors">
       <div 
-        className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm ${isPrimary ? 'bg-primary text-white' : 'bg-secondary/10 text-secondary-foreground'}`}
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm ${isPrimary ? 'bg-primary/90 text-white shadow-sm' : 'bg-gray-100 text-gray-800'}`}
       >
-        {interest.icon && <span>{interest.icon}</span>}
-        <span>{interest.customLabel || interest.label}</span>
+        {interest.icon && <span className="text-lg mr-1">{interest.icon}</span>}
+        <span className="font-medium">{interest.customLabel || interest.label}</span>
       </div>
       
       {onVisibilityChange && (
@@ -71,7 +71,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
           value={interest.visibility} 
           onValueChange={(value) => onVisibilityChange(value as 'EVERYONE' | 'TEAM' | 'PRIVATE')}
         >
-          <SelectTrigger className="h-7 w-24">
+          <SelectTrigger className="h-8 w-28 text-xs border-gray-200">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -84,12 +84,12 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
         </Select>
       )}
       
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-2">
         {onTogglePrimary && (
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`h-7 w-7 p-0 ${isPrimary ? 'text-yellow-500' : 'text-gray-400'}`}
+            className={`h-8 w-8 p-0 rounded-full ${isPrimary ? 'bg-yellow-100 text-yellow-600' : 'text-gray-400 hover:bg-gray-100'}`}
             onClick={onTogglePrimary}
             title={t('interests.markAsPrimary', 'Mark as primary interest')}
           >
@@ -101,7 +101,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
+            className="h-8 w-8 p-0 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
             onClick={onRemove}
           >
             <X className="h-4 w-4" />
@@ -360,9 +360,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
       {/* Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('interests.editTitle', 'Edit Interests')}</DialogTitle>
+            <DialogTitle>{t('interests.editTitle', 'Edit Your Interests')}</DialogTitle>
           </DialogHeader>
           
           {/* Search input */}
@@ -372,33 +372,33 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 placeholder={t('interests.searchPlaceholder', 'Search interests or add your own...')}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full"
+                className="w-full rounded-md border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
               />
-              <div className="absolute w-full mt-1 max-h-80 overflow-auto rounded-md border bg-white shadow-lg z-10">
+              <div className={`absolute w-full mt-1 max-h-80 overflow-auto rounded-md border bg-white shadow-lg z-10 ${!searchTerm && 'mb-4'}`}>
                 {searchTerm.length >= 2 ? (
                   searchResults.length > 0 ? (
-                    <div className="p-1">
+                    <div className="p-2">
                       {searchResults.map(result => (
                         <div
                           key={result.id}
-                          className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+                          className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
                           onClick={() => handleAddInterest(result)}
                         >
                           <div className="flex items-center">
-                            {result.icon && <span className="mr-2">{result.icon}</span>}
-                            <span>{result.label}</span>
+                            {result.icon && <span className="mr-2 text-lg">{result.icon}</span>}
+                            <span className="font-medium">{result.label}</span>
                           </div>
-                          <span className="text-xs text-gray-500">{result.category}</span>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{result.category}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-2">
-                      <p className="text-sm text-gray-500">{t('interests.noResults', 'No results found')}</p>
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-gray-500 mb-2">{t('interests.noResults', 'No results found')}</p>
                       <Button 
-                        variant="ghost" 
+                        variant="outline" 
                         size="sm" 
-                        className="mt-1 text-blue-500" 
+                        className="mt-1 text-primary border-primary/20 hover:bg-primary/5" 
                         onClick={handleAddCustomInterest}
                       >
                         {t('interests.addCustom', { defaultValue: 'Add "{{term}}" as custom interest', term: searchTerm })}
@@ -408,52 +408,57 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 ) : (
                   <div className="p-1">
                     <div className="flex justify-between items-center border-b pb-2 mb-2">
-                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.categories', 'Categories')}</h4>
-                      <div className="flex space-x-1 px-2">
+                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.editTitle', 'Edit Your Interests')}</h4>
+                      <div className="flex px-2 bg-gray-50 rounded-md p-1">
                         <Button 
                           variant="ghost"
                           size="sm"
-                          className={activeCategory === 'Sports & Fitness' ? 'bg-primary/10 text-primary' : 'text-gray-500'}
+                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Sports & Fitness' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
                           onClick={() => setActiveCategory('Sports & Fitness')}
+                          title={t('interests.categories.sportsAndFitness', 'Sports & Fitness')}
                         >
                           🏋️‍♀️
                         </Button>
                         <Button 
                           variant="ghost"
                           size="sm"
-                          className={activeCategory === 'Arts & Creativity' ? 'bg-primary/10 text-primary' : 'text-gray-500'}
+                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Arts & Creativity' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
                           onClick={() => setActiveCategory('Arts & Creativity')}
+                          title={t('interests.categories.artsAndCreativity', 'Arts & Creativity')}
                         >
                           🎨
                         </Button>
                         <Button 
                           variant="ghost"
                           size="sm"
-                          className={activeCategory === 'Technology & Gaming' ? 'bg-primary/10 text-primary' : 'text-gray-500'}
+                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Technology & Gaming' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
                           onClick={() => setActiveCategory('Technology & Gaming')}
+                          title={t('interests.categories.technologyAndGaming', 'Technology & Gaming')}
                         >
                           💻
                         </Button>
                         <Button 
                           variant="ghost"
                           size="sm"
-                          className={activeCategory === 'Food & Drink' ? 'bg-primary/10 text-primary' : 'text-gray-500'}
+                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Food & Drink' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
                           onClick={() => setActiveCategory('Food & Drink')}
+                          title={t('interests.categories.foodAndDrink', 'Food & Drink')}
                         >
                           🍳
                         </Button>
                         <Button 
                           variant="ghost"
                           size="sm"
-                          className={activeCategory === 'Lifestyle & Wellness' ? 'bg-primary/10 text-primary' : 'text-gray-500'}
+                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Lifestyle & Wellness' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
                           onClick={() => setActiveCategory('Lifestyle & Wellness')}
+                          title={t('interests.categories.lifestyleAndWellness', 'Lifestyle & Wellness')}
                         >
                           🧘‍♂️
                         </Button>
                       </div>
                     </div>
                     
-                    <h4 className="text-sm font-medium px-2 py-1 text-gray-700">{activeCategory}</h4>
+                    <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">{activeCategory}</h4>
                     
                     {activeCategory === 'Sports & Fitness' && (
                       <div className="grid grid-cols-2 gap-1">
