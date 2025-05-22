@@ -225,8 +225,9 @@ const AdminStatusTypes: React.FC = () => {
   // Safely render an icon from the Lucide icons library
   const renderIcon = (iconName: string) => {
     const IconComponent = LucideIcons[iconName as keyof typeof LucideIcons];
-    if (typeof IconComponent === 'function') {
-      return <IconComponent className="h-4 w-4 mr-2" />;
+    if (IconComponent && typeof IconComponent === 'function') {
+      const SafeIcon = IconComponent;
+      return <SafeIcon className="h-4 w-4 mr-2" />;
     }
     return <LucideIcons.Info className="h-4 w-4 mr-2" />;
   };
@@ -386,14 +387,18 @@ const AdminStatusTypes: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       <SelectGroup>
-                        {iconNames.map((name) => (
-                          <SelectItem key={name} value={name}>
-                            <div className="flex items-center">
-                              {renderIcon(name)}
-                              {name}
-                            </div>
-                          </SelectItem>
-                        ))}
+                        {iconNames.map((name) => {
+                          const IconComponent = LucideIcons[name as keyof typeof LucideIcons];
+                          const SafeIcon = (IconComponent && typeof IconComponent === 'function') ? IconComponent : LucideIcons.Info;
+                          return (
+                            <SelectItem key={name} value={name}>
+                              <div className="flex items-center">
+                                <SafeIcon className="h-4 w-4 mr-2" />
+                                {name}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
