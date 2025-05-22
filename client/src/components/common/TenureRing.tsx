@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface TenureRingProps {
@@ -9,66 +8,63 @@ interface TenureRingProps {
 export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) {
   const getTenureStyle = (years: number) => {
     if (years < 1) {
-      // New employees - subtle grey
+      // Less than 1 year - grey ring with subtle glow
       return {
-        borderColor: '#9ca3af',
-        shadowColor: 'rgba(156, 163, 175, 0.3)',
-        badgeFrom: '#d1d5db',
-        badgeTo: '#9ca3af',
+        ringColor: 'ring-gray-400',
+        ringWidth: 'ring-3',
+        glowClass: 'tenure-glow-gray',
+        showNumber: false,
+        numberStyle: ''
       };
-    } else if (years >= 1 && years < 5) {
-      // 1-4 years - silver
+    } else if (years === 1) {
+      // 1 year - silver ring with silver glow
       return {
-        borderColor: '#6b7280',
-        shadowColor: 'rgba(107, 114, 128, 0.4)',
-        badgeFrom: '#e5e7eb',
-        badgeTo: '#6b7280',
+        ringColor: 'ring-gray-300',
+        ringWidth: 'ring-3',
+        glowClass: 'tenure-glow-silver',
+        showNumber: false,
+        numberStyle: ''
+      };
+    } else if (years >= 2 && years < 5) {
+      // 2-4 years - silver ring with brighter glow
+      return {
+        ringColor: 'ring-gray-300',
+        ringWidth: 'ring-3',
+        glowClass: 'tenure-glow-silver',
+        showNumber: false,
+        numberStyle: ''
       };
     } else if (years >= 5 && years < 10) {
-      // 5-9 years - golden glow
+      // 5-9 years - golden ring with gold glow
       return {
-        borderColor: '#f59e0b',
-        shadowColor: 'rgba(245, 158, 11, 0.6)',
-        badgeFrom: '#fef3c7',
-        badgeTo: '#f59e0b',
+        ringColor: 'ring-yellow-400',
+        ringWidth: 'ring-4',
+        glowClass: 'tenure-glow-gold',
+        showNumber: false,
+        numberStyle: ''
       };
     } else {
-      // 10+ years - intense golden glow
+      // 10+ years - golden ring with intense gold glow and number
       return {
-        borderColor: '#d97706',
-        shadowColor: 'rgba(217, 119, 6, 0.8)',
-        badgeFrom: '#fffbeb',
-        badgeTo: '#d97706',
+        ringColor: 'ring-yellow-400',
+        ringWidth: 'ring-4',
+        glowClass: 'tenure-glow-gold-intense',
+        showNumber: true,
+        numberStyle: 'absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg ring-2 ring-white'
       };
     }
   };
 
-  const showNumber = yearsOfService >= 10;
   const style = getTenureStyle(yearsOfService);
 
   return (
-    <>
-      {/* Circular border ring */}
-      <div 
-        className={`absolute w-[calc(100%+8px)] h-[calc(100%+8px)] -top-1 -left-1 rounded-full pointer-events-none ${className}`}
-        style={{
-          border: `2px solid ${style.borderColor}`,
-          boxShadow: `0 0 10px ${style.shadowColor}`,
-        }}
-      />
-      
-      {/* Years badge for 10+ years */}
-      {showNumber && (
-        <div 
-          className="absolute -top-2 -right-2 w-6 h-6 text-white text-xs font-bold flex items-center justify-center border-2 border-white rounded-full shadow-lg"
-          style={{
-            background: `linear-gradient(135deg, ${style.badgeFrom}, ${style.badgeTo})`,
-            boxShadow: `0 0 8px ${style.shadowColor}`,
-          }}
-        >
-          {yearsOfService}
+    <div className={`relative ${className}`}>
+      <div className={`absolute inset-0 rounded-full ${style.ringColor} ${style.ringWidth}`} />
+      {style.showNumber && (
+        <div className={style.numberStyle}>
+          {yearsOfService >= 10 ? Math.floor(yearsOfService) : ''}
         </div>
       )}
-    </>
+    </div>
   );
 }

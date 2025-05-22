@@ -2,16 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom gradient variables for tenure rings */
-:root {
-  --tenure-gray-from: #d1d5db;
-  --tenure-gray-to: #6b7280;
-  --tenure-silver-from: #d1d5db;
-  --tenure-silver-to: #4b5563;
-  --tenure-gold-from: #fde047;
-  --tenure-gold-to: #ca8a04;
-  --tenure-gold-intense-from: #facc15;
-  --tenure-gold-intense-to: #92400e;
+/* Tenure ring glow animations */
+@keyframes tenure-glow-gray {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(156, 163, 175, 0.5), 0 0 25px rgba(156, 163, 175, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(156, 163, 175, 0.7), 0 0 35px rgba(156, 163, 175, 0.5);
+  }
+}
+
+@keyframes tenure-glow-silver {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(209, 213, 219, 0.6), 0 0 25px rgba(209, 213, 219, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(209, 213, 219, 0.8), 0 0 35px rgba(209, 213, 219, 0.6);
+  }
+}
+
+@keyframes tenure-glow-gold {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), 0 0 30px rgba(251, 191, 36, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 45px rgba(251, 191, 36, 0.7), 0 0 60px rgba(251, 191, 36, 0.4);
+  }
+}
+
+@keyframes tenure-glow-gold-intense {
+  0%, 100% { 
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.6);
+  }
+  50% { 
+    box-shadow: 0 0 35px rgba(245, 158, 11, 1), 0 0 55px rgba(245, 158, 11, 0.8), 0 0 75px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.tenure-glow-gray {
+  animation: tenure-glow-gray 3s ease-in-out infinite;
+}
+
+.tenure-glow-silver {
+  animation: tenure-glow-silver 3s ease-in-out infinite;
+}
+
+.tenure-glow-gold {
+  animation: tenure-glow-gold 3s ease-in-out infinite;
+}
+
+.tenure-glow-gold-intense {
+  animation: tenure-glow-gold-intense 3s ease-in-out infinite;
 }
 
 :root {

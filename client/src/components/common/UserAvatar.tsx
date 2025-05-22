@@ -44,7 +44,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const calculateYearsOfService = () => {
     if (!user.dateJoined) return 0;
-    
     const joinDate = new Date(user.dateJoined);
     const now = new Date();
     const yearsDiff = now.getFullYear() - joinDate.getFullYear();
@@ -62,21 +61,20 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div className="relative inline-block">
-      <div className="relative">
-        <Avatar className={`${sizeClasses[size]} ${className}`}>
-          <AvatarImage src={user.avatarUrl || undefined} alt={user.name} />
-          <AvatarFallback>
-            {getInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
-        
-        {/* Show tenure ring if requested */}
-        {showTenure && (
-          <TenureRing 
-            yearsOfService={yearsOfService} 
-          />
-        )}
-      </div>
+      <Avatar className={`${sizeClasses[size]} ${className}`}>
+        <AvatarImage src={user.avatarUrl || undefined} alt={user.name} />
+        <AvatarFallback>
+          {getInitials(user.name)}
+        </AvatarFallback>
+      </Avatar>
+      
+      {/* Show tenure ring if requested */}
+      {showTenure && (
+        <TenureRing 
+          yearsOfService={yearsOfService} 
+          className={sizeClasses[size]} 
+        />
+      )}
       
       {/* Show status icons if requested */}
       {showStatus && (
