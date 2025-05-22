@@ -968,6 +968,8 @@ export const employeesRelations = relations(employees, ({ one, many }) => ({
   leaveRequests: many(leaveRequests),
   leaveEntitlements: many(leaveEntitlements),
   leaveApprovals: many(leaveRequests, { relationName: "employeeApprover" }),
+  // Interest relationships
+  interests: many(employeeInterests),
 }));
 
 // Branding settings relations
@@ -1198,6 +1200,60 @@ export type InsertLeaveNotification = z.infer<typeof insertLeaveNotificationSche
 export type LeavePolicy = typeof leavePolicies.$inferSelect;
 export const insertLeavePolicySchema = createInsertSchema(leavePolicies);
 export type InsertLeavePolicy = z.infer<typeof insertLeavePolicySchema>;
+
+// Interest feature schema
+// Visibility enum for employee interests
+export const visibilityEnum = pgEnum('visibility', ['EVERYONE', 'TEAM', 'PRIVATE']);
+
+// Interests table
+export const interests = pgTable("interests", {
+  id: serial("id").primaryKey(),
+  label: text("label").notNull().unique(),
+  category: text("category").notNull(),
+  icon: text("icon"),
+});
+
+// Employee Interests junction table
+export const employeeInterests = pgTable("employee_interests", {
+  employeeId: integer("employee_id").notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  interestId: integer("interest_id").notNull().references(() => interests.id, { onDelete: 'cascade' }),
+  customLabel: text("custom_label"),
+  isPrimary: boolean("is_primary").default(false).notNull(),
+  visibility: visibilityEnum("visibility").default("EVERYONE").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.employeeId, table.interestId] }),
+  };
+});
+
+// Relationships
+export const interestsRelations = relations(interests, ({ many }) => ({
+  employeeInterests: many(employeeInterests),
+}));
+
+export const employeeInterestsRelations = relations(employeeInterests, ({ one }) => ({
+  employee: one(employees, {
+    fields: [employeeInterests.employeeId],
+    references: [employees.id],
+  }),
+  interest: one(interests, {
+    fields: [employeeInterests.interestId],
+    references: [interests.id],
+  }),
+}));
+
+// Update the existing employeesRelations to include interests
+// (This will be merged with existing declarations elsewhere)
+
+// Insert Schemas for Interests
+export const insertInterestSchema = createInsertSchema(interests).omit({ id: true });
+export type Interest = typeof interests.$inferSelect;
+export type InsertInterest = z.infer<typeof insertInterestSchema>;
+
+export const insertEmployeeInterestSchema = createInsertSchema(employeeInterests);
+export type EmployeeInterest = typeof employeeInterests.$inferSelect;
+export type InsertEmployeeInterest = z.infer<typeof insertEmployeeInterestSchema>;
 
 // Export Onboarding Schema
 export * from './onboarding';
