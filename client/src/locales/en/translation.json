@@ -305,6 +305,7 @@
     "editTitle": "Edit Your Interests",
     "searchPlaceholder": "Search for interests or add your own...",
     "noResults": "No matching interests found.",
+    "suggestedInterests": "Suggested Interests",
     "addCustom": "Add \"{{term}}\" as a custom interest",
     "selected": "Selected Interests",
     "noInterestsSelected": "No interests selected",

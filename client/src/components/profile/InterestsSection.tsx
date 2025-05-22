@@ -40,6 +40,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Interest[]>([]);
+  const [popularInterests, setPopularInterests] = useState<Interest[]>([]);
   const [editableInterests, setEditableInterests] = useState<Interest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,6 +66,21 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
     fetchInterests();
   }, [userId, toast, t]);
+  
+  // Fetch popular interests
+  useEffect(() => {
+    const fetchPopularInterests = async () => {
+      try {
+        const response = await apiRequest('GET', `/api/interests?popular=true`);
+        const data = await response.json();
+        setPopularInterests(data);
+      } catch (error) {
+        console.error('Failed to fetch popular interests:', error);
+      }
+    };
+
+    fetchPopularInterests();
+  }, []);
 
   // Handle interest search
   const handleSearch = async (value: string) => {
@@ -260,9 +276,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full"
               />
-              {searchTerm.length >= 2 && (
-                <div className="absolute w-full mt-1 max-h-60 overflow-auto rounded-md border bg-white shadow-lg z-10">
-                  {searchResults.length > 0 ? (
+              <div className="absolute w-full mt-1 max-h-60 overflow-auto rounded-md border bg-white shadow-lg z-10">
+                {searchTerm.length >= 2 ? (
+                  searchResults.length > 0 ? (
                     <div className="p-1">
                       {searchResults.map(result => (
                         <div
@@ -290,9 +306,26 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                         {t('interests.addCustom', { term: searchTerm })}
                       </Button>
                     </div>
-                  )}
-                </div>
-              )}
+                  )
+                ) : (
+                  <div className="p-1">
+                    <h4 className="text-sm font-medium px-2 py-1 text-gray-500">{t('interests.suggestedInterests')}</h4>
+                    {popularInterests.map(interest => (
+                      <div
+                        key={interest.id}
+                        className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        onClick={() => handleAddInterest(interest)}
+                      >
+                        <div className="flex items-center">
+                          {interest.icon && <span className="mr-2">{interest.icon}</span>}
+                          <span>{interest.label}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{interest.category}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Selected interests */}
