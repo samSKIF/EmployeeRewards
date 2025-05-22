@@ -72,10 +72,11 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
   return (
     <div className={`flex -space-x-1 ${className}`}>
       {statuses.map((status) => {
-        // Dynamically get the icon component from Lucide
-        const IconComponent = status.statusType.iconName in LucideIcons 
-          ? LucideIcons[status.statusType.iconName as keyof typeof LucideIcons] 
-          : LucideIcons.Info;
+        // Get the appropriate icon component
+        let IconComponent: React.ElementType = LucideIcons.Info;
+        if (status.statusType.iconName in LucideIcons) {
+          IconComponent = LucideIcons[status.statusType.iconName as keyof typeof LucideIcons] as React.ElementType;
+        }
 
         return (
           <TooltipProvider key={status.id}>
