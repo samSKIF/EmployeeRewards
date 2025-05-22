@@ -43,20 +43,41 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
 
   return (
     <>
-      {/* Perfect circular gradient border with glow effect */}
+      {/* Outer glow effect */}
       <div 
-        className={`absolute -inset-1 rounded-full pointer-events-none ${className}`}
+        className={`absolute pointer-events-none ${className}`}
         style={{
-          background: `conic-gradient(from 0deg, ${style.gradientFrom}, ${style.gradientTo}, white, ${style.gradientTo}, ${style.gradientFrom})`,
-          padding: '3px',
+          top: '-6px',
+          left: '-6px',
+          width: 'calc(100% + 12px)',
+          height: 'calc(100% + 12px)',
           borderRadius: '50%',
-          boxShadow: `0 0 20px ${style.shadowColor}, inset 0 0 20px ${style.shadowColor}`,
+          background: `radial-gradient(circle, ${style.shadowColor} 0%, transparent 70%)`,
+          filter: 'blur(4px)',
+        }}
+      />
+      
+      {/* Perfect circular gradient border */}
+      <div 
+        className={`absolute pointer-events-none ${className}`}
+        style={{
+          top: '-3px',
+          left: '-3px',
+          width: 'calc(100% + 6px)',
+          height: 'calc(100% + 6px)',
+          borderRadius: '50%',
+          background: `conic-gradient(from 0deg, ${style.gradientFrom} 0%, ${style.gradientTo} 25%, white 50%, ${style.gradientTo} 75%, ${style.gradientFrom} 100%)`,
+          padding: '3px',
         }}
       >
-        {/* Inner cutout to show avatar */}
+        {/* Inner cutout for perfect circle */}
         <div 
-          className="w-full h-full bg-white"
-          style={{ borderRadius: '50%' }}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            background: 'white',
+          }}
         />
       </div>
       
