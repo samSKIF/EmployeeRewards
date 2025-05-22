@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,7 @@ interface UserType extends BaseUserType {
 
 const UpdatedProfilePage = () => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
@@ -441,7 +443,7 @@ const UpdatedProfilePage = () => {
                   onClick={() => document.getElementById('cover-photo-upload')?.click()}
                 >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Upload Cover
+                  {t("profile.uploadCover")}
                   <input 
                     type="file"
                     id="cover-photo-upload"
@@ -457,7 +459,7 @@ const UpdatedProfilePage = () => {
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  {isEditing ? "Cancel" : "Edit Profile"}
+                  {isEditing ? t('common.cancel') : t('profile.editProfile')}
                 </Button>
               </div>
               
