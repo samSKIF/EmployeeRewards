@@ -273,17 +273,15 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       setIsLoading(true);
       
       // Format the interests to match what the server expects
-      // Server expects { interests: [...] }
-      const formattedData = { 
-        interests: editableInterests.map(interest => ({
-          ...interest,
-          // For custom interests, make sure they have both label and customLabel fields set
-          label: interest.customLabel || interest.label,
-          customLabel: interest.customLabel,
-          // Ensure proper ID handling for custom interests (temporary negative IDs)
-          id: interest.id < 0 ? undefined : interest.id
-        }))
-      };
+      // Server expects an array of interests with interestId field
+      const formattedData = editableInterests.map(interest => ({
+        // Use interestId field instead of id (this is what the server expects)
+        interestId: interest.id < 0 ? undefined : interest.id,
+        // For custom interests with negative IDs, pass the label as customLabel
+        customLabel: interest.id < 0 ? interest.label : interest.customLabel,
+        isPrimary: interest.isPrimary,
+        visibility: interest.visibility
+      }));
       
       const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
       
