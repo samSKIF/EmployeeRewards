@@ -8,49 +8,44 @@ interface TenureRingProps {
 export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) {
   const getTenureStyle = (years: number) => {
     if (years < 1) {
-      // Less than 1 year - grey ring with subtle glow
+      // Less than 1 year - grey ring
       return {
         ringColor: 'ring-gray-400',
-        ringWidth: 'ring-3',
-        glowClass: 'tenure-glow-gray',
+        ringWidth: 'ring-2',
         showNumber: false,
         numberStyle: ''
       };
     } else if (years === 1) {
-      // 1 year - silver ring with silver glow
+      // 1 year - silver ring
       return {
         ringColor: 'ring-gray-300',
-        ringWidth: 'ring-3',
-        glowClass: 'tenure-glow-silver',
+        ringWidth: 'ring-2',
         showNumber: false,
         numberStyle: ''
       };
     } else if (years >= 2 && years < 5) {
-      // 2-4 years - silver ring with brighter glow
+      // 2-4 years - silver ring
       return {
         ringColor: 'ring-gray-300',
-        ringWidth: 'ring-3',
-        glowClass: 'tenure-glow-silver',
+        ringWidth: 'ring-2',
         showNumber: false,
         numberStyle: ''
       };
     } else if (years >= 5 && years < 10) {
-      // 5-9 years - golden ring with gold glow
+      // 5-9 years - golden ring
       return {
         ringColor: 'ring-yellow-400',
-        ringWidth: 'ring-4',
-        glowClass: 'tenure-glow-gold',
+        ringWidth: 'ring-3',
         showNumber: false,
         numberStyle: ''
       };
     } else {
-      // 10+ years - golden ring with intense gold glow and number
+      // 10+ years - golden ring with number
       return {
         ringColor: 'ring-yellow-400',
-        ringWidth: 'ring-4',
-        glowClass: 'tenure-glow-gold-intense',
+        ringWidth: 'ring-3',
         showNumber: true,
-        numberStyle: 'absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg ring-2 ring-white'
+        numberStyle: 'absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center'
       };
     }
   };
@@ -58,23 +53,13 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
   const style = getTenureStyle(yearsOfService);
 
   return (
-    <>
-      {/* Main glowing ring that surrounds the avatar like a picture frame */}
-      <div 
-        className={`absolute -inset-1 rounded-full ${style.ringColor} ${style.ringWidth} ${style.glowClass} pointer-events-none`}
-      />
-      
-      {/* Inner highlight ring for extra shine */}
-      <div 
-        className={`absolute inset-0 rounded-full ring-1 ring-white/20 pointer-events-none`}
-      />
-      
-      {/* Years badge for 10+ years */}
+    <div className={`relative ${className}`}>
+      <div className={`absolute inset-0 rounded-full ${style.ringColor} ${style.ringWidth}`} />
       {style.showNumber && (
         <div className={style.numberStyle}>
-          {yearsOfService}
+          {yearsOfService >= 10 ? Math.floor(yearsOfService) : ''}
         </div>
       )}
-    </>
+    </div>
   );
 }

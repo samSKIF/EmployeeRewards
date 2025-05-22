@@ -43,10 +43,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   };
 
   const calculateYearsOfService = () => {
-    if (!user.dateJoined) {
-      console.log('No dateJoined for user:', user.name, user);
-      return 0;
-    }
+    if (!user.dateJoined) return 0;
     const joinDate = new Date(user.dateJoined);
     const now = new Date();
     const yearsDiff = now.getFullYear() - joinDate.getFullYear();
@@ -57,13 +54,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     if (monthsDiff < 0 || (monthsDiff === 0 && daysDiff < 0)) {
       years--;
     }
-    const finalYears = Math.max(0, years);
-    console.log('Tenure calculation for', user.name, ':', {
-      dateJoined: user.dateJoined,
-      joinDate,
-      finalYears
-    });
-    return finalYears;
+    return Math.max(0, years);
   };
 
   const yearsOfService = calculateYearsOfService();
