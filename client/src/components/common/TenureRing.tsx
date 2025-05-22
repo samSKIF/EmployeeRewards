@@ -58,13 +58,23 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
   const style = getTenureStyle(yearsOfService);
 
   return (
-    <div className={`relative ${className}`}>
-      <div className={`absolute inset-0 rounded-full ${style.ringColor} ${style.ringWidth}`} />
+    <>
+      {/* Main glowing ring that surrounds the avatar like a picture frame */}
+      <div 
+        className={`absolute -inset-1 rounded-full ${style.ringColor} ${style.ringWidth} ${style.glowClass} pointer-events-none`}
+      />
+      
+      {/* Inner highlight ring for extra shine */}
+      <div 
+        className={`absolute inset-0 rounded-full ring-1 ring-white/20 pointer-events-none`}
+      />
+      
+      {/* Years badge for 10+ years */}
       {style.showNumber && (
         <div className={style.numberStyle}>
-          {yearsOfService >= 10 ? Math.floor(yearsOfService) : ''}
+          {yearsOfService}
         </div>
       )}
-    </div>
+    </>
   );
 }
