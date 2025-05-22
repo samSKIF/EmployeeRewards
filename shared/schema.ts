@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, doublePrecision, boolean, date, jsonb, time } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, doublePrecision, boolean, date, jsonb, time, primaryKey, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, type InferSelectModel } from "drizzle-orm";

@@ -1,0 +1,203 @@
+# Build Task · Employee-Profile “Interests” Feature
+You are generating the **full stack implementation** of an “Interests” module
+for our internal employee-engagement platform.  
+The profile page already exists (Facebook-style timeline layout) and has a
+placeholder “Interests” card; it is currently static. Replace that stub with
+working code and ship supporting admin screens + API routes.
+
+## 1. Tech context
+* Mono-repo on Replit using **TypeScript** for both front- and back-end.
+* Front end: **React 18** + **Vite**, state via **Zustand**.  
+  Use **MUI v6** chip & dialog components for a polished look.
+* Back end: **Express 5** with Prisma ORM connected to Postgres.
+* Auth: Auth0 – cookie session already wired; `req.user.id` gives employee ID.
+
+## 2. Employee-side UX
+* **Profile Card Layout** (mobile-first):
+  1. Header “Interests” with ✨ emoji.
+  2. Up to **5 chips** shown inline; if >5, show `+ N more` link that toggles
+     an expandable section.
+  3. Hovering a chip shows full label tooltip (for long names).
+  4. An **“Edit”** icon opens a modal.
+
+* **Edit Modal**:
+  * Autocomplete chip input that pulls from the master taxonomy _or_
+    accepts free-text (creates `customLabel` record).
+  * Drag-and-drop list lets the employee mark **Top 3** (flag `isPrimary`).
+  * Privacy picker (`Everyone · My Team · Only Me`) via segmented control.
+  * “Save” commits with optimistic UI; “Cancel” reverts.
+
+## 3. Admin UX
+* New menu item **Settings → Interest Taxonomy**.
+* Page displays **table** of all interests (`id · label · category · icon`),
+  search box, “+ New”, “Merge duplicates”, and bulk delete.
+* “Merge” tool lets an admin pick two+ rows → keeps one `id`, updates
+  foreign keys.
+
+## 4. Data model (Prisma)
+```prisma
+model Interest {
+  id          Int      @id @default(autoincrement())
+  label       String
+  category    String
+  icon        String?  // e.g. "🥾"
+  employees   EmployeeInterest[]
+  @@unique([label])
+}
+
+model EmployeeInterest {
+  employeeId  Int
+  interestId  Int
+  customLabel String?   // if employee entered free-text
+  isPrimary   Boolean   @default(false)
+  visibility  Visibility @default(EVERYONE)
+  createdAt   DateTime   @default(now())
+  @@id([employeeId, interestId])
+}
+
+enum Visibility {
+  EVERYONE
+  TEAM
+  PRIVATE
+}
+5. Seed script – master list of interests
+Insert these at boot if table empty (skip duplicates).
+Format: category: [emoji optional] Name
+
+diff
+Copy
+Edit
+Sports & Fitness
+- 🥾 Hiking
+- ⚽ Football / Soccer
+- 🏃 Running
+- 🚴 Cycling
+- 🏊 Swimming
+- 🧘 Yoga
+- 🏋️‍♀️ Weightlifting
+- ⛷️ Skiing
+- 🏀 Basketball
+- 🏈 American Football
+- 🏸 Badminton
+- ⛳ Golf
+- 🤸 Gymnastics
+- 🏒 Ice Hockey
+- 🥊 Boxing
+- 🥋 Martial Arts
+- 🏐 Volleyball
+- 🧗 Rock Climbing
+- 🏄 Surfing
+- 🏇 Horse Riding
+
+Arts & Creativity
+- 🎨 Painting
+- 🖌️ Drawing
+- 🖼️ Art History
+- 🎭 Theatre
+- 🎬 Filmmaking
+- 🎥 Videography
+- 📷 Photography
+- 🎤 Singing
+- 🎸 Playing Guitar
+- 🎹 Piano
+- 🩰 Dance / Ballet
+- 🧵 Sewing
+- 🧶 Knitting
+- 🪡 Embroidery
+- ✂️ DIY Crafts
+- 📚 Creative Writing
+- ✍️ Calligraphy
+- 🪕 Playing Ukulele
+
+Technology & Gaming
+- 💻 Coding
+- 🤖 Robotics
+- 🕹️ Video Games
+- 🎮 Retro Gaming
+- 🎲 Board Games
+- ♟️ Chess
+- 🔐 Cyber-Security
+- 🧩 Puzzle Solving
+- 📱 Mobile Apps
+- 🌐 Web Design
+- 🏗️ 3D Printing
+- 🛸 Drones
+- 🪙 Crypto / Blockchain
+- 🎧 Audio Production
+- 🖥️ PC Building
+
+Food & Drink
+- 🍳 Cooking
+- 🥘 World Cuisines
+- 🍞 Baking
+- 🥗 Vegan Cooking
+- 🍣 Sushi Making
+- 🍺 Craft Beer
+- 🍷 Wine Tasting
+- 🍸 Mixology
+- ☕ Coffee Brewing
+
+Lifestyle & Wellness
+- 🧘‍♂️ Meditation
+- 🏕️ Camping
+- 🌿 Gardening
+- 🐕 Animal Care
+- ✈️ Travel
+- 🏰 History & Culture
+- 🗣️ Language Learning
+- 📖 Reading
+- ✨ Astrology
+- 🔭 Astronomy
+- 💰 Personal Finance
+- 📈 Investing
+- 🕰️ Collecting Antiques
+- 🪙 Coin Collecting
+- 🧩 Jigsaw Puzzles
+- ♻️ Sustainability
+- 🙌 Volunteering
+- 🎗️ Charity Fund-Raising
+(Total ≈ 80 entries; good starter. Admins can extend later.)
+
+6. APIs
+Method	Route	Purpose
+GET	/api/interests?query=	Autocomplete lookup; returns top 20
+POST	/api/employees/:id/interests	Replace employee’s list; body = array { interestId?, customLabel?, isPrimary, visibility }
+GET	/api/employees/:id/interests	Fetch list (respect visibility flags)
+GET	/api/admin/interests	Paginated list (admin)
+POST	/api/admin/interests	Create
+PATCH	/api/admin/interests/:id	Update
+DELETE	/api/admin/interests/:id	Delete
+POST	/api/admin/interests/merge	{ keepId, mergeIds[] }
+
+7. Quality criteria
+95 %+ unit-test coverage on service layer with Vitest.
+
+Fully typed end-to-end (Prisma → React).
+
+Lighthouse score ≥ 90 on profile page.
+
+Responsive down to 320 px.
+
+ESLint + Prettier clean.
+
+Deliver complete code, seed script, and README instructions to run migration
+and start dev server.
+
+pgsql
+Copy
+Edit
+
+---
+
+**How to use it**
+
+1. Copy the whole block (including code fences) into a new Ghostwriter chat on Replit.  
+2. Let the generator scaffold the project; inspect the README and migrations.  
+3. Run `npm run dev` and you should see an editable Interests card live on a profile.
+
+Feel free to tweak categories or tech stacks before pasting, but this prompt should give Replit enough context to build the full feature in one shot.
+
+
+
+
+
