@@ -459,7 +459,7 @@ const UpdatedProfilePage = () => {
                   onClick={handleEditToggle}
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  {isEditing ? t('common.cancel') : t('profile.editProfile')}
+                  {isEditing ? t("common.cancel") : t("profile.editProfile")}
                 </Button>
               </div>
               
