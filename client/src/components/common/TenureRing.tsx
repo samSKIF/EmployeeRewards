@@ -6,11 +6,7 @@ interface TenureRingProps {
 }
 
 export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) {
-  // Debug: log the years of service
-  console.log('TenureRing: yearsOfService =', yearsOfService);
-  
   const getBorderColor = (years: number) => {
-    console.log('Getting border color for years:', years);
     if (years < 1) {
       return 'border-gray-400';
     } else if (years >= 1 && years < 5) {
@@ -24,7 +20,6 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
 
   const showNumber = yearsOfService >= 10;
   const borderColor = getBorderColor(yearsOfService);
-  console.log('TenureRing: borderColor =', borderColor);
 
   return (
     <>

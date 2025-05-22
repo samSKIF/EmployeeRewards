@@ -44,6 +44,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const calculateYearsOfService = () => {
     if (!user.dateJoined) return 0;
+    
     const joinDate = new Date(user.dateJoined);
     const now = new Date();
     const yearsDiff = now.getFullYear() - joinDate.getFullYear();
