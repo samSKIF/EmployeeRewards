@@ -18,6 +18,7 @@ import {
   Zap, Heart, ImageIcon, Camera as CameraIcon
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
+import InterestsSection from "@/components/profile/InterestsSection";
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
@@ -746,27 +747,11 @@ const UpdatedProfilePage = () => {
             </CardContent>
           </Card>
           
-          {/* Interests Card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle>Interests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {interests.map(interest => (
-                  <div 
-                    key={interest.id} 
-                    className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2"
-                  >
-                    <div className="flex-shrink-0 w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center">
-                      <Heart className="h-3.5 w-3.5 text-gray-500" />
-                    </div>
-                    <span className="text-sm">{interest.name}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Interests Section */}
+          <InterestsSection 
+            userId={user?.id || 0}
+            isCurrentUser={true}
+          />
           
           {/* Strengths Card */}
           <Card className="shadow-sm">
