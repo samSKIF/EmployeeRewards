@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Sparkles, Check, X } from 'lucide-react';
+import { Edit, Sparkles, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -51,10 +51,10 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
   onVisibilityChange?: (visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => void
 }) => {
   const { t } = useTranslation();
-  const VISIBILITY_OPTIONS = [
-    { value: 'EVERYONE', label: t('interests.visibilityEveryone') },
-    { value: 'TEAM', label: t('interests.visibilityTeam') },
-    { value: 'PRIVATE', label: t('interests.visibilityPrivate') }
+  const visibilityOptions = [
+    { value: 'EVERYONE', label: t('interests.visibilityEveryone', 'Everyone') },
+    { value: 'TEAM', label: t('interests.visibilityTeam', 'My Team') },
+    { value: 'PRIVATE', label: t('interests.visibilityPrivate', 'Only Me') }
   ];
   
   return (
@@ -75,7 +75,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {VISIBILITY_OPTIONS.map(option => (
+            {visibilityOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -91,7 +91,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
             size="sm" 
             className={`h-7 w-7 p-0 ${isPrimary ? 'text-yellow-500' : 'text-gray-400'}`}
             onClick={onTogglePrimary}
-            title={t('interests.markAsPrimary')}
+            title={t('interests.markAsPrimary', 'Mark as primary interest')}
           >
             <Sparkles className="h-4 w-4" />
           </Button>
@@ -111,13 +111,6 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
     </div>
   );
 };
-
-// Visibility options
-const VISIBILITY_OPTIONS = [
-  { value: 'EVERYONE', label: 'Everyone' },
-  { value: 'TEAM', label: 'My Team' },
-  { value: 'PRIVATE', label: 'Only Me' }
-];
 
 type Interest = {
   id: number;
@@ -157,8 +150,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       } catch (error) {
         console.error('Failed to fetch interests:', error);
         toast({
-          title: t('interests.fetchError'),
-          description: t('interests.fetchErrorDescription'),
+          title: t('interests.fetchError', 'Error fetching interests'),
+          description: t('interests.fetchErrorDescription', 'Could not load your interests. Please try again later.'),
           variant: 'destructive',
         });
       } finally {
@@ -202,8 +195,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     
     if (exists) {
       toast({
-        title: t('interests.alreadyAdded'),
-        description: t('interests.alreadyAddedDescription'),
+        title: t('interests.alreadyAdded', 'Already added'),
+        description: t('interests.alreadyAddedDescription', 'This interest is already in your list.'),
       });
       return;
     }
@@ -216,8 +209,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     }]);
     
     toast({
-      title: t('interests.addedSuccess'),
-      description: `${interest.label} ${t('interests.addedSuccessDescription')}`,
+      title: t('interests.addedSuccess', 'Interest added'),
+      description: `${interest.label} ${t('interests.addedSuccessDescription', 'has been added to your interests.')}`,
     });
   };
 
@@ -240,8 +233,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     setSearchResults([]);
     
     toast({
-      title: t('interests.customAddedSuccess'),
-      description: `${searchTerm} ${t('interests.addedSuccessDescription')}`,
+      title: t('interests.customAddedSuccess', 'Custom interest added'),
+      description: `${searchTerm} ${t('interests.addedSuccessDescription', 'has been added to your interests.')}`,
     });
   };
 
@@ -285,8 +278,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
         setInterests(updatedInterests);
         setIsModalOpen(false);
         toast({
-          title: t('interests.saveSuccess'),
-          description: t('interests.saveSuccessDescription'),
+          title: t('interests.saveSuccess', 'Interests saved'),
+          description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
         });
       } else {
         throw new Error('Failed to save interests');
@@ -294,8 +287,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     } catch (error) {
       console.error('Failed to save interests:', error);
       toast({
-        title: t('interests.saveError'),
-        description: t('interests.saveErrorDescription'),
+        title: t('interests.saveError', 'Error saving interests'),
+        description: t('interests.saveErrorDescription', 'Could not save your interests. Please try again later.'),
         variant: 'destructive',
       });
     } finally {
@@ -313,7 +306,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
         <CardTitle>
           <span className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-500" />
-            {t('interests.title')}
+            {t('interests.title', 'Interests')}
           </span>
         </CardTitle>
         {isCurrentUser && (
@@ -324,7 +317,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             onClick={handleEditClick}
           >
             <Edit className="h-4 w-4" />
-            <span className="sr-only">{t('interests.edit')}</span>
+            <span className="sr-only">{t('interests.edit', 'Edit')}</span>
           </Button>
         )}
       </CardHeader>
@@ -354,13 +347,13 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 className="p-0 h-auto text-sm text-blue-500" 
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? t('interests.showLess') : t('interests.showMore', { count: interests.length - 5 })}
+                {isExpanded ? t('interests.showLess', 'Show less') : t('interests.showMore', { defaultValue: 'Show {{count}} more', count: interests.length - 5 })}
               </Button>
             )}
           </>
         ) : (
           <div className="text-center py-4 text-gray-500">
-            {isCurrentUser ? t('interests.emptyCurrentUser') : t('interests.emptyOtherUser')}
+            {isCurrentUser ? t('interests.emptyCurrentUser', 'You haven\'t added any interests yet.') : t('interests.emptyOtherUser', 'This user hasn\'t added any interests yet.')}
           </div>
         )}
       </CardContent>
@@ -369,14 +362,14 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('interests.editTitle')}</DialogTitle>
+            <DialogTitle>{t('interests.editTitle', 'Edit Interests')}</DialogTitle>
           </DialogHeader>
           
           {/* Search input */}
           <div className="space-y-4 my-4">
             <div className="relative">
               <Input
-                placeholder={t('interests.searchPlaceholder')}
+                placeholder={t('interests.searchPlaceholder', 'Search interests or add your own...')}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full"
@@ -401,21 +394,21 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     </div>
                   ) : (
                     <div className="p-2">
-                      <p className="text-sm text-gray-500">{t('interests.noResults')}</p>
+                      <p className="text-sm text-gray-500">{t('interests.noResults', 'No results found')}</p>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         className="mt-1 text-blue-500" 
                         onClick={handleAddCustomInterest}
                       >
-                        {t('interests.addCustom', { term: searchTerm })}
+                        {t('interests.addCustom', { defaultValue: 'Add "{{term}}" as custom interest', term: searchTerm })}
                       </Button>
                     </div>
                   )
                 ) : (
                   <div className="p-1">
                     <div className="flex justify-between items-center border-b pb-2 mb-2">
-                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.categories')}</h4>
+                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.categories', 'Categories')}</h4>
                       <div className="flex space-x-1 px-2">
                         <Button 
                           variant="ghost"
@@ -574,7 +567,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           
           {/* Selected interests */}
           <div className="my-4">
-            <h4 className="text-sm font-medium mb-2">{t('interests.selectedInterests')}</h4>
+            <h4 className="text-sm font-medium mb-2">{t('interests.selectedInterests', 'Selected Interests')}</h4>
             <div className="max-h-60 overflow-y-auto">
               {editableInterests.length > 0 ? (
                 editableInterests.map(interest => (
@@ -589,27 +582,27 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 ))
               ) : (
                 <div className="text-center py-4 text-gray-500">
-                  {t('interests.noInterestsSelected')}
+                  {t('interests.noInterestsSelected', 'No interests selected yet. Browse or search above to add interests.')}
                 </div>
               )}
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              {t('interests.markPrimaryTip')}
+              {t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}
             </p>
           </div>
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              {t('common.cancel')}
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button disabled={isLoading} onClick={handleSave}>
               {isLoading ? (
                 <>
-                  <span className="mr-2">{t('common.saving')}</span>
+                  <span className="mr-2">{t('common.saving', 'Saving...')}</span>
                   <div className="animate-spin h-4 w-4 border-2 border-current rounded-full border-t-transparent"></div>
                 </>
               ) : (
-                <>{t('common.save')}</>
+                <>{t('common.save', 'Save')}</>
               )}
             </Button>
           </DialogFooter>

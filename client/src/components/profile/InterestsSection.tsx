@@ -51,7 +51,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
   onVisibilityChange?: (visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => void
 }) => {
   const { t } = useTranslation();
-  const VISIBILITY_OPTIONS = [
+  const visibilityOptions = [
     { value: 'EVERYONE', label: t('interests.visibilityEveryone', 'Everyone') },
     { value: 'TEAM', label: t('interests.visibilityTeam', 'My Team') },
     { value: 'PRIVATE', label: t('interests.visibilityPrivate', 'Only Me') }
@@ -75,7 +75,7 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {VISIBILITY_OPTIONS.map(option => (
+            {visibilityOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -299,189 +299,6 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   // Render visible interests based on current view state
   const visibleInterests = isExpanded ? interests : interests.slice(0, 5);
   const hasMoreInterests = interests.length > 5;
-  const { t } = useTranslation();
-  const { toast } = useToast();
-  const [interests, setInterests] = useState<Interest[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Interest[]>([]);
-  const [popularInterests, setPopularInterests] = useState<Interest[]>([]);
-  const [editableInterests, setEditableInterests] = useState<Interest[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('Sports & Fitness');
-
-  // Fetch user interests
-  useEffect(() => {
-    const fetchInterests = async () => {
-      try {
-        setIsLoading(true);
-        const response = await apiRequest('GET', `/api/employees/${userId}/interests`);
-        const data = await response.json();
-        setInterests(data);
-      } catch (error) {
-        console.error('Failed to fetch interests:', error);
-        toast({
-          title: t('interests.fetchError'),
-          description: t('interests.fetchErrorDescription'),
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInterests();
-  }, [userId, toast, t]);
-  
-  // Fetch popular interests
-  useEffect(() => {
-    const fetchPopularInterests = async () => {
-      try {
-        const response = await apiRequest('GET', `/api/interests?popular=true`);
-        const data = await response.json();
-        setPopularInterests(data);
-      } catch (error) {
-        console.error('Failed to fetch popular interests:', error);
-      }
-    };
-
-    fetchPopularInterests();
-  }, []);
-
-  // Handle interest search
-  const handleSearch = async (value: string) => {
-    setSearchTerm(value);
-    if (value.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const response = await apiRequest('GET', `/api/interests?query=${encodeURIComponent(value)}`);
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (error) {
-      console.error('Failed to search interests:', error);
-    }
-  };
-
-  // Open edit modal
-  const handleEditClick = () => {
-    setEditableInterests([...interests]);
-    setIsModalOpen(true);
-    
-    // Ensure the suggested interests dropdown is visible immediately
-    if (popularInterests.length === 0) {
-      const fetchPopularInterests = async () => {
-        try {
-          const response = await apiRequest('GET', `/api/interests?popular=true`);
-          const data = await response.json();
-          setPopularInterests(data);
-        } catch (error) {
-          console.error('Failed to fetch popular interests:', error);
-        }
-      };
-      fetchPopularInterests();
-    }
-  };
-
-  // Add interest
-  const handleAddInterest = (interest: Interest) => {
-    // Check if interest already exists
-    const exists = editableInterests.some(item => item.id === interest.id);
-    if (exists) return;
-
-    // Add the interest to editable list
-    setEditableInterests([...editableInterests, { 
-      ...interest, 
-      isPrimary: false, 
-      visibility: 'EVERYONE' 
-    }]);
-    setSearchTerm('');
-    setSearchResults([]);
-  };
-
-  // Add custom interest
-  const handleAddCustomInterest = () => {
-    if (!searchTerm.trim()) return;
-    
-    // Create a new custom interest
-    const customInterest: Interest = {
-      id: -Date.now(), // Temporary negative ID to identify custom interests
-      label: searchTerm,
-      customLabel: searchTerm,
-      category: '',
-      isPrimary: false,
-      visibility: 'EVERYONE'
-    };
-    
-    setEditableInterests([...editableInterests, customInterest]);
-    setSearchTerm('');
-    setSearchResults([]);
-  };
-
-  // Remove interest
-  const handleRemoveInterest = (interestId: number) => {
-    setEditableInterests(editableInterests.filter(interest => interest.id !== interestId));
-  };
-
-  // Toggle primary flag
-  const handleTogglePrimary = (interestId: number) => {
-    setEditableInterests(
-      editableInterests.map(interest => {
-        if (interest.id === interestId) {
-          return { ...interest, isPrimary: !interest.isPrimary };
-        }
-        return interest;
-      })
-    );
-  };
-
-  // Update visibility
-  const handleVisibilityChange = (interestId: number, visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => {
-    setEditableInterests(
-      editableInterests.map(interest => {
-        if (interest.id === interestId) {
-          return { ...interest, visibility };
-        }
-        return interest;
-      })
-    );
-  };
-
-  // Save interests
-  const handleSave = async () => {
-    try {
-      setIsLoading(true);
-      const response = await apiRequest('POST', `/api/employees/${userId}/interests`, editableInterests);
-      
-      if (response.ok) {
-        const updatedInterests = await response.json();
-        setInterests(updatedInterests);
-        setIsModalOpen(false);
-        toast({
-          title: t('interests.saveSuccess'),
-          description: t('interests.saveSuccessDescription'),
-        });
-      } else {
-        throw new Error('Failed to save interests');
-      }
-    } catch (error) {
-      console.error('Failed to save interests:', error);
-      toast({
-        title: t('interests.saveError'),
-        description: t('interests.saveErrorDescription'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Render visible interests based on current view state
-  const visibleInterests = isExpanded ? interests : interests.slice(0, 5);
-  const hasMoreInterests = interests.length > 5;
 
   return (
     <Card className="shadow-sm">
@@ -489,7 +306,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
         <CardTitle>
           <span className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-500" />
-            {t('interests.title')}
+            {t('interests.title', 'Interests')}
           </span>
         </CardTitle>
         {isCurrentUser && (
@@ -500,7 +317,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             onClick={handleEditClick}
           >
             <Edit className="h-4 w-4" />
-            <span className="sr-only">{t('interests.edit')}</span>
+            <span className="sr-only">{t('interests.edit', 'Edit')}</span>
           </Button>
         )}
       </CardHeader>
@@ -530,13 +347,13 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 className="p-0 h-auto text-sm text-blue-500" 
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? t('interests.showLess') : t('interests.showMore', { count: interests.length - 5 })}
+                {isExpanded ? t('interests.showLess', 'Show less') : t('interests.showMore', { defaultValue: 'Show {{count}} more', count: interests.length - 5 })}
               </Button>
             )}
           </>
         ) : (
           <div className="text-center py-4 text-gray-500">
-            {isCurrentUser ? t('interests.emptyCurrentUser') : t('interests.emptyOtherUser')}
+            {isCurrentUser ? t('interests.emptyCurrentUser', 'You haven\'t added any interests yet.') : t('interests.emptyOtherUser', 'This user hasn\'t added any interests yet.')}
           </div>
         )}
       </CardContent>
@@ -545,14 +362,14 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('interests.editTitle')}</DialogTitle>
+            <DialogTitle>{t('interests.editTitle', 'Edit Interests')}</DialogTitle>
           </DialogHeader>
           
           {/* Search input */}
           <div className="space-y-4 my-4">
             <div className="relative">
               <Input
-                placeholder={t('interests.searchPlaceholder')}
+                placeholder={t('interests.searchPlaceholder', 'Search interests or add your own...')}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full"
@@ -577,21 +394,21 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                     </div>
                   ) : (
                     <div className="p-2">
-                      <p className="text-sm text-gray-500">{t('interests.noResults')}</p>
+                      <p className="text-sm text-gray-500">{t('interests.noResults', 'No results found')}</p>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         className="mt-1 text-blue-500" 
                         onClick={handleAddCustomInterest}
                       >
-                        {t('interests.addCustom', { term: searchTerm })}
+                        {t('interests.addCustom', { defaultValue: 'Add "{{term}}" as custom interest', term: searchTerm })}
                       </Button>
                     </div>
                   )
                 ) : (
                   <div className="p-1">
                     <div className="flex justify-between items-center border-b pb-2 mb-2">
-                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.categories')}</h4>
+                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.categories', 'Categories')}</h4>
                       <div className="flex space-x-1 px-2">
                         <Button 
                           variant="ghost"
@@ -746,94 +563,47 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 )}
               </div>
             </div>
-
-            {/* Selected interests */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">{t('interests.selected')}</h4>
-              <div className="border rounded-md p-3 min-h-24">
-                {editableInterests.length > 0 ? (
-                  <div className="space-y-2">
-                    {editableInterests.map(interest => (
-                      <div key={interest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant={interest.isPrimary ? "default" : "outline"}
-                            size="sm"
-                            className={`h-6 w-6 p-0 ${interest.isPrimary ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
-                            onClick={() => handleTogglePrimary(interest.id)}
-                            title={t('interests.markPrimary')}
-                          >
-                            <Check className="h-3 w-3" />
-                            <span className="sr-only">{t('interests.markPrimary')}</span>
-                          </Button>
-                          <span>
-                            {interest.icon && <span className="mr-1">{interest.icon}</span>}
-                            {interest.customLabel || interest.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={interest.visibility}
-                            onValueChange={(value) => handleVisibilityChange(
-                              interest.id, 
-                              value as 'EVERYONE' | 'TEAM' | 'PRIVATE'
-                            )}
-                          >
-                            <SelectTrigger className="h-7 w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {VISIBILITY_OPTIONS.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {t(`interests.visibility.${option.value.toLowerCase()}`)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-gray-500 hover:text-red-500"
-                            onClick={() => handleRemoveInterest(interest.id)}
-                          >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">{t('interests.remove')}</span>
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center items-center h-full text-gray-500">
-                    {t('interests.noInterestsSelected')}
-                  </div>
-                )}
-              </div>
-              
-              <p className="text-xs text-gray-500 mt-2">
-                {t('interests.dragDropHint')}
-              </p>
+          </div>
+          
+          {/* Selected interests */}
+          <div className="my-4">
+            <h4 className="text-sm font-medium mb-2">{t('interests.selectedInterests', 'Selected Interests')}</h4>
+            <div className="max-h-60 overflow-y-auto">
+              {editableInterests.length > 0 ? (
+                editableInterests.map(interest => (
+                  <InterestTag
+                    key={interest.id}
+                    interest={interest}
+                    isPrimary={interest.isPrimary}
+                    onRemove={() => handleRemoveInterest(interest.id)}
+                    onTogglePrimary={() => handleTogglePrimary(interest.id)}
+                    onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  {t('interests.noInterestsSelected', 'No interests selected yet. Browse or search above to add interests.')}
+                </div>
+              )}
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}
+            </p>
           </div>
           
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              disabled={isLoading}
-            >
-              {t('common.cancel')}
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              {t('common.cancel', 'Cancel')}
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={isLoading}
-            >
+            <Button disabled={isLoading} onClick={handleSave}>
               {isLoading ? (
                 <>
-                  <span className="animate-spin mr-2">⟳</span> 
-                  {t('common.saving')}
+                  <span className="mr-2">{t('common.saving', 'Saving...')}</span>
+                  <div className="animate-spin h-4 w-4 border-2 border-current rounded-full border-t-transparent"></div>
                 </>
-              ) : t('common.save')}
+              ) : (
+                <>{t('common.save', 'Save')}</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
