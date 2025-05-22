@@ -499,7 +499,7 @@ const UpdatedProfilePage = () => {
                   <p className="text-gray-600">{userDetails.title}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">Profile Status {userDetails.profileStatus}%</div>
+                  <div className="text-sm text-gray-500">{t('profile.profileStatus')} {userDetails.profileStatus}%</div>
                   <div className="w-48 mt-1">
                     <Progress value={userDetails.profileStatus} className="h-2" />
                   </div>
@@ -524,19 +524,19 @@ const UpdatedProfilePage = () => {
                     value="about"
                     className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none py-3 text-gray-500"
                   >
-                    About Me
+                    {t('profile.aboutMe')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="appreciations"
                     className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none py-3 text-gray-500"
                   >
-                    Appreciations
+                    {t('profile.appreciations')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="highlights"
                     className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 data-[state=active]:shadow-none py-3 text-gray-500"
                   >
-                    Highlights
+                    {t('profile.highlights')}
                   </TabsTrigger>
                 </TabsList>
                 
@@ -575,13 +575,13 @@ const UpdatedProfilePage = () => {
           {/* Contact, Bio, & Responsibilities - Combined in one card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle>Profile Details</CardTitle>
+              <CardTitle>{t('profile.profileDetails')}</CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-6">
               {/* Contact Information */}
               <div>
-                <h3 className="text-md font-medium mb-4">Contact Information</h3>
+                <h3 className="text-md font-medium mb-4">{t('profile.contactInformation')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label htmlFor="email" className="text-sm text-gray-500">Email:</Label>
