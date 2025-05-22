@@ -21,7 +21,8 @@
     "feed": "Feed",
     "leaderboard": "Leaderboard",
     "leave": "Leave",
-    "admin": "Admin"
+    "admin": "Admin",
+    "myAccount": "My Account"
   },
   "common": {
     "search": "Search",

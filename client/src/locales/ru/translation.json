@@ -21,7 +21,8 @@
     "feed": "Лента",
     "leaderboard": "Рейтинг",
     "leave": "Отпуск",
-    "admin": "Админ"
+    "admin": "Админ",
+    "myAccount": "Мой Аккаунт"
   },
   "common": {
     "search": "Поиск",
