@@ -217,19 +217,19 @@ const AdminStatusTypes: React.FC = () => {
   };
 
   // Get all Lucide icon names for the dropdown
-  const iconNames = Object.keys(LucideIcons).filter(name => 
-    typeof LucideIcons[name as keyof typeof LucideIcons] === 'function' && 
-    name !== '__esModule'
-  );
+  const iconNames = ['Cake', 'PalmTree', 'Home', 'GraduationCap', 'Stethoscope', 'Calendar'];
 
-  // Safely render an icon from the Lucide icons library
+  // Render status icon using emojis
   const renderIcon = (iconName: string) => {
-    const IconComponent = LucideIcons[iconName as keyof typeof LucideIcons];
-    if (IconComponent && typeof IconComponent === 'function') {
-      const SafeIcon = IconComponent;
-      return <SafeIcon className="h-4 w-4 mr-2" />;
-    }
-    return <LucideIcons.Info className="h-4 w-4 mr-2" />;
+    const iconMap: Record<string, string> = {
+      'Cake': '🍰',
+      'PalmTree': '🌴', 
+      'Home': '🏠',
+      'GraduationCap': '🎓',
+      'Stethoscope': '🩺',
+      'Calendar': '📅'
+    };
+    return <span className="mr-2">{iconMap[iconName] || '📌'}</span>;
   };
 
   return (
@@ -387,18 +387,21 @@ const AdminStatusTypes: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       <SelectGroup>
-                        {iconNames.map((name) => {
-                          const IconComponent = LucideIcons[name as keyof typeof LucideIcons];
-                          const SafeIcon = (IconComponent && typeof IconComponent === 'function') ? IconComponent : LucideIcons.Info;
-                          return (
-                            <SelectItem key={name} value={name}>
-                              <div className="flex items-center">
-                                <SafeIcon className="h-4 w-4 mr-2" />
-                                {name}
-                              </div>
-                            </SelectItem>
-                          );
-                        })}
+                        {iconNames.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            <div className="flex items-center">
+                              <span className="mr-2">
+                                {name === 'Cake' ? '🍰' : 
+                                 name === 'PalmTree' ? '🌴' : 
+                                 name === 'Home' ? '🏠' : 
+                                 name === 'GraduationCap' ? '🎓' : 
+                                 name === 'Stethoscope' ? '🩺' : 
+                                 name === 'Calendar' ? '📅' : '📌'}
+                              </span>
+                              {name}
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>

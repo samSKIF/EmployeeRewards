@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserStatusIcon from './UserStatusIcon';
+import { TenureRing } from './TenureRing';
 
 interface UserAvatarProps {
   user: {
@@ -8,9 +9,11 @@ interface UserAvatarProps {
     name: string;
     avatarUrl?: string | null;
     jobTitle?: string | null;
+    dateJoined?: string | Date | null;
   };
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showStatus?: boolean;
+  showTenure?: boolean;
   className?: string;
 }
 
@@ -18,6 +21,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   user, 
   size = 'md', 
   showStatus = true,
+  showTenure = true,
   className = ''
 }) => {
   // Define size classes based on the size prop
@@ -38,6 +42,23 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       .substring(0, 2);
   };
 
+  const calculateYearsOfService = () => {
+    if (!user.dateJoined) return 0;
+    const joinDate = new Date(user.dateJoined);
+    const now = new Date();
+    const yearsDiff = now.getFullYear() - joinDate.getFullYear();
+    const monthsDiff = now.getMonth() - joinDate.getMonth();
+    const daysDiff = now.getDate() - joinDate.getDate();
+    
+    let years = yearsDiff;
+    if (monthsDiff < 0 || (monthsDiff === 0 && daysDiff < 0)) {
+      years--;
+    }
+    return Math.max(0, years);
+  };
+
+  const yearsOfService = calculateYearsOfService();
+
   return (
     <div className="relative inline-block">
       <Avatar className={`${sizeClasses[size]} ${className}`}>
@@ -46,6 +67,14 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           {getInitials(user.name)}
         </AvatarFallback>
       </Avatar>
+      
+      {/* Show tenure ring if requested */}
+      {showTenure && (
+        <TenureRing 
+          yearsOfService={yearsOfService} 
+          className={sizeClasses[size]} 
+        />
+      )}
       
       {/* Show status icons if requested */}
       {showStatus && (

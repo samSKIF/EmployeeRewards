@@ -69,24 +69,32 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
     return null; // Don't show anything if there's an error or no statuses
   }
 
+  const getStatusIcon = (iconName: string) => {
+    const iconMap: Record<string, string> = {
+      'Cake': '🍰',
+      'PalmTree': '🌴', 
+      'Home': '🏠',
+      'GraduationCap': '🎓',
+      'Stethoscope': '🩺',
+      'Calendar': '📅'
+    };
+    return iconMap[iconName] || '📍';
+  };
+
   return (
     <div className={`flex -space-x-1 ${className}`}>
       {statuses.map((status) => {
-        // Get the appropriate icon component
-        let IconComponent: React.ElementType = LucideIcons.Info;
-        if (status.statusType.iconName in LucideIcons) {
-          IconComponent = LucideIcons[status.statusType.iconName as keyof typeof LucideIcons] as React.ElementType;
-        }
-
         return (
           <TooltipProvider key={status.id}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className={`rounded-full flex items-center justify-center p-1`}
+                  className={`rounded-full flex items-center justify-center p-1 text-white font-medium`}
                   style={{ backgroundColor: status.statusType.color }}
                 >
-                  <IconComponent className={`${sizeClasses[size]} text-white`} />
+                  <span className={sizeClasses[size]}>
+                    {getStatusIcon(status.statusType.iconName)}
+                  </span>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
