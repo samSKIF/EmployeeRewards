@@ -42,6 +42,76 @@ const InterestItem = ({
   );
 };
 
+// Simple interest tag component for displaying interests
+const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibilityChange }: { 
+  interest: Interest, 
+  onRemove?: () => void, 
+  isPrimary?: boolean,
+  onTogglePrimary?: () => void,
+  onVisibilityChange?: (visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => void
+}) => {
+  const { t } = useTranslation();
+  const VISIBILITY_OPTIONS = [
+    { value: 'EVERYONE', label: t('interests.visibilityEveryone') },
+    { value: 'TEAM', label: t('interests.visibilityTeam') },
+    { value: 'PRIVATE', label: t('interests.visibilityPrivate') }
+  ];
+  
+  return (
+    <div className="flex items-center gap-2 p-2 border rounded-md mb-2">
+      <div 
+        className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm ${isPrimary ? 'bg-primary text-white' : 'bg-secondary/10 text-secondary-foreground'}`}
+      >
+        {interest.icon && <span>{interest.icon}</span>}
+        <span>{interest.customLabel || interest.label}</span>
+      </div>
+      
+      {onVisibilityChange && (
+        <Select 
+          value={interest.visibility} 
+          onValueChange={(value) => onVisibilityChange(value as 'EVERYONE' | 'TEAM' | 'PRIVATE')}
+        >
+          <SelectTrigger className="h-7 w-24">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {VISIBILITY_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      
+      <div className="ml-auto flex items-center gap-1">
+        {onTogglePrimary && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`h-7 w-7 p-0 ${isPrimary ? 'text-yellow-500' : 'text-gray-400'}`}
+            onClick={onTogglePrimary}
+            title={t('interests.markAsPrimary')}
+          >
+            <Sparkles className="h-4 w-4" />
+          </Button>
+        )}
+        
+        {onRemove && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
+            onClick={onRemove}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Visibility options
 const VISIBILITY_OPTIONS = [
   { value: 'EVERYONE', label: 'Everyone' },
@@ -72,7 +142,6 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Interest[]>([]);
-  const [popularInterests, setPopularInterests] = useState<Interest[]>([]);
   const [editableInterests, setEditableInterests] = useState<Interest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('Sports & Fitness');
@@ -99,21 +168,6 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
     fetchInterests();
   }, [userId, toast, t]);
-  
-  // Fetch popular interests
-  useEffect(() => {
-    const fetchPopularInterests = async () => {
-      try {
-        const response = await apiRequest('GET', `/api/interests?popular=true`);
-        const data = await response.json();
-        setPopularInterests(data);
-      } catch (error) {
-        console.error('Failed to fetch popular interests:', error);
-      }
-    };
-
-    fetchPopularInterests();
-  }, []);
 
   // Handle interest search
   const handleSearch = async (value: string) => {
@@ -136,27 +190,23 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const handleEditClick = () => {
     setEditableInterests([...interests]);
     setIsModalOpen(true);
-    
-    // Ensure the suggested interests dropdown is visible immediately
-    if (popularInterests.length === 0) {
-      const fetchPopularInterests = async () => {
-        try {
-          const response = await apiRequest('GET', `/api/interests?popular=true`);
-          const data = await response.json();
-          setPopularInterests(data);
-        } catch (error) {
-          console.error('Failed to fetch popular interests:', error);
-        }
-      };
-      fetchPopularInterests();
-    }
   };
 
   // Add interest
   const handleAddInterest = (interest: Interest) => {
     // Check if interest already exists
-    const exists = editableInterests.some(item => item.id === interest.id);
-    if (exists) return;
+    const exists = editableInterests.some(item => 
+      (item.id === interest.id) || 
+      (item.label === interest.label && item.category === interest.category)
+    );
+    
+    if (exists) {
+      toast({
+        title: t('interests.alreadyAdded'),
+        description: t('interests.alreadyAddedDescription'),
+      });
+      return;
+    }
 
     // Add the interest to editable list
     setEditableInterests([...editableInterests, { 
@@ -164,8 +214,11 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       isPrimary: false, 
       visibility: 'EVERYONE' 
     }]);
-    setSearchTerm('');
-    setSearchResults([]);
+    
+    toast({
+      title: t('interests.addedSuccess'),
+      description: `${interest.label} ${t('interests.addedSuccessDescription')}`,
+    });
   };
 
   // Add custom interest
@@ -177,7 +230,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       id: -Date.now(), // Temporary negative ID to identify custom interests
       label: searchTerm,
       customLabel: searchTerm,
-      category: '',
+      category: activeCategory,
       isPrimary: false,
       visibility: 'EVERYONE'
     };
@@ -185,6 +238,11 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     setEditableInterests([...editableInterests, customInterest]);
     setSearchTerm('');
     setSearchResults([]);
+    
+    toast({
+      title: t('interests.customAddedSuccess'),
+      description: `${searchTerm} ${t('interests.addedSuccessDescription')}`,
+    });
   };
 
   // Remove interest
@@ -512,94 +570,47 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 )}
               </div>
             </div>
-
-            {/* Selected interests */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">{t('interests.selected')}</h4>
-              <div className="border rounded-md p-3 min-h-24">
-                {editableInterests.length > 0 ? (
-                  <div className="space-y-2">
-                    {editableInterests.map(interest => (
-                      <div key={interest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant={interest.isPrimary ? "default" : "outline"}
-                            size="sm"
-                            className={`h-6 w-6 p-0 ${interest.isPrimary ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
-                            onClick={() => handleTogglePrimary(interest.id)}
-                            title={t('interests.markPrimary')}
-                          >
-                            <Check className="h-3 w-3" />
-                            <span className="sr-only">{t('interests.markPrimary')}</span>
-                          </Button>
-                          <span>
-                            {interest.icon && <span className="mr-1">{interest.icon}</span>}
-                            {interest.customLabel || interest.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={interest.visibility}
-                            onValueChange={(value) => handleVisibilityChange(
-                              interest.id, 
-                              value as 'EVERYONE' | 'TEAM' | 'PRIVATE'
-                            )}
-                          >
-                            <SelectTrigger className="h-7 w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {VISIBILITY_OPTIONS.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {t(`interests.visibility.${option.value.toLowerCase()}`)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-gray-500 hover:text-red-500"
-                            onClick={() => handleRemoveInterest(interest.id)}
-                          >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">{t('interests.remove')}</span>
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center items-center h-full text-gray-500">
-                    {t('interests.noInterestsSelected')}
-                  </div>
-                )}
-              </div>
-              
-              <p className="text-xs text-gray-500 mt-2">
-                {t('interests.dragDropHint')}
-              </p>
+          </div>
+          
+          {/* Selected interests */}
+          <div className="my-4">
+            <h4 className="text-sm font-medium mb-2">{t('interests.selectedInterests')}</h4>
+            <div className="max-h-60 overflow-y-auto">
+              {editableInterests.length > 0 ? (
+                editableInterests.map(interest => (
+                  <InterestTag
+                    key={interest.id}
+                    interest={interest}
+                    isPrimary={interest.isPrimary}
+                    onRemove={() => handleRemoveInterest(interest.id)}
+                    onTogglePrimary={() => handleTogglePrimary(interest.id)}
+                    onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  {t('interests.noInterestsSelected')}
+                </div>
+              )}
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {t('interests.markPrimaryTip')}
+            </p>
           </div>
           
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              disabled={isLoading}
-            >
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={isLoading}
-            >
+            <Button disabled={isLoading} onClick={handleSave}>
               {isLoading ? (
                 <>
-                  <span className="animate-spin mr-2">⟳</span> 
-                  {t('common.saving')}
+                  <span className="mr-2">{t('common.saving')}</span>
+                  <div className="animate-spin h-4 w-4 border-2 border-current rounded-full border-t-transparent"></div>
                 </>
-              ) : t('common.save')}
+              ) : (
+                <>{t('common.save')}</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
