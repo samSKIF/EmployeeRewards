@@ -10,30 +10,34 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
     if (years < 1) {
       // New employees - subtle grey
       return {
+        borderColor: '#9ca3af',
+        shadowColor: 'rgba(156, 163, 175, 0.3)',
         gradientFrom: '#d1d5db',
         gradientTo: '#9ca3af',
-        shadowColor: 'rgba(156, 163, 175, 0.3)',
       };
     } else if (years >= 1 && years < 5) {
       // 1-4 years - silver
       return {
+        borderColor: '#6b7280',
+        shadowColor: 'rgba(107, 114, 128, 0.4)',
         gradientFrom: '#e5e7eb',
         gradientTo: '#6b7280',
-        shadowColor: 'rgba(107, 114, 128, 0.4)',
       };
     } else if (years >= 5 && years < 10) {
       // 5-9 years - golden glow
       return {
+        borderColor: '#f59e0b',
+        shadowColor: 'rgba(245, 158, 11, 0.6)',
         gradientFrom: '#fef3c7',
         gradientTo: '#f59e0b',
-        shadowColor: 'rgba(245, 158, 11, 0.6)',
       };
     } else {
       // 10+ years - intense golden glow
       return {
+        borderColor: '#d97706',
+        shadowColor: 'rgba(217, 119, 6, 0.8)',
         gradientFrom: '#fffbeb',
         gradientTo: '#d97706',
-        shadowColor: 'rgba(217, 119, 6, 0.8)',
       };
     }
   };
@@ -43,53 +47,24 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
 
   return (
     <>
-      {/* Outer glow effect */}
+      {/* Perfect circular border ring */}
       <div 
-        className={`absolute pointer-events-none ${className}`}
+        className={`absolute -inset-1 rounded-full pointer-events-none ${className}`}
         style={{
-          top: '-6px',
-          left: '-6px',
-          width: 'calc(100% + 12px)',
-          height: 'calc(100% + 12px)',
+          border: `3px solid ${style.borderColor}`,
           borderRadius: '50%',
-          background: `radial-gradient(circle, ${style.shadowColor} 0%, transparent 70%)`,
-          filter: 'blur(4px)',
+          boxShadow: `0 0 15px ${style.shadowColor}, 0 0 25px ${style.shadowColor}`,
         }}
       />
-      
-      {/* Perfect circular gradient border */}
-      <div 
-        className={`absolute pointer-events-none ${className}`}
-        style={{
-          top: '-3px',
-          left: '-3px',
-          width: 'calc(100% + 6px)',
-          height: 'calc(100% + 6px)',
-          borderRadius: '50%',
-          background: `conic-gradient(from 0deg, ${style.gradientFrom} 0%, ${style.gradientTo} 25%, white 50%, ${style.gradientTo} 75%, ${style.gradientFrom} 100%)`,
-          padding: '3px',
-        }}
-      >
-        {/* Inner cutout for perfect circle */}
-        <div 
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            background: 'white',
-          }}
-        />
-      </div>
       
       {/* Years badge for 10+ years */}
       {showNumber && (
         <div 
-          className="absolute -top-2 -right-2 text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-lg"
+          className="absolute -top-2 -right-2 text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-lg rounded-full"
           style={{
             background: `linear-gradient(135deg, ${style.gradientFrom}, ${style.gradientTo})`,
             width: '24px',
             height: '24px',
-            borderRadius: '50%',
             boxShadow: `0 0 10px ${style.shadowColor}`,
           }}
         >
