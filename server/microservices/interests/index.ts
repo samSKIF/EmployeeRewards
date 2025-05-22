@@ -2,14 +2,37 @@ import { Router } from "express";
 import { db } from "../../db";
 import { interests, employeeInterests, employees, visibilityEnum } from "@shared/schema";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { requireAuth, validateRequestBody } from "../../middleware";
+import { AuthenticatedRequest, verifyToken } from "../../middleware/auth";
+import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 
 const router = Router();
 
+// Apply authentication to all routes in this router
+router.use(verifyToken);
+
+// Custom middleware to validate request body against a Zod schema
+const validateRequestBody = (schema: z.ZodType<any, any>) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const validated = schema.parse(req.body);
+      req.body = validated;
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: error.errors,
+        });
+      }
+      return res.status(400).json({ message: "Invalid request data" });
+    }
+  };
+};
+
 // Autocomplete lookup for interests
 // GET /api/interests?query=...
-router.get("/interests", requireAuth, async (req, res) => {
+router.get("/interests", async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling interests lookup");
     const { query } = req.query;
@@ -39,7 +62,7 @@ router.get("/interests", requireAuth, async (req, res) => {
 
 // Get employee interests
 // GET /api/employees/:id/interests
-router.get("/employees/:id/interests", requireAuth, async (req, res) => {
+router.get("/employees/:id/interests", async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling get employee interests");
     const employeeId = parseInt(req.params.id);
@@ -106,7 +129,7 @@ const updateInterestsSchema = z.array(z.object({
   visibility: z.enum(["EVERYONE", "TEAM", "PRIVATE"]).default("EVERYONE")
 }));
 
-router.post("/employees/:id/interests", requireAuth, validateRequestBody(updateInterestsSchema), async (req, res) => {
+router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchema), async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling update employee interests");
     const employeeId = parseInt(req.params.id);
@@ -202,7 +225,7 @@ router.post("/employees/:id/interests", requireAuth, validateRequestBody(updateI
 
 // Admin routes
 // GET /api/admin/interests - Paginated list
-router.get("/admin/interests", requireAuth, async (req, res) => {
+router.get("/admin/interests", async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling admin interests lookup");
     // Check if user is admin
@@ -250,7 +273,7 @@ const createInterestSchema = z.object({
   icon: z.string().optional()
 });
 
-router.post("/admin/interests", requireAuth, validateRequestBody(createInterestSchema), async (req, res) => {
+router.post("/admin/interests", validateRequestBody(createInterestSchema), async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling create interest");
     // Check if user is admin
@@ -289,7 +312,7 @@ router.post("/admin/interests", requireAuth, validateRequestBody(createInterestS
 
 // Update interest
 // PATCH /api/admin/interests/:id
-router.patch("/admin/interests/:id", requireAuth, validateRequestBody(createInterestSchema), async (req, res) => {
+router.patch("/admin/interests/:id", validateRequestBody(createInterestSchema), async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling update interest");
     // Check if user is admin
@@ -330,7 +353,7 @@ router.patch("/admin/interests/:id", requireAuth, validateRequestBody(createInte
 
 // Delete interest
 // DELETE /api/admin/interests/:id
-router.delete("/admin/interests/:id", requireAuth, async (req, res) => {
+router.delete("/admin/interests/:id", async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling delete interest");
     // Check if user is admin
@@ -369,7 +392,7 @@ const mergeInterestsSchema = z.object({
   mergeIds: z.array(z.number())
 });
 
-router.post("/admin/interests/merge", requireAuth, validateRequestBody(mergeInterestsSchema), async (req, res) => {
+router.post("/admin/interests/merge", validateRequestBody(mergeInterestsSchema), async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling merge interests");
     // Check if user is admin

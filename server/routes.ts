@@ -13,6 +13,7 @@ import { auth } from './firebase-admin';
 import socialRoutes from './microservices/social/index';
 import leaveRoutes from './microservices/leave/index';
 import recognitionRoutes from './microservices/recognition/index';
+import interestsRoutes from './microservices/interests/index';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -37,6 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/social', socialRoutes);
   app.use('/api/leave', leaveRoutes);
   app.use('/api/recognition', recognitionRoutes);
+  app.use('/api/interests', interestsRoutes);
   // Create corporate admin account
   app.post("/api/admin/corporate-account", async (req, res) => {
     try {

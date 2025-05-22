@@ -5,6 +5,7 @@ import { auth as firebaseAuth } from "../firebase-admin";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
 import { users, employees } from "@shared/schema";
+import { z } from "zod";
 
 // JWT secret - should be stored in environment variables (keeping for backward compatibility)
 const JWT_SECRET = process.env.JWT_SECRET || "rewardhub-secret-key";
