@@ -2,57 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tenure ring glow animations with proper picture frame effect */
-@keyframes tenure-glow-gray {
-  0%, 100% { 
-    filter: drop-shadow(0 0 8px rgb(156 163 175 / 0.6)) drop-shadow(0 0 16px rgb(156 163 175 / 0.3));
-  }
-  50% { 
-    filter: drop-shadow(0 0 12px rgb(156 163 175 / 0.8)) drop-shadow(0 0 24px rgb(156 163 175 / 0.5));
-  }
-}
-
-@keyframes tenure-glow-silver {
-  0%, 100% { 
-    filter: drop-shadow(0 0 10px rgb(209 213 219 / 0.7)) drop-shadow(0 0 20px rgb(209 213 219 / 0.4));
-  }
-  50% { 
-    filter: drop-shadow(0 0 15px rgb(209 213 219 / 0.9)) drop-shadow(0 0 30px rgb(209 213 219 / 0.6));
-  }
-}
-
-@keyframes tenure-glow-gold {
-  0%, 100% { 
-    filter: drop-shadow(0 0 12px rgb(251 191 36 / 0.8)) drop-shadow(0 0 24px rgb(251 191 36 / 0.5));
-  }
-  50% { 
-    filter: drop-shadow(0 0 18px rgb(251 191 36 / 1)) drop-shadow(0 0 36px rgb(251 191 36 / 0.7)) drop-shadow(0 0 48px rgb(251 191 36 / 0.4));
-  }
-}
-
-@keyframes tenure-glow-gold-intense {
-  0%, 100% { 
-    filter: drop-shadow(0 0 15px rgb(245 158 11 / 0.9)) drop-shadow(0 0 30px rgb(245 158 11 / 0.7));
-  }
-  50% { 
-    filter: drop-shadow(0 0 22px rgb(245 158 11 / 1)) drop-shadow(0 0 44px rgb(245 158 11 / 0.8)) drop-shadow(0 0 60px rgb(245 158 11 / 0.5));
-  }
-}
-
-.tenure-glow-gray {
-  animation: tenure-glow-gray 3s ease-in-out infinite;
-}
-
-.tenure-glow-silver {
-  animation: tenure-glow-silver 3s ease-in-out infinite;
-}
-
-.tenure-glow-gold {
-  animation: tenure-glow-gold 3s ease-in-out infinite;
-}
-
-.tenure-glow-gold-intense {
-  animation: tenure-glow-gold-intense 3s ease-in-out infinite;
+/* Custom gradient variables for tenure rings */
+:root {
+  --tenure-gray-from: #d1d5db;
+  --tenure-gray-to: #6b7280;
+  --tenure-silver-from: #d1d5db;
+  --tenure-silver-to: #4b5563;
+  --tenure-gold-from: #fde047;
+  --tenure-gold-to: #ca8a04;
+  --tenure-gold-intense-from: #facc15;
+  --tenure-gold-intense-to: #92400e;
 }
 
 :root {

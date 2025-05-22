@@ -8,36 +8,32 @@ interface TenureRingProps {
 export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) {
   const getTenureStyle = (years: number) => {
     if (years < 1) {
-      // Less than 1 year - grey ring with subtle glow
+      // Less than 1 year - subtle grey gradient border
       return {
-        ringColor: 'border-gray-400',
-        glowClass: 'tenure-glow-gray',
+        borderStyle: 'from-gray-300 to-gray-500',
         showNumber: false,
         numberStyle: ''
       };
     } else if (years >= 1 && years < 5) {
-      // 1-4 years - silver ring with silver glow
+      // 1-4 years - silver gradient border
       return {
-        ringColor: 'border-gray-300',
-        glowClass: 'tenure-glow-silver',
+        borderStyle: 'from-gray-300 to-gray-600',
         showNumber: false,
         numberStyle: ''
       };
     } else if (years >= 5 && years < 10) {
-      // 5-9 years - golden ring with gold glow
+      // 5-9 years - golden gradient border
       return {
-        ringColor: 'border-yellow-400',
-        glowClass: 'tenure-glow-gold',
+        borderStyle: 'from-yellow-300 to-yellow-600',
         showNumber: false,
         numberStyle: ''
       };
     } else {
-      // 10+ years - golden ring with intense gold glow and number
+      // 10+ years - intense golden gradient border with number
       return {
-        ringColor: 'border-yellow-400',
-        glowClass: 'tenure-glow-gold-intense',
+        borderStyle: 'from-yellow-400 to-amber-600',
         showNumber: true,
-        numberStyle: 'absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg border-2 border-white'
+        numberStyle: 'absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg border-2 border-white'
       };
     }
   };
@@ -46,23 +42,16 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
 
   return (
     <>
-      {/* Perfect circular ring that surrounds the avatar */}
+      {/* Clean border ring that perfectly frames the avatar */}
       <div 
-        className={`absolute inset-0 rounded-full border-4 ${style.ringColor} ${style.glowClass} pointer-events-none`}
+        className={`absolute inset-0 rounded-full border-4 bg-gradient-to-br ${style.borderStyle} pointer-events-none`}
         style={{
-          transform: 'scale(1.15)', // Make ring slightly larger than avatar
-          aspectRatio: '1 / 1', // Ensure perfect circle
+          padding: '2px',
         }}
-      />
-      
-      {/* Inner accent ring for extra shine */}
-      <div 
-        className={`absolute inset-0 rounded-full border-2 border-white/30 pointer-events-none`}
-        style={{
-          transform: 'scale(1.08)', // Slightly smaller inner ring
-          aspectRatio: '1 / 1', // Ensure perfect circle
-        }}
-      />
+      >
+        {/* Inner cutout to show the avatar */}
+        <div className="w-full h-full rounded-full bg-white" />
+      </div>
       
       {/* Years badge for 10+ years */}
       {style.showNumber && (
