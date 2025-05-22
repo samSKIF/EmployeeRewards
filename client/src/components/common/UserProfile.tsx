@@ -15,6 +15,8 @@ interface UserProfileProps {
     department?: string | null;
     location?: string | null;
     avatarUrl?: string | null;
+    hireDate?: string | Date | null;
+    dateJoined?: string | Date | null;
   };
   editable?: boolean;
   onEditClick?: () => void;
@@ -46,7 +48,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
       <CardHeader className="p-0 relative">
         <div className="flex justify-center -mt-12 mb-4">
           <UserAvatar 
-            user={user} 
+            user={{
+              ...user,
+              dateJoined: user.hireDate || user.dateJoined
+            }} 
             size="xl" 
             showStatus={true} 
             className="border-4 border-white shadow-md"

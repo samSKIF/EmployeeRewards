@@ -87,6 +87,8 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
         u.name AS "userName",
         u.avatar_url AS "userProfileImage",
         u.avatar_url AS "avatarUrl",
+        u.job_title AS "userJobTitle",
+        u.hire_date AS "userHireDate",
         (
           SELECT COUNT(*) 
           FROM reactions 

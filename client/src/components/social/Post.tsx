@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -355,12 +356,17 @@ export const Post = ({ post, currentUser }: PostProps) => {
         {/* Post header with user info */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
-            <Avatar className="w-10 h-10 mr-3 border-2 border-gray-100">
-              <AvatarImage src={post.user?.avatarUrl || post.userProfileImage || post.avatarUrl} alt={post.user?.name || post.userName || 'User'} />
-              <AvatarFallback className="bg-blue-100 text-blue-700">
-                {(post.user?.name || post.userName || 'User').split(' ').map((n: string) => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              user={{
+                id: post.userId,
+                name: post.user?.name || post.userName || 'User',
+                avatarUrl: post.user?.avatarUrl || post.userProfileImage || post.avatarUrl,
+                jobTitle: post.user?.jobTitle || post.userJobTitle,
+                dateJoined: post.user?.hireDate || (post as any).userHireDate
+              }}
+              size="md"
+              className="mr-3"
+            />
             <div>
               <div className="font-medium text-gray-900">{post.user?.name || post.userName || 'User'}</div>
               <div className="text-xs text-gray-500">{timeAgoTranslation()}</div>
