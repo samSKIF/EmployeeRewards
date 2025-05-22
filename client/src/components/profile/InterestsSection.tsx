@@ -271,7 +271,21 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('POST', `/api/employees/${userId}/interests`, editableInterests);
+      
+      // Format the interests to match what the server expects
+      // Server expects { interests: [...] }
+      const formattedData = { 
+        interests: editableInterests.map(interest => ({
+          ...interest,
+          // For custom interests, make sure they have both label and customLabel fields set
+          label: interest.customLabel || interest.label,
+          customLabel: interest.customLabel,
+          // Ensure proper ID handling for custom interests (temporary negative IDs)
+          id: interest.id < 0 ? undefined : interest.id
+        }))
+      };
+      
+      const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
       
       if (response.ok) {
         const updatedInterests = await response.json();
@@ -282,7 +296,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
         });
       } else {
-        throw new Error('Failed to save interests');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to save interests');
       }
     } catch (error) {
       console.error('Failed to save interests:', error);
