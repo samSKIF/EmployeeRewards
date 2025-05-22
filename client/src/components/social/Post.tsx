@@ -45,10 +45,23 @@ export const Post = ({ post, currentUser }: PostProps) => {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  // Format the date
+  // Format the date with localization
   const formattedDate = formatDistanceToNow(new Date(post.createdAt), { 
     addSuffix: true 
   });
+  
+  // Override the formatted date with translated version if needed
+  const timeAgoTranslation = () => {
+    const date = new Date(post.createdAt);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 24) {
+      return t("social.aboutHoursAgo", { hours: diffInHours });
+    }
+    
+    return formattedDate;
+  };
 
   // Add reaction mutation
   const addReactionMutation = useMutation({
@@ -457,7 +470,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
             className="flex items-center gap-1 px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <Share2 className="h-4 w-4" />
-            <span className="text-sm hidden sm:inline">Share</span>
+            <span className="text-sm hidden sm:inline">{t("social.share")}</span>
           </button>
         </div>
         

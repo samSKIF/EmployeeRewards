@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ export default function SocialPage() {
   const { toast } = useToast();
   const { branding } = useBranding();
   const { signOut } = useFirebaseAuth();
+  const { t } = useTranslation();
   const [postContent, setPostContent] = useState("");
   const [currentSection, setCurrentSection] = useState("townhall");
   const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
@@ -446,9 +448,9 @@ export default function SocialPage() {
           {/* Filters */}
           <div className="flex justify-end items-center mb-4">
             <div className="flex items-center text-sm text-gray-600">
-              <span>Filter by:</span>
+              <span>{t("social.filterBy")}</span>
               <button className="ml-2 border border-gray-300 rounded-md px-3 py-1 flex items-center">
-                <span>My Company</span>
+                <span>{t("social.myCompany")}</span>
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
             </div>

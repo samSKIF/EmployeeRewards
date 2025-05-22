@@ -56,9 +56,11 @@
     "yourDirectReports": "Your Direct Reports",
     "days": "days",
     "ago": "ago",
-    "filterBy": "Filter by",
+    "filterBy": "Filter by:",
     "myCompany": "My Company",
-    "showDetails": "Show Details"
+    "showDetails": "Show Details",
+    "deletePost": "Delete post",
+    "aboutHoursAgo": "about {{hours}} hours ago"
   },
   "profile": {
     "editProfile": "Edit Profile",

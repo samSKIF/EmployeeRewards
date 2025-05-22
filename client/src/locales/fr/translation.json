@@ -56,9 +56,11 @@
     "yourDirectReports": "Vos Subordonnés Directs",
     "days": "jours",
     "ago": "il y a",
-    "filterBy": "Filtrer par",
+    "filterBy": "Filtrer par :",
     "myCompany": "Mon Entreprise",
-    "showDetails": "Afficher les Détails"
+    "showDetails": "Afficher les Détails",
+    "deletePost": "Supprimer le post",
+    "aboutHoursAgo": "il y a environ {{hours}} heures"
   },
   "profile": {
     "editProfile": "Modifier le Profil",
