@@ -31,11 +31,11 @@ const validateRequestBody = (schema: z.ZodType<any, any>) => {
 };
 
 // Autocomplete lookup for interests
-// GET /api/interests?query=...
+// GET /api/interests?query=... or GET /api/interests?popular=true
 router.get("/interests", async (req: AuthenticatedRequest, res) => {
   try {
     console.log("Interests microservice: Handling interests lookup");
-    const { query } = req.query;
+    const { query, popular } = req.query;
     
     let allInterests;
     if (query && typeof query === "string") {
@@ -45,6 +45,40 @@ router.get("/interests", async (req: AuthenticatedRequest, res) => {
         .from(interests)
         .where(ilike(interests.label, `%${query}%`))
         .limit(20);
+    } else if (popular === 'true') {
+      // Return popular interests for suggestions
+      console.log("Interests microservice: Fetching popular interests");
+      
+      try {
+        // Just get a sample of interests for now
+        const result = await db
+          .select()
+          .from(interests)
+          .limit(10);
+          
+        allInterests = result;
+        
+        // If no interests exist in the database, use default set
+        if (result.length === 0) {
+          throw new Error("No interests found in database");
+        }
+      } catch (error) {
+        console.log("Error fetching popular interests:", error);
+        
+        // Default interests to show if database is empty
+        allInterests = [
+          { id: 1, label: "Reading", category: "Lifestyle & Wellness", icon: "📚" },
+          { id: 2, label: "Travel", category: "Lifestyle & Wellness", icon: "✈️" },
+          { id: 3, label: "Photography", category: "Arts & Creativity", icon: "📷" },
+          { id: 4, label: "Cooking", category: "Food & Drink", icon: "🍳" },
+          { id: 5, label: "Fitness", category: "Sports & Fitness", icon: "🏋️" },
+          { id: 6, label: "Music", category: "Arts & Creativity", icon: "🎵" },
+          { id: 7, label: "Gaming", category: "Technology & Gaming", icon: "🎮" },
+          { id: 8, label: "Hiking", category: "Sports & Fitness", icon: "🥾" },
+          { id: 9, label: "Gardening", category: "Lifestyle & Wellness", icon: "🌱" },
+          { id: 10, label: "Coding", category: "Technology & Gaming", icon: "💻" }
+        ];
+      }
     } else {
       // Return top 20 interests if no query provided
       allInterests = await db

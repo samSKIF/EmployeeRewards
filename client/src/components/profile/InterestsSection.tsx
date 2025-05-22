@@ -103,6 +103,20 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const handleEditClick = () => {
     setEditableInterests([...interests]);
     setIsModalOpen(true);
+    
+    // Ensure the suggested interests dropdown is visible immediately
+    if (popularInterests.length === 0) {
+      const fetchPopularInterests = async () => {
+        try {
+          const response = await apiRequest('GET', `/api/interests?popular=true`);
+          const data = await response.json();
+          setPopularInterests(data);
+        } catch (error) {
+          console.error('Failed to fetch popular interests:', error);
+        }
+      };
+      fetchPopularInterests();
+    }
   };
 
   // Add interest

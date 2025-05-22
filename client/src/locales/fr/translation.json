@@ -308,6 +308,7 @@
     "editTitle": "Modifier Vos Centres d'Intérêt",
     "searchPlaceholder": "Rechercher des centres d'intérêt ou ajouter les vôtres...",
     "noResults": "Aucun centre d'intérêt correspondant trouvé.",
+    "suggestedInterests": "Centres d'Intérêt Suggérés",
     "addCustom": "Ajouter \"{{term}}\" comme centre d'intérêt personnalisé",
     "selected": "Centres d'Intérêt Sélectionnés",
     "noInterestsSelected": "Aucun centre d'intérêt sélectionné",
