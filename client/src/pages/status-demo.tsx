@@ -64,7 +64,7 @@ const StatusDemo = () => {
               <CardTitle className="flex justify-between items-center">
                 {t('statusDemo.currentUser', 'Your Profile')}
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/admin-status-types">
+                  <Link href="/admin/status-types">
                     <Settings className="h-4 w-4 mr-2" />
                     {t('statusDemo.manageStatuses', 'Manage Status Types')}
                   </Link>
