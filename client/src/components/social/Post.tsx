@@ -363,7 +363,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
             </Avatar>
             <div>
               <div className="font-medium text-gray-900">{post.user?.name || post.userName || 'User'}</div>
-              <div className="text-xs text-gray-500">{formattedDate}</div>
+              <div className="text-xs text-gray-500">{timeAgoTranslation()}</div>
             </div>
           </div>
           

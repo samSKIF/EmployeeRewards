@@ -60,7 +60,8 @@
     "myCompany": "My Company",
     "showDetails": "Show Details",
     "deletePost": "Delete post",
-    "aboutHoursAgo": "about {{hours}} hours ago"
+    "aboutHoursAgo": "about {{hours}} hours ago",
+    "viewAllComments": "View all {{count}} comments"
   },
   "profile": {
     "editProfile": "Edit Profile",
