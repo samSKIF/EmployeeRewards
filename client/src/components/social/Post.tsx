@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { PostWithDetails, User } from "@shared/types";
 import { 
   MessageCircle, 
@@ -42,6 +43,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
   const commentInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // Format the date
   const formattedDate = formatDistanceToNow(new Date(post.createdAt), { 
@@ -246,7 +248,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
     >
       {icon}
       <span className="text-sm">{count || ""}</span>
-      <span className="text-sm hidden sm:inline">{label}</span>
+      <span className="text-sm hidden sm:inline">{t(`social.${type.toLowerCase()}`)}</span>
     </button>
   );
 
@@ -363,7 +365,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleDeletePost} className="text-red-600">
                   <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete post</span>
+                  <span>{t("social.deletePost")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -447,7 +449,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
               onClick={focusCommentInput}
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="text-sm hidden sm:inline">Comment</span>
+              <span className="text-sm hidden sm:inline">{t("social.comment")}</span>
             </button>
           </div>
           
