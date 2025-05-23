@@ -53,8 +53,7 @@ export function TenureRing({ yearsOfService, className = "" }: TenureRingProps) 
   const style = getTenureStyle(yearsOfService);
 
   return (
-    <div className={`relative ${className}`}>
-      <div className={`absolute inset-0 rounded-full ${style.ringColor} ${style.ringWidth}`} />
+    <div className={`absolute inset-0 rounded-full ${style.ringColor} ${style.ringWidth}`}>
       {style.showNumber && (
         <div className={style.numberStyle}>
           {yearsOfService >= 10 ? Math.floor(yearsOfService) : ''}
