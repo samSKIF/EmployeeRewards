@@ -41,6 +41,316 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/recognition', recognitionRoutes);
   app.use('/api/interests', interestsRoutes);
   app.use('/api/employee-status', employeeStatusRoutes);
+
+  // Celebrations API - Birthday and Work Anniversary tracking
+  app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const today = new Date();
+      const todayMonth = today.getMonth() + 1;
+      const todayDay = today.getDate();
+
+      // Get users with birthdays today
+      const birthdayUsers = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            sql`${users.birthDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${todayMonth}`,
+            sql`EXTRACT(DAY FROM ${users.birthDate}) = ${todayDay}`
+          )
+        );
+
+      // Get users with work anniversaries today
+      const anniversaryUsers = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            sql`${users.hireDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${todayMonth}`,
+            sql`EXTRACT(DAY FROM ${users.hireDate}) = ${todayDay}`
+          )
+        );
+
+      const celebrations = [
+        ...birthdayUsers.map(user => ({
+          id: user.id,
+          user: {
+            id: user.id,
+            name: user.name,
+            surname: user.surname,
+            avatarUrl: user.avatarUrl,
+            department: user.department,
+            location: user.location,
+            birthDate: user.birthDate,
+            hireDate: user.hireDate,
+            jobTitle: user.jobTitle
+          },
+          type: 'birthday',
+          date: today.toISOString().split('T')[0],
+          hasReacted: false,
+          hasCommented: false
+        })),
+        ...anniversaryUsers.map(user => {
+          const years = user.hireDate ? new Date().getFullYear() - new Date(user.hireDate).getFullYear() : 0;
+          return {
+            id: user.id,
+            user: {
+              id: user.id,
+              name: user.name,
+              surname: user.surname,
+              avatarUrl: user.avatarUrl,
+              department: user.department,
+              location: user.location,
+              birthDate: user.birthDate,
+              hireDate: user.hireDate,
+              jobTitle: user.jobTitle
+            },
+            type: 'work_anniversary',
+            date: today.toISOString().split('T')[0],
+            yearsOfService: years,
+            hasReacted: false,
+            hasCommented: false
+          };
+        })
+      ];
+
+      res.json(celebrations);
+    } catch (error) {
+      console.error('Error fetching today\'s celebrations:', error);
+      res.status(500).json({ error: 'Failed to fetch celebrations' });
+    }
+  });
+
+  app.get('/api/celebrations/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const celebrations = [];
+      
+      // Check next 5 days
+      for (let i = 1; i <= 5; i++) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + i);
+        const month = targetDate.getMonth() + 1;
+        const day = targetDate.getDate();
+
+        // Get birthdays for this date
+        const birthdayUsers = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              sql`${users.birthDate} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
+            )
+          );
+
+        // Get work anniversaries for this date
+        const anniversaryUsers = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              sql`${users.hireDate} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
+            )
+          );
+
+        celebrations.push(
+          ...birthdayUsers.map(user => ({
+            id: user.id,
+            user: {
+              id: user.id,
+              name: user.name,
+              surname: user.surname,
+              avatarUrl: user.avatarUrl,
+              department: user.department,
+              location: user.location,
+              birthDate: user.birthDate,
+              hireDate: user.hireDate,
+              jobTitle: user.jobTitle
+            },
+            type: 'birthday',
+            date: targetDate.toISOString().split('T')[0],
+            hasReacted: false,
+            hasCommented: false
+          })),
+          ...anniversaryUsers.map(user => {
+            const years = user.hireDate ? targetDate.getFullYear() - new Date(user.hireDate).getFullYear() : 0;
+            return {
+              id: user.id,
+              user: {
+                id: user.id,
+                name: user.name,
+                surname: user.surname,
+                avatarUrl: user.avatarUrl,
+                department: user.department,
+                location: user.location,
+                birthDate: user.birthDate,
+                hireDate: user.hireDate,
+                jobTitle: user.jobTitle
+              },
+              type: 'work_anniversary',
+              date: targetDate.toISOString().split('T')[0],
+              yearsOfService: years,
+              hasReacted: false,
+              hasCommented: false
+            };
+          })
+        );
+      }
+
+      // Sort by date
+      celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      res.json(celebrations);
+    } catch (error) {
+      console.error('Error fetching upcoming celebrations:', error);
+      res.status(500).json({ error: 'Failed to fetch upcoming celebrations' });
+    }
+  });
+
+  app.get('/api/celebrations/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { department, location } = req.query;
+      const celebrations = [];
+      
+      // Check last 5 days, today, and next 5 days
+      for (let i = -5; i <= 5; i++) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + i);
+        const month = targetDate.getMonth() + 1;
+        const day = targetDate.getDate();
+
+        // Build query conditions
+        let birthdayConditions = [
+          sql`${users.birthDate} IS NOT NULL`,
+          sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
+          sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
+        ];
+
+        let anniversaryConditions = [
+          sql`${users.hireDate} IS NOT NULL`,
+          sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+          sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
+        ];
+
+        // Add filters if specified
+        if (department && department !== 'all') {
+          birthdayConditions.push(eq(users.department, department as string));
+          anniversaryConditions.push(eq(users.department, department as string));
+        }
+
+        if (location && location !== 'all') {
+          birthdayConditions.push(eq(users.location, location as string));
+          anniversaryConditions.push(eq(users.location, location as string));
+        }
+
+        // Get birthdays for this date
+        const birthdayUsers = await db
+          .select()
+          .from(users)
+          .where(and(...birthdayConditions));
+
+        // Get work anniversaries for this date
+        const anniversaryUsers = await db
+          .select()
+          .from(users)
+          .where(and(...anniversaryConditions));
+
+        celebrations.push(
+          ...birthdayUsers.map(user => ({
+            id: user.id,
+            user: {
+              id: user.id,
+              name: user.name,
+              surname: user.surname,
+              avatarUrl: user.avatarUrl,
+              department: user.department,
+              location: user.location,
+              birthDate: user.birthDate,
+              hireDate: user.hireDate,
+              jobTitle: user.jobTitle
+            },
+            type: 'birthday',
+            date: targetDate.toISOString().split('T')[0],
+            hasReacted: false,
+            hasCommented: false
+          })),
+          ...anniversaryUsers.map(user => {
+            const years = user.hireDate ? targetDate.getFullYear() - new Date(user.hireDate).getFullYear() : 0;
+            return {
+              id: user.id,
+              user: {
+                id: user.id,
+                name: user.name,
+                surname: user.surname,
+                avatarUrl: user.avatarUrl,
+                department: user.department,
+                location: user.location,
+                birthDate: user.birthDate,
+                hireDate: user.hireDate,
+                jobTitle: user.jobTitle
+              },
+              type: 'work_anniversary',
+              date: targetDate.toISOString().split('T')[0],
+              yearsOfService: years,
+              hasReacted: false,
+              hasCommented: false
+            };
+          })
+        );
+      }
+
+      // Sort by date
+      celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      res.json(celebrations);
+    } catch (error) {
+      console.error('Error fetching extended celebrations:', error);
+      res.status(500).json({ error: 'Failed to fetch extended celebrations' });
+    }
+  });
+
+  app.get('/api/users/departments', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const result = await db
+        .selectDistinct({ department: users.department })
+        .from(users)
+        .where(sql`${users.department} IS NOT NULL`);
+
+      const departments = result
+        .map(row => row.department)
+        .filter(dept => dept && dept.trim() !== '')
+        .sort();
+
+      res.json(departments);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      res.status(500).json({ error: 'Failed to fetch departments' });
+    }
+  });
+
+  app.get('/api/users/locations', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const result = await db
+        .selectDistinct({ location: users.location })
+        .from(users)
+        .where(sql`${users.location} IS NOT NULL`);
+
+      const locations = result
+        .map(row => row.location)
+        .filter(location => location && location.trim() !== '')
+        .sort();
+
+      res.json(locations);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      res.status(500).json({ error: 'Failed to fetch locations' });
+    }
+  });
   // Create corporate admin account
   app.post("/api/admin/corporate-account", async (req, res) => {
     try {

@@ -35,6 +35,7 @@ import {
   WalletWidget,
   PrioritiesWidget
 } from "@/components/social";
+import CelebrationCenter from "@/components/CelebrationCenter";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
@@ -500,37 +501,8 @@ export default function SocialPage() {
         
         {/* Right sidebar - exactly 42% of center width */}
         <div className="hidden lg:block lg:col-span-3 w-full" style={{ maxWidth: "750px" }}>
-          {/* Action Items section */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Action Items</h3>
-              
-              <div className="flex items-start mb-4">
-                <div className="flex-shrink-0 mr-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-red-100 text-red-700">
-                      AD
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <div>
-                  <div className="text-sm">
-                    <span>Your 1 on 1 with </span>
-                    <span className="font-medium text-blue-600">Andy Dwyer</span>
-                    <span> is coming soon. Review the agenda!</span>
-                  </div>
-                  <div className="flex mt-2 space-x-2">
-                    <button className="text-xs px-2 py-1 border border-gray-300 hover:bg-gray-100 rounded">
-                      Hide
-                    </button>
-                    <button className="text-xs px-2 py-1 bg-blue-500 text-white hover:bg-blue-600 rounded">
-                      Review
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Celebrations section */}
+          <CelebrationCenter />
           
           {/* Last Thanked section */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
