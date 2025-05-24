@@ -339,7 +339,24 @@ export default function CelebrationCenter() {
           </Dialog>
 
           {todayCelebrations && todayCelebrations.length > 0 && (
-            <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
+            <Button 
+              size="sm" 
+              className="bg-pink-500 hover:bg-pink-600"
+              onClick={() => {
+                const celebration = todayCelebrations?.[0];
+                if (celebration) {
+                  fetch(`/api/celebrations/${celebration.id}/react`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    }
+                  }).then(() => {
+                    // Refetch celebrations to update UI
+                    window.location.reload();
+                  });
+                }
+              }}
+            >
               <Heart className="w-4 h-4 mr-2" />
               Celebrate
             </Button>
