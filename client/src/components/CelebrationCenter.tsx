@@ -114,8 +114,8 @@ export default function CelebrationCenter() {
   // Get full comment with user info to return
   const filteredExtendedCelebrations = Array.isArray(extendedCelebrations) 
     ? extendedCelebrations.filter(event => {
-        const matchesDepartment = departmentFilter === "all" || event.user.department === departmentFilter;
-        const matchesLocation = locationFilter === "all" || event.user.location === locationFilter;
+        const matchesDepartment = departmentFilter === "all" || event.user?.department === departmentFilter;
+        const matchesLocation = locationFilter === "all" || event.user?.location === locationFilter;
         return matchesDepartment && matchesLocation;
       })
     : [];
