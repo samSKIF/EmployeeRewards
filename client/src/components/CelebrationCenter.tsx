@@ -111,11 +111,14 @@ export default function CelebrationCenter() {
     return "Multiple celebrations today! Click to see all.";
   };
 
-  const filteredExtendedCelebrations = extendedCelebrations?.filter(event => {
-    const matchesDepartment = departmentFilter === "all" || event.user.department === departmentFilter;
-    const matchesLocation = locationFilter === "all" || event.user.location === locationFilter;
-    return matchesDepartment && matchesLocation;
-  });
+  // Get full comment with user info to return
+  const filteredExtendedCelebrations = Array.isArray(extendedCelebrations) 
+    ? extendedCelebrations.filter(event => {
+        const matchesDepartment = departmentFilter === "all" || event.user.department === departmentFilter;
+        const matchesLocation = locationFilter === "all" || event.user.location === locationFilter;
+        return matchesDepartment && matchesLocation;
+      })
+    : [];
 
   const groupedCelebrations = filteredExtendedCelebrations?.reduce((groups, event) => {
     const dateKey = event.date;
