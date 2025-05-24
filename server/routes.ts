@@ -244,6 +244,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           birthdayConditions.push(eq(users.department, department as string));
           anniversaryConditions.push(eq(users.department, department as string));
         }
+        
+        if (location && location !== 'all') {
+          birthdayConditions.push(eq(users.location, location as string));
+          anniversaryConditions.push(eq(users.location, location as string));
+        }
 
         if (location && location !== 'all') {
           birthdayConditions.push(eq(users.location, location as string));

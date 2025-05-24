@@ -48,7 +48,8 @@ export default function CelebrationCenter() {
 
   // Fetch extended celebrations for modal (last 5 days + today + next 5 days)
   const { data: extendedCelebrations } = useQuery<CelebrationEvent[]>({
-    queryKey: ['/api/celebrations/extended', departmentFilter, locationFilter],
+    queryKey: ['/api/celebrations/extended'],
+    queryFn: () => fetch(`/api/celebrations/extended?department=${departmentFilter}&location=${locationFilter}`).then(res => res.json()),
     enabled: showModal
   });
 
@@ -67,7 +68,7 @@ export default function CelebrationCenter() {
 
   const formatCelebrationText = (event: CelebrationEvent) => {
     const fullName = `${event.user.name} ${event.user.surname}`;
-    
+
     if (event.type === 'birthday') {
       if (isToday(new Date(event.date))) {
         return `${fullName} is celebrating their birthday today! 🎉`;
@@ -93,7 +94,7 @@ export default function CelebrationCenter() {
     if (todaysBirthdays.length > 0) {
       const firstPerson = todaysBirthdays[0];
       const name = `${firstPerson.user.name} ${firstPerson.user.surname}`;
-      
+
       if (todaysBirthdays.length === 1 && todaysAnniversaries.length === 0) {
         return `${name} is celebrating their birthday today! 🎂`;
       } else if (todaysBirthdays.length > 1) {
@@ -195,7 +196,7 @@ export default function CelebrationCenter() {
                   Team Celebrations
                 </DialogTitle>
               </DialogHeader>
-              
+
               {/* Filters */}
               <div className="flex gap-4 mb-6">
                 <div className="flex-1">
@@ -236,7 +237,7 @@ export default function CelebrationCenter() {
                     const celebrationDate = new Date(date);
                     const isPast = celebrationDate < new Date() && !isToday(celebrationDate);
                     const isTodayDate = isToday(celebrationDate);
-                    
+
                     return (
                       <div key={date} className={`p-4 rounded-lg border ${
                         isTodayDate ? 'bg-pink-50 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800' :
@@ -258,7 +259,7 @@ export default function CelebrationCenter() {
                             </Badge>
                           )}
                         </div>
-                        
+
                         <div className="grid gap-3 sm:grid-cols-2">
                           {events.map((event) => (
                             <div
@@ -311,7 +312,7 @@ export default function CelebrationCenter() {
               </div>
             </DialogContent>
           </Dialog>
-          
+
           {todayCelebrations && todayCelebrations.length > 0 && (
             <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
               <Heart className="w-4 h-4 mr-2" />
