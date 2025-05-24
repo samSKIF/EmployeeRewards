@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Cake, Calendar, Heart, Users, MapPin, Building2 } from "lucide-react";
+import { Cake, Calendar, Heart, Users, MapPin, Building2, Trophy } from "lucide-react";
 import { format, isToday, isTomorrow, addDays, subDays } from "date-fns";
 
 interface CelebrationUser {
@@ -199,7 +199,28 @@ export default function CelebrationCenter() {
                   <Cake className="w-5 h-5 text-pink-500" />
                   Team Celebrations
                 </DialogTitle>
-              </DialogHeader>
+                  <DialogDescription>
+                    All upcoming celebrations and milestones
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                  {extendedCelebrations?.map((celebration) => (
+                    <div key={celebration.id} className="flex items-start gap-4 p-4 rounded-lg border">
+                      <div className="rounded-full bg-pink-100 p-2">
+                        {celebration.type === 'birthday' ? (
+                          <Cake className="w-4 h-4 text-pink-500" />
+                        ) : (
+                          <Trophy className="w-4 h-4 text-amber-500" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{celebration.user.name}</h4>
+                        <p className="text-sm text-gray-500">{celebration.date}</p>
+                        <p className="text-sm">{formatCelebrationText(celebration)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
               {/* Filters */}
               <div className="flex gap-4 mb-6">
