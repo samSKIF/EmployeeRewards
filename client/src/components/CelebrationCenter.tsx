@@ -48,8 +48,7 @@ export default function CelebrationCenter() {
 
   // Fetch extended celebrations for modal (last 5 days + today + next 5 days)
   const { data: extendedCelebrations } = useQuery<CelebrationEvent[]>({
-    queryKey: ['/api/celebrations/extended'],
-    queryFn: () => fetch(`/api/celebrations/extended?department=${departmentFilter}&location=${locationFilter}`).then(res => res.json()),
+    queryKey: ['/api/celebrations/extended', departmentFilter, locationFilter],
     enabled: showModal
   });
 

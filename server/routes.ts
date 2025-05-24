@@ -217,6 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/celebrations/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       const { department, location } = req.query;
+      console.log('Extended celebrations API called with filters:', { department, location });
       const celebrations = [];
       
       // Check last 5 days, today, and next 5 days
