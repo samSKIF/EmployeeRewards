@@ -69,6 +69,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
         );
 
+      const todayDate = new Date();
+      
+      console.log('Birthday users found:', birthdayUsers.length);
+      console.log('Anniversary users found:', anniversaryUsers.length);
+      
       const celebrations = [
         ...birthdayUsers.map(user => ({
           id: user.id,
@@ -84,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             jobTitle: user.jobTitle
           },
           type: 'birthday',
-          date: today.toISOString().split('T')[0],
+          date: todayDate.toISOString().split('T')[0],
           hasReacted: false,
           hasCommented: false
         })),
@@ -104,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               jobTitle: user.jobTitle
             },
             type: 'work_anniversary',
-            date: today.toISOString().split('T')[0],
+            date: todayDate.toISOString().split('T')[0],
             yearsOfService: years,
             hasReacted: false,
             hasCommented: false
@@ -112,6 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       ];
 
+      console.log('Total celebrations returning:', celebrations.length);
       res.json(celebrations);
     } catch (error) {
       console.error('Error fetching today\'s celebrations:', error);
