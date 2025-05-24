@@ -45,10 +45,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Celebrations API - Birthday and Work Anniversary tracking
   app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const today = new Date();
-      const todayMonth = today.getMonth() + 1;
-      const todayDay = today.getDate();
-
       // Get users with birthdays today
       const birthdayUsers = await db
         .select()
@@ -56,8 +52,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(
           and(
             sql`${users.birthDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${todayMonth}`,
-            sql`EXTRACT(DAY FROM ${users.birthDate}) = ${todayDay}`
+            sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 
@@ -68,8 +64,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(
           and(
             sql`${users.hireDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${todayMonth}`,
-            sql`EXTRACT(DAY FROM ${users.hireDate}) = ${todayDay}`
+            sql`EXTRACT(MONTH FROM ${users.hireDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${users.hireDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 
