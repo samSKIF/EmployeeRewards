@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import managementRoutes from "./management-routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createAdminUser } from "./create-admin-user";
 import { setupStaticFileServing } from "./file-upload";
@@ -62,6 +63,9 @@ app.use((req, res, next) => {
   }
 
   const server = await registerRoutes(app);
+  
+  // Add management routes for SaaS backend
+  app.use('/management', managementRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
