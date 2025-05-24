@@ -51,6 +51,11 @@ function App() {
 
   // Role-based redirect from root based on user type
   useEffect(() => {
+    // Skip all redirect logic for management routes
+    if (location.startsWith("/management")) {
+      return;
+    }
+
     const token = localStorage.getItem("firebaseToken");
 
     // Only handle routing for unauthenticated users or root path
