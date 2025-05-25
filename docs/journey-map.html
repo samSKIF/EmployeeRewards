@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThrivioHR - User Journey Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .journey-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .journey-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .journey-stage {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .stage-header {
+            background: #14b8a6;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stage-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .stage-content.active {
+            display: block;
+        }
+        
+        .user-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .action-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .action-title {
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .action-description {
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="journey-container">
+        <div class="journey-header">
+            <h1>ThrivioHR User Journey Map</h1>
+            <p>Social Feed & Profile Page User Experience</p>
+        </div>
+        
+        <!-- Social Feed Journey -->
+        <div class="journey-stage">
+            <div class="stage-header" onclick="toggleStage(this)">
+                <span>🏠 Social Feed Page Journey</span>
+                <button class="toggle-btn">+</button>
+            </div>
+            <div class="stage-content">
+                <h3>Entry Points</h3>
+                <ul>
+                    <li>Navigation from sidebar</li>
+                    <li>Direct URL access</li>
+                    <li>Notification click</li>
+                </ul>
+                
+                <h3>User Actions Available</h3>
+                <div class="user-actions">
+                    <div class="action-card">
+                        <div class="action-title">Create Post</div>
+                        <div class="action-description">Write and share content with the team</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Send Recognition</div>
+                        <div class="action-description">Recognize colleagues with badges and points</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Create Poll</div>
+                        <div class="action-description">Gather team opinions through polls</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Engage with Posts</div>
+                        <div class="action-description">Like, comment, and react to content</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">View Celebrations</div>
+                        <div class="action-description">See birthdays and anniversaries</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Check Wallet</div>
+                        <div class="action-description">View points balance and transactions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Page Journey -->
+        <div class="journey-stage">
+            <div class="stage-header" onclick="toggleStage(this)">
+                <span>👤 Profile Page Journey</span>
+                <button class="toggle-btn">+</button>
+            </div>
+            <div class="stage-content">
+                <h3>Entry Points</h3>
+                <ul>
+                    <li>Avatar click in navigation</li>
+                    <li>Profile link in sidebar</li>
+                    <li>Direct URL navigation</li>
+                </ul>
+                
+                <h3>User Actions Available</h3>
+                <div class="user-actions">
+                    <div class="action-card">
+                        <div class="action-title">Edit Profile Info</div>
+                        <div class="action-description">Update title, department, responsibilities</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Upload Avatar</div>
+                        <div class="action-description">Change profile picture with image compression</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">View Contact Info</div>
+                        <div class="action-description">See email, phone, and work details</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Explore Interests</div>
+                        <div class="action-description">View personal interests and company trends</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Check Strengths</div>
+                        <div class="action-description">See personality strengths and traits</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">View History</div>
+                        <div class="action-description">Access work history and milestones</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Experience Patterns -->
+        <div class="journey-stage">
+            <div class="stage-header" onclick="toggleStage(this)">
+                <span>⚡ User Experience Patterns</span>
+                <button class="toggle-btn">+</button>
+            </div>
+            <div class="stage-content">
+                <h3>Loading & Feedback</h3>
+                <div class="user-actions">
+                    <div class="action-card">
+                        <div class="action-title">Loading States</div>
+                        <div class="action-description">Skeleton screens and spinners for smooth experience</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Toast Notifications</div>
+                        <div class="action-description">Success and error messages for all actions</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Real-time Updates</div>
+                        <div class="action-description">Live feed updates and reaction synchronization</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-title">Responsive Design</div>
+                        <div class="action-description">Optimized for mobile, tablet, and desktop</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleStage(header) {
+            const content = header.nextElementSibling;
+            const button = header.querySelector('.toggle-btn');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                button.textContent = '+';
+            } else {
+                content.classList.add('active');
+                button.textContent = '-';
+            }
+        }
+        
+        // Auto-expand first stage
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstStage = document.querySelector('.stage-header');
+            toggleStage(firstStage);
+        });
+    </script>
+</body>
+</html>
