@@ -8,10 +8,11 @@ const router = express.Router();
 // Helper function to get recognition analytics data
 async function getAnalyticsData(organizationId: number = 1) {
   try {
-    // Get total employee count from all users in the system
+    // Get total employee count (including employees with no organization - as shown in admin directory)
     const totalEmployees = await db
       .select({ count: count() })
-      .from(users);
+      .from(users)
+      .where(sql`${users.organizationId} = ${organizationId} OR ${users.organizationId} IS NULL`);
     
     // Get basic recognition stats for the organization
     const totalRecognitions = await db
@@ -20,14 +21,17 @@ async function getAnalyticsData(organizationId: number = 1) {
       .leftJoin(users, eq(recognitions.recipientId, users.id))
       .where(eq(users.organizationId, organizationId));
     
-    // Get department stats with employee counts from all users
+    // Get department stats with employee counts (including employees with no organization)
     const departmentStats = await db
       .select({
         department: users.department,
         employeeCount: count(users.id),
       })
       .from(users)
-      .where(sql`${users.department} IS NOT NULL`)
+      .where(and(
+        sql`${users.department} IS NOT NULL`,
+        sql`${users.organizationId} = ${organizationId} OR ${users.organizationId} IS NULL`
+      ))
       .groupBy(users.department);
 
     // Get recognition stats by department for the organization
