@@ -6,25 +6,35 @@ import { sql, eq, and, gte, desc, count, isNotNull } from 'drizzle-orm';
 const router = express.Router();
 
 // Helper function to get recognition analytics data
-async function getAnalyticsData() {
+async function getAnalyticsData(organizationId: number = 1) {
   try {
-    // Get total employee count
-    const totalEmployees = await db.select({ count: count() }).from(users);
+    // Get total employee count for the organization
+    const totalEmployees = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.organizationId, organizationId));
     
-    // Get basic recognition stats
-    const totalRecognitions = await db.select({ count: count() }).from(recognitions);
+    // Get basic recognition stats for the organization
+    const totalRecognitions = await db
+      .select({ count: count() })
+      .from(recognitions)
+      .leftJoin(users, eq(recognitions.recipientId, users.id))
+      .where(eq(users.organizationId, organizationId));
     
-    // Get department stats with employee counts
+    // Get department stats with employee counts for the organization
     const departmentStats = await db
       .select({
         department: users.department,
         employeeCount: count(users.id),
       })
       .from(users)
-      .where(sql`${users.department} IS NOT NULL`)
+      .where(and(
+        sql`${users.department} IS NOT NULL`,
+        eq(users.organizationId, organizationId)
+      ))
       .groupBy(users.department);
 
-    // Get recognition stats by department
+    // Get recognition stats by department for the organization
     const recognitionByDept = await db
       .select({
         department: users.department,
@@ -32,21 +42,28 @@ async function getAnalyticsData() {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(sql`${users.department} IS NOT NULL`)
+      .where(and(
+        sql`${users.department} IS NOT NULL`,
+        eq(users.organizationId, organizationId)
+      ))
       .groupBy(users.department);
 
-    // Get monthly trends (last 6 months)
+    // Get monthly trends (last 6 months) for the organization
     const monthlyTrends = await db
       .select({
         month: sql<string>`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`,
         count: count(recognitions.id),
       })
       .from(recognitions)
-      .where(gte(recognitions.createdAt, sql`NOW() - INTERVAL '6 months'`))
+      .leftJoin(users, eq(recognitions.recipientId, users.id))
+      .where(and(
+        gte(recognitions.createdAt, sql`NOW() - INTERVAL '6 months'`),
+        eq(users.organizationId, organizationId)
+      ))
       .groupBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`);
 
-    // Get top recognizers
+    // Get top recognizers for the organization
     const topRecognizers = await db
       .select({
         name: users.name,
@@ -55,12 +72,15 @@ async function getAnalyticsData() {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recognizerId, users.id))
-      .where(sql`${users.name} IS NOT NULL`)
+      .where(and(
+        sql`${users.name} IS NOT NULL`,
+        eq(users.organizationId, organizationId)
+      ))
       .groupBy(users.id, users.name, users.department)
       .orderBy(desc(count(recognitions.id)))
       .limit(10);
 
-    // Get most recognized employees
+    // Get most recognized employees for the organization
     const topRecipients = await db
       .select({
         name: users.name,
@@ -69,7 +89,10 @@ async function getAnalyticsData() {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(sql`${users.name} IS NOT NULL`)
+      .where(and(
+        sql`${users.name} IS NOT NULL`,
+        eq(users.organizationId, organizationId)
+      ))
       .groupBy(users.id, users.name, users.department)
       .orderBy(desc(count(recognitions.id)))
       .limit(10);
@@ -175,8 +198,12 @@ router.post('/ask', async (req, res) => {
       return res.status(400).json({ error: 'Question is required' });
     }
 
-    // Get current analytics data
-    const analyticsData = await getAnalyticsData();
+    // Get user's organization ID from the request
+    const user = req.user as any;
+    const organizationId = user?.organizationId || 1;
+
+    // Get current analytics data for the user's organization
+    const analyticsData = await getAnalyticsData(organizationId);
     
     if (!analyticsData) {
       return res.status(500).json({ error: 'Failed to fetch analytics data' });
