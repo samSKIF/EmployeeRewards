@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,7 +22,10 @@ import {
   Zap,
   Heart,
   Star,
-  Trophy
+  Trophy,
+  Bot,
+  Send,
+  Lightbulb
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, PieChart as RechartsPieChart, Cell, Area, AreaChart, Pie } from 'recharts';
 
@@ -70,6 +74,75 @@ export default function RecognitionAnalytics({ isAdmin = false, userId, teamId }
   const [dateRange, setDateRange] = useState('last-6-months');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // AI Chat state
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState('');
+  const [chatChart, setChatChart] = useState<any>(null);
+  
+  const queryClient = useQueryClient();
+  
+  // Get suggested questions
+  const { data: suggestions } = useQuery({
+    queryKey: ['/api/analytics/suggestions'],
+    enabled: true
+  });
+  
+  // AI Chat mutation
+  const askAI = useMutation({
+    mutationFn: async (question: string) => {
+      const response = await fetch('/api/analytics/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      const userMessage = {
+        id: Date.now() - 1,
+        type: 'user',
+        content: currentQuestion,
+        timestamp: new Date()
+      };
+      const aiMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: data.answer,
+        insights: data.insights,
+        chart: data.chartConfig,
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, userMessage, aiMessage]);
+      if (data.chartConfig) {
+        setChatChart(data.chartConfig);
+      }
+      setCurrentQuestion('');
+    },
+    onError: (error) => {
+      console.error('AI Chat error:', error);
+      const userMessage = {
+        id: Date.now() - 1,
+        type: 'user',
+        content: currentQuestion,
+        timestamp: new Date()
+      };
+      const errorMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: 'Sorry, I encountered an error processing your question. Please try again.',
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, userMessage, errorMessage]);
+      setCurrentQuestion('');
+    }
+  });
+  
+  const handleAskQuestion = (question: string) => {
+    if (!question.trim()) return;
+    setCurrentQuestion(question);
+    askAI.mutate(question);
+  };
 
   // In a real implementation, these would fetch from your API
   const { data: analytics } = useQuery({
@@ -206,12 +279,16 @@ export default function RecognitionAnalytics({ isAdmin = false, userId, teamId }
 
       {/* Main Analytics Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="insights">AI Insights</TabsTrigger>
+          <TabsTrigger value="chat">
+            <Bot className="w-4 h-4 mr-2" />
+            AI Chat
+          </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -485,6 +562,177 @@ export default function RecognitionAnalytics({ isAdmin = false, userId, teamId }
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        {/* AI Chat Tab */}
+        <TabsContent value="chat" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Chat Interface */}
+            <div className="lg:col-span-2">
+              <Card className="h-[600px] flex flex-col">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Bot className="h-5 w-5 mr-2 text-blue-500" />
+                    AI Analytics Assistant
+                  </CardTitle>
+                  <CardDescription>
+                    Ask questions about your recognition data in natural language
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col">
+                  {/* Chat Messages */}
+                  <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                    {chatMessages.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        <Bot className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-lg font-medium">Welcome to AI Analytics!</p>
+                        <p className="text-sm">Ask me anything about your recognition data.</p>
+                      </div>
+                    ) : (
+                      chatMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[80%] p-3 rounded-lg ${
+                              message.type === 'user'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-white border shadow-sm'
+                            }`}
+                          >
+                            <p className="text-sm">{message.content}</p>
+                            {message.chart && (
+                              <div className="mt-3 p-2 bg-gray-50 rounded">
+                                <p className="text-xs text-gray-600 mb-2">Generated Chart</p>
+                                <div className="h-40 bg-white rounded flex items-center justify-center">
+                                  <BarChart3 className="h-8 w-8 text-gray-400" />
+                                  <span className="ml-2 text-sm text-gray-500">Chart visualization</span>
+                                </div>
+                              </div>
+                            )}
+                            <p className="text-xs opacity-70 mt-1">
+                              {message.timestamp.toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {askAI.isPending && (
+                      <div className="flex justify-start">
+                        <div className="bg-white border shadow-sm p-3 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                            <span className="text-sm">AI is thinking...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Chat Input */}
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Ask about recognition trends, departments, top performers..."
+                      value={currentQuestion}
+                      onChange={(e) => setCurrentQuestion(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !askAI.isPending) {
+                          handleAskQuestion(currentQuestion);
+                        }
+                      }}
+                      disabled={askAI.isPending}
+                    />
+                    <Button
+                      onClick={() => handleAskQuestion(currentQuestion)}
+                      disabled={!currentQuestion.trim() || askAI.isPending}
+                      size="sm"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Suggested Questions & Help */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
+                    Suggested Questions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(suggestions?.suggestions || [
+                      "Which department has the most engagement this month?",
+                      "Show me sentiment trends in Sales over last quarter",
+                      "Who are our top 5 recognizers?",
+                      "What's the recognition trend for the last 6 months?",
+                      "Which team needs more recognition?",
+                      "How does Engineering compare to other departments?"
+                    ]).map((question: string, index: number) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-left h-auto p-3 justify-start"
+                        onClick={() => handleAskQuestion(question)}
+                        disabled={askAI.isPending}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="text-sm">{question}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>How to Use</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start space-x-2">
+                      <div className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mt-0.5">1</div>
+                      <p>Ask questions in natural language about recognition data</p>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <div className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mt-0.5">2</div>
+                      <p>Get instant insights with generated charts and analysis</p>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <div className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mt-0.5">3</div>
+                      <p>Export results or ask follow-up questions</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {chatChart && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Generated Chart</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-gray-50 rounded flex items-center justify-center">
+                      <PieChart className="h-8 w-8 text-gray-400" />
+                      <span className="ml-2 text-sm text-gray-500">
+                        Interactive chart would appear here
+                      </span>
+                    </div>
+                    <Button variant="outline" size="sm" className="w-full mt-3">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export as PDF
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
