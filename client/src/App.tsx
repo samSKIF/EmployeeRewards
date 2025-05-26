@@ -188,6 +188,11 @@ function App() {
                   <RecognitionAnalytics isAdmin={true} />
                 </SocialLayout>
               </Route>
+              <Route path="/insights/recognition">
+                <SocialLayout>
+                  <RecognitionAnalytics isAdmin={false} />
+                </SocialLayout>
+              </Route>
               <Route path="/admin/status-types">
                 <SocialLayout>
                   <AdminStatusTypes />
