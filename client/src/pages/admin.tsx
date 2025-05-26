@@ -8,7 +8,7 @@ import UserTable from "@/components/admin/UserTable";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users, ClipboardList, ShoppingBag, RefreshCcw } from "lucide-react";
+import { Users, ClipboardList, ShoppingBag, RefreshCcw, BarChart3 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -48,6 +48,12 @@ const Admin = () => {
             <Button variant="outline" className="flex items-center gap-2">
               <Users size={16} />
               <span>Employee Management</span>
+            </Button>
+          </Link>
+          <Link href="/admin/recognition-analytics">
+            <Button variant="outline" className="flex items-center gap-2">
+              <BarChart3 size={16} />
+              <span>Recognition Analytics</span>
             </Button>
           </Link>
           <Link href="/admin/surveys">

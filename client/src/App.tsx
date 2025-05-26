@@ -28,6 +28,7 @@ import OnboardingPage from "@/pages/admin/onboarding";
 import AdminLeaveManagement from "@/pages/admin/leave-management";
 import RecognitionSettingsPage from "@/pages/admin/recognition-settings";
 import Recognition from "@/pages/recognition";
+import RecognitionAnalytics from "@/pages/recognition-analytics";
 import AdminStatusTypes from "@/pages/admin-status-types";
 import StatusDemo from "@/pages/status-demo";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
@@ -180,6 +181,11 @@ function App() {
               <Route path="/admin/recognition-settings">
                 <SocialLayout>
                   <RecognitionSettingsPage />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/recognition-analytics">
+                <SocialLayout>
+                  <RecognitionAnalytics isAdmin={true} />
                 </SocialLayout>
               </Route>
               <Route path="/admin/status-types">

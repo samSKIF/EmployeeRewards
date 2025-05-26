@@ -101,7 +101,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     { icon: Store, label: t('dashboard.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
     { icon: ListChecks, label: t('dashboard.milestones'), onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Award, label: t('dashboard.awards'), onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
-    { icon: Eye, label: t('dashboard.insights'), onClick: () => navigateTo('/insights'), isActive: location === '/insights' },
+    { icon: Eye, label: t('dashboard.insights'), onClick: () => navigateTo('/insights/recognition'), isActive: location === '/insights/recognition' },
     { icon: CalendarDays, label: t('dashboard.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
     { icon: Settings, label: t('dashboard.setup'), onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
   ];
