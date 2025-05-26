@@ -1,15 +1,9 @@
 import express from 'express';
-import OpenAI from 'openai';
 import { db } from '../db';
 import { users, recognitions } from '@shared/schema';
 import { sql, eq, and, gte, desc, count, isNotNull } from 'drizzle-orm';
 
 const router = express.Router();
-
-// Initialize OpenAI - the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
-});
 
 // Helper function to get recognition analytics data
 async function getAnalyticsData() {
@@ -188,44 +182,74 @@ router.post('/ask', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch analytics data' });
     }
 
-    // Create context for AI
-    const context = `
-    You are an AI assistant for employee recognition analytics. Here's the current company data:
+    // Smart pattern matching for common analytics questions
+    const lowerQuestion = question.toLowerCase();
+    let answer = '';
+    let insights = [];
 
-    COMPANY OVERVIEW:
-    - Total Employees: ${analyticsData.totalEmployees}
-    - Total Recognitions: ${analyticsData.totalRecognitions}
+    // Employee count questions
+    if (lowerQuestion.includes('employee') && (lowerQuestion.includes('count') || lowerQuestion.includes('many') || lowerQuestion.includes('total'))) {
+      answer = `Your company has ${analyticsData.totalEmployees} total employees across all departments.`;
+      insights = [`Company size: ${analyticsData.totalEmployees} employees`, 'This represents your current workforce'];
+    }
     
-    DEPARTMENT BREAKDOWN:
-    ${analyticsData.departmentStats?.map(d => `${d.department}: ${d.employeeCount} employees`).join('\n') || 'No department data available'}
+    // Department questions
+    else if (lowerQuestion.includes('department')) {
+      if (lowerQuestion.includes('most') || lowerQuestion.includes('largest')) {
+        const largestDept = analyticsData.departmentStats?.reduce((max, dept) => 
+          dept.employeeCount > (max?.employeeCount || 0) ? dept : max
+        );
+        answer = largestDept ? 
+          `${largestDept.department} is your largest department with ${largestDept.employeeCount} employees.` :
+          'Department data is not available at the moment.';
+        insights = largestDept ? [`${largestDept.department}: ${largestDept.employeeCount} employees`, 'This department may need more recognition focus'] : [];
+      } else {
+        const deptList = analyticsData.departmentStats?.map(d => `${d.department}: ${d.employeeCount} employees`).join(', ') || 'No department data available';
+        answer = `Here's your department breakdown: ${deptList}`;
+        insights = ['Department distribution shows organizational structure', 'Consider recognition balance across departments'];
+      }
+    }
     
-    RECOGNITION BY DEPARTMENT:
-    ${analyticsData.recognitionByDept?.map(d => `${d.department}: ${d.recognitionCount} recognitions`).join('\n') || 'No recognition data available'}
+    // Recognition questions
+    else if (lowerQuestion.includes('recognition') && (lowerQuestion.includes('total') || lowerQuestion.includes('many'))) {
+      answer = `Your company has recorded ${analyticsData.totalRecognitions} total recognitions so far.`;
+      insights = [`Total recognitions: ${analyticsData.totalRecognitions}`, 'This shows your recognition culture activity'];
+    }
     
-    MONTHLY TRENDS (Last 6 months):
-    ${analyticsData.monthlyTrends?.map(d => `${d.month}: ${d.count} recognitions`).join('\n') || 'No trend data available'}
+    // Top recognizer questions
+    else if (lowerQuestion.includes('top') && (lowerQuestion.includes('recognizer') || lowerQuestion.includes('giver'))) {
+      const topRecognizer = analyticsData.topRecognizers?.[0];
+      answer = topRecognizer ? 
+        `${topRecognizer.name} from ${topRecognizer.department} is your top recognizer with ${topRecognizer.recognitionCount} recognitions given.` :
+        'Recognition data is not available at the moment.';
+      insights = topRecognizer ? [`${topRecognizer.name}: ${topRecognizer.recognitionCount} recognitions given`, 'This employee shows strong peer appreciation'] : [];
+    }
     
-    TOP RECOGNIZERS:
-    ${analyticsData.topRecognizers?.slice(0, 5).map(d => `${d.name} (${d.department}): ${d.recognitionCount} recognitions given`).join('\n') || 'No recognizer data available'}
+    // Trends questions
+    else if (lowerQuestion.includes('trend') || lowerQuestion.includes('pattern')) {
+      const recentTrend = analyticsData.monthlyTrends?.slice(-2);
+      if (recentTrend && recentTrend.length >= 2) {
+        const change = recentTrend[1].count - recentTrend[0].count;
+        const direction = change > 0 ? 'increased' : change < 0 ? 'decreased' : 'remained stable';
+        answer = `Recognition activity has ${direction} recently. Last month: ${recentTrend[1].count} recognitions vs previous month: ${recentTrend[0].count}.`;
+        insights = [`Monthly change: ${change > 0 ? '+' : ''}${change}`, `Trend direction: ${direction}`];
+      } else {
+        answer = 'Trend data is not available for analysis at the moment.';
+        insights = [];
+      }
+    }
     
-    TOP RECOGNIZED EMPLOYEES:
-    ${analyticsData.topRecipients?.slice(0, 5).map(d => `${d.name} (${d.department}): ${d.recognitionCount} recognitions received`).join('\n') || 'No recipient data available'}
+    // Default response for other questions
+    else {
+      answer = `I can help you analyze your recognition data! Here's a quick overview: You have ${analyticsData.totalEmployees} employees with ${analyticsData.totalRecognitions} total recognitions. Try asking specific questions about departments, top performers, or recognition trends.`;
+      insights = [
+        `${analyticsData.totalEmployees} total employees`,
+        `${analyticsData.totalRecognitions} total recognitions`,
+        'Ask about departments, trends, or top performers'
+      ];
+    }
 
-    Please answer the user's question about the company's recognition and employee data in a helpful, specific way. Use the exact numbers provided above. If the user asks about employee count, departments, recognition trends, or specific people, reference this data directly. Format your response in JSON with 'answer' and 'insights' fields.
-    `;
-
-    // Call OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        { role: "system", content: context },
-        { role: "user", content: question }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 500,
-    });
-
-    const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
+    const aiResponse = { answer, insights };
     
     // Generate chart configuration if applicable
     const chartConfig = generateChartConfig(question, analyticsData);
