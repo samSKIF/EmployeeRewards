@@ -14,11 +14,24 @@ const openai = new OpenAI({
 // Helper function to get recognition analytics data
 async function getAnalyticsData() {
   try {
+    // Get total employee count
+    const totalEmployees = await db.select({ count: count() }).from(users);
+    
     // Get basic recognition stats
     const totalRecognitions = await db.select({ count: count() }).from(recognitions);
     
-    // Get department stats
+    // Get department stats with employee counts
     const departmentStats = await db
+      .select({
+        department: users.department,
+        employeeCount: count(users.id),
+      })
+      .from(users)
+      .where(sql`${users.department} IS NOT NULL`)
+      .groupBy(users.department);
+
+    // Get recognition stats by department
+    const recognitionByDept = await db
       .select({
         department: users.department,
         recognitionCount: count(recognitions.id),
@@ -48,15 +61,33 @@ async function getAnalyticsData() {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recognizerId, users.id))
+      .where(sql`${users.name} IS NOT NULL`)
+      .groupBy(users.id, users.name, users.department)
+      .orderBy(desc(count(recognitions.id)))
+      .limit(10);
+
+    // Get most recognized employees
+    const topRecipients = await db
+      .select({
+        name: users.name,
+        department: users.department,
+        recognitionCount: count(recognitions.id),
+      })
+      .from(recognitions)
+      .leftJoin(users, eq(recognitions.recipientId, users.id))
+      .where(sql`${users.name} IS NOT NULL`)
       .groupBy(users.id, users.name, users.department)
       .orderBy(desc(count(recognitions.id)))
       .limit(10);
 
     return {
+      totalEmployees: totalEmployees[0]?.count || 0,
       totalRecognitions: totalRecognitions[0]?.count || 0,
       departmentStats,
+      recognitionByDept,
       monthlyTrends,
       topRecognizers,
+      topRecipients,
     };
   } catch (error) {
     console.error('Error fetching analytics data:', error);
@@ -159,20 +190,28 @@ router.post('/ask', async (req, res) => {
 
     // Create context for AI
     const context = `
-    You are an AI assistant for employee recognition analytics. Here's the current data:
+    You are an AI assistant for employee recognition analytics. Here's the current company data:
 
-    Total Recognitions: ${analyticsData.totalRecognitions}
+    COMPANY OVERVIEW:
+    - Total Employees: ${analyticsData.totalEmployees}
+    - Total Recognitions: ${analyticsData.totalRecognitions}
     
-    Department Statistics:
-    ${analyticsData.departmentStats?.map(d => `${d.department}: ${d.recognitionCount} recognitions`).join('\n') || 'No department data'}
+    DEPARTMENT BREAKDOWN:
+    ${analyticsData.departmentStats?.map(d => `${d.department}: ${d.employeeCount} employees`).join('\n') || 'No department data available'}
     
-    Monthly Trends (last 6 months):
-    ${analyticsData.monthlyTrends?.map(d => `${d.month}: ${d.count} recognitions`).join('\n') || 'No trend data'}
+    RECOGNITION BY DEPARTMENT:
+    ${analyticsData.recognitionByDept?.map(d => `${d.department}: ${d.recognitionCount} recognitions`).join('\n') || 'No recognition data available'}
     
-    Top Recognizers:
-    ${analyticsData.topRecognizers?.slice(0, 5).map(d => `${d.name} (${d.department}): ${d.recognitionCount} recognitions`).join('\n') || 'No recognizer data'}
+    MONTHLY TRENDS (Last 6 months):
+    ${analyticsData.monthlyTrends?.map(d => `${d.month}: ${d.count} recognitions`).join('\n') || 'No trend data available'}
+    
+    TOP RECOGNIZERS:
+    ${analyticsData.topRecognizers?.slice(0, 5).map(d => `${d.name} (${d.department}): ${d.recognitionCount} recognitions given`).join('\n') || 'No recognizer data available'}
+    
+    TOP RECOGNIZED EMPLOYEES:
+    ${analyticsData.topRecipients?.slice(0, 5).map(d => `${d.name} (${d.department}): ${d.recognitionCount} recognitions received`).join('\n') || 'No recipient data available'}
 
-    Please answer the user's question about recognition analytics in a helpful, concise way. Focus on actionable insights and specific numbers from the data above. Format your response in JSON with 'answer' and 'insights' fields.
+    Please answer the user's question about the company's recognition and employee data in a helpful, specific way. Use the exact numbers provided above. If the user asks about employee count, departments, recognition trends, or specific people, reference this data directly. Format your response in JSON with 'answer' and 'insights' fields.
     `;
 
     // Call OpenAI API
