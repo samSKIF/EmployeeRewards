@@ -15,6 +15,7 @@ import leaveRoutes from './microservices/leave/index';
 import recognitionRoutes from './microservices/recognition/index';
 import interestsRoutes from './microservices/interests/index';
 import employeeStatusRoutes from './microservices/employee-status/index';
+import recognitionAIRoutes from './api/recognition-ai';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -41,6 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/recognition', recognitionRoutes);
   app.use('/api/interests', interestsRoutes);
   app.use('/api/employee-status', employeeStatusRoutes);
+  app.use('/api/analytics', recognitionAIRoutes);
 
   // Celebrations API - Birthday and Work Anniversary tracking
   app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
