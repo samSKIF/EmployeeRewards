@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload } from "lucide-react";
+import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Download } from "lucide-react";
 import { format } from "date-fns";
 
 // Define employee form data type
@@ -90,9 +90,32 @@ export default function AdminEmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
+  // Download all employees function
+  const downloadAllEmployees = () => {
+    const firebaseToken = localStorage.getItem("firebaseToken");
+    const jwtToken = localStorage.getItem("token");
+    const token = firebaseToken || jwtToken;
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You need to be logged in to download employees",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Download all employees as Excel
+    window.location.href = `/api/admin/employees/export?token=${token}`;
+    
+    toast({
+      title: "Employee List Downloading",
+      description: "Complete employee list is being downloaded to your device"
+    });
+  };
+
   // Download template function
   const downloadTemplate = () => {
-    // Get Firebase token first, then fallback to JWT token (matching queryClient.ts approach)
     const firebaseToken = localStorage.getItem("firebaseToken");
     const jwtToken = localStorage.getItem("token");
     const token = firebaseToken || jwtToken;
@@ -106,10 +129,8 @@ export default function AdminEmployeesPage() {
       return;
     }
     
-    // Use direct window location navigation for the download
     window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
     
-    // Show success message
     toast({
       title: "Template Downloading",
       description: "Employee template is being downloaded to your device"
@@ -352,6 +373,10 @@ export default function AdminEmployeesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Employee Management</h1>
         <div className="flex gap-2">
+          <Button onClick={downloadAllEmployees} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Download All
+          </Button>
           <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline">
             <Upload className="mr-2 h-4 w-4" />
             Bulk Upload

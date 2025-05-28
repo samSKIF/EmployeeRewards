@@ -2485,6 +2485,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export all employees as Excel
+  app.get("/api/admin/employees/export", verifyToken, verifyAdmin, tenantRouting, ensureTenantAccess, async (req: TenantRequest, res) => {
+    try {
+      const currentUser = req.user;
+      const tenantDb = req.tenantDb;
+      const companyId = req.companyId;
+      
+      if (!currentUser || !tenantDb) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      // Get all employees from the tenant's database
+      let employeesList = [];
+
+      if (companyId) {
+        const adminUsersFromCompany = await tenantDb.select()
+          .from(users)
+          .where(and(
+            eq(users.organizationId, companyId),
+            or(
+              eq(users.roleType, 'corporate_admin'),
+              eq(users.roleType, 'client_admin')
+            )
+          ));
+
+        if (adminUsersFromCompany.length > 0) {
+          const adminIds = adminUsersFromCompany.map((admin: any) => admin.id);
+          
+          const employeesFromTenant = await tenantDb.select()
+            .from(employees)
+            .where(inArray(employees.createdById, adminIds));
+          
+          const usersFromOrg = await tenantDb.select()
+            .from(users)
+            .where(eq(users.organizationId, companyId));
+          
+          employeesList = [...usersFromOrg];
+          
+          for (const employee of employeesFromTenant) {
+            const existsInUsers = employeesList.some(user => user.email === employee.email);
+            if (!existsInUsers) {
+              employeesList.push(employee);
+            }
+          }
+        }
+      } else {
+        const employeesCreatedByAdmin = await tenantDb.select()
+          .from(employees)
+          .where(eq(employees.createdById, currentUser.id));
+        
+        employeesList = employeesCreatedByAdmin;
+      }
+
+      // Create Excel workbook
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employees');
+
+      // Define headers with Employee ID as the first column
+      const headers = [
+        { header: 'Employee ID', key: 'employeeId', width: 15 },
+        { header: 'First Name', key: 'name', width: 20 },
+        { header: 'Last Name', key: 'surname', width: 20 },
+        { header: 'Email', key: 'email', width: 30 },
+        { header: 'Phone Number', key: 'phoneNumber', width: 15 },
+        { header: 'Job Title', key: 'jobTitle', width: 25 },
+        { header: 'Department', key: 'department', width: 20 },
+        { header: 'Location', key: 'location', width: 20 },
+        { header: 'Manager Email', key: 'managerEmail', width: 30 },
+        { header: 'Gender', key: 'sex', width: 10 },
+        { header: 'Nationality', key: 'nationality', width: 15 },
+        { header: 'Birth Date', key: 'birthDate', width: 15 },
+        { header: 'Hire Date', key: 'hireDate', width: 15 },
+        { header: 'Status', key: 'status', width: 10 },
+        { header: 'Is Admin', key: 'isAdmin', width: 10 }
+      ];
+
+      worksheet.columns = headers;
+
+      // Style the header row
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4472C4' }
+      };
+
+      // Add employee data
+      employeesList.forEach(employee => {
+        worksheet.addRow({
+          employeeId: employee.id,
+          name: employee.name,
+          surname: employee.surname || '',
+          email: employee.email,
+          phoneNumber: employee.phoneNumber || '',
+          jobTitle: employee.jobTitle || '',
+          department: employee.department || '',
+          location: employee.location || '',
+          managerEmail: employee.managerEmail || '',
+          sex: employee.sex || '',
+          nationality: employee.nationality || '',
+          birthDate: employee.dateOfBirth || employee.birthDate ? 
+            (employee.dateOfBirth || employee.birthDate) : '',
+          hireDate: employee.dateJoined || employee.hireDate ? 
+            (employee.dateJoined || employee.hireDate) : '',
+          status: employee.status || 'active',
+          isAdmin: employee.isAdmin || false
+        });
+      });
+
+      // Set response headers for file download
+      const filename = `employees_${new Date().toISOString().split('T')[0]}.xlsx`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      // Write to response
+      await workbook.xlsx.write(res);
+      res.end();
+
+    } catch (error: any) {
+      console.error("Error exporting employees:", error);
+      res.status(500).json({ message: error.message || "Failed to export employees" });
+    }
+  });
+
   app.patch("/api/admin/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
