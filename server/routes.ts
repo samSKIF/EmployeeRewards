@@ -32,7 +32,7 @@ import {
   insertOnboardingAssignmentSchema, insertOnboardingProgressSchema,
   OnboardingPlan, OnboardingMission, OnboardingAssignment, OnboardingProgress
 } from "@shared/schema";
-import { eq, desc, asc, and, or, sql } from "drizzle-orm";
+import { eq, desc, asc, and, or, sql, inArray } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -2415,20 +2415,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin API - Employee Management
   app.get("/api/admin/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
-      // Get all employees from both the users table and the employees table
-      const [allUsers, allEmployees] = await Promise.all([
-        db.select().from(users),
-        db.select().from(employees)
-      ]);
+      const currentUser = req.user;
+      if (!currentUser) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      // Get the admin's organization ID
+      const adminOrganizationId = currentUser.organizationId;
       
-      // Combine the results, making sure to avoid duplicates
-      // Users from the users table may be admins or regular users
-      // Users from the employees table are specifically employees
-      const combinedEmployees = [...allUsers];
+      // If admin doesn't have an organization, get employees created by this admin
+      if (!adminOrganizationId) {
+        // Get employees created by this admin from the employees table
+        const employeesCreatedByAdmin = await db.select()
+          .from(employees)
+          .where(eq(employees.createdById, currentUser.id));
+        
+        return res.json(employeesCreatedByAdmin);
+      }
+
+      // Get users from the same organization from users table
+      const usersFromSameOrg = await db.select()
+        .from(users)
+        .where(eq(users.organizationId, adminOrganizationId));
       
-      // Add employees that aren't already in the users list
-      for (const employee of allEmployees) {
-        // Check if this employee already exists in the users list by email
+      // Get employees created by admins from the same organization
+      const adminIdsFromOrg = usersFromSameOrg
+        .filter(user => user.roleType === 'corporate_admin' || user.roleType === 'client_admin')
+        .map(admin => admin.id);
+      
+      const employeesFromSameOrg = await db.select()
+        .from(employees)
+        .where(inArray(employees.createdById, adminIdsFromOrg));
+      
+      // Combine results, avoiding duplicates by email
+      const combinedEmployees = [...usersFromSameOrg];
+      
+      for (const employee of employeesFromSameOrg) {
         const existsInUsers = combinedEmployees.some(user => user.email === employee.email);
         if (!existsInUsers) {
           combinedEmployees.push(employee);
@@ -2437,6 +2459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(combinedEmployees);
     } catch (error: any) {
+      console.error("Error fetching employees:", error);
       res.status(500).json({ message: error.message || "Failed to get employees" });
     }
   });

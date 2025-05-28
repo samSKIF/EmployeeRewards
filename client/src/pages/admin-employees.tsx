@@ -399,8 +399,8 @@ export default function AdminEmployeesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredEmployees.map((employee) => (
-                    <TableRow key={employee.id}>
+                  {filteredEmployees.map((employee, index) => (
+                    <TableRow key={`employee-${employee.id}-${employee.email}-${index}`}>
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={employee.avatarUrl || undefined} alt={employee.name} />
