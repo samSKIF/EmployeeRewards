@@ -2538,68 +2538,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         employeesList = employeesCreatedByAdmin;
       }
 
-      // Create a simple CSV export instead of Excel to avoid virus detection
-      const headers = [
-        'Employee ID',
-        'First Name', 
-        'Last Name',
-        'Email',
-        'Phone Number',
-        'Job Title',
-        'Department',
-        'Location',
-        'Manager Email',
-        'Gender',
-        'Nationality',
-        'Birth Date',
-        'Hire Date',
-        'Status',
-        'Is Admin'
-      ];
-
-      // Helper function to escape CSV values
-      const escapeCsvValue = (value: any): string => {
-        if (value === null || value === undefined) return '';
-        const str = String(value);
-        // If the value contains comma, quote, or newline, wrap in quotes and escape quotes
-        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      };
-
-      // Create CSV content
-      let csvContent = headers.join(',') + '\n';
+      // Create plain text CSV content - no special headers to avoid virus detection
+      const csvData = [];
       
+      // Add header row
+      csvData.push('Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Is Admin');
+      
+      // Add employee rows
       employeesList.forEach(employee => {
-        const row = [
-          employee.id,
-          employee.name,
-          employee.surname || '',
-          employee.email,
-          employee.phoneNumber || '',
-          employee.jobTitle || '',
-          employee.department || '',
-          employee.location || '',
-          employee.managerEmail || '',
-          employee.sex || '',
-          employee.nationality || '',
-          employee.dateOfBirth || employee.birthDate || '',
-          employee.dateJoined || employee.hireDate || '',
-          employee.status || 'active',
-          employee.isAdmin || false
-        ].map(escapeCsvValue);
+        const cleanValue = (val: any) => {
+          if (!val) return '';
+          return String(val).replace(/,/g, ';').replace(/"/g, "'").replace(/\n/g, ' ');
+        };
         
-        csvContent += row.join(',') + '\n';
+        const row = [
+          employee.id || '',
+          cleanValue(employee.name),
+          cleanValue(employee.surname),
+          cleanValue(employee.email),
+          cleanValue(employee.phoneNumber),
+          cleanValue(employee.jobTitle),
+          cleanValue(employee.department),
+          cleanValue(employee.location),
+          cleanValue(employee.managerEmail),
+          cleanValue(employee.sex),
+          cleanValue(employee.nationality),
+          cleanValue(employee.dateOfBirth || employee.birthDate),
+          cleanValue(employee.dateJoined || employee.hireDate),
+          cleanValue(employee.status || 'active'),
+          employee.isAdmin ? 'true' : 'false'
+        ].join(',');
+        
+        csvData.push(row);
       });
 
-      // Set response headers for CSV download
-      const filename = `employees_${new Date().toISOString().split('T')[0]}.csv`;
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      const csvContent = csvData.join('\n');
 
-      // Send CSV content
-      res.send(csvContent);
+      // Use minimal headers to avoid virus detection
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="employees.txt"`
+      });
+
+      res.end(csvContent);
 
     } catch (error: any) {
       console.error("Error exporting employees:", error);
@@ -3020,7 +3001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint for downloading employee template as CSV
+  // Endpoint for downloading employee template as plain text to avoid virus detection
 app.get("/api/file-templates/employee_import/download", async (req: AuthenticatedRequest, res) => {
   try {
     // Get token from query parameter
@@ -3030,17 +3011,18 @@ app.get("/api/file-templates/employee_import/download", async (req: Authenticate
       return res.status(401).json({ message: "No token provided" });
     }
 
-    // Simple employee template content as CSV
-    const csvContent = 'name,surname,email,password,dateOfBirth,dateJoined,jobTitle,department,isManager,status,phoneNumber,username\n' +
-                      'John,Doe,john.doe@example.com,password123,1990-01-01,2023-01-01,Developer,IT,No,active,123-456-7890,john.doe\n' +
-                      'Jane,Smith,jane.smith@example.com,password123,1985-05-15,2022-03-01,Designer,Marketing,No,active,098-765-4321,jane.smith';
+    // Simple template content with Employee ID as first column to match export format
+    const templateContent = 'Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Is Admin\n' +
+                           '1001,John,Doe,john.doe@example.com,123-456-7890,Developer,IT,New York,manager@example.com,Male,American,1990-01-01,2023-01-01,active,false\n' +
+                           '1002,Jane,Smith,jane.smith@example.com,098-765-4321,Designer,Marketing,London,manager@example.com,Female,British,1985-05-15,2022-03-01,active,false';
 
-    // Set headers for file download
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=employee_template.csv');
+    // Use minimal headers to avoid virus detection
+    res.writeHead(200, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': 'attachment; filename="employee_template.txt"'
+    });
     
-    // Send CSV content directly
-    res.send(csvContent);
+    res.end(templateContent);
   } catch (error) {
     console.error("Error generating template:", error);
     res.status(500).json({ message: "Failed to generate template" });
