@@ -127,7 +127,7 @@ export async function initializeTenantDatabase(companyId: number) {
  * Close all tenant database connections (for cleanup)
  */
 export function closeTenantConnections() {
-  for (const [key, db] of tenantDbCache.entries()) {
+  for (const key of tenantDbCache.keys()) {
     try {
       // Note: In a real implementation, you'd want to properly close the pool
       console.log(`Closing connection for ${key}`);
