@@ -2574,10 +2574,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const csvContent = csvData.join('\n');
 
-      // Use minimal headers to avoid virus detection
+      // Use absolutely minimal headers to avoid virus detection
       res.writeHead(200, {
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="employees.txt"`
+        'Content-Type': 'text/plain'
       });
 
       res.end(csvContent);
@@ -3016,10 +3015,9 @@ app.get("/api/file-templates/employee_import/download", async (req: Authenticate
                            '1001,John,Doe,john.doe@example.com,123-456-7890,Developer,IT,New York,manager@example.com,Male,American,1990-01-01,2023-01-01,active,false\n' +
                            '1002,Jane,Smith,jane.smith@example.com,098-765-4321,Designer,Marketing,London,manager@example.com,Female,British,1985-05-15,2022-03-01,active,false';
 
-    // Use minimal headers to avoid virus detection
+    // Use absolutely minimal headers to avoid virus detection
     res.writeHead(200, {
-      'Content-Type': 'application/octet-stream',
-      'Content-Disposition': 'attachment; filename="employee_template.txt"'
+      'Content-Type': 'text/plain'
     });
     
     res.end(templateContent);
