@@ -2574,12 +2574,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const csvContent = csvData.join('\n');
 
-      // Use absolutely minimal headers to avoid virus detection
-      res.writeHead(200, {
-        'Content-Type': 'text/plain'
-      });
+      // Set CSV headers for proper file download
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="employees.csv"');
+      res.setHeader('Cache-Control', 'no-cache');
 
-      res.end(csvContent);
+      res.send(csvContent);
 
     } catch (error: any) {
       console.error("Error exporting employees:", error);
@@ -3015,12 +3015,12 @@ app.get("/api/file-templates/employee_import/download", async (req: Authenticate
                            '1001,John,Doe,john.doe@example.com,123-456-7890,Developer,IT,New York,manager@example.com,Male,American,1990-01-01,2023-01-01,active,false\n' +
                            '1002,Jane,Smith,jane.smith@example.com,098-765-4321,Designer,Marketing,London,manager@example.com,Female,British,1985-05-15,2022-03-01,active,false';
 
-    // Use absolutely minimal headers to avoid virus detection
-    res.writeHead(200, {
-      'Content-Type': 'text/plain'
-    });
+    // Set CSV headers for proper file download
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="employee_template.csv"');
+    res.setHeader('Cache-Control', 'no-cache');
     
-    res.end(templateContent);
+    res.send(templateContent);
   } catch (error) {
     console.error("Error generating template:", error);
     res.status(500).json({ message: "Failed to generate template" });
