@@ -2538,70 +2538,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         employeesList = employeesCreatedByAdmin;
       }
 
-      // Create Excel workbook
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Employees');
-
-      // Define headers with Employee ID as the first column
+      // Create a simple CSV export instead of Excel to avoid virus detection
       const headers = [
-        { header: 'Employee ID', key: 'employeeId', width: 15 },
-        { header: 'First Name', key: 'name', width: 20 },
-        { header: 'Last Name', key: 'surname', width: 20 },
-        { header: 'Email', key: 'email', width: 30 },
-        { header: 'Phone Number', key: 'phoneNumber', width: 15 },
-        { header: 'Job Title', key: 'jobTitle', width: 25 },
-        { header: 'Department', key: 'department', width: 20 },
-        { header: 'Location', key: 'location', width: 20 },
-        { header: 'Manager Email', key: 'managerEmail', width: 30 },
-        { header: 'Gender', key: 'sex', width: 10 },
-        { header: 'Nationality', key: 'nationality', width: 15 },
-        { header: 'Birth Date', key: 'birthDate', width: 15 },
-        { header: 'Hire Date', key: 'hireDate', width: 15 },
-        { header: 'Status', key: 'status', width: 10 },
-        { header: 'Is Admin', key: 'isAdmin', width: 10 }
+        'Employee ID',
+        'First Name', 
+        'Last Name',
+        'Email',
+        'Phone Number',
+        'Job Title',
+        'Department',
+        'Location',
+        'Manager Email',
+        'Gender',
+        'Nationality',
+        'Birth Date',
+        'Hire Date',
+        'Status',
+        'Is Admin'
       ];
 
-      worksheet.columns = headers;
-
-      // Style the header row
-      worksheet.getRow(1).font = { bold: true };
-      worksheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF4472C4' }
+      // Helper function to escape CSV values
+      const escapeCsvValue = (value: any): string => {
+        if (value === null || value === undefined) return '';
+        const str = String(value);
+        // If the value contains comma, quote, or newline, wrap in quotes and escape quotes
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
       };
 
-      // Add employee data
+      // Create CSV content
+      let csvContent = headers.join(',') + '\n';
+      
       employeesList.forEach(employee => {
-        worksheet.addRow({
-          employeeId: employee.id,
-          name: employee.name,
-          surname: employee.surname || '',
-          email: employee.email,
-          phoneNumber: employee.phoneNumber || '',
-          jobTitle: employee.jobTitle || '',
-          department: employee.department || '',
-          location: employee.location || '',
-          managerEmail: employee.managerEmail || '',
-          sex: employee.sex || '',
-          nationality: employee.nationality || '',
-          birthDate: employee.dateOfBirth || employee.birthDate ? 
-            (employee.dateOfBirth || employee.birthDate) : '',
-          hireDate: employee.dateJoined || employee.hireDate ? 
-            (employee.dateJoined || employee.hireDate) : '',
-          status: employee.status || 'active',
-          isAdmin: employee.isAdmin || false
-        });
+        const row = [
+          employee.id,
+          employee.name,
+          employee.surname || '',
+          employee.email,
+          employee.phoneNumber || '',
+          employee.jobTitle || '',
+          employee.department || '',
+          employee.location || '',
+          employee.managerEmail || '',
+          employee.sex || '',
+          employee.nationality || '',
+          employee.dateOfBirth || employee.birthDate || '',
+          employee.dateJoined || employee.hireDate || '',
+          employee.status || 'active',
+          employee.isAdmin || false
+        ].map(escapeCsvValue);
+        
+        csvContent += row.join(',') + '\n';
       });
 
-      // Set response headers for file download
-      const filename = `employees_${new Date().toISOString().split('T')[0]}.xlsx`;
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      // Set response headers for CSV download
+      const filename = `employees_${new Date().toISOString().split('T')[0]}.csv`;
+      res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-      // Write to response
-      await workbook.xlsx.write(res);
-      res.end();
+      // Send CSV content
+      res.send(csvContent);
 
     } catch (error: any) {
       console.error("Error exporting employees:", error);
