@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { verifyToken, verifyAdmin, AuthenticatedRequest, generateToken } from "./middleware/auth";
+import { tenantRouting, ensureTenantAccess, TenantRequest } from "./middleware/tenant-routing";
 import { scheduleBirthdayRewards } from "./middleware/scheduler";
 import { tilloSupplier, carltonSupplier } from "./middleware/suppliers";
 import { z } from "zod";
@@ -2413,51 +2414,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin API - Employee Management
-  app.get("/api/admin/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/admin/employees", verifyToken, verifyAdmin, tenantRouting, ensureTenantAccess, async (req: TenantRequest, res) => {
     try {
       const currentUser = req.user;
+      const tenantDb = req.tenantDb;
+      const companyId = req.companyId;
+      
       if (!currentUser) {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      // Get the admin's organization ID
-      const adminOrganizationId = currentUser.organizationId;
-      
-      // If admin doesn't have an organization, get employees created by this admin
-      if (!adminOrganizationId) {
-        // Get employees created by this admin from the employees table
-        const employeesCreatedByAdmin = await db.select()
+      if (!tenantDb) {
+        return res.status(500).json({ message: "Database connection not available" });
+      }
+
+      // Get employees from the tenant's database only
+      // This ensures complete data isolation between companies
+      let employeesList = [];
+
+      if (companyId) {
+        // For multi-tenant setup: get employees created by admins from this company
+        const adminUsersFromCompany = await tenantDb.select()
+          .from(users)
+          .where(and(
+            eq(users.organizationId, companyId),
+            or(
+              eq(users.roleType, 'corporate_admin'),
+              eq(users.roleType, 'client_admin')
+            )
+          ));
+
+        if (adminUsersFromCompany.length > 0) {
+          const adminIds = adminUsersFromCompany.map(admin => admin.id);
+          
+          // Get employees created by these admins
+          const employeesFromTenant = await tenantDb.select()
+            .from(employees)
+            .where(inArray(employees.createdById, adminIds));
+          
+          // Get regular users from this organization
+          const usersFromOrg = await tenantDb.select()
+            .from(users)
+            .where(eq(users.organizationId, companyId));
+          
+          // Combine results, avoiding duplicates by email
+          employeesList = [...usersFromOrg];
+          
+          for (const employee of employeesFromTenant) {
+            const existsInUsers = employeesList.some(user => user.email === employee.email);
+            if (!existsInUsers) {
+              employeesList.push(employee);
+            }
+          }
+        }
+      } else {
+        // Fallback: get employees created by current admin only
+        const employeesCreatedByAdmin = await tenantDb.select()
           .from(employees)
           .where(eq(employees.createdById, currentUser.id));
         
-        return res.json(employeesCreatedByAdmin);
-      }
-
-      // Get users from the same organization from users table
-      const usersFromSameOrg = await db.select()
-        .from(users)
-        .where(eq(users.organizationId, adminOrganizationId));
-      
-      // Get employees created by admins from the same organization
-      const adminIdsFromOrg = usersFromSameOrg
-        .filter(user => user.roleType === 'corporate_admin' || user.roleType === 'client_admin')
-        .map(admin => admin.id);
-      
-      const employeesFromSameOrg = await db.select()
-        .from(employees)
-        .where(inArray(employees.createdById, adminIdsFromOrg));
-      
-      // Combine results, avoiding duplicates by email
-      const combinedEmployees = [...usersFromSameOrg];
-      
-      for (const employee of employeesFromSameOrg) {
-        const existsInUsers = combinedEmployees.some(user => user.email === employee.email);
-        if (!existsInUsers) {
-          combinedEmployees.push(employee);
-        }
+        employeesList = employeesCreatedByAdmin;
       }
       
-      res.json(combinedEmployees);
+      console.log(`Returning ${employeesList.length} employees for company ${companyId || 'undefined'}`);
+      res.json(employeesList);
+      
     } catch (error: any) {
       console.error("Error fetching employees:", error);
       res.status(500).json({ message: error.message || "Failed to get employees" });
