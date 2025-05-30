@@ -2432,45 +2432,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Database connection not available" });
       }
 
-      // Get employees from the tenant's database only
+      // Get employees from the tenant's company only
       // This ensures complete data isolation between companies
       let employeesList = [];
 
       if (companyId) {
-        // For multi-tenant setup: get employees created by admins from this company
-        const adminUsersFromCompany = await tenantDb.select()
-          .from(users)
-          .where(and(
-            eq(users.organizationId, companyId),
-            or(
-              eq(users.roleType, 'corporate_admin'),
-              eq(users.roleType, 'client_admin')
-            )
-          ));
-
-        if (adminUsersFromCompany.length > 0) {
-          const adminIds = adminUsersFromCompany.map(admin => admin.id);
-          
-          // Get employees created by these admins
-          const employeesFromTenant = await tenantDb.select()
-            .from(employees)
-            .where(inArray(employees.createdById, adminIds));
-          
-          // Get regular users from this organization
-          const usersFromOrg = await tenantDb.select()
-            .from(users)
-            .where(eq(users.organizationId, companyId));
-          
-          // Combine results, avoiding duplicates by email
-          employeesList = [...usersFromOrg];
-          
-          for (const employee of employeesFromTenant) {
-            const existsInUsers = employeesList.some(user => user.email === employee.email);
-            if (!existsInUsers) {
-              employeesList.push(employee);
-            }
-          }
-        }
+        // Get employees belonging to this specific company
+        const employeesFromCompany = await tenantDb.select()
+          .from(employees)
+          .where(eq(employees.companyId, companyId));
+        
+        employeesList = employeesFromCompany;
+        console.log(`Returning ${employeesList.length} employees for company ${companyId}`);
       } else {
         // Fallback: get employees created by current admin only
         const employeesCreatedByAdmin = await tenantDb.select()

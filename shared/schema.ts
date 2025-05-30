@@ -399,6 +399,7 @@ export const employees = pgTable("employees", {
   phoneNumber: text("phone_number"),               // Contact phone (optional)
   photoUrl: text("photo_url"),                     // Profile photo URL
   firebaseUid: text("firebase_uid"),               // Firebase User ID
+  companyId: integer("company_id"), // Company association for tenant isolation
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdById: integer("created_by_id").references(() => users.id), // Admin who created this employee
 });
