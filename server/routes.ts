@@ -2760,48 +2760,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload handler for employee bulk upload - using custom auth to support token in form data
-  app.post("/api/admin/employees/bulk-upload", documentUpload.single('file'), async (req: Request, res: Response) => {
+  // File upload handler for employee bulk upload - using proper authentication middleware
+  app.post("/api/admin/employees/bulk-upload", verifyToken, verifyAdmin, documentUpload.single('file'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
-      
-      // Get token from form data 
-      const token = req.body.token;
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
+
+      const currentUser = req.user;
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
-      
-      // Verify the token
-      let userData;
-      try {
-        // Decode the token without verification first to get the UID
-        const decodedPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        
-        if (decodedPayload && decodedPayload.sub) {
-          // Get user from database
-          const firebaseUid = decodedPayload.sub;
-          const user = await db.select()
-            .from(users)
-            .where(eq(users.firebaseUid, firebaseUid))
-            .then(rows => rows[0]);
-          
-          if (!user) {
-            return res.status(401).json({ message: "Unauthorized: User not found" });
-          }
-          
-          if (!user.isAdmin) {
-            return res.status(403).json({ message: "Forbidden: Admin access required" });
-          }
-          
-          userData = user;
-        } else {
-          return res.status(401).json({ message: "Unauthorized: Invalid token format" });
-        }
-      } catch (error) {
-        console.error("Token verification error:", error);
-        return res.status(401).json({ message: "Unauthorized: Token verification failed" });
+
+      // Get company ID from admin's email domain
+      const domain = currentUser.email.split('@')[1];
+      const domainToCompanyMap: Record<string, number> = {
+        'canva.com': 1,
+        'monday.com': 2, 
+        'loylogic.com': 3,
+        'fripl.com': 4,
+        'democorp.com': 5
+      };
+      const companyId = domainToCompanyMap[domain];
+
+      if (!companyId) {
+        return res.status(400).json({ message: "Unable to determine company for upload" });
       }
 
       // Import XLSX functionality
@@ -2927,12 +2910,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isManager: row.isManager === 'Yes',
             sex: row.sex || null,
             nationality: row.nationality || null,
+            companyId: companyId, // Assign to the correct company
             createdAt: new Date(),
-            createdById: userData.id, // Use the userData from token verification
+            createdById: currentUser.id, // Use the current authenticated user
             firebaseUid: firebaseUid // Add Firebase UID if available
           };
           
-          console.log(`Importing employee: ${row.name} (${row.email})${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
+          console.log(`Importing employee: ${row.name} (${row.email}) to company ${companyId}${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
           
           // Insert the employee record
           const result = await db.insert(employees).values(employeeData);

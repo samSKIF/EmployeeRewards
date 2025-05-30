@@ -252,11 +252,11 @@ export default function AdminEmployeesPage() {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
-      // Add token to the formData instead of using headers for multipart/form-data
-      formData.append('token', token);
-      
       const response = await fetch('/api/admin/employees/bulk-upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
         // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
       });

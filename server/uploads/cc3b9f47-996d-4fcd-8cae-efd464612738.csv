@@ -1,0 +1,151 @@
+Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Is Admin
+1001,Lisa,Evans,lisa.evans@canva.com,-9223,Chief Executive Officer,Executive,Singapore,,Male,American,17/09/1973,22/10/2017,active,TRUE
+1002,Thomas,Simpson,thomas.simpson@canva.com,-10659,Chief Human Resources Officer,Human Resources,New York,lisa.evans@canva.com,Male,Australian,25/10/1967,08/04/2021,active,TRUE
+1003,Rose,Ross,rose.ross@canva.com,-7846,"Vice President, Human Resources",Human Resources,London,thomas.simpson@canva.com,Female,Indian,05/10/1975,29/10/2024,active,TRUE
+1004,Ann,Weaver,ann.weaver_human0@canva.com,-6809,Senior Human Resources Manager,Human Resources,Toronto,rose.ross@canva.com,Male,British,27/09/1965,06/08/2015,active,FALSE
+1005,Sara,Sanchez,sara.sanchez_human1@canva.com,-6097,Senior Human Resources Manager,Human Resources,London,rose.ross@canva.com,Female,Canadian,18/04/1967,11/02/2015,active,FALSE
+1006,Maria,Jackson,maria.jackson_humanmgr0@canva.com,-3729,Human Resources Manager,Human Resources,London,ann.weaver_human0@canva.com,Male,Emirati,15/04/1983,10/09/2023,active,TRUE
+1007,Jean,Garcia,jean.garcia_humanmgr1@canva.com,-3804,Human Resources Manager,Human Resources,Sydney,sara.sanchez_human1@canva.com,Female,Indian,15/08/1975,06/12/2022,active,FALSE
+1008,Diana,Simpson,diana.simpson_humanmgr2@canva.com,-3041,Human Resources Manager,Human Resources,London,sara.sanchez_human1@canva.com,Male,Emirati,09/08/1971,22/09/2023,active,FALSE
+1009,Barbara,Bennett,barbara.bennett_humantl0@canva.com,-7175,Human Resources Team Lead,Human Resources,Singapore,diana.simpson_humanmgr2@canva.com,Female,Indian,14/12/1999,11/05/2021,active,FALSE
+1010,Raymond,Russell,raymond.russell_humantl1@canva.com,-7998,Human Resources Team Lead,Human Resources,Singapore,maria.jackson_humanmgr0@canva.com,Male,Canadian,11/11/1983,28/09/2022,active,FALSE
+1011,Matthew,Powell,matthew.powell_humantl2@canva.com,-5002,Human Resources Team Lead,Human Resources,Singapore,maria.jackson_humanmgr0@canva.com,Male,Canadian,21/02/1978,08/08/2015,active,FALSE
+1012,Nancy,Martinez,nancy.martinez_humantl3@canva.com,-4954,Human Resources Team Lead,Human Resources,New York,jean.garcia_humanmgr1@canva.com,Male,Emirati,12/11/1984,06/02/2024,active,FALSE
+1013,Theresa,Smith,theresa.smith_humanst0@canva.com,-9184,Human Resources Specialist,Human Resources,Sydney,barbara.bennett_humantl0@canva.com,Female,Australian,25/05/1995,09/04/2018,active,TRUE
+1014,Robert,Stevens,robert.stevens_humanst1@canva.com,-7186,Human Resources Specialist,Human Resources,New York,raymond.russell_humantl1@canva.com,Female,Australian,22/02/2000,29/08/2017,active,TRUE
+1015,Walter,Long,walter.long_humanst2@canva.com,-6007,Human Resources Specialist,Human Resources,London,nancy.martinez_humantl3@canva.com,Male,Canadian,11/01/1968,28/09/2019,active,FALSE
+1016,Linda,Morris,linda.morris_humanst3@canva.com,-3125,Human Resources Specialist,Human Resources,Singapore,barbara.bennett_humantl0@canva.com,Female,Indian,21/06/1983,23/04/2018,active,FALSE
+1017,Rebecca,Howard,rebecca.howard_humanst4@canva.com,-6728,Human Resources Specialist,Human Resources,London,barbara.bennett_humantl0@canva.com,Male,American,08/02/1977,04/02/2025,active,FALSE
+1018,Judith,Rogers,judith.rogers_humanst5@canva.com,-5860,Human Resources Specialist,Human Resources,Singapore,raymond.russell_humantl1@canva.com,Female,Australian,01/11/1967,13/01/2020,active,FALSE
+1019,Frances,Baker,frances.baker_humanst6@canva.com,-6103,Human Resources Specialist,Human Resources,New York,matthew.powell_humantl2@canva.com,Female,Canadian,25/09/1966,24/04/2016,active,FALSE
+1020,Karen,Taylor,karen.taylor_humanst7@canva.com,-2880,Human Resources Specialist,Human Resources,Dubai,raymond.russell_humantl1@canva.com,Female,Emirati,12/07/1982,09/12/2019,active,FALSE
+1021,Emily,Thompson,emily.thompson_humanst8@canva.com,-6121,Human Resources Specialist,Human Resources,Dubai,barbara.bennett_humantl0@canva.com,Female,British,31/07/1975,09/04/2025,active,FALSE
+1022,Emily,Lewis,emily.lewis_humanst9@canva.com,-6965,Human Resources Specialist,Human Resources,Toronto,raymond.russell_humantl1@canva.com,Male,Emirati,05/11/1988,01/01/2022,active,FALSE
+1023,Gregory,Vasquez,gregory.vasquez_humanst10@canva.com,-3892,Human Resources Specialist,Human Resources,Singapore,barbara.bennett_humantl0@canva.com,Female,American,25/09/1984,04/05/2021,active,FALSE
+1024,Jose,Clark,jose.clark_humanst11@canva.com,-3838,Human Resources Specialist,Human Resources,London,matthew.powell_humantl2@canva.com,Female,Canadian,20/09/1974,05/08/2022,active,FALSE
+1025,Steven,Clark,steven.clark_humanst12@canva.com,-5339,Human Resources Specialist,Human Resources,London,nancy.martinez_humantl3@canva.com,Female,Singaporean,13/09/1997,30/01/2016,active,FALSE
+1026,Ryan,Freeman,ryan.freeman_humanst13@canva.com,-9477,Human Resources Specialist,Human Resources,New York,raymond.russell_humantl1@canva.com,Male,Australian,20/03/1972,09/10/2021,active,FALSE
+1027,Daniel,Carter,daniel.carter_humanst14@canva.com,-6127,Human Resources Specialist,Human Resources,Dubai,nancy.martinez_humantl3@canva.com,Male,American,31/10/1997,09/10/2018,active,FALSE
+1028,Janet,Bell,janet.bell_humanst15@canva.com,-7250,Human Resources Specialist,Human Resources,Toronto,barbara.bennett_humantl0@canva.com,Male,Singaporean,27/01/1987,06/11/2019,active,FALSE
+1029,Walter,Allen,walter.allen_humanst16@canva.com,-4262,Human Resources Specialist,Human Resources,Sydney,nancy.martinez_humantl3@canva.com,Female,American,02/09/1990,30/12/2022,active,FALSE
+1030,Michelle,Davis,michelle.davis_humanst17@canva.com,-6484,Human Resources Specialist,Human Resources,New York,raymond.russell_humantl1@canva.com,Male,Australian,05/04/1996,03/09/2023,active,FALSE
+1031,Brian,Sanchez,brian.sanchez@canva.com,-3705,Chief Financial Officer,Finance,London,lisa.evans@canva.com,Female,Australian,05/05/1983,03/01/2016,active,FALSE
+1032,Deborah,James,deborah.james@canva.com,-6266,"Vice President, Finance",Finance,New York,brian.sanchez@canva.com,Female,Indian,03/07/1985,05/02/2023,active,FALSE
+1033,Paula,Carter,paula.carter_finance0@canva.com,-4296,Senior Finance Manager,Finance,London,deborah.james@canva.com,Male,Indian,12/07/1969,29/08/2016,active,FALSE
+1034,Charles,Flores,charles.flores_finance1@canva.com,-7603,Senior Finance Manager,Finance,Singapore,deborah.james@canva.com,Female,American,08/07/1995,13/01/2022,active,FALSE
+1035,Kimberly,Adams,kimberly.adams_financemgr0@canva.com,-10317,Finance Manager,Finance,London,paula.carter_finance0@canva.com,Male,Australian,14/11/1970,15/12/2017,active,FALSE
+1036,Susan,Smith,susan.smith_financemgr1@canva.com,-2614,Finance Manager,Finance,Dubai,charles.flores_finance1@canva.com,Female,Emirati,11/10/1977,10/02/2021,active,FALSE
+1037,Kimberly,Long,kimberly.long_financemgr2@canva.com,-2723,Finance Manager,Finance,Singapore,paula.carter_finance0@canva.com,Female,British,05/11/1968,05/09/2019,active,FALSE
+1038,Samuel,Webb,samuel.webb_financetl0@canva.com,-2121,Finance Team Lead,Finance,Dubai,kimberly.adams_financemgr0@canva.com,Male,British,23/10/1998,03/12/2024,active,FALSE
+1039,Lisa,Bennett,lisa.bennett_financetl1@canva.com,-8105,Finance Team Lead,Finance,Dubai,kimberly.long_financemgr2@canva.com,Male,Emirati,17/12/1983,09/11/2018,active,FALSE
+1040,George,Sullivan,george.sullivan_financetl2@canva.com,-1923,Finance Team Lead,Finance,Sydney,susan.smith_financemgr1@canva.com,Female,Emirati,27/08/1984,28/06/2016,active,FALSE
+1041,Michael,Johnson,michael.johnson_financetl3@canva.com,-6762,Finance Team Lead,Finance,London,susan.smith_financemgr1@canva.com,Male,American,26/06/1990,25/03/2022,active,FALSE
+1042,Michelle,Martinez,michelle.martinez_financest0@canva.com,-2764,Finance Specialist,Finance,Singapore,michael.johnson_financetl3@canva.com,Female,British,28/06/1988,07/10/2020,active,FALSE
+1043,Maria,Jackson,maria.jackson_financest1@canva.com,-4165,Finance Specialist,Finance,New York,michael.johnson_financetl3@canva.com,Male,British,17/12/1986,29/11/2019,active,FALSE
+1044,Samuel,Webb,samuel.webb_financest2@canva.com,-6063,Finance Specialist,Finance,New York,samuel.webb_financetl0@canva.com,Female,British,08/09/1984,18/06/2019,active,FALSE
+1045,Nicholas,Fisher,nicholas.fisher_financest3@canva.com,-2934,Finance Specialist,Finance,New York,george.sullivan_financetl2@canva.com,Female,American,28/08/1994,12/03/2025,active,FALSE
+1046,Maria,King,maria.king_financest4@canva.com,-4311,Finance Specialist,Finance,Sydney,samuel.webb_financetl0@canva.com,Female,Canadian,31/01/1975,17/12/2019,active,FALSE
+1047,Harold,Campbell,harold.campbell_financest5@canva.com,-6198,Finance Specialist,Finance,London,george.sullivan_financetl2@canva.com,Female,British,23/11/1976,28/09/2024,active,FALSE
+1048,Christina,Perez,christina.perez_financest6@canva.com,-9233,Finance Specialist,Finance,New York,lisa.bennett_financetl1@canva.com,Male,British,20/06/1993,01/11/2021,active,FALSE
+1049,Raymond,Gray,raymond.gray_financest7@canva.com,-9984,Finance Specialist,Finance,London,michael.johnson_financetl3@canva.com,Female,Indian,29/09/1999,15/04/2021,active,FALSE
+1050,Shirley,Powell,shirley.powell_financest8@canva.com,-7821,Finance Specialist,Finance,Toronto,george.sullivan_financetl2@canva.com,Male,Australian,25/12/1971,08/04/2015,active,FALSE
+1051,Sara,Sanchez,sara.sanchez_financest9@canva.com,-8623,Finance Specialist,Finance,Toronto,george.sullivan_financetl2@canva.com,Female,Emirati,07/12/1997,26/01/2015,active,FALSE
+1052,Scott,Morris,scott.morris_financest10@canva.com,-8819,Finance Specialist,Finance,Singapore,lisa.bennett_financetl1@canva.com,Male,Canadian,14/05/1997,28/03/2022,active,FALSE
+1053,Helen,Anderson,helen.anderson_financest11@canva.com,-7620,Finance Specialist,Finance,Sydney,samuel.webb_financetl0@canva.com,Female,American,07/08/1965,06/12/2020,active,FALSE
+1054,David,Crawford,david.crawford_financest12@canva.com,-3984,Finance Specialist,Finance,London,samuel.webb_financetl0@canva.com,Female,American,10/06/1988,05/08/2017,active,FALSE
+1055,Anthony,Butler,anthony.butler_financest13@canva.com,-6227,Finance Specialist,Finance,Singapore,michael.johnson_financetl3@canva.com,Male,British,18/04/1974,02/05/2020,active,FALSE
+1056,Stephanie,Foster,stephanie.foster_financest14@canva.com,-7048,Finance Specialist,Finance,Singapore,samuel.webb_financetl0@canva.com,Female,Canadian,02/11/1974,03/12/2019,active,FALSE
+1057,Shirley,Gonzales,shirley.gonzales_financest15@canva.com,-8929,Finance Specialist,Finance,New York,george.sullivan_financetl2@canva.com,Male,Australian,01/10/1977,05/06/2022,active,FALSE
+1058,Theresa,Lee,theresa.lee_financest16@canva.com,-3730,Finance Specialist,Finance,Dubai,lisa.bennett_financetl1@canva.com,Female,American,12/06/1975,26/12/2016,active,FALSE
+1059,Keith,Morris,keith.morris_financest17@canva.com,-3124,Finance Specialist,Finance,Sydney,lisa.bennett_financetl1@canva.com,Male,British,26/03/2000,20/06/2020,active,FALSE
+1060,David,Roberts,david.roberts@canva.com,-8949,Chief Marketing Officer,Marketing,Toronto,lisa.evans@canva.com,Female,Emirati,18/12/1979,15/07/2020,active,FALSE
+1061,Angela,Coleman,angela.coleman@canva.com,-9543,"Vice President, Marketing",Marketing,Dubai,david.roberts@canva.com,Female,Australian,13/06/1982,11/03/2017,active,FALSE
+1062,Peter,James,peter.james_marketing0@canva.com,-7005,Senior Marketing Manager,Marketing,Sydney,angela.coleman@canva.com,Female,Singaporean,24/09/1992,26/06/2014,active,FALSE
+1063,Nancy,Hall,nancy.hall_marketing1@canva.com,-7748,Senior Marketing Manager,Marketing,Toronto,angela.coleman@canva.com,Male,British,06/10/1999,02/12/2024,active,FALSE
+1064,Raymond,Reyes,raymond.reyes_marketingmgr0@canva.com,-4340,Marketing Manager,Marketing,London,nancy.hall_marketing1@canva.com,Female,British,23/03/1997,24/02/2020,active,FALSE
+1065,Jeffrey,Robinson,jeffrey.robinson_marketingmgr1@canva.com,-7844,Marketing Manager,Marketing,New York,nancy.hall_marketing1@canva.com,Male,Indian,24/06/1997,16/10/2016,active,FALSE
+1066,Michael,Collins,michael.collins_marketingmgr2@canva.com,-5268,Marketing Manager,Marketing,New York,peter.james_marketing0@canva.com,Male,Singaporean,03/03/2000,03/11/2023,active,FALSE
+1067,Sandra,Green,sandra.green_marketingtl0@canva.com,-10148,Marketing Team Lead,Marketing,Toronto,raymond.reyes_marketingmgr0@canva.com,Male,Indian,08/02/1972,29/05/2018,active,FALSE
+1068,Kevin,Foster,kevin.foster_marketingtl1@canva.com,-9249,Marketing Team Lead,Marketing,Dubai,jeffrey.robinson_marketingmgr1@canva.com,Male,American,30/09/1997,07/09/2023,active,FALSE
+1069,Larry,Ross,larry.ross_marketingtl2@canva.com,-2688,Marketing Team Lead,Marketing,Singapore,raymond.reyes_marketingmgr0@canva.com,Male,British,21/05/1990,03/10/2022,active,FALSE
+1070,Patrick,White,patrick.white_marketingtl3@canva.com,-4348,Marketing Team Lead,Marketing,Sydney,jeffrey.robinson_marketingmgr1@canva.com,Female,Singaporean,06/09/1981,20/12/2023,active,FALSE
+1071,Edward,James,edward.james_marketingst0@canva.com,-3606,Marketing Specialist,Marketing,Singapore,patrick.white_marketingtl3@canva.com,Male,British,07/10/1998,11/01/2016,active,FALSE
+1072,Sandra,Collins,sandra.collins_marketingst1@canva.com,-4313,Marketing Specialist,Marketing,Sydney,sandra.green_marketingtl0@canva.com,Male,Emirati,31/10/1970,22/08/2018,active,FALSE
+1073,Maria,Phillips,maria.phillips_marketingst2@canva.com,-6603,Marketing Specialist,Marketing,Singapore,sandra.green_marketingtl0@canva.com,Male,Canadian,13/05/1974,30/10/2020,active,FALSE
+1074,Sharon,Anderson,sharon.anderson_marketingst3@canva.com,-2383,Marketing Specialist,Marketing,Dubai,patrick.white_marketingtl3@canva.com,Female,Indian,03/03/1979,12/01/2018,active,FALSE
+1075,Angela,Campbell,angela.campbell_marketingst4@canva.com,-9850,Marketing Specialist,Marketing,New York,kevin.foster_marketingtl1@canva.com,Male,Australian,02/08/1982,06/07/2019,active,FALSE
+1076,Roger,Sanchez,roger.sanchez_marketingst5@canva.com,-10028,Marketing Specialist,Marketing,Singapore,larry.ross_marketingtl2@canva.com,Male,Australian,27/10/1967,02/10/2021,active,FALSE
+1077,Paula,Long,paula.long_marketingst6@canva.com,-3505,Marketing Specialist,Marketing,New York,sandra.green_marketingtl0@canva.com,Female,British,07/12/1983,20/08/2021,active,FALSE
+1078,Terry,Gonzales,terry.gonzales_marketingst7@canva.com,-6446,Marketing Specialist,Marketing,Dubai,patrick.white_marketingtl3@canva.com,Female,Singaporean,20/03/1973,09/02/2016,active,FALSE
+1079,Benjamin,Reyes,benjamin.reyes_marketingst8@canva.com,-9845,Marketing Specialist,Marketing,Sydney,larry.ross_marketingtl2@canva.com,Female,British,17/04/1999,21/09/2020,active,FALSE
+1080,George,Howard,george.howard_marketingst9@canva.com,-8694,Marketing Specialist,Marketing,Singapore,sandra.green_marketingtl0@canva.com,Male,American,25/03/1968,26/02/2020,active,FALSE
+1081,Christina,Hall,christina.hall_marketingst10@canva.com,-10164,Marketing Specialist,Marketing,Dubai,kevin.foster_marketingtl1@canva.com,Male,Canadian,08/10/1977,08/12/2022,active,FALSE
+1082,Patricia,Tucker,patricia.tucker_marketingst11@canva.com,-8108,Marketing Specialist,Marketing,New York,kevin.foster_marketingtl1@canva.com,Female,American,03/12/1996,31/10/2024,active,FALSE
+1083,Edward,Brooks,edward.brooks_marketingst12@canva.com,-3102,Marketing Specialist,Marketing,New York,patrick.white_marketingtl3@canva.com,Male,Emirati,16/12/1967,06/07/2014,active,FALSE
+1084,Jerry,Price,jerry.price_marketingst13@canva.com,-10163,Marketing Specialist,Marketing,Toronto,kevin.foster_marketingtl1@canva.com,Female,Emirati,04/09/1967,12/04/2018,active,FALSE
+1085,Laura,Price,laura.price_marketingst14@canva.com,-8914,Marketing Specialist,Marketing,Sydney,kevin.foster_marketingtl1@canva.com,Male,Emirati,23/02/1985,27/04/2025,active,FALSE
+1086,Steven,Cooper,steven.cooper_marketingst15@canva.com,-7860,Marketing Specialist,Marketing,Singapore,sandra.green_marketingtl0@canva.com,Female,British,15/08/1969,07/07/2019,active,FALSE
+1087,Janet,Hughes,janet.hughes_marketingst16@canva.com,-5037,Marketing Specialist,Marketing,New York,patrick.white_marketingtl3@canva.com,Female,Australian,07/07/1976,14/09/2019,active,FALSE
+1088,Michelle,Morgan,michelle.morgan_marketingst17@canva.com,-6100,Marketing Specialist,Marketing,Toronto,patrick.white_marketingtl3@canva.com,Male,Indian,16/08/1990,07/10/2015,active,FALSE
+1089,Kevin,Wells,kevin.wells@canva.com,-6149,Chief Revenue Officer,Sales,Sydney,lisa.evans@canva.com,Female,Canadian,23/07/1970,21/06/2017,active,FALSE
+1090,Sarah,Robinson,sarah.robinson@canva.com,-7026,"Vice President, Revenue",Sales,Toronto,kevin.wells@canva.com,Female,American,18/01/1998,20/01/2024,active,FALSE
+1091,Teresa,Davis,teresa.davis_sales0@canva.com,-8821,Senior Revenue Manager,Sales,Singapore,sarah.robinson@canva.com,Male,Australian,30/12/1972,09/09/2015,active,FALSE
+1092,Julia,Flores,julia.flores_sales1@canva.com,-10486,Senior Revenue Manager,Sales,London,sarah.robinson@canva.com,Female,American,08/04/1990,09/07/2022,active,FALSE
+1093,Mark,Wright,mark.wright_salesmgr0@canva.com,-7528,Revenue Manager,Sales,Toronto,julia.flores_sales1@canva.com,Female,Singaporean,15/01/1989,03/04/2019,active,FALSE
+1094,Andrew,Cook,andrew.cook_salesmgr1@canva.com,-5553,Revenue Manager,Sales,Sydney,teresa.davis_sales0@canva.com,Female,Canadian,12/08/1978,28/06/2022,active,FALSE
+1095,Gerald,Long,gerald.long_salesmgr2@canva.com,-7919,Revenue Manager,Sales,Sydney,teresa.davis_sales0@canva.com,Female,Singaporean,19/09/1992,21/11/2021,active,FALSE
+1096,Mary,Foster,mary.foster_salestl0@canva.com,-3671,Revenue Team Lead,Sales,New York,mark.wright_salesmgr0@canva.com,Male,Canadian,05/10/1998,15/01/2022,active,FALSE
+1097,Deborah,Wells,deborah.wells_salestl1@canva.com,-3849,Revenue Team Lead,Sales,London,mark.wright_salesmgr0@canva.com,Female,Canadian,18/04/1989,16/10/2022,active,FALSE
+1098,Frances,Carter,frances.carter_salestl2@canva.com,-3973,Revenue Team Lead,Sales,London,mark.wright_salesmgr0@canva.com,Female,British,20/06/1996,22/01/2020,active,FALSE
+1099,Janet,Lewis,janet.lewis_salestl3@canva.com,-3874,Revenue Team Lead,Sales,Toronto,mark.wright_salesmgr0@canva.com,Male,American,09/10/1976,26/12/2019,active,FALSE
+1100,Benjamin,Brown,benjamin.brown_salesst0@canva.com,-7777,Revenue Specialist,Sales,Sydney,deborah.wells_salestl1@canva.com,Male,American,02/01/1983,27/10/2016,active,FALSE
+1101,Brandon,Porter,brandon.porter_salesst1@canva.com,-8861,Revenue Specialist,Sales,Dubai,janet.lewis_salestl3@canva.com,Male,Australian,26/08/1981,09/06/2016,active,FALSE
+1102,Laura,Ross,laura.ross_salesst2@canva.com,-2564,Revenue Specialist,Sales,Toronto,deborah.wells_salestl1@canva.com,Female,Canadian,07/05/1989,28/01/2018,active,FALSE
+1103,Raymond,Vasquez,raymond.vasquez_salesst3@canva.com,-2106,Revenue Specialist,Sales,New York,janet.lewis_salestl3@canva.com,Male,Indian,14/02/1969,20/01/2020,active,FALSE
+1104,Susan,Stevens,susan.stevens_salesst4@canva.com,-6080,Revenue Specialist,Sales,London,deborah.wells_salestl1@canva.com,Female,American,22/06/1984,11/09/2023,active,FALSE
+1105,Frank,Hunter,frank.hunter_salesst5@canva.com,-10528,Revenue Specialist,Sales,New York,frances.carter_salestl2@canva.com,Male,Emirati,09/12/1975,25/02/2018,active,FALSE
+1106,Raymond,Carter,raymond.carter_salesst6@canva.com,-4779,Revenue Specialist,Sales,Singapore,deborah.wells_salestl1@canva.com,Male,Singaporean,05/05/1971,13/07/2017,active,FALSE
+1107,Edward,Richardson,edward.richardson_salesst7@canva.com,-4371,Revenue Specialist,Sales,Toronto,deborah.wells_salestl1@canva.com,Male,Emirati,11/04/1972,20/11/2015,active,FALSE
+1108,George,Reed,george.reed_salesst8@canva.com,-5416,Revenue Specialist,Sales,Singapore,deborah.wells_salestl1@canva.com,Male,American,24/12/1974,20/02/2019,active,FALSE
+1109,Barbara,Rodriguez,barbara.rodriguez_salesst9@canva.com,-10753,Revenue Specialist,Sales,Toronto,mary.foster_salestl0@canva.com,Male,Emirati,09/03/1981,04/07/2020,active,FALSE
+1110,Thomas,Mitchell,thomas.mitchell_salesst10@canva.com,-4516,Revenue Specialist,Sales,New York,deborah.wells_salestl1@canva.com,Male,Australian,14/01/1988,23/11/2023,active,FALSE
+1111,Roger,Butler,roger.butler_salesst11@canva.com,-5208,Revenue Specialist,Sales,New York,deborah.wells_salestl1@canva.com,Male,American,01/05/1983,20/01/2021,active,FALSE
+1112,Keith,Brooks,keith.brooks_salesst12@canva.com,-4679,Revenue Specialist,Sales,Toronto,frances.carter_salestl2@canva.com,Female,American,25/12/1986,27/07/2015,active,FALSE
+1113,Robert,Harris,robert.harris_salesst13@canva.com,-9466,Revenue Specialist,Sales,New York,deborah.wells_salestl1@canva.com,Male,Australian,24/11/1974,18/12/2023,active,FALSE
+1114,Cheryl,White,cheryl.white_salesst14@canva.com,-9305,Revenue Specialist,Sales,London,frances.carter_salestl2@canva.com,Female,Emirati,15/03/1988,24/05/2019,active,FALSE
+1115,Ann,Stevens,ann.stevens_salesst15@canva.com,-5460,Revenue Specialist,Sales,Dubai,deborah.wells_salestl1@canva.com,Female,Emirati,06/05/1990,22/11/2024,active,FALSE
+1116,Patricia,Gray,patricia.gray_salesst16@canva.com,-5888,Revenue Specialist,Sales,Singapore,mary.foster_salestl0@canva.com,Male,Indian,23/03/1990,15/01/2025,active,FALSE
+1117,Michael,Howard,michael.howard_salesst17@canva.com,-5498,Revenue Specialist,Sales,Dubai,deborah.wells_salestl1@canva.com,Male,Canadian,03/01/1992,14/06/2021,active,FALSE
+1118,Jeffrey,Lewis,jeffrey.lewis@canva.com,-7355,Chief Technology Officer,Information Technology,Sydney,lisa.evans@canva.com,Female,Emirati,23/09/1988,16/10/2023,active,FALSE
+1119,Emily,Phillips,emily.phillips@canva.com,-1778,"Vice President, Technology",Information Technology,Singapore,jeffrey.lewis@canva.com,Male,Australian,18/03/1979,10/11/2015,active,FALSE
+1120,Nancy,Walker,nancy.walker_information0@canva.com,-9027,Senior Technology Manager,Information Technology,Sydney,emily.phillips@canva.com,Male,Emirati,09/10/1978,06/05/2020,active,FALSE
+1121,Nancy,Lewis,nancy.lewis_information1@canva.com,-6493,Senior Technology Manager,Information Technology,Toronto,emily.phillips@canva.com,Male,British,23/10/1977,06/01/2015,active,FALSE
+1122,Patricia,Hicks,patricia.hicks_informationmgr0@canva.com,-4467,Technology Manager,Information Technology,Sydney,nancy.lewis_information1@canva.com,Female,Emirati,29/12/1981,11/11/2018,active,FALSE
+1123,Shirley,Carter,shirley.carter_informationmgr1@canva.com,-3191,Technology Manager,Information Technology,Toronto,nancy.lewis_information1@canva.com,Male,Emirati,30/08/1970,14/05/2015,active,FALSE
+1124,Jeffrey,Cox,jeffrey.cox_informationmgr2@canva.com,-7674,Technology Manager,Information Technology,London,nancy.lewis_information1@canva.com,Male,British,04/05/1968,25/04/2021,active,FALSE
+1125,Peter,Price,peter.price_informationtl0@canva.com,-4006,Technology Team Lead,Information Technology,Dubai,jeffrey.cox_informationmgr2@canva.com,Female,Indian,21/04/1980,07/06/2017,active,FALSE
+1126,Nicholas,Bell,nicholas.bell_informationtl1@canva.com,-9655,Technology Team Lead,Information Technology,Sydney,patricia.hicks_informationmgr0@canva.com,Female,Canadian,25/07/1993,19/01/2019,active,FALSE
+1127,Alex,Murray,alex.murray_informationtl2@canva.com,-7047,Technology Team Lead,Information Technology,Toronto,patricia.hicks_informationmgr0@canva.com,Female,British,26/08/1975,13/11/2023,active,FALSE
+1128,Frank,Bell,frank.bell_informationtl3@canva.com,-3633,Technology Team Lead,Information Technology,London,shirley.carter_informationmgr1@canva.com,Male,American,08/01/1990,16/10/2022,active,FALSE
+1129,Carol,Butler,carol.butler_informationst0@canva.com,-1934,Technology Specialist,Information Technology,Toronto,alex.murray_informationtl2@canva.com,Male,British,21/01/1977,26/02/2017,active,FALSE
+1130,Stephanie,King,stephanie.king_informationst1@canva.com,-6105,Technology Specialist,Information Technology,Sydney,nicholas.bell_informationtl1@canva.com,Female,Australian,03/01/1984,27/01/2019,active,FALSE
+1131,Julia,Coleman,julia.coleman_informationst2@canva.com,-3797,Technology Specialist,Information Technology,Dubai,alex.murray_informationtl2@canva.com,Female,Indian,12/04/1978,13/01/2019,active,FALSE
+1132,Maria,Thomas,maria.thomas_informationst3@canva.com,-6296,Technology Specialist,Information Technology,London,frank.bell_informationtl3@canva.com,Male,Indian,29/12/1997,20/10/2017,active,FALSE
+1133,Ryan,Vasquez,ryan.vasquez_informationst4@canva.com,-5900,Technology Specialist,Information Technology,Dubai,nicholas.bell_informationtl1@canva.com,Male,Canadian,16/02/1980,07/04/2024,active,FALSE
+1134,Rose,Bailey,rose.bailey_informationst5@canva.com,-10632,Technology Specialist,Information Technology,London,peter.price_informationtl0@canva.com,Female,Canadian,13/06/1990,18/08/2022,active,FALSE
+1135,Shirley,White,shirley.white_informationst6@canva.com,-7874,Technology Specialist,Information Technology,Sydney,alex.murray_informationtl2@canva.com,Female,Indian,05/04/1972,02/08/2015,active,FALSE
+1136,Harold,Rivera,harold.rivera_informationst7@canva.com,-4416,Technology Specialist,Information Technology,Dubai,alex.murray_informationtl2@canva.com,Female,Indian,29/01/1996,12/08/2018,active,FALSE
+1137,Jerry,Reed,jerry.reed_informationst8@canva.com,-6959,Technology Specialist,Information Technology,London,alex.murray_informationtl2@canva.com,Male,Canadian,21/01/1969,24/12/2015,active,FALSE
+1138,Kimberly,Taylor,kimberly.taylor_informationst9@canva.com,-7779,Technology Specialist,Information Technology,Singapore,peter.price_informationtl0@canva.com,Female,Singaporean,16/04/1977,07/07/2017,active,FALSE
+1139,Timothy,Roberts,timothy.roberts_informationst10@canva.com,-4988,Technology Specialist,Information Technology,Sydney,alex.murray_informationtl2@canva.com,Male,Australian,13/09/1980,27/04/2023,active,FALSE
+1140,Scott,Edwards,scott.edwards_informationst11@canva.com,-4671,Technology Specialist,Information Technology,London,peter.price_informationtl0@canva.com,Female,Indian,26/10/1982,10/06/2015,active,FALSE
+1141,Shirley,Green,shirley.green_informationst12@canva.com,-9784,Technology Specialist,Information Technology,Dubai,nicholas.bell_informationtl1@canva.com,Male,Indian,08/05/1976,11/01/2021,active,FALSE
+1142,Ann,Davis,ann.davis_informationst13@canva.com,-9898,Technology Specialist,Information Technology,London,frank.bell_informationtl3@canva.com,Male,Indian,24/09/1981,12/04/2022,active,FALSE
+1143,Cheryl,Bell,cheryl.bell_informationst14@canva.com,-8793,Technology Specialist,Information Technology,New York,frank.bell_informationtl3@canva.com,Male,Australian,02/07/1974,25/02/2018,active,FALSE
+1144,Patricia,Green,patricia.green_informationst15@canva.com,-5685,Technology Specialist,Information Technology,Singapore,alex.murray_informationtl2@canva.com,Male,American,29/11/1999,13/08/2014,active,FALSE
+1145,Paula,Freeman,paula.freeman_informationst16@canva.com,-8295,Technology Specialist,Information Technology,New York,frank.bell_informationtl3@canva.com,Male,Canadian,06/07/1966,11/07/2023,active,FALSE
+1146,Timothy,Coleman,timothy.coleman_humanintern@canva.com,-10448,HR Intern,Human Resources,London,barbara.bennett_humantl0@canva.com,Male,Indian,04/05/1985,07/07/2023,active,FALSE
+1147,Kimberly,Foster,kimberly.foster_financeintern@canva.com,-4181,Finance Intern,Finance,Sydney,susan.smith_financemgr1@canva.com,Male,Emirati,06/06/1969,03/09/2015,active,FALSE
+1148,Robert,Carter,robert.carter_marketingintern@canva.com,-2004,Marketing Intern,Marketing,Singapore,larry.ross_marketingtl2@canva.com,Male,Indian,21/05/1974,20/03/2019,active,FALSE
+1149,Robert,Flores,robert.flores_salesintern@canva.com,-3063,Sales Intern,Sales,London,mark.wright_salesmgr0@canva.com,Male,Canadian,13/08/1974,06/10/2021,active,FALSE
+1150,Cheryl,Richardson,cheryl.richardson_informationintern@canva.com,-3032,IT Intern,Information Technology,Singapore,rose.bailey_informationst5@canva.com,Male,Emirati,08/09/1985,22/09/2024,active,FALSE
