@@ -2830,10 +2830,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each employee record
       const results = await Promise.all(validData.map(async (row: any, index: number) => {
         try {
-          // Try different possible column name variations
-          const name = row.name || row.Name || row['First Name'] || row.firstName || row['Employee Name'];
-          const surname = row.surname || row.Surname || row['Last Name'] || row.lastName;
-          const email = row.email || row.Email || row['Email Address'] || row.emailAddress;
+          // Try different possible column name variations to match the form fields
+          const name = row['First Name'] || row.firstName || row.name || row.Name;
+          const surname = row['Last Name'] || row.lastName || row.surname || row.Surname;
+          const email = row.Email || row.email || row['Email Address'] || row.emailAddress;
           
           // validate required fields
           if (!name || !email) {
@@ -2847,38 +2847,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const [existingUser] = await db
             .select()
             .from(employees)
-            .where(eq(employees.email, row.email));
+            .where(eq(employees.email, email));
             
           if (existingUser) {
-            console.error(`Row ${index + 1}: Email ${row.email} already exists in database`);
+            console.error(`Row ${index + 1}: Email ${email} already exists in database`);
             return null;
           }
           
           // Convert date strings to Date objects, with validation
           let dateOfBirth = null;
-          if (row.dateOfBirth) {
+          const birthDateField = row['Date of Birth'] || row.dateOfBirth || row['Birth Date'] || row.birthDate;
+          if (birthDateField) {
             try {
-              dateOfBirth = new Date(row.dateOfBirth);
+              dateOfBirth = new Date(birthDateField);
               // Check if valid date
               if (isNaN(dateOfBirth.getTime())) {
                 dateOfBirth = null;
               }
             } catch (err) {
-              console.error(`Invalid date format for dateOfBirth: ${row.dateOfBirth}`);
+              console.error(`Invalid date format for dateOfBirth: ${birthDateField}`);
               dateOfBirth = null;
             }
           }
           
           let dateJoined = new Date();
-          if (row.dateJoined) {
+          const hireDateField = row['Hire Date'] || row.hireDate || row['Date Joined'] || row.dateJoined;
+          if (hireDateField) {
             try {
-              dateJoined = new Date(row.dateJoined);
+              dateJoined = new Date(hireDateField);
               // Check if valid date
               if (isNaN(dateJoined.getTime())) {
                 dateJoined = new Date();
               }
             } catch (err) {
-              console.error(`Invalid date format for dateJoined: ${row.dateJoined}`);
+              console.error(`Invalid date format for hireDate: ${hireDateField}`);
             }
           }
           
@@ -2909,15 +2911,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Continue with database creation even if Firebase fails
           }
           
-          // Map other fields with flexible column name matching
-          const phoneNumber = row.phoneNumber || row['Phone Number'] || row.phone || row.Phone || null;
-          const jobTitle = row.jobTitle || row['Job Title'] || row.title || row.Title || row.position || row.Position || '';
-          const department = row.department || row.Department || row.dept || row.Dept || '';
+          // Map other fields to match the employee form exactly
+          const phoneNumber = row['Phone Number'] || row.phoneNumber || row.phone || row.Phone || null;
+          const jobTitle = row['Job Title'] || row.jobTitle || row.title || row.Title || row.position || row.Position || '';
+          const department = row['Department'] || row.department || row.dept || row.Dept || '';
+          const location = row['Location'] || row.location || row.office || row.Office || null;
           const username = row.username || row.Username || email.split('@')[0]; // default to email prefix
-          const status = row.status || row.Status || 'active';
+          const status = row['Status'] || row.status || 'Active';
           const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
-          const sex = row.sex || row.Sex || row.gender || row.Gender || null;
-          const nationality = row.nationality || row.Nationality || row.country || row.Country || null;
+          const sex = row['Gender'] || row.gender || row.sex || row.Sex || null;
+          const nationality = row['Nationality'] || row.nationality || row.country || row.Country || null;
 
           // Construct the employee record from CSV data
           const employeeData = {
@@ -2929,6 +2932,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phoneNumber,
             jobTitle,
             department,
+            location,
             dateOfBirth: dateOfBirth,
             dateJoined: dateJoined,
             status,
