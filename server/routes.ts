@@ -1103,13 +1103,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/users", verifyToken, verifyAdmin, async (req, res) => {
+  app.get("/api/users", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
-      // Get all users from the database
-      const allUsers = await db.select().from(users);
+      const currentUser = req.user;
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get company ID from admin's email domain
+      const domain = currentUser.email.split('@')[1];
+      const company = await db.select()
+        .from(companies)
+        .where(eq(companies.domain, domain))
+        .then(rows => rows[0]);
+
+      let filteredUsers = [];
+
+      if (company) {
+        // Get users from the same company (employees and admins)
+        const employeesFromCompany = await db.select()
+          .from(employees)
+          .where(eq(employees.companyId, company.id));
+
+        const adminsFromCompany = await db.select()
+          .from(users)
+          .where(like(users.email, `%${domain}`));
+
+        // Combine and deduplicate users
+        const allCompanyUsers = [
+          ...adminsFromCompany,
+          ...employeesFromCompany.map(emp => ({
+            id: emp.id,
+            username: emp.email,
+            name: emp.name,
+            surname: emp.surname,
+            email: emp.email,
+            phoneNumber: emp.phoneNumber,
+            jobTitle: emp.jobTitle,
+            department: emp.department,
+            sex: emp.sex,
+            nationality: emp.nationality,
+            birthDate: emp.dateOfBirth,
+            roleType: 'employee',
+            isAdmin: false,
+            status: emp.status,
+            avatarUrl: emp.photoUrl,
+            hireDate: emp.dateJoined,
+            firebaseUid: emp.firebaseUid,
+            organizationId: company.id,
+            permissions: null,
+            title: null,
+            location: emp.location,
+            responsibilities: null,
+            coverPhotoUrl: null,
+            createdAt: emp.createdAt,
+            createdBy: emp.createdById
+          }))
+        ];
+
+        // Remove duplicates by email
+        const uniqueUsers = allCompanyUsers.filter((user, index, self) => 
+          index === self.findIndex(u => u.email === user.email)
+        );
+
+        filteredUsers = uniqueUsers;
+      } else {
+        // Fallback: get all users (for development)
+        filteredUsers = await db.select().from(users);
+      }
       
-      // Get balances for all users
-      const usersWithBalance = await Promise.all(allUsers.map(async (user) => {
+      // Get balances for filtered users
+      const usersWithBalance = await Promise.all(filteredUsers.map(async (user) => {
         const balance = await storage.getUserBalance(user.id);
         // Remove sensitive data like password
         const { password, ...userWithoutPassword } = user;
@@ -1119,6 +1183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }));
       
+      console.log(`Returning ${usersWithBalance.length} users for company ${company?.name || 'unknown'}`);
       res.json(usersWithBalance);
     } catch (error: any) {
       console.error("Error getting all users:", error);
