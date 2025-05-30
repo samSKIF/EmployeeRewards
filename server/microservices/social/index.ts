@@ -74,7 +74,20 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
   try {
     console.log('Social microservice: Handling get posts request');
     
-    // Execute the query to get all posts
+    // Get user's company ID for tenant isolation
+    const userEmail = req.user?.email;
+    let companyId = null;
+    
+    if (userEmail) {
+      const domain = userEmail.split('@')[1];
+      const companyQuery = `SELECT id FROM companies WHERE domain = $1`;
+      const companyResult = await pool.query(companyQuery, [domain]);
+      if (companyResult.rows.length > 0) {
+        companyId = companyResult.rows[0].id;
+      }
+    }
+    
+    // Execute the query to get posts only from users in the same company
     const query = `
       SELECT 
         p.id, 
@@ -101,11 +114,16 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
         ) AS "commentCount"
       FROM posts p
       JOIN users u ON p.user_id = u.id
+      WHERE ($1::integer IS NULL OR 
+             u.email LIKE '%' || (SELECT domain FROM companies WHERE id = $1) OR
+             EXISTS (SELECT 1 FROM employees e WHERE e.company_id = $1 AND e.email = u.email))
       ORDER BY p.created_at DESC
       LIMIT 50
     `;
     
-    const result = await pool.query(query);
+    const result = await pool.query(query, [companyId]);
+    
+    console.log(`Social microservice: Filtering posts for company ${companyId} (${userEmail})`);
     
     console.log('Social microservice: Retrieved', result.rows.length, 'posts');
     
