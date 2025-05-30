@@ -2887,27 +2887,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create Firebase user for the employee
           let firebaseUid = null;
           try {
-            console.log(`Processing Firebase user for bulk upload: ${row.email}`);
+            console.log(`Processing Firebase user for bulk upload: ${email}`);
             
             // First, check if the user might already exist in Firebase
             try {
-              const existingFirebaseUser = await auth.getUserByEmail(row.email);
+              const existingFirebaseUser = await auth.getUserByEmail(email);
               console.log(`User already exists in Firebase with UID: ${existingFirebaseUser.uid}`);
               firebaseUid = existingFirebaseUser.uid;
             } catch (notFoundError) {
               // User doesn't exist, create a new one
               const firebaseUser = await auth.createUser({
-                email: row.email,
+                email: email,
                 password: row.password || 'password123', // Use provided password or default
-                displayName: `${row.name} ${row.surname || ''}`.trim(),
+                displayName: `${name} ${surname || ''}`.trim(),
                 emailVerified: true
               });
               
-              console.log(`Created Firebase user for bulk upload: ${row.email} with UID: ${firebaseUser.uid}`);
+              console.log(`Created Firebase user for bulk upload: ${email} with UID: ${firebaseUser.uid}`);
               firebaseUid = firebaseUser.uid;
             }
           } catch (firebaseError) {
-            console.error(`Error processing Firebase user during bulk upload for: ${row.email}`, firebaseError);
+            console.error(`Error processing Firebase user during bulk upload for: ${email}`, firebaseError);
             // Continue with database creation even if Firebase fails
           }
           
@@ -2918,6 +2918,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const location = row['Location'] || row.location || row.office || row.Office || null;
           const username = row.username || row.Username || email.split('@')[0]; // default to email prefix
           const status = row['Status'] || row.status || 'Active';
+          const managerEmail = row["Manager's Email"] || row['Manager Email'] || row.managerEmail || row.manager_email || null;
+          const isAdmin = (row['Admin privileges'] || row['Admin Privileges'] || row.isAdmin || row.admin || '').toString().toLowerCase() === 'yes';
           const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
           const sex = row['Gender'] || row.gender || row.sex || row.Sex || null;
           const nationality = row['Nationality'] || row.nationality || row.country || row.Country || null;
@@ -2933,10 +2935,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             jobTitle,
             department,
             location,
+            managerEmail,
             dateOfBirth: dateOfBirth,
             dateJoined: dateJoined,
             status,
             isManager,
+            isAdmin,
             sex,
             nationality,
             companyId: companyId, // Assign to the correct company
@@ -2945,7 +2949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             firebaseUid: firebaseUid // Add Firebase UID if available
           };
           
-          console.log(`Importing employee: ${row.name} (${row.email}) to company ${companyId}${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
+          console.log(`Importing employee: ${name} (${email}) to company ${companyId}${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
           
           // Insert the employee record
           const result = await db.insert(employees).values(employeeData);
