@@ -136,19 +136,13 @@ export default function AuthPage() {
         description: "You have successfully logged in",
       });
       
-      // Redirect to admin dashboard or social feed based on user role
-      const redirectPath = data.user.isAdmin ? '/admin' : '/social';
+      // Redirect to social platform for all users
+      const redirectPath = '/social';
       console.log(`Login successful, user data:`, data.user);
       console.log(`Redirecting to ${redirectPath}`);
       
-      // Add a small delay to ensure the token is stored and then redirect
-      setTimeout(() => {
-        setLocation(redirectPath);
-        // Force page refresh if routing doesn't work
-        if (window.location.pathname === '/auth') {
-          window.location.href = redirectPath;
-        }
-      }, 100);
+      // Force immediate redirect to social platform
+      window.location.href = redirectPath;
     } catch (error: any) {
       toast({
         title: "Error",
