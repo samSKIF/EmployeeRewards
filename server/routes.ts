@@ -2788,8 +2788,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Import XLSX functionality
-      const XLSX = require('xlsx');
-      const fs = require('fs');
+      const { default: XLSX } = await import('xlsx');
+      const { readFileSync } = await import('fs');
       
       console.log("Uploaded file:", req.file);
       
@@ -2800,7 +2800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
       } else if (req.file.path) {
         // If multer saved it to disk
-        const fileData = fs.readFileSync(req.file.path);
+        const fileData = readFileSync(req.file.path);
         workbook = XLSX.read(fileData, { type: 'buffer' });
       } else {
         return res.status(400).json({ message: "Invalid file format or empty file" });
