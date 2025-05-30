@@ -2815,14 +2815,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = XLSX.utils.sheet_to_json(worksheet);
 
       // Log the data we're processing
-      console.log("CSV data parsed:", data);
+      console.log("CSV data parsed - first few rows:", data.slice(0, 3));
+      console.log("Available columns:", data.length > 0 ? Object.keys(data[0]) : 'No data');
+      
+      // Filter out empty rows
+      const validData = data.filter((row: any) => {
+        // Check if row has any meaningful data
+        const values = Object.values(row);
+        return values.some(value => value !== null && value !== undefined && value !== '');
+      });
+      
+      console.log(`Processing ${validData.length} rows (filtered from ${data.length} total rows)`);
       
       // Process each employee record
-      const results = await Promise.all(data.map(async (row: any, index: number) => {
+      const results = await Promise.all(validData.map(async (row: any, index: number) => {
         try {
+          // Try different possible column name variations
+          const name = row.name || row.Name || row['First Name'] || row.firstName || row['Employee Name'];
+          const surname = row.surname || row.Surname || row['Last Name'] || row.lastName;
+          const email = row.email || row.Email || row['Email Address'] || row.emailAddress;
+          
           // validate required fields
-          if (!row.name || !row.email) {
-            console.error(`Row ${index + 1}: Missing required field (name or email)`);
+          if (!name || !email) {
+            console.error(`Row ${index + 1}: Missing required field (name: '${name}' or email: '${email}'). Available fields:`, Object.keys(row));
             return null;
           }
           
@@ -2894,22 +2909,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Continue with database creation even if Firebase fails
           }
           
+          // Map other fields with flexible column name matching
+          const phoneNumber = row.phoneNumber || row['Phone Number'] || row.phone || row.Phone || null;
+          const jobTitle = row.jobTitle || row['Job Title'] || row.title || row.Title || row.position || row.Position || '';
+          const department = row.department || row.Department || row.dept || row.Dept || '';
+          const username = row.username || row.Username || email.split('@')[0]; // default to email prefix
+          const status = row.status || row.Status || 'active';
+          const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
+          const sex = row.sex || row.Sex || row.gender || row.Gender || null;
+          const nationality = row.nationality || row.Nationality || row.country || row.Country || null;
+
           // Construct the employee record from CSV data
           const employeeData = {
-            name: row.name,
-            surname: row.surname || '',
-            email: row.email,
+            name,
+            surname: surname || '',
+            email,
             password: hashedPassword,
-            username: row.username || row.email.split('@')[0], // default to email prefix if username not provided
-            phoneNumber: row.phoneNumber || null,
-            jobTitle: row.jobTitle || '',
-            department: row.department || '',
+            username,
+            phoneNumber,
+            jobTitle,
+            department,
             dateOfBirth: dateOfBirth,
             dateJoined: dateJoined,
-            status: row.status || 'active',
-            isManager: row.isManager === 'Yes',
-            sex: row.sex || null,
-            nationality: row.nationality || null,
+            status,
+            isManager,
+            sex,
+            nationality,
             companyId: companyId, // Assign to the correct company
             createdAt: new Date(),
             createdById: currentUser.id, // Use the current authenticated user
