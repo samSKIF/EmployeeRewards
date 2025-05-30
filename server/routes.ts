@@ -33,7 +33,7 @@ import {
   insertOnboardingAssignmentSchema, insertOnboardingProgressSchema,
   OnboardingPlan, OnboardingMission, OnboardingAssignment, OnboardingProgress
 } from "@shared/schema";
-import { eq, desc, asc, and, or, sql, inArray } from "drizzle-orm";
+import { eq, desc, asc, and, or, sql, inArray, like } from "drizzle-orm";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -48,27 +48,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Celebrations API - Birthday and Work Anniversary tracking
   app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      // Get users with birthdays today
+      const currentUser = req.user;
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get company ID from admin's email domain
+      const domain = currentUser.email.split('@')[1];
+      const domainToCompanyMap: Record<string, number> = {
+        'canva.com': 1,
+        'monday.com': 2, 
+        'loylogic.com': 3,
+        'fripl.com': 4,
+        'democorp.com': 5
+      };
+      const companyId = domainToCompanyMap[domain] || null;
+
+      if (!companyId) {
+        return res.json([]);
+      }
+
+      // Get employees with birthdays today from the same company
       const birthdayUsers = await db
         .select()
-        .from(users)
+        .from(employees)
         .where(
           and(
-            sql`${users.birthDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-            sql`EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+            eq(employees.companyId, companyId),
+            sql`${employees.dateOfBirth} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${employees.dateOfBirth}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${employees.dateOfBirth}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 
-      // Get users with work anniversaries today
+      // Get employees with work anniversaries today from the same company
       const anniversaryUsers = await db
         .select()
-        .from(users)
+        .from(employees)
         .where(
           and(
-            sql`${users.hireDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.hireDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-            sql`EXTRACT(DAY FROM ${users.hireDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+            eq(employees.companyId, companyId),
+            sql`${employees.dateJoined} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${employees.dateJoined}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${employees.dateJoined}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 
@@ -78,26 +100,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Anniversary users found:', anniversaryUsers.length);
       
       const celebrations = [
-        ...birthdayUsers.map(user => ({
-          id: user.id,
+        ...birthdayUsers.map(employee => ({
+          id: employee.id,
           user: {
-            id: user.id,
-            name: user.name,
-            surname: user.surname,
-            avatarUrl: user.avatarUrl,
-            department: user.department,
-            location: user.location,
-            birthDate: user.birthDate,
-            hireDate: user.hireDate,
-            jobTitle: user.jobTitle
+            id: employee.id,
+            name: employee.name,
+            surname: employee.surname,
+            avatarUrl: employee.photoUrl,
+            department: employee.department,
+            location: employee.location,
+            birthDate: employee.dateOfBirth,
+            hireDate: employee.dateJoined,
+            jobTitle: employee.jobTitle
           },
           type: 'birthday',
           date: todayDate.toISOString().split('T')[0],
           hasReacted: false,
           hasCommented: false
         })),
-        ...anniversaryUsers.map(user => {
-          const years = user.hireDate ? new Date().getFullYear() - new Date(user.hireDate).getFullYear() : 0;
+        ...anniversaryUsers.map(employee => {
+          const years = employee.dateJoined ? new Date().getFullYear() - new Date(employee.dateJoined).getFullYear() : 0;
           return {
             id: user.id,
             user: {
@@ -1112,61 +1134,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get company ID from admin's email domain
       const domain = currentUser.email.split('@')[1];
-      const company = await db.select()
-        .from(companies)
-        .where(eq(companies.domain, domain))
-        .then(rows => rows[0]);
+      
+      // Find the company ID by matching domain
+      let companyId: number | null = null;
+      
+      // Map known domains to company IDs (based on our setup data)
+      const domainToCompanyMap: Record<string, number> = {
+        'canva.com': 1,
+        'monday.com': 2, 
+        'loylogic.com': 3,
+        'fripl.com': 4,
+        'democorp.com': 5
+      };
+      
+      companyId = domainToCompanyMap[domain] || null;
 
       let filteredUsers = [];
 
-      if (company) {
-        // Get users from the same company (employees and admins)
+      if (companyId) {
+        // Get employees from the same company
         const employeesFromCompany = await db.select()
           .from(employees)
-          .where(eq(employees.companyId, company.id));
+          .where(eq(employees.companyId, companyId));
 
+        // Get admins from the same domain
         const adminsFromCompany = await db.select()
           .from(users)
           .where(like(users.email, `%${domain}`));
 
-        // Combine and deduplicate users
-        const allCompanyUsers = [
-          ...adminsFromCompany,
-          ...employeesFromCompany.map(emp => ({
-            id: emp.id,
-            username: emp.email,
-            name: emp.name,
-            surname: emp.surname,
-            email: emp.email,
-            phoneNumber: emp.phoneNumber,
-            jobTitle: emp.jobTitle,
-            department: emp.department,
-            sex: emp.sex,
-            nationality: emp.nationality,
-            birthDate: emp.dateOfBirth,
-            roleType: 'employee',
-            isAdmin: false,
-            status: emp.status,
-            avatarUrl: emp.photoUrl,
-            hireDate: emp.dateJoined,
-            firebaseUid: emp.firebaseUid,
-            organizationId: company.id,
-            permissions: null,
-            title: null,
-            location: emp.location,
-            responsibilities: null,
-            coverPhotoUrl: null,
-            createdAt: emp.createdAt,
-            createdBy: emp.createdById
-          }))
-        ];
-
-        // Remove duplicates by email
-        const uniqueUsers = allCompanyUsers.filter((user, index, self) => 
-          index === self.findIndex(u => u.email === user.email)
-        );
-
-        filteredUsers = uniqueUsers;
+        filteredUsers = [...adminsFromCompany, ...employeesFromCompany];
       } else {
         // Fallback: get all users (for development)
         filteredUsers = await db.select().from(users);
