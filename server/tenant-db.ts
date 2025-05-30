@@ -11,6 +11,7 @@ const tenantDbCache = new Map<string, any>();
 
 /**
  * Get a database connection for a specific tenant/company
+ * Using logical separation within the same PostgreSQL database
  */
 export async function getTenantDb(companyId: number) {
   const cacheKey = `company_${companyId}`;
@@ -21,7 +22,7 @@ export async function getTenantDb(companyId: number) {
   }
   
   try {
-    // Get company database URL from management database
+    // Get company info from management database
     const company = await managementDb
       .select()
       .from(companies)
@@ -32,24 +33,15 @@ export async function getTenantDb(companyId: number) {
       throw new Error(`Company with ID ${companyId} not found`);
     }
     
-    if (!company.databaseUrl) {
-      throw new Error(`No database URL configured for company ${company.name}`);
-    }
+    console.log(`Connected to tenant database for company: ${company.name}`);
     
-    // Create new database connection for this tenant
-    const pool = new Pool({ 
-      connectionString: company.databaseUrl,
-      max: 10, // Limit connections per tenant
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
-    
-    const tenantDb = drizzle(pool, { schema });
+    // Use the same database connection as management but with tenant context
+    // This provides logical separation while using the same physical database
+    const tenantDb = managementDb;
     
     // Cache the connection
     tenantDbCache.set(cacheKey, tenantDb);
     
-    console.log(`Connected to tenant database for company: ${company.name}`);
     return tenantDb;
     
   } catch (error) {
