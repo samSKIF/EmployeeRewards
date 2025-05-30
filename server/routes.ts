@@ -722,34 +722,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = null;
       let tenantDb = null;
 
-      // If email is provided, determine tenant from email domain
+      // If email is provided, look up user directly in main database
       if (email) {
         console.log(`Looking up user with email: ${email}`);
         
-        // Extract domain from email
-        const domain = email.split('@')[1];
-        console.log(`Extracted domain: ${domain}`);
+        // Look up user directly in the main database
+        const [foundUser] = await db.select().from(users).where(eq(users.email, email));
+        user = foundUser;
         
-        // Find company by domain
-        const companiesQuery = await pool.query('SELECT * FROM companies WHERE domain = $1', [domain]);
-        const company = companiesQuery.rows[0];
-        
-        if (company) {
-          console.log(`Found company: ${company.name} for domain: ${domain}`);
-          
-          // Get tenant database connection using company ID
-          const { getTenantDb } = await import('./tenant-db');
-          tenantDb = await getTenantDb(company.id);
-          
-          // Look up user in tenant database
-          const [foundUser] = await tenantDb.select().from(users).where(eq(users.email, email));
-          user = foundUser;
-          
-          if (user) {
-            console.log(`User found in tenant database: ${user.email}`);
-          }
+        if (user) {
+          console.log(`User found in main database: ${user.email}`);
         } else {
-          console.log(`No company found for domain: ${domain}`);
+          console.log(`No user found with email: ${email}`);
         }
       }
 
