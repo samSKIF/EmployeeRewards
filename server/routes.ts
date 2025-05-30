@@ -2923,6 +2923,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
           const sex = row['Gender'] || row.gender || row.sex || row.Sex || null;
           const nationality = row['Nationality'] || row.nationality || row.country || row.Country || null;
+          
+          // Debug log to see what fields are being extracted
+          console.log(`Field mapping for ${email}:`, {
+            phoneNumber,
+            jobTitle,
+            department,
+            location,
+            status,
+            managerEmail,
+            sex,
+            nationality,
+            dateOfBirth: dateOfBirth?.toISOString?.(),
+            dateJoined: dateJoined?.toISOString?.(),
+            isManager,
+            isAdmin
+          });
 
           // Construct the employee record from CSV data
           const employeeData = {
@@ -2930,7 +2946,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             surname: surname || '',
             email,
             password: hashedPassword,
-            username,
             phoneNumber,
             jobTitle,
             department,
@@ -2940,7 +2955,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dateJoined: dateJoined,
             status,
             isManager,
-            isAdmin,
             sex,
             nationality,
             companyId: companyId, // Assign to the correct company
