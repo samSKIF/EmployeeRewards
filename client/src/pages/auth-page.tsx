@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -25,6 +24,18 @@ export default function AuthPage() {
   const [adminCountry, setAdminCountry] = useState("");
   const [adminAddress, setAdminAddress] = useState("");
   const [adminPhone, setAdminPhone] = useState("");
+  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  
+  // Add a state to track if we should skip auto-login
+  const [skipAutoLogin, setSkipAutoLogin] = useState(() => {
+    return sessionStorage.getItem("skipAutoLogin") === "true";
+  });
+  
+  // Check if already logged in with Firebase
+  const { currentUser, loading, signIn, register, signInWithGooglePopup, signOut } = useFirebaseAuth();
   
   // Function to show admin setup dialog
   const openAdminSetupDialog = () => {
@@ -69,7 +80,7 @@ export default function AuthPage() {
         username: "admin",
         department: "Administration",
         firebaseUid: firebaseUser.uid,
-        isAdmin: true,  // Ensure this is set to true
+        isAdmin: true,
         companyName: adminCompanyName,
         country: adminCountry, 
         address: adminAddress,
@@ -98,13 +109,12 @@ export default function AuthPage() {
   };
   
   // Parse the redirectTo parameter from the URL query and check user role
-  // This now returns a Promise since we need to check with the server
   const getRedirectPath = async () => {
     const params = new URLSearchParams(window.location.search);
     const redirectTo = params.get('redirectTo');
     
     if (redirectTo === 'social') {
-      return '/social'; // Corrected path to match the route in App.tsx
+      return '/social';
     }
     
     // Check Firebase token to see if user is registered in our system
@@ -114,7 +124,6 @@ export default function AuthPage() {
         // First try to determine admin status from token claims
         const payload = JSON.parse(atob(token.split('.')[1]));
         
-        // No role checks needed, always redirect to social
         console.log("Token payload:", { 
           email: payload.email
         });
@@ -130,12 +139,10 @@ export default function AuthPage() {
           if (response.ok) {
             const userData = await response.json();
             console.log("User data from API for admin check:", userData);
-            
             console.log("User authenticated");
           }
         } catch (serverError) {
           console.error("Error checking admin status with server:", serverError);
-          // Continue with client-side checks if server check fails
         }
         
         // Direct regular employees to social platform
@@ -148,26 +155,6 @@ export default function AuthPage() {
     // If we can't determine role or no token, default to social
     return '/social';
   };
-  
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  
-  // Register form state
-  const [registerName, setRegisterName] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerUsername, setRegisterUsername] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [registerDepartment, setRegisterDepartment] = useState("");
-  
-  // Add a state to track if we should skip auto-login
-  // Initialize from sessionStorage to persist across page refreshes
-  const [skipAutoLogin, setSkipAutoLogin] = useState(() => {
-    return sessionStorage.getItem("skipAutoLogin") === "true";
-  });
-  
-  // Check if already logged in with Firebase
-  const { currentUser, loading, signIn, register, signInWithGooglePopup, signOut } = useFirebaseAuth();
   
   // Add a button handler to log out
   const handleLogout = async () => {
@@ -214,23 +201,8 @@ export default function AuthPage() {
           const token = await currentUser.getIdToken();
           console.log("Got Firebase ID token");
           
-          // Log token details for debugging (without exposing the full token)
-          console.log("Token prefix:", token.substring(0, 10) + "...");
-          
           // Store token in localStorage for API authentication
           localStorage.setItem("firebaseToken", token);
-          
-          // Test if token works
-          try {
-            const response = await fetch("/api/users/me", {
-              headers: {
-                "Authorization": `Bearer ${token}`
-              }
-            });
-            console.log("Token test response:", response.status, await response.text());
-          } catch (error) {
-            console.error("Token test failed:", error);
-          }
           
           // Save user data to our backend
           await apiRequest("POST", "/api/users/metadata", {
@@ -285,63 +257,6 @@ export default function AuthPage() {
       toast({
         title: "Error",
         description: error.message || "Failed to login",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!registerName || !registerEmail || !registerPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // Use Firebase for registration
-      const firebaseUser = await register(registerEmail, registerPassword, registerName);
-      console.log("Firebase registration successful:", firebaseUser);
-      
-      // Also save user metadata to our database for additional info
-      try {
-        // Get the Firebase UID to link accounts
-        const firebaseUid = firebaseUser.uid;
-        
-        console.log("Saving user metadata with Firebase UID:", firebaseUid);
-        await apiRequest("POST", "/api/users/metadata", {
-          name: registerName,
-          email: registerEmail,
-          username: registerUsername || registerEmail.split('@')[0],
-          department: registerDepartment || undefined,
-          firebaseUid: firebaseUid // Include the Firebase UID
-        });
-        console.log("User metadata saved successfully");
-      } catch (metadataError) {
-        console.error("Failed to save user metadata:", metadataError);
-        // Continue even if metadata save fails
-      }
-      
-      toast({
-        title: "Success",
-        description: "Account created successfully",
-      });
-      
-      const redirectPath = await getRedirectPath();
-      console.log(`Registration successful, redirecting to ${redirectPath}`);
-      setLocation(redirectPath);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
         variant: "destructive"
       });
     } finally {
@@ -453,20 +368,19 @@ export default function AuthPage() {
       <div className="md:w-1/2 bg-white p-8 flex flex-col justify-center items-center">
         <div className="max-w-md mx-auto w-full">
           <div className="flex items-center gap-3 mb-8">
-            <svg viewBox="0 0 24 24" width="42" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="24" height="24" rx="4" fill="var(--primary-color, #00A389)" />
-              <path d="M7 12H17M7 8H13M7 16H15" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span className="text-2xl font-bold text-gray-800">{branding?.organizationName || "ThrivioHR"}</span>
+            <div className="w-12 h-12 rounded-lg bg-primary-color text-white flex items-center justify-center text-xl font-bold">
+              E
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">{branding.organizationName}</h1>
+              <p className="text-sm text-gray-500">Employee Engagement Platform</p>
+            </div>
           </div>
           
-          <Card className="border-none shadow-lg">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">Welcome to ThrivioHR</h1>
-                  <p className="text-gray-500 text-sm">Please sign in to continue to your account</p>
-                </div>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="text-center pb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Welcome Back</h2>
                 
                 {currentUser && (
                   <Button 
@@ -481,212 +395,106 @@ export default function AuthPage() {
               </div>
             </CardHeader>
             
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login" className="text-sm">Sign In</TabsTrigger>
-                <TabsTrigger value="register" className="text-sm">Create Account</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <form onSubmit={handleLogin}>
-                  <CardContent className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm text-gray-600">Email or Username</Label>
-                      <Input 
-                        id="email" 
-                        type="text" 
-                        placeholder="Enter your email or username"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)} 
-                        className="focus:border-primary-color focus:ring-primary-color"
+            <div className="w-full">
+              <form onSubmit={handleLogin}>
+                <CardContent className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm text-gray-600">Email or Username</Label>
+                    <Input 
+                      id="email" 
+                      type="text" 
+                      placeholder="Enter your email or username"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)} 
+                      className="focus:border-primary-color focus:ring-primary-color"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="password" className="text-sm text-gray-600">Password</Label>
+                      <a href="#" className="text-sm text-primary-color hover:text-primary-color/80">Forgot password?</a>
+                    </div>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      placeholder="Enter your password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className="focus:border-primary-color focus:ring-primary-color"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-4 pt-2">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Signing in..." : "Sign In"}
+                  </Button>
+                  
+                  <div className="relative my-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-muted-foreground">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="w-full border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-medium"
+                    onClick={() => signInWithGooglePopup()}
+                    disabled={isLoading}
+                  >
+                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="password" className="text-sm text-gray-600">Password</Label>
-                        <a href="#" className="text-sm text-primary-color hover:text-primary-color/80">Forgot password?</a>
-                      </div>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="Enter your password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="focus:border-primary-color focus:ring-primary-color"
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
                       />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-4 pt-2">
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Signing in..." : "Sign In"}
-                    </Button>
-                    
-                    <div className="relative my-3">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-muted-foreground">
-                          Or continue with
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => signInWithGooglePopup()}
-                      disabled={isLoading}
-                    >
-                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                        <path
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          fill="#4285F4"
-                        />
-                        <path
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          fill="#34A853"
-                        />
-                        <path
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                          fill="#FBBC05"
-                        />
-                        <path
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                          fill="#EA4335"
-                        />
-                      </svg>
-                      Sign in with Google
-                    </Button>
-                    
-                    <Button 
-                      type="button"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2 font-medium shadow-md"
-                      onClick={openAdminSetupDialog}
-                      disabled={isLoading}
-                    >
-                      Create Admin Account
-                    </Button>
-                  </CardFooter>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <form onSubmit={handleRegister}>
-                  <CardContent className="space-y-3 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm text-gray-600">Full Name</Label>
-                      <Input 
-                        id="name" 
-                        placeholder="Enter your full name"
-                        value={registerName}
-                        onChange={(e) => setRegisterName(e.target.value)} 
-                        className="focus:border-primary-color focus:ring-primary-color"
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email" className="text-sm text-gray-600">Email</Label>
-                      <Input 
-                        id="register-email" 
-                        type="email" 
-                        placeholder="Enter your email"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)} 
-                        className="focus:border-primary-color focus:ring-primary-color"
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
                       />
+                    </svg>
+                    Sign in with Google
+                  </Button>
+                  
+                  <div className="relative my-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-200" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="username" className="text-sm text-gray-600">Username</Label>
-                      <Input 
-                        id="username" 
-                        placeholder="Choose a username"
-                        value={registerUsername}
-                        onChange={(e) => setRegisterUsername(e.target.value)} 
-                        className="focus:border-primary-color focus:ring-primary-color"
-                      />
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-500">
+                        For administrators only
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-sm text-gray-600">Password</Label>
-                      <Input 
-                        id="register-password" 
-                        type="password" 
-                        placeholder="Create a password"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        className="focus:border-primary-color focus:ring-primary-color"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department" className="text-sm text-gray-600">Department</Label>
-                      <Input 
-                        id="department" 
-                        placeholder="Your department (Optional)"
-                        value={registerDepartment}
-                        onChange={(e) => setRegisterDepartment(e.target.value)}
-                        className="focus:border-primary-color focus:ring-primary-color"
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-4 pt-2">
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Creating Account..." : "Create Account"}
-                    </Button>
-                    
-                    <div className="relative my-3">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-muted-foreground">
-                          Or continue with
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => signInWithGooglePopup()}
-                      disabled={isLoading}
-                    >
-                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                        <path
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          fill="#4285F4"
-                        />
-                        <path
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          fill="#34A853"
-                        />
-                        <path
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                          fill="#FBBC05"
-                        />
-                        <path
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                          fill="#EA4335"
-                        />
-                      </svg>
-                      Sign in with Google
-                    </Button>
-                    
-                    <p className="text-xs text-gray-500 text-center mt-4">
-                      By creating an account, you agree to our Terms of Service and Privacy Policy
-                    </p>
-                  </CardFooter>
-                </form>
-              </TabsContent>
-            </Tabs>
+                  </div>
+                  
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 font-medium"
+                    onClick={openAdminSetupDialog}
+                    disabled={isLoading}
+                  >
+                    Create Admin Account
+                  </Button>
+                </CardFooter>
+              </form>
+            </div>
           </Card>
         </div>
       </div>
