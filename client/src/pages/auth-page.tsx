@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 import { useBranding } from "@/context/BrandingContext";
 
 export default function AuthPage() {
@@ -34,64 +33,49 @@ export default function AuthPage() {
     return sessionStorage.getItem("skipAutoLogin") === "true";
   });
   
-  // Check if already logged in with Firebase
-  const { currentUser, loading, signIn, register, signInWithGooglePopup, signOut } = useFirebaseAuth();
+  // Remove Firebase dependency - using database authentication
   
   // Function to show admin setup dialog
   const openAdminSetupDialog = () => {
     setShowAdminSetup(true);
   };
   
-  // Function to create admin account in Firebase
+  // Function to create admin account in our database
   const createAdminAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       setIsLoading(true);
       
-      // Check if admin already exists by trying to sign in
-      try {
-        await signIn(adminEmail, adminPassword);
-        console.log("Admin account already exists in Firebase");
-        
-        // If login succeeded, sign out to allow regular login
-        await signOut();
-        
-        toast({
-          title: "Admin Account Check",
-          description: "Admin account already exists in Firebase",
-        });
-        
-        setShowAdminSetup(false);
-        return;
-      } catch (signInError) {
-        // If login failed with auth/user-not-found, it means we need to create the account
-        console.log("Admin sign-in failed, will create account:", signInError);
+      // Create admin account in our database
+      console.log("Creating admin account in database");
+      const response = await fetch("/api/admin/create-company", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          adminEmail,
+          adminPassword,
+          companyName: adminCompanyName,
+          country: adminCountry,
+          address: adminAddress,
+          phone: adminPhone
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || "Failed to create admin account");
       }
       
-      // Create admin account in Firebase
-      console.log("Creating admin account in Firebase");
-      const firebaseUser = await register(adminEmail, adminPassword, adminCompanyName || "Admin User");
-      
-      // Save user metadata to our database
-      await apiRequest("POST", "/api/users/metadata", {
-        name: adminCompanyName || "Admin User",
-        email: adminEmail,
-        username: "admin",
-        department: "Administration",
-        firebaseUid: firebaseUser.uid,
-        isAdmin: true,
-        companyName: adminCompanyName,
-        country: adminCountry, 
-        address: adminAddress,
-        phone: adminPhone
-      });
+      const data = await response.json();
       
       console.log("Admin account created successfully");
       
       toast({
         title: "Success",
-        description: "Admin account created successfully",
+        description: "Admin account and company created successfully",
       });
       
       // Close the dialog after successful creation
@@ -108,124 +92,7 @@ export default function AuthPage() {
     }
   };
   
-  // Parse the redirectTo parameter from the URL query and check user role
-  const getRedirectPath = async () => {
-    const params = new URLSearchParams(window.location.search);
-    const redirectTo = params.get('redirectTo');
-    
-    if (redirectTo === 'social') {
-      return '/social';
-    }
-    
-    // Check Firebase token to see if user is registered in our system
-    const token = localStorage.getItem("firebaseToken");
-    if (token) {
-      try {
-        // First try to determine admin status from token claims
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        
-        console.log("Token payload:", { 
-          email: payload.email
-        });
-        
-        // Make a request to the server to verify user status
-        try {
-          const response = await fetch("/api/users/me", {
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          });
-          
-          if (response.ok) {
-            const userData = await response.json();
-            console.log("User data from API for admin check:", userData);
-            console.log("User authenticated");
-          }
-        } catch (serverError) {
-          console.error("Error checking admin status with server:", serverError);
-        }
-        
-        // Direct regular employees to social platform
-        return '/social';
-      } catch (e) {
-        console.error("Error during redirect path determination:", e);
-      }
-    }
-    
-    // If we can't determine role or no token, default to social
-    return '/social';
-  };
-  
-  // Add a button handler to log out
-  const handleLogout = async () => {
-    try {
-      console.log("Attempting to sign out from Firebase");
-      // Set the flag first to prevent auto redirection
-      setSkipAutoLogin(true);
-      // Store in sessionStorage to persist across page refreshes
-      sessionStorage.setItem("skipAutoLogin", "true");
-      
-      // Remove the token from localStorage
-      localStorage.removeItem("firebaseToken");
-      
-      // Call Firebase signOut
-      await signOut();
-      
-      console.log("Sign out successful");
-      
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account",
-      });
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  useEffect(() => {
-    // Only auto-login if not specifically canceled
-    if (!loading && currentUser && !skipAutoLogin) {
-      console.log("User already logged in with Firebase:", currentUser);
-      
-      // For Google login, make sure we save the user metadata to our backend
-      const saveUserMetadata = async () => {
-        try {
-          console.log("Saving Firebase user metadata on auto-detection");
-          
-          // Get the Firebase ID token for authentication
-          const token = await currentUser.getIdToken();
-          console.log("Got Firebase ID token");
-          
-          // Store token in localStorage for API authentication
-          localStorage.setItem("firebaseToken", token);
-          
-          // Save user data to our backend
-          await apiRequest("POST", "/api/users/metadata", {
-            name: currentUser.displayName,
-            email: currentUser.email,
-            username: currentUser.email?.split('@')[0],
-            department: null,
-            firebaseUid: currentUser.uid
-          });
-          console.log("Auto-detected user metadata saved successfully");
-        } catch (error) {
-          console.error("Failed to save auto-detected user metadata:", error);
-        } finally {
-          // Use the redirect path from URL query parameter if available
-          const redirectPath = await getRedirectPath();
-          console.log(`Redirecting to ${redirectPath} after authentication`);
-          setLocation(redirectPath);
-        }
-      };
-      
-      saveUserMetadata();
-    }
-  }, [currentUser, loading, skipAutoLogin, setLocation]);
+
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,15 +109,35 @@ export default function AuthPage() {
     setIsLoading(true);
     
     try {
-      // Use Firebase for authentication
-      await signIn(loginEmail, loginPassword);
+      // Use our database-based authentication for multi-tenant system
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || "Login failed");
+      }
+      
+      const data = await response.json();
+      
+      // Store the authentication token
+      localStorage.setItem("token", data.token);
       
       toast({
         title: "Success",
         description: "You have successfully logged in",
       });
       
-      const redirectPath = await getRedirectPath();
+      // Redirect to admin dashboard or social feed based on user role
+      const redirectPath = data.user.isAdmin ? '/admin' : '/social';
       console.log(`Login successful, redirecting to ${redirectPath}`);
       setLocation(redirectPath);
     } catch (error: any) {
@@ -381,17 +268,6 @@ export default function AuthPage() {
             <CardHeader className="text-center pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">Welcome Back</h2>
-                
-                {currentUser && (
-                  <Button 
-                    onClick={handleLogout}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    Sign Out
-                  </Button>
-                )}
               </div>
             </CardHeader>
             
