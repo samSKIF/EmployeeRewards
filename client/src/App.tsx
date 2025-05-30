@@ -57,7 +57,7 @@ function App() {
       return;
     }
 
-    const token = localStorage.getItem("firebaseToken");
+    const token = localStorage.getItem("token");
 
     // Only handle routing for unauthenticated users or root path
     if (!token) {
