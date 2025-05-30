@@ -121,17 +121,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...anniversaryUsers.map(employee => {
           const years = employee.dateJoined ? new Date().getFullYear() - new Date(employee.dateJoined).getFullYear() : 0;
           return {
-            id: user.id,
+            id: employee.id,
             user: {
-              id: user.id,
-              name: user.name,
-              surname: user.surname,
-              avatarUrl: user.avatarUrl,
-              department: user.department,
-              location: user.location,
-              birthDate: user.birthDate,
-              hireDate: user.hireDate,
-              jobTitle: user.jobTitle
+              id: employee.id,
+              name: employee.name,
+              surname: employee.surname,
+              avatarUrl: employee.photoUrl,
+              department: employee.department,
+              location: employee.location,
+              birthDate: employee.dateOfBirth,
+              hireDate: employee.dateJoined,
+              jobTitle: employee.jobTitle
             },
             type: 'work_anniversary',
             date: todayDate.toISOString().split('T')[0],
@@ -152,6 +152,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/celebrations/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
+      const currentUser = req.user;
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get company ID from admin's email domain
+      const domain = currentUser.email.split('@')[1];
+      const domainToCompanyMap: Record<string, number> = {
+        'canva.com': 1,
+        'monday.com': 2, 
+        'loylogic.com': 3,
+        'fripl.com': 4,
+        'democorp.com': 5
+      };
+      const companyId = domainToCompanyMap[domain] || null;
+
+      if (!companyId) {
+        return res.json([]);
+      }
+
       const celebrations = [];
       
       // Check next 5 days
@@ -161,27 +181,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const month = targetDate.getMonth() + 1;
         const day = targetDate.getDate();
 
-        // Get birthdays for this date
+        // Get birthdays for this date from the same company
         const birthdayUsers = await db
           .select()
-          .from(users)
+          .from(employees)
           .where(
             and(
-              sql`${users.birthDate} IS NOT NULL`,
-              sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
-              sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
+              eq(employees.companyId, companyId),
+              sql`${employees.dateOfBirth} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${employees.dateOfBirth}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${employees.dateOfBirth}) = ${day}`
             )
           );
 
-        // Get work anniversaries for this date
+        // Get work anniversaries for this date from the same company
         const anniversaryUsers = await db
           .select()
-          .from(users)
+          .from(employees)
           .where(
             and(
-              sql`${users.hireDate} IS NOT NULL`,
-              sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
-              sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
+              eq(employees.companyId, companyId),
+              sql`${employees.dateJoined} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${employees.dateJoined}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${employees.dateJoined}) = ${day}`
             )
           );
 
@@ -1179,7 +1201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }));
       
-      console.log(`Returning ${usersWithBalance.length} users for company ${company?.name || 'unknown'}`);
+      console.log(`Returning ${usersWithBalance.length} users for company ${companyId || 'unknown'}`);
       res.json(usersWithBalance);
     } catch (error: any) {
       console.error("Error getting all users:", error);
