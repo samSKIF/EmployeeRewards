@@ -2651,7 +2651,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const employeeId = parseInt(id);
-      const companyId = req.user?.companyId;
+      const companyId = (req as any).companyId;
 
       if (!companyId) {
         return res.status(401).json({ message: "Unauthorized" });
