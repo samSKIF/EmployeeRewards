@@ -420,6 +420,7 @@ export default function AdminEmployeesPage() {
                     <TableHead>Department</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Last Seen</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -447,6 +448,16 @@ export default function AdminEmployeesPage() {
                         <Badge variant={employee.isAdmin ? "destructive" : "outline"}>
                           {employee.isAdmin ? "Admin" : "User"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {employee.lastSeenAt ? (
+                          <div className="text-sm">
+                            <div>{format(new Date(employee.lastSeenAt), 'MMM dd, yyyy')}</div>
+                            <div className="text-muted-foreground">{format(new Date(employee.lastSeenAt), 'HH:mm')}</div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Never</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => openEditDialog(employee)}>

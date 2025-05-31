@@ -54,6 +54,7 @@ export const users = pgTable("users", {
   location: text("location"),            // Location/office
   responsibilities: text("responsibilities"), // Job responsibilities
   coverPhotoUrl: text("cover_photo_url"),  // Profile cover photo
+  lastSeenAt: timestamp("last_seen_at"),  // Last login/activity timestamp
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
 });
