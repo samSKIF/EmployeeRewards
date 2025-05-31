@@ -3009,6 +3009,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Insert the employee record
           const result = await db.insert(employees).values(employeeData);
+          
+          // Create corresponding user account
+          const userUsername = `${name.toLowerCase()}.${(surname || '').toLowerCase()}`.replace(/\s+/g, '.');
+          const userData = {
+            username: userUsername,
+            email,
+            password: hashedPassword,
+            name: `${name} ${surname || ''}`.trim(),
+            createdAt: new Date()
+          };
+          
+          try {
+            await db.insert(users).values(userData);
+            console.log(`Created user account for: ${email}`);
+          } catch (userError) {
+            console.error(`Failed to create user account for ${email}:`, userError);
+            // Don't fail the employee creation if user creation fails
+          }
+          
           return result;
         } catch (err) {
           console.error('Error creating employee:', err);
