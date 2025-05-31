@@ -2827,6 +2827,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Processing ${validData.length} rows (filtered from ${data.length} total rows)`);
       
+      // First pass: collect all manager emails to determine who is a manager
+      const allManagerEmails = new Set();
+      validData.forEach((row: any) => {
+        const managerEmail = row["Manager's Email"] || row['Manager Email'] || row.managerEmail || row.manager_email;
+        if (managerEmail) {
+          allManagerEmails.add(managerEmail.toLowerCase());
+        }
+      });
+
       // Process each employee record
       const results = await Promise.all(validData.map(async (row: any, index: number) => {
         try {
@@ -2854,15 +2863,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return null;
           }
           
-          // Convert date strings to Date objects, with validation
+          // Convert date strings to Date objects, with Excel serial number handling
           let dateOfBirth = null;
           const birthDateField = row['Date of Birth'] || row.dateOfBirth || row['Birth Date'] || row.birthDate;
           if (birthDateField) {
             try {
-              dateOfBirth = new Date(birthDateField);
-              // Check if valid date
-              if (isNaN(dateOfBirth.getTime())) {
+              // Handle Excel serial numbers (numbers like 44927)
+              if (typeof birthDateField === 'number' && birthDateField > 25000) {
+                // Excel serial date: days since 1900-01-01 (adjust for Excel's leap year bug)
+                dateOfBirth = new Date((birthDateField - 25569) * 86400 * 1000);
+              } else {
+                dateOfBirth = new Date(birthDateField);
+              }
+              
+              // Check if valid date and reasonable year (not 1970 conversion errors)
+              if (isNaN(dateOfBirth.getTime()) || dateOfBirth.getFullYear() === 1970) {
                 dateOfBirth = null;
+                console.log(`Skipping invalid birth date: ${birthDateField} for ${email}`);
               }
             } catch (err) {
               console.error(`Invalid date format for dateOfBirth: ${birthDateField}`);
@@ -2874,13 +2891,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const hireDateField = row['Hire Date'] || row.hireDate || row['Date Joined'] || row.dateJoined;
           if (hireDateField) {
             try {
-              dateJoined = new Date(hireDateField);
-              // Check if valid date
-              if (isNaN(dateJoined.getTime())) {
-                dateJoined = new Date();
+              // Handle Excel serial numbers
+              if (typeof hireDateField === 'number' && hireDateField > 25000) {
+                dateJoined = new Date((hireDateField - 25569) * 86400 * 1000);
+              } else {
+                dateJoined = new Date(hireDateField);
+              }
+              
+              // Check if valid date and reasonable year (not 1970 conversion errors)
+              if (isNaN(dateJoined.getTime()) || dateJoined.getFullYear() === 1970) {
+                dateJoined = new Date(); // Default to today
+                console.log(`Using current date for invalid hire date: ${hireDateField} for ${email}`);
               }
             } catch (err) {
               console.error(`Invalid date format for hireDate: ${hireDateField}`);
+              dateJoined = new Date();
             }
           }
           
@@ -2921,7 +2946,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         row['Employment Status'] || row.employmentStatus || row['Active/Inactive'] || 'Active';
           const managerEmail = row["Manager's Email"] || row['Manager Email'] || row.managerEmail || row.manager_email || null;
           const isAdmin = (row['Admin privileges'] || row['Admin Privileges'] || row.isAdmin || row.admin || '').toString().toLowerCase() === 'yes';
-          const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
+          // Determine if this person is a manager based on whether their email appears as someone's manager
+          const isManager = allManagerEmails.has(email.toLowerCase());
           const sex = row['Gender'] || row.gender || row.sex || row.Sex || row.GENDER || row.SEX || 
                      row['gender'] || row['Sex'] || row['Male/Female'] || row['M/F'] || null;
           const nationality = row['Nationality'] || row.nationality || row.country || row.Country || 
