@@ -1,0 +1,401 @@
+Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Is Admin
+1009,Barbara,Perez,perez.barbara@canva.com,87012341234,Vice President of Human Resources - Tokyo,Human Resources,Tokyo,williams.carol@canva.com,Female,Japan,07/02/1986,24/05/2014,Active,Yes
+1016,Lisa,Martinez,martinez.lisa@canva.com,87012341235,Recruitment Manager,Human Resources,Tokyo,perez.barbara@canva.com,Female,Japan,27/07/1993,13/03/2015,Active,Yes
+1017,Christopher,King,king.christopher@canva.com,87012341236,Compensation & Benefits Manager,Human Resources,Tokyo,perez.barbara@canva.com,Female,Japan,14/02/1992,15/01/2016,Active,No
+1018,Kimberly,Young,young.kimberly@canva.com,87012341237,Learning & Development Manager,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,14/08/1991,05/11/2021,Active,No
+1056,Joshua,Gonzalez,gonzalez.joshua@canva.com,87012341238,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,08/07/1992,18/02/2023,Active,No
+1057,Richard,Williams,williams.richard@canva.com,87012341239,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,18/12/1996,24/03/2022,Active,No
+1058,Dorothy,White,white.dorothy@canva.com,87012341240,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,25/08/1997,17/07/2019,Active,No
+1059,Donald,Flores,flores.donald@canva.com,87012341241,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,06/04/1994,02/08/2019,Active,No
+1060,Sarah,Rivera,rivera.sarah@canva.com,87012341242,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,04/07/1994,04/11/2021,Active,No
+1061,Sarah,Johnson,johnson.sarah@canva.com,87012341243,HR Specialist,Human Resources,Tokyo,perez.barbara@canva.com,Female,Japan,09/06/2001,22/10/2024,Active,No
+1062,Daniel,Mitchell,mitchell.daniel@canva.com,87012341244,HR Coordinator,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,03/10/1996,19/07/2021,Active,No
+1063,Dorothy,Nelson,nelson.dorothy@canva.com,87012341245,HR Coordinator,Human Resources,Tokyo,perez.barbara@canva.com,Female,Japan,24/07/2000,20/12/2022,Active,No
+1064,Barbara,Williams,williams.barbara@canva.com,87012341246,HR Coordinator,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,16/12/1991,23/02/2017,Active,No
+1065,Sarah,Wilson,wilson.sarah@canva.com,87012341247,HR Coordinator,Human Resources,Tokyo,perez.barbara@canva.com,Female,Japan,07/05/1981,28/08/2013,Active,No
+1066,Sandra,Green,green.sandra@canva.com,87012341248,HR Coordinator,Human Resources,Tokyo,perez.barbara@canva.com,Male,Japan,16/03/1980,16/10/2022,Active,No
+1069,George,Thompson,thompson.george@canva.com,87012341249,Finance Director - Tokyo,Finance,Tokyo,lee.thomas@canva.com,Female,Japan,11/08/1979,22/04/2021,Active,No
+1122,Charles,Williams,williams.charles@canva.com,87012341250,Finance Manager,Finance,Tokyo,thompson.george@canva.com,Male,Japan,10/01/1990,08/12/2024,Active,No
+1123,Margaret,White,white.margaret@canva.com,87012341251,Finance Manager,Finance,Tokyo,thompson.george@canva.com,Female,Japan,18/02/1986,13/07/2014,Active,No
+1124,William,Gonzalez,gonzalez.william@canva.com,87012341252,Senior Accountant,Finance,Tokyo,thompson.george@canva.com,Male,Japan,07/07/1990,09/06/2016,Active,No
+1125,Brian,Jones,jones.brian@canva.com,87012341253,Senior Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,17/11/1990,23/02/2021,Active,No
+1126,Dorothy,Roberts,roberts.dorothy@canva.com,87012341254,Senior Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,20/07/1997,04/03/2024,Active,No
+1127,Nancy,Gonzalez,gonzalez.nancy@canva.com,87012341255,Senior Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,16/01/1985,14/01/2016,Active,No
+1128,Matthew,Lee,lee.matthew@canva.com,87012341256,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,25/12/1981,08/05/2017,Active,No
+1129,Nancy,Scott,scott.nancy@canva.com,87012341257,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,27/03/1985,05/01/2016,Active,No
+1130,Richard,Nguyen,nguyen.richard@canva.com,87012341258,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,24/07/1982,21/07/2022,Active,No
+1131,Melissa,Davis,davis.melissa@canva.com,87012341259,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,09/01/1993,25/08/2023,Active,No
+1132,Karen,White,white.karen@canva.com,87012341260,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,17/07/1995,23/04/2017,Active,No
+1133,Daniel,Brown,brown.daniel@canva.com,87012341261,Accountant,Finance,Tokyo,thompson.george@canva.com,Male,Japan,10/02/1981,04/02/2011,Active,No
+1134,Michael,Hernandez,hernandez.michael@canva.com,87012341262,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,12/06/1998,18/08/2021,Active,No
+1135,Robert,Smith,smith.robert@canva.com,87012341263,Accountant,Finance,Tokyo,thompson.george@canva.com,Female,Japan,14/03/2000,22/05/2022,Active,No
+1138,Anthony,Johnson,johnson.anthony@canva.com,87012341264,Marketing Director - Tokyo,Marketing,Tokyo,williams.deborah@canva.com,Female,Japan,07/07/1990,01/03/2016,Active,No
+1201,Steven,Green,green.steven@canva.com,87012341265,Marketing Manager,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,23/09/1987,03/02/2012,Active,No
+1202,Sandra,Roberts,roberts.sandra@canva.com,87012341266,Marketing Manager,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,15/04/1991,22/10/2023,Active,No
+1203,Betty,Campbell,campbell.betty@canva.com,87012341267,Marketing Manager,Marketing,Tokyo,johnson.anthony@canva.com,Female,Japan,15/07/1984,07/06/2021,Active,No
+1204,Donald,Thomas,thomas.donald@canva.com,87012341268,Senior Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,20/03/1993,05/01/2018,Active,No
+1205,Karen,Jackson,jackson.karen@canva.com,87012341269,Senior Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,25/09/1990,19/01/2016,Active,No
+1206,Michael,Wright,wright.michael@canva.com,87012341270,Senior Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,28/08/1985,12/11/2016,Active,No
+1207,Elizabeth,Roberts,roberts.elizabeth@canva.com,87012341271,Senior Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,28/11/1991,11/06/2022,Active,No
+1208,John,Campbell,campbell.john@canva.com,87012341272,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Female,Japan,26/03/1994,19/12/2024,Active,No
+1209,David,Flores,flores.david@canva.com,87012341273,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,11/06/2000,19/07/2024,Active,No
+1210,Karen,Hill,hill.karen@canva.com,87012341274,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,03/01/1995,08/03/2019,Active,No
+1211,Patricia,Martinez,martinez.patricia@canva.com,87012341275,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,27/05/1996,22/09/2022,Active,No
+1212,Mary,Clark,clark.mary@canva.com,87012341276,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,19/05/1997,13/12/2019,Active,No
+1213,Karen,Taylor,taylor.karen@canva.com,87012341277,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Male,Japan,15/05/1993,02/11/2015,Active,No
+1214,Richard,Lewis,lewis.richard@canva.com,87012341278,Marketing Specialist,Marketing,Tokyo,johnson.anthony@canva.com,Female,Japan,07/06/1990,19/12/2012,Active,No
+1217,Christopher,Martinez,martinez.christopher@canva.com,87012341279,Vice President of Sales - Tokyo,Sales,Tokyo,davis.susan@canva.com,Male,Japan,12/09/1993,23/09/2018,Active,No
+1220,David,Johnson,johnson.david@canva.com,87012341280,Sales Director,Sales,Tokyo,martinez.christopher@canva.com,Male,Japan,03/07/1984,01/03/2016,Active,No
+1332,Anthony,Torres,torres.anthony@canva.com,87012341281,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Female,Japan,13/12/1984,24/12/2012,Active,No
+1333,Betty,Martinez,martinez.betty@canva.com,87012341282,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Male,Japan,26/12/1980,13/08/2024,Active,No
+1334,Steven,Martinez,martinez.steven@canva.com,87012341283,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Male,Japan,26/05/1982,11/09/2010,Active,No
+1335,Amanda,Moore,moore.amanda@canva.com,87012341284,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Male,Japan,07/12/1987,26/01/2015,Active,No
+1336,Brian,Johnson,johnson.brian@canva.com,87012341285,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Female,Japan,26/09/1982,27/01/2014,Active,No
+1337,Paul,Harris,harris.paul@canva.com,87012341286,Sales Manager,Sales,Tokyo,johnson.david@canva.com,Female,Japan,04/04/1985,20/01/2018,Active,No
+1338,Susan,Adams,adams.susan@canva.com,87012341287,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,17/12/1993,28/01/2019,Active,No
+1339,Emily,Hill,hill.emily@canva.com,87012341288,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,23/07/1992,19/11/2014,Active,No
+1340,Steven,Torres,torres.steven@canva.com,87012341289,Account Executive,Sales,Tokyo,johnson.david@canva.com,Female,Japan,04/08/1993,17/09/2017,Active,No
+1341,Andrew,Young,young.andrew@canva.com,87012341290,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,23/06/2000,10/02/2022,Active,No
+1342,Charles,Rodriguez,rodriguez.charles@canva.com,87012341291,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,17/02/2001,10/06/2023,Active,No
+1343,David,Robinson,robinson.david@canva.com,87012341292,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,18/04/1997,06/05/2022,Active,No
+1344,Brian,Lopez,lopez.brian@canva.com,87012341293,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,05/10/1999,09/05/2024,Active,No
+1345,Lisa,Moore,moore.lisa@canva.com,87012341294,Account Executive,Sales,Tokyo,johnson.david@canva.com,Female,Japan,01/01/1997,22/11/2021,Active,No
+1346,David,Allen,allen.david@canva.com,87012341295,Account Executive,Sales,Tokyo,johnson.david@canva.com,Male,Japan,22/10/1995,11/06/2021,Active,No
+1347,Linda,Brown,brown.linda@canva.com,87012341296,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,01/07/1998,20/04/2023,Active,No
+1348,Susan,Johnson,johnson.susan@canva.com,87012341297,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,25/07/1993,09/02/2019,Active,No
+1349,Deborah,White,white.deborah@canva.com,87012341298,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,17/11/1999,16/06/2023,Active,No
+1350,Mary,Nguyen,nguyen.mary@canva.com,87012341299,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,25/03/1998,15/09/2023,Active,No
+1351,Daniel,Jones,jones.daniel@canva.com,87012341300,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,05/04/1996,02/12/2018,Active,No
+1352,Jessica,Torres,torres.jessica@canva.com,87012341301,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,13/01/2000,27/05/2023,Active,No
+1353,Andrew,Ramirez,ramirez.andrew@canva.com,87012341302,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,06/12/1994,23/09/2022,Active,No
+1354,Robert,Clark,clark.robert@canva.com,87012341303,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,18/10/1999,16/06/2021,Active,No
+1355,Barbara,Taylor,taylor.barbara@canva.com,87012341304,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,18/02/1992,17/03/2015,Active,No
+1356,Thomas,Thomas,thomas.thomas@canva.com,87012341305,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,09/10/1997,17/04/2022,Active,No
+1357,Mark,Hernandez,hernandez.mark@canva.com,87012341306,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,12/09/1998,07/06/2020,Active,No
+1358,Melissa,Ramirez,ramirez.melissa@canva.com,87012341307,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,28/11/1991,11/08/2023,Active,No
+1359,Joshua,Rivera,rivera.joshua@canva.com,87012341308,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,15/02/1990,02/05/2014,Active,No
+1360,Joshua,Perez,perez.joshua@canva.com,87012341309,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,11/05/1994,02/04/2019,Active,No
+1361,Sarah,Mitchell,mitchell.sarah@canva.com,87012341310,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,18/09/1991,07/06/2022,Active,No
+1362,Deborah,Sanchez,sanchez.deborah@canva.com,87012341311,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,18/08/1992,15/01/2018,Active,No
+1363,William,Torres,torres.william@canva.com,87012341312,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Male,Japan,17/02/1990,28/03/2024,Active,No
+1364,Paul,Rivera,rivera.paul@canva.com,87012341313,Sales Associate,Sales,Tokyo,johnson.david@canva.com,Female,Japan,08/08/2000,26/03/2024,Active,No
+1008,Donna,Hall,hall.donna@canva.com,971544328869,Vice President of Human Resources - Dubai,Human Resources,Dubai,williams.carol@canva.com,Female,UAE,24/03/2001,17/10/2024,Active,Yes
+1013,Jennifer,Lewis,lewis.jennifer@canva.com,971544328870,Recruitment Manager,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,09/03/1981,27/06/2011,Active,Yes
+1014,Melissa,White,white.melissa@canva.com,971544328871,Compensation & Benefits Manager,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,06/02/1995,19/12/2022,Active,No
+1015,Jessica,Robinson,robinson.jessica@canva.com,971544328872,Learning & Development Manager,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,22/01/1995,07/03/2021,Active,No
+1040,Kevin,Rodriguez,rodriguez.kevin@canva.com,971544328873,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,18/07/1994,13/11/2022,Active,No
+1041,James,Carter,carter.james@canva.com,971544328874,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,17/02/1996,04/01/2021,Active,No
+1042,Lisa,Wright,wright.lisa@canva.com,971544328875,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,10/12/1998,13/08/2020,Active,No
+1043,Michelle,Harris,harris.michelle@canva.com,971544328876,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,10/06/1998,03/05/2021,Active,No
+1044,Brian,Nelson,nelson.brian@canva.com,971544328877,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,17/04/1992,07/07/2015,Active,No
+1045,Mary,Ramirez,ramirez.mary@canva.com,971544328878,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,04/08/1995,19/10/2020,Active,No
+1046,Melissa,Martinez,martinez.melissa@canva.com,971544328879,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,15/04/1998,13/01/2020,Active,No
+1047,Barbara,Miller,miller.barbara@canva.com,971544328880,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,28/12/1997,22/12/2019,Active,No
+1048,Lisa,Harris,harris.lisa@canva.com,971544328881,HR Specialist,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,22/12/1996,13/01/2024,Active,No
+1049,Susan,Wright,wright.susan@canva.com,971544328882,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,13/03/1996,01/12/2018,Active,No
+1050,Daniel,Lee,lee.daniel@canva.com,971544328883,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,14/01/1981,15/07/2016,Active,No
+1051,James,Torres,torres.james@canva.com,971544328884,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,28/07/1983,04/11/2023,Active,No
+1052,James,Johnson,johnson.james@canva.com,971544328885,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,19/12/1980,17/08/2022,Active,No
+1053,Elizabeth,Martin,martin.elizabeth@canva.com,971544328886,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,07/11/1989,10/01/2022,Active,No
+1054,Carol,Lee,lee.carol@canva.com,971544328887,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Female,UAE,24/03/1987,04/12/2020,Active,No
+1055,Sarah,Martin,martin.sarah@canva.com,971544328888,HR Coordinator,Human Resources,Dubai,hall.donna@canva.com,Male,UAE,24/10/1992,20/07/2021,Active,No
+1068,Steven,Smith,smith.steven@canva.com,971544328889,Finance Director - Dubai,Finance,Dubai,lee.thomas@canva.com,Male,UAE,02/02/1982,24/11/2023,Active,No
+1103,Daniel,Davis,davis.daniel@canva.com,971544328890,Finance Manager,Finance,Dubai,smith.steven@canva.com,Male,UAE,21/12/1982,22/07/2019,Active,No
+1104,Donald,Moore,moore.donald@canva.com,971544328891,Finance Manager,Finance,Dubai,smith.steven@canva.com,Female,UAE,20/08/1988,13/09/2022,Active,No
+1105,Amanda,Smith,smith.amanda@canva.com,971544328892,Finance Manager,Finance,Dubai,smith.steven@canva.com,Male,UAE,18/08/1983,14/03/2022,Active,No
+1106,Patricia,Johnson,johnson.patricia@canva.com,971544328893,Senior Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,12/03/1994,17/06/2019,Active,No
+1107,Christopher,Thomas,thomas.christopher@canva.com,971544328894,Senior Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,01/11/1997,27/12/2023,Active,No
+1108,Mary,Hernandez,hernandez.mary@canva.com,971544328895,Senior Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,11/04/1996,03/12/2022,Active,No
+1109,Jessica,Thompson,thompson.jessica@canva.com,971544328896,Senior Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,22/10/1997,25/08/2023,Active,No
+1110,David,Mitchell,mitchell.david@canva.com,971544328897,Senior Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,26/05/1991,06/12/2015,Active,No
+1111,Mark,Green,green.mark@canva.com,971544328898,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,15/07/1987,08/01/2014,Active,No
+1112,William,Hall,hall.william@canva.com,971544328899,Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,14/11/1990,01/10/2021,Active,No
+1113,Sarah,Baker,baker.sarah@canva.com,971544328900,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,15/06/1993,08/07/2017,Active,No
+1114,Brian,Martinez,martinez.brian@canva.com,971544328901,Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,05/09/1987,12/04/2018,Active,No
+1115,Karen,Davis,davis.karen@canva.com,971544328902,Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,28/05/1985,03/08/2016,Active,No
+1116,Robert,Perez,perez.robert@canva.com,971544328903,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,05/12/1997,11/03/2024,Active,No
+1117,George,Anderson,anderson.george@canva.com,971544328904,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,26/10/2001,22/06/2024,Active,No
+1118,Sandra,Perez,perez.sandra@canva.com,971544328905,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,16/03/1996,15/08/2018,Active,No
+1119,Jennifer,Garcia,garcia.jennifer@canva.com,971544328906,Accountant,Finance,Dubai,smith.steven@canva.com,Female,UAE,07/09/1980,13/01/2024,Active,No
+1120,David,Ramirez,ramirez.david@canva.com,971544328907,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,19/07/1983,04/07/2016,Active,No
+1121,George,Clark,clark.george@canva.com,971544328908,Accountant,Finance,Dubai,smith.steven@canva.com,Male,UAE,12/06/1994,16/06/2019,Active,No
+1137,Kenneth,Mitchell,mitchell.kenneth@canva.com,971544328909,Marketing Director - Dubai,Marketing,Dubai,williams.deborah@canva.com,Male,UAE,17/04/1988,24/10/2018,Active,No
+1177,Deborah,Robinson,robinson.deborah@canva.com,971544328910,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,20/11/1992,09/06/2016,Active,No
+1178,Mark,Campbell,campbell.mark@canva.com,971544328911,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,16/04/1988,10/10/2024,Active,No
+1179,Ashley,Jackson,jackson.ashley@canva.com,971544328912,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,07/08/1994,08/11/2021,Active,No
+1180,Barbara,Young,young.barbara@canva.com,971544328913,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,26/01/1988,06/02/2024,Active,No
+1181,Kevin,Green,green.kevin@canva.com,971544328914,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,08/02/1985,17/04/2011,Active,No
+1182,James,Campbell,campbell.james@canva.com,971544328915,Marketing Manager,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,14/11/1993,04/08/2017,Active,No
+1183,John,Thomas,thomas.john@canva.com,971544328916,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,25/01/1992,28/07/2016,Active,No
+1184,Joseph,Johnson,johnson.joseph@canva.com,971544328917,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,01/03/1986,19/05/2018,Active,No
+1185,Nancy,Walker,walker.nancy@canva.com,971544328918,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,24/06/1987,22/01/2010,Active,No
+1186,Susan,Hall,hall.susan@canva.com,971544328919,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,14/04/1995,21/09/2018,Active,No
+1187,Kevin,Thomas,thomas.kevin@canva.com,971544328920,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,10/07/1988,14/07/2017,Active,No
+1188,Dorothy,Lee,lee.dorothy@canva.com,971544328921,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,07/07/1987,07/03/2014,Active,No
+1189,John,Wright,wright.john@canva.com,971544328922,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,26/08/1990,27/08/2015,Active,No
+1190,Barbara,Walker,walker.barbara@canva.com,971544328923,Senior Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,11/12/1985,07/03/2019,Active,No
+1191,Dorothy,Miller,miller.dorothy@canva.com,971544328924,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,02/05/1992,05/02/2023,Active,No
+1192,Richard,Brown,brown.richard@canva.com,971544328925,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,05/04/1994,01/04/2021,Active,No
+1193,Joshua,Roberts,roberts.joshua@canva.com,971544328926,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,01/08/1995,07/10/2017,Active,No
+1194,Mark,Nguyen,nguyen.mark@canva.com,971544328927,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,21/08/1993,24/11/2021,Active,No
+1195,Kenneth,Garcia,garcia.kenneth@canva.com,971544328928,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,19/02/1996,08/08/2020,Active,No
+1196,Thomas,Sanchez,sanchez.thomas@canva.com,971544328929,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,28/01/1997,22/10/2022,Active,No
+1197,George,Adams,adams.george@canva.com,971544328930,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,28/12/1997,14/02/2022,Active,No
+1198,Susan,Rodriguez,rodriguez.susan@canva.com,971544328931,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Male,UAE,04/08/1996,28/08/2020,Active,No
+1199,Amanda,Campbell,campbell.amanda@canva.com,971544328932,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,28/02/1992,14/01/2017,Active,No
+1200,James,Martin,martin.james@canva.com,971544328933,Marketing Specialist,Marketing,Dubai,mitchell.kenneth@canva.com,Female,UAE,15/12/2001,21/11/2024,Active,No
+1216,Kimberly,Allen,allen.kimberly@canva.com,971544328934,Vice President of Sales - Dubai,Sales,Dubai,davis.susan@canva.com,Male,UAE,05/12/1989,20/06/2024,Active,No
+1219,Mark,Lopez,lopez.mark@canva.com,971544328935,Sales Director,Sales,Dubai,allen.kimberly@canva.com,Female,UAE,22/08/1986,14/12/2017,Active,No
+1279,Emily,Flores,flores.emily@canva.com,971544328936,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,08/09/1990,25/09/2016,Active,No
+1280,Betty,Nelson,nelson.betty@canva.com,971544328937,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Male,UAE,21/07/1980,05/10/2011,Active,No
+1281,John,Perez,perez.john@canva.com,971544328938,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Male,UAE,08/10/1986,14/04/2015,Active,No
+1282,Daniel,Rivera,rivera.daniel@canva.com,971544328939,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,06/04/1985,03/02/2022,Active,No
+1283,William,Clark,clark.william@canva.com,971544328940,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,18/03/1984,04/07/2010,Active,No
+1284,George,Rivera,rivera.george@canva.com,971544328941,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,16/03/1988,03/08/2021,Active,No
+1285,George,Green,green.george@canva.com,971544328942,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Male,UAE,09/02/1994,01/07/2016,Active,No
+1286,Betty,Moore,moore.betty@canva.com,971544328943,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Male,UAE,06/01/1984,01/01/2010,Active,No
+1287,Deborah,Flores,flores.deborah@canva.com,971544328944,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,12/01/1992,16/10/2016,Active,No
+1288,Donald,Carter,carter.donald@canva.com,971544328945,Sales Manager,Sales,Dubai,lopez.mark@canva.com,Female,UAE,25/04/1995,17/02/2019,Active,No
+1289,Paul,Clark,clark.paul@canva.com,971544328946,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,09/07/1994,10/10/2023,Active,No
+1290,Robert,Robinson,robinson.robert@canva.com,971544328947,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,17/02/1995,28/12/2019,Active,No
+1291,Lisa,Thomas,thomas.lisa@canva.com,971544328948,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,16/11/2001,22/02/2023,Active,No
+1292,Dorothy,Jones,jones.dorothy@canva.com,971544328949,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,09/02/1996,12/09/2022,Active,No
+1293,Joshua,Hill,hill.joshua@canva.com,971544328950,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,01/04/1999,13/03/2021,Active,No
+1294,Anthony,Ramirez,ramirez.anthony@canva.com,971544328951,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,17/10/1993,12/04/2023,Active,No
+1295,Kevin,Wilson,wilson.kevin@canva.com,971544328952,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,22/02/1999,26/05/2023,Active,No
+1296,William,Nguyen,nguyen.william@canva.com,971544328953,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,02/03/1990,25/01/2017,Active,No
+1297,Joseph,Hall,hall.joseph@canva.com,971544328954,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,22/04/1998,15/04/2024,Active,No
+1298,Melissa,Jackson,jackson.melissa@canva.com,971544328955,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,01/02/1995,05/07/2019,Active,No
+1299,Robert,Hall,hall.robert@canva.com,971544328956,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,06/02/1994,13/10/2022,Active,No
+1300,Donna,Baker,baker.donna@canva.com,971544328957,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,13/08/1993,25/03/2021,Active,No
+1301,George,Miller,miller.george@canva.com,971544328958,Account Executive,Sales,Dubai,lopez.mark@canva.com,Male,UAE,01/12/1995,14/02/2019,Active,No
+1302,Christopher,Green,green.christopher@canva.com,971544328959,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,01/09/2000,07/11/2023,Active,No
+1303,Mark,King,king.mark@canva.com,971544328960,Account Executive,Sales,Dubai,lopez.mark@canva.com,Female,UAE,03/04/1990,25/11/2014,Active,No
+1304,Jennifer,Wright,wright.jennifer@canva.com,971544328961,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,11/07/1992,07/01/2020,Active,No
+1305,Melissa,Sanchez,sanchez.melissa@canva.com,971544328962,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,04/05/1997,25/12/2021,Active,No
+1306,Kenneth,Green,green.kenneth@canva.com,971544328963,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,09/11/1993,06/04/2016,Active,No
+1307,John,Scott,scott.john@canva.com,971544328964,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,25/10/1996,13/06/2020,Active,No
+1308,Robert,Carter,carter.robert@canva.com,971544328965,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,24/10/1998,15/03/2023,Active,No
+1309,Sandra,Lopez,lopez.sandra@canva.com,971544328966,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,02/08/1991,27/08/2022,Active,No
+1310,Christopher,Anderson,anderson.christopher@canva.com,971544328967,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,16/12/1994,16/01/2018,Active,No
+1311,Linda,Clark,clark.linda@canva.com,971544328968,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,14/04/1997,27/02/2022,Active,No
+1312,Joshua,Allen,allen.joshua@canva.com,971544328969,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,12/03/1993,28/10/2018,Active,No
+1313,Joseph,Miller,miller.joseph@canva.com,971544328970,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,07/12/1996,10/07/2021,Active,No
+1314,Susan,Williams,williams.susan@canva.com,971544328971,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,09/02/1994,23/12/2017,Active,No
+1315,Richard,Baker,baker.richard@canva.com,971544328972,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,24/01/1998,14/10/2020,Active,No
+1316,Thomas,Smith,smith.thomas@canva.com,971544328973,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,24/04/2001,12/09/2024,Active,No
+1317,Andrew,Lee,lee.andrew@canva.com,971544328974,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,19/12/1992,11/01/2017,Active,No
+1318,Ashley,Lopez,lopez.ashley@canva.com,971544328975,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,14/08/1993,27/06/2018,Active,No
+1319,Nancy,Thomas,thomas.nancy@canva.com,971544328976,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,02/07/1993,23/07/2022,Active,No
+1320,Jennifer,Allen,allen.jennifer@canva.com,971544328977,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,26/09/1995,28/05/2024,Active,No
+1321,Patricia,Perez,perez.patricia@canva.com,971544328978,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,20/12/2000,16/05/2023,Active,No
+1322,John,Davis,davis.john@canva.com,971544328979,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,05/01/2000,08/05/2024,Active,No
+1323,Edward,Perez,perez.edward@canva.com,971544328980,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,27/09/1996,21/12/2021,Active,No
+1324,Melissa,Hernandez,hernandez.melissa@canva.com,971544328981,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,12/08/1996,01/05/2023,Active,No
+1325,Lisa,Lopez,lopez.lisa@canva.com,971544328982,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,08/03/1994,04/06/2019,Active,No
+1326,Carol,Clark,clark.carol@canva.com,971544328983,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,13/05/1992,15/08/2015,Active,No
+1327,Sarah,Flores,flores.sarah@canva.com,971544328984,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,15/04/1996,18/11/2024,Active,No
+1328,Joshua,King,king.joshua@canva.com,971544328985,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,26/06/1996,09/01/2020,Active,No
+1329,Nancy,Nelson,nelson.nancy@canva.com,971544328986,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Female,UAE,22/06/1996,23/09/2019,Active,No
+1330,Melissa,Jones,jones.melissa@canva.com,971544328987,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,25/03/1994,26/09/2018,Active,No
+1331,Brian,Clark,clark.brian@canva.com,971544328988,Sales Associate,Sales,Dubai,lopez.mark@canva.com,Male,UAE,11/05/2000,01/12/2024,Active,No
+1001,Alex,Anderson,anderson.alex@canva.com,15551234567,Chief Executive Officer,Executive,New York,,Female,USA,09/02/1973,14/04/2013,Active,Yes
+1002,Carol,Williams,williams.carol@canva.com,15551234568,Chief Human Resources Officer,Human Resources,New York,anderson.alex@canva.com,Male,USA,12/11/1970,02/12/2011,Active,Yes
+1003,Thomas,Lee,lee.thomas@canva.com,15551234569,Chief Financial Officer,Finance,New York,anderson.alex@canva.com,Male,USA,20/02/1972,06/01/2018,Active,Yes
+1004,Deborah,Williams,williams.deborah@canva.com,15551234570,Chief Marketing Officer,Marketing,New York,anderson.alex@canva.com,Male,USA,14/12/1975,26/02/2012,Active,Yes
+1005,Susan,Davis,davis.susan@canva.com,15551234571,Chief Sales Officer,Sales,New York,anderson.alex@canva.com,Male,USA,28/02/1972,24/09/2012,Active,Yes
+1006,Richard,Wright,wright.richard@canva.com,15551234572,Chief Information Officer,Information Technology,New York,anderson.alex@canva.com,Female,USA,10/07/1974,25/05/2022,Active,Yes
+1007,Matthew,Ramirez,ramirez.matthew@canva.com,15551234573,Vice President of Human Resources - New York,Human Resources,New York,williams.carol@canva.com,Female,USA,04/02/1997,11/09/2022,Active,Yes
+1010,Brian,Miller,miller.brian@canva.com,15551234574,Recruitment Manager,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,07/11/1981,24/03/2021,Active,No
+1011,Lisa,Gonzalez,gonzalez.lisa@canva.com,15551234575,Compensation & Benefits Manager,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,08/03/1991,14/07/2019,Active,No
+1012,Ashley,Moore,moore.ashley@canva.com,15551234576,Learning & Development Manager,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,06/11/1986,27/12/2013,Active,No
+1019,Brian,Wright,wright.brian@canva.com,15551234577,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,17/11/1993,15/05/2016,Active,No
+1020,Andrew,Allen,allen.andrew@canva.com,15551234578,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,14/04/2001,02/07/2024,Active,No
+1021,Dorothy,Anderson,anderson.dorothy@canva.com,15551234579,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,21/03/1997,04/12/2024,Active,No
+1022,David,Campbell,campbell.david@canva.com,15551234580,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,27/05/1997,11/03/2023,Active,No
+1023,Sandra,Allen,allen.sandra@canva.com,15551234581,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,26/07/1995,23/06/2019,Active,No
+1024,James,White,white.james@canva.com,15551234582,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,05/03/1992,01/04/2018,Active,No
+1025,Michelle,Scott,scott.michelle@canva.com,15551234583,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,01/11/1996,15/05/2019,Active,No
+1026,Emily,Mitchell,mitchell.emily@canva.com,15551234584,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,07/11/1996,12/02/2024,Active,No
+1027,Matthew,Hill,hill.matthew@canva.com,15551234585,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,19/06/2000,15/01/2023,Active,No
+1028,Elizabeth,Gonzalez,gonzalez.elizabeth@canva.com,15551234586,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,05/09/2001,04/07/2024,Active,No
+1029,Deborah,Wright,wright.deborah@canva.com,15551234587,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,01/05/1995,03/06/2017,Active,No
+1030,Susan,Flores,flores.susan@canva.com,15551234588,HR Specialist,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,15/06/1994,15/03/2021,Active,No
+1031,George,White,white.george@canva.com,15551234589,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,03/04/1986,07/06/2012,Active,No
+1032,Mary,Hall,hall.mary@canva.com,15551234590,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,12/02/1991,16/11/2014,Active,No
+1033,Susan,Garcia,garcia.susan@canva.com,15551234591,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,01/07/1980,12/07/2011,Active,No
+1034,Barbara,Martinez,martinez.barbara@canva.com,15551234592,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,06/11/1983,04/10/2022,Active,No
+1035,Michelle,Baker,baker.michelle@canva.com,15551234593,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,26/10/1989,10/06/2015,Active,No
+1036,Sandra,King,king.sandra@canva.com,15551234594,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,16/06/1997,24/10/2020,Active,No
+1037,Sarah,Robinson,robinson.sarah@canva.com,15551234595,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Female,USA,09/12/1985,21/11/2022,Active,No
+1038,Kimberly,Davis,davis.kimberly@canva.com,15551234596,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,03/08/1996,09/08/2019,Active,No
+1039,Thomas,Lewis,lewis.thomas@canva.com,15551234597,HR Coordinator,Human Resources,New York,ramirez.matthew@canva.com,Male,USA,06/05/1995,03/10/2021,Active,No
+1067,Michelle,Allen,allen.michelle@canva.com,15551234598,Vice President of Finance,Finance,New York,lee.thomas@canva.com,Female,USA,09/06/1995,10/09/2020,Active,No
+1070,Joseph,Nelson,nelson.joseph@canva.com,15551234599,Finance Director - North America,Finance,New York,allen.michelle@canva.com,Male,USA,06/12/1980,14/10/2014,Active,No
+1071,Carol,Johnson,johnson.carol@canva.com,15551234600,Finance Manager,Finance,New York,nelson.joseph@canva.com,Male,USA,24/10/1983,12/04/2024,Active,No
+1072,Charles,Garcia,garcia.charles@canva.com,15551234601,Finance Manager,Finance,New York,nelson.joseph@canva.com,Male,USA,23/05/1989,10/09/2012,Active,No
+1073,Anthony,Rivera,rivera.anthony@canva.com,15551234602,Finance Manager,Finance,New York,nelson.joseph@canva.com,Female,USA,23/07/1988,15/11/2023,Active,No
+1074,Donald,Perez,perez.donald@canva.com,15551234603,Finance Manager,Finance,New York,nelson.joseph@canva.com,Female,USA,12/01/1980,18/07/2012,Active,No
+1075,Karen,Adams,adams.karen@canva.com,15551234604,Finance Manager,Finance,New York,nelson.joseph@canva.com,Female,USA,12/10/1987,08/09/2023,Active,No
+1076,Daniel,Carter,carter.daniel@canva.com,15551234605,Finance Manager,Finance,New York,nelson.joseph@canva.com,Female,USA,05/06/1992,05/04/2024,Active,No
+1077,Mark,Clark,clark.mark@canva.com,15551234606,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,26/11/1991,02/05/2022,Active,No
+1078,Daniel,Lopez,lopez.daniel@canva.com,15551234607,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,06/01/1990,25/06/2016,Active,No
+1079,Jennifer,Flores,flores.jennifer@canva.com,15551234608,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,07/11/1990,19/09/2021,Active,No
+1080,Amanda,Wright,wright.amanda@canva.com,15551234609,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,23/11/1987,13/05/2021,Active,No
+1081,Thomas,Adams,adams.thomas@canva.com,15551234610,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,20/11/1991,12/11/2019,Active,No
+1082,Susan,Thompson,thompson.susan@canva.com,15551234611,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,14/08/1990,26/01/2017,Active,No
+1083,Kimberly,Baker,baker.kimberly@canva.com,15551234612,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,02/09/1996,13/04/2021,Active,No
+1084,Emily,Lopez,lopez.emily@canva.com,15551234613,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,05/02/1986,04/06/2023,Active,No
+1085,Richard,Clark,clark.richard@canva.com,15551234614,Senior Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,26/05/1989,16/10/2012,Active,No
+1086,Margaret,Nguyen,nguyen.margaret@canva.com,15551234615,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,21/09/1984,03/01/2019,Active,No
+1087,Joseph,Carter,carter.joseph@canva.com,15551234616,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,25/05/1991,26/03/2013,Active,No
+1088,Joshua,Scott,scott.joshua@canva.com,15551234617,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,27/02/1998,22/03/2023,Active,No
+1089,Donald,Thompson,thompson.donald@canva.com,15551234618,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,14/05/1996,16/02/2020,Active,No
+1090,Betty,Scott,scott.betty@canva.com,15551234619,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,21/04/1991,27/09/2013,Active,No
+1091,Edward,Baker,baker.edward@canva.com,15551234620,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,17/09/1991,25/09/2023,Active,No
+1092,Elizabeth,Adams,adams.elizabeth@canva.com,15551234621,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,24/02/1992,11/08/2018,Active,No
+1093,Amanda,Nelson,nelson.amanda@canva.com,15551234622,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,13/11/1995,12/11/2017,Active,No
+1094,Steven,Allen,allen.steven@canva.com,15551234623,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,11/03/1992,07/05/2015,Active,No
+1095,Mary,Brown,brown.mary@canva.com,15551234624,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,28/03/1987,22/06/2019,Active,No
+1096,Charles,Nelson,nelson.charles@canva.com,15551234625,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,08/05/1996,07/08/2021,Active,No
+1097,Richard,Gonzalez,gonzalez.richard@canva.com,15551234626,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,04/04/2001,23/01/2023,Active,No
+1098,Christopher,Scott,scott.christopher@canva.com,15551234627,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,04/10/1997,06/06/2021,Active,No
+1099,Michael,King,king.michael@canva.com,15551234628,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,14/10/2000,28/06/2023,Active,No
+1100,Andrew,Anderson,anderson.andrew@canva.com,15551234629,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,25/03/1982,07/04/2020,Active,No
+1101,Sarah,Nelson,nelson.sarah@canva.com,15551234630,Accountant,Finance,New York,nelson.joseph@canva.com,Male,USA,18/07/1991,26/12/2015,Active,No
+1102,David,Lewis,lewis.david@canva.com,15551234631,Accountant,Finance,New York,nelson.joseph@canva.com,Female,USA,17/09/1992,08/03/2024,Active,No
+1136,Sandra,Smith,smith.sandra@canva.com,15551234632,Vice President of Marketing,Marketing,New York,williams.deborah@canva.com,Male,USA,02/04/1988,07/07/2014,Active,No
+1139,Mark,Hill,hill.mark@canva.com,15551234633,Marketing Director - North America,Marketing,New York,smith.sandra@canva.com,Female,USA,09/03/1980,17/10/2019,Active,No
+1140,Robert,Brown,brown.robert@canva.com,15551234634,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,15/04/1988,26/10/2023,Active,No
+1141,Mark,Hall,hall.mark@canva.com,15551234635,Marketing Manager,Marketing,New York,hill.mark@canva.com,Male,USA,18/08/1987,09/03/2019,Active,No
+1142,Patricia,Williams,williams.patricia@canva.com,15551234636,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,09/08/1986,24/09/2022,Active,No
+1143,Edward,Flores,flores.edward@canva.com,15551234637,Marketing Manager,Marketing,New York,hill.mark@canva.com,Male,USA,27/01/1987,15/03/2014,Active,No
+1144,Jessica,Baker,baker.jessica@canva.com,15551234638,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,24/01/1995,09/11/2022,Active,No
+1145,Barbara,Anderson,anderson.barbara@canva.com,15551234639,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,20/02/1987,18/01/2013,Active,No
+1146,Linda,Taylor,taylor.linda@canva.com,15551234640,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,06/01/1993,05/01/2020,Active,No
+1147,Steven,Mitchell,mitchell.steven@canva.com,15551234641,Marketing Manager,Marketing,New York,hill.mark@canva.com,Female,USA,25/07/1992,28/03/2015,Active,No
+1148,William,Lopez,lopez.william@canva.com,15551234642,Marketing Manager,Marketing,New York,hill.mark@canva.com,Male,USA,06/01/1981,03/09/2021,Active,No
+1149,Kevin,Perez,perez.kevin@canva.com,15551234643,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,23/07/1987,26/09/2014,Active,No
+1150,Michelle,Anderson,anderson.michelle@canva.com,15551234644,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,02/05/1992,24/10/2017,Active,No
+1151,Sarah,Hill,hill.sarah@canva.com,15551234645,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,14/03/1996,19/04/2024,Active,No
+1152,Melissa,Mitchell,mitchell.melissa@canva.com,15551234646,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,22/07/1987,12/04/2019,Active,No
+1153,Amanda,Taylor,taylor.amanda@canva.com,15551234647,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,03/06/1997,22/06/2023,Active,No
+1154,Joseph,Hernandez,hernandez.joseph@canva.com,15551234648,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,09/02/1992,05/12/2023,Active,No
+1155,Daniel,Rodriguez,rodriguez.daniel@canva.com,15551234649,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,13/08/1996,25/11/2024,Active,No
+1156,Nancy,Clark,clark.nancy@canva.com,15551234650,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,13/05/1985,11/04/2017,Active,No
+1157,Ashley,Perez,perez.ashley@canva.com,15551234651,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,23/12/1989,10/07/2013,Active,No
+1158,David,Sanchez,sanchez.david@canva.com,15551234652,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,22/03/1988,14/01/2016,Active,No
+1159,Jessica,Anderson,anderson.jessica@canva.com,15551234653,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,08/02/1996,10/02/2020,Active,No
+1160,Donna,Gonzalez,gonzalez.donna@canva.com,15551234654,Senior Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,20/01/1988,28/02/2023,Active,No
+1161,Mark,Davis,davis.mark@canva.com,15551234655,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,05/12/1990,07/11/2013,Active,No
+1162,Ashley,Lee,lee.ashley@canva.com,15551234656,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,12/02/1998,04/01/2020,Active,No
+1163,Carol,Jones,jones.carol@canva.com,15551234657,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,27/11/1998,20/01/2021,Active,No
+1164,David,Thomas,thomas.david@canva.com,15551234658,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,22/05/1999,04/03/2023,Active,No
+1165,Donald,Clark,clark.donald@canva.com,15551234659,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,15/06/1996,26/05/2021,Active,No
+1166,Daniel,Jackson,jackson.daniel@canva.com,15551234660,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,28/06/2000,23/02/2024,Active,No
+1167,Michael,Williams,williams.michael@canva.com,15551234661,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,22/12/1997,08/05/2021,Active,No
+1168,Elizabeth,Nelson,nelson.elizabeth@canva.com,15551234662,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,24/12/2001,01/09/2023,Active,No
+1169,Mark,Harris,harris.mark@canva.com,15551234663,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,28/05/1990,23/01/2016,Active,No
+1170,John,Miller,miller.john@canva.com,15551234664,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,17/11/1990,02/10/2020,Active,No
+1171,James,Jones,jones.james@canva.com,15551234665,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,02/05/1993,01/09/2023,Active,No
+1172,Matthew,Williams,williams.matthew@canva.com,15551234666,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,03/06/1990,26/04/2014,Active,No
+1173,Joseph,Rodriguez,rodriguez.joseph@canva.com,15551234667,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Female,USA,11/05/1993,08/02/2015,Active,No
+1174,Jessica,Taylor,taylor.jessica@canva.com,15551234668,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,24/06/1991,09/07/2020,Active,No
+1175,Donna,Wright,wright.donna@canva.com,15551234669,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,08/03/2001,28/11/2024,Active,No
+1176,Emily,Brown,brown.emily@canva.com,15551234670,Marketing Specialist,Marketing,New York,hill.mark@canva.com,Male,USA,10/03/1992,12/06/2021,Active,No
+1215,Robert,Jones,jones.robert@canva.com,15551234671,Vice President of Sales - New York,Sales,New York,davis.susan@canva.com,Female,USA,22/06/1991,12/05/2022,Active,No
+1218,Carol,Nelson,nelson.carol@canva.com,15551234672,Sales Director,Sales,New York,jones.robert@canva.com,Female,USA,14/04/1984,13/04/2024,Active,No
+1221,Michelle,Adams,adams.michelle@canva.com,15551234673,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,14/04/1991,11/08/2021,Active,No
+1222,Betty,Roberts,roberts.betty@canva.com,15551234674,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,18/03/1988,04/05/2016,Active,No
+1223,Mary,Young,young.mary@canva.com,15551234675,Sales Manager,Sales,New York,nelson.carol@canva.com,Male,USA,15/12/1984,08/08/2013,Active,No
+1224,Donald,Harris,harris.donald@canva.com,15551234676,Sales Manager,Sales,New York,nelson.carol@canva.com,Male,USA,12/11/1980,23/11/2024,Active,No
+1225,Michael,Adams,adams.michael@canva.com,15551234677,Sales Manager,Sales,New York,nelson.carol@canva.com,Male,USA,07/11/1986,09/05/2012,Active,No
+1226,Lisa,Hill,hill.lisa@canva.com,15551234678,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,08/01/1982,21/04/2017,Active,No
+1227,Anthony,Martinez,martinez.anthony@canva.com,15551234679,Sales Manager,Sales,New York,nelson.carol@canva.com,Male,USA,20/10/1986,01/03/2014,Active,No
+1228,Richard,Carter,carter.richard@canva.com,15551234680,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,09/08/1981,02/05/2018,Active,No
+1229,Patricia,Mitchell,mitchell.patricia@canva.com,15551234681,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,27/12/1993,25/12/2016,Active,No
+1230,Mary,Williams,williams.mary@canva.com,15551234682,Sales Manager,Sales,New York,nelson.carol@canva.com,Male,USA,17/05/1981,16/10/2018,Active,No
+1231,Sarah,Anderson,anderson.sarah@canva.com,15551234683,Sales Manager,Sales,New York,nelson.carol@canva.com,Female,USA,24/06/1991,18/01/2013,Active,No
+1232,Ashley,Brown,brown.ashley@canva.com,15551234684,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,15/09/1995,22/03/2020,Active,No
+1233,William,Taylor,taylor.william@canva.com,15551234685,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,11/10/1991,06/01/2018,Active,No
+1234,Sarah,Miller,miller.sarah@canva.com,15551234686,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,22/03/1997,11/03/2021,Active,No
+1235,Patricia,Hall,hall.patricia@canva.com,15551234687,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,25/04/2000,09/10/2024,Active,No
+1236,Melissa,Miller,miller.melissa@canva.com,15551234688,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,03/08/1998,26/01/2020,Active,No
+1237,Daniel,Robinson,robinson.daniel@canva.com,15551234689,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,14/11/1995,14/01/2023,Active,No
+1238,Donna,Lopez,lopez.donna@canva.com,15551234690,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,27/04/1997,10/08/2019,Active,No
+1239,Joshua,Martinez,martinez.joshua@canva.com,15551234691,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,12/07/1991,12/07/2016,Active,No
+1240,Mark,Jones,jones.mark@canva.com,15551234692,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,17/11/1996,02/02/2021,Active,No
+1241,Susan,Carter,carter.susan@canva.com,15551234693,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,24/06/1994,26/03/2017,Active,No
+1242,Betty,Smith,smith.betty@canva.com,15551234694,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,10/11/1997,15/10/2022,Active,No
+1243,Michelle,White,white.michelle@canva.com,15551234695,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,27/06/1991,26/01/2018,Active,No
+1244,Kenneth,Williams,williams.kenneth@canva.com,15551234696,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,20/06/2000,02/10/2022,Active,No
+1245,Christopher,Campbell,campbell.christopher@canva.com,15551234697,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,05/09/1997,08/03/2021,Active,No
+1246,Thomas,Hill,hill.thomas@canva.com,15551234698,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,03/04/1992,13/11/2015,Active,No
+1247,Karen,Ramirez,ramirez.karen@canva.com,15551234699,Account Executive,Sales,New York,nelson.carol@canva.com,Male,USA,19/04/1994,27/10/2023,Active,No
+1248,Ashley,Hill,hill.ashley@canva.com,15551234700,Account Executive,Sales,New York,nelson.carol@canva.com,Female,USA,01/06/1993,12/11/2017,Active,No
+1253,Donald,Martinez,martinez.donald@canva.com,15551234701,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,18/11/1992,13/06/2019,Active,No
+1254,Jennifer,Ramirez,ramirez.jennifer@canva.com,15551234702,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,03/02/1993,05/03/2020,Active,No
+1255,Patricia,Campbell,campbell.patricia@canva.com,15551234703,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,03/06/1998,23/04/2023,Active,No
+1256,James,Smith,smith.james@canva.com,15551234704,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,19/05/1996,16/06/2021,Active,No
+1257,Anthony,Robinson,robinson.anthony@canva.com,15551234705,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,21/02/2001,03/04/2023,Active,No
+1258,Carol,Torres,torres.carol@canva.com,15551234706,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,13/10/1994,18/06/2020,Active,No
+1259,Matthew,White,white.matthew@canva.com,15551234707,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,25/02/2001,18/02/2023,Active,No
+1260,Ashley,Garcia,garcia.ashley@canva.com,15551234708,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,24/04/1991,24/08/2022,Active,No
+1261,Sarah,Taylor,taylor.sarah@canva.com,15551234709,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,26/05/1995,02/02/2024,Active,No
+1262,John,Gonzalez,gonzalez.john@canva.com,15551234710,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,21/10/1996,26/02/2023,Active,No
+1263,Betty,King,king.betty@canva.com,15551234711,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,25/08/1997,10/02/2021,Active,No
+1264,Linda,Torres,torres.linda@canva.com,15551234712,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,18/05/1992,24/05/2018,Active,No
+1265,Karen,Johnson,johnson.karen@canva.com,15551234713,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,20/04/1999,17/07/2023,Active,No
+1266,Donna,Green,green.donna@canva.com,15551234714,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,06/09/1990,06/06/2012,Active,No
+1267,David,Wright,wright.david@canva.com,15551234715,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,25/11/2001,24/12/2024,Active,No
+1268,Daniel,Hernandez,hernandez.daniel@canva.com,15551234716,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,10/08/1991,10/11/2018,Active,No
+1269,Kenneth,Martinez,martinez.kenneth@canva.com,15551234717,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,24/04/2001,28/03/2023,Active,No
+1270,Carol,Allen,allen.carol@canva.com,15551234718,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,19/11/1999,11/08/2024,Active,No
+1271,Sandra,Lee,lee.sandra@canva.com,15551234719,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,16/11/1997,17/07/2022,Active,No
+1272,Betty,Johnson,johnson.betty@canva.com,15551234720,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,20/06/2001,22/11/2023,Active,No
+1273,Joshua,Torres,torres.joshua@canva.com,15551234721,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,24/04/1990,11/08/2020,Active,No
+1274,Margaret,Moore,moore.margaret@canva.com,15551234722,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,06/05/1994,12/11/2022,Active,No
+1275,Susan,Lopez,lopez.susan@canva.com,15551234723,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,04/05/1996,06/07/2018,Active,No
+1276,Jennifer,Green,green.jennifer@canva.com,15551234724,Sales Associate,Sales,New York,nelson.carol@canva.com,Female,USA,09/10/1996,09/10/2024,Active,No
+1277,Charles,Perez,perez.charles@canva.com,15551234725,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,03/01/1995,25/10/2024,Active,No
+1278,Mark,Miller,miller.mark@canva.com,15551234726,Sales Associate,Sales,New York,nelson.carol@canva.com,Male,USA,20/09/1999,18/02/2022,Active,No
+1365,Margaret,Smith,smith.margaret@canva.com,15551234727,Vice President of Information Technology,Information Technology,New York,wright.richard@canva.com,Female,USA,06/02/1990,08/02/2013,Active,No
+1366,William,Allen,allen.william@canva.com,15551234728,IT Director,Information Technology,New York,smith.margaret@canva.com,Female,USA,15/01/1977,18/02/2017,Active,No
+1367,Thomas,Martin,martin.thomas@canva.com,15551234729,IT Manager,Information Technology,New York,allen.william@canva.com,Male,USA,09/12/1985,24/06/2016,Active,No
+1368,Paul,Roberts,roberts.paul@canva.com,15551234730,IT Manager,Information Technology,New York,allen.william@canva.com,Female,USA,02/06/1984,14/07/2015,Active,No
+1369,Brian,Allen,allen.brian@canva.com,15551234731,IT Manager,Information Technology,New York,allen.william@canva.com,Male,USA,14/09/1995,01/11/2020,Active,No
+1370,Amanda,Harris,harris.amanda@canva.com,15551234732,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,10/01/1988,04/12/2024,Active,No
+1371,Jessica,Hall,hall.jessica@canva.com,15551234733,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,01/02/1995,02/09/2018,Active,No
+1372,James,Roberts,roberts.james@canva.com,15551234734,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,18/01/1994,01/09/2021,Active,No
+1373,Steven,Jones,jones.steven@canva.com,15551234735,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,27/04/1991,04/04/2022,Active,No
+1374,Kimberly,Ramirez,ramirez.kimberly@canva.com,15551234736,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,11/04/1985,14/11/2020,Active,No
+1375,Charles,Hill,hill.charles@canva.com,15551234737,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,02/12/1992,04/03/2021,Active,No
+1376,Brian,Sanchez,sanchez.brian@canva.com,15551234738,Senior Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,28/07/1988,01/06/2024,Active,No
+1377,Steven,Thompson,thompson.steven@canva.com,15551234739,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,20/09/1997,21/05/2022,Active,No
+1378,Andrew,Taylor,taylor.andrew@canva.com,15551234740,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,25/04/1980,14/11/2013,Active,No
+1379,Elizabeth,Nguyen,nguyen.elizabeth@canva.com,15551234741,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,16/08/1998,07/12/2020,Active,No
+1380,Joseph,Davis,davis.joseph@canva.com,15551234742,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,12/08/1994,15/04/2022,Active,No
+1381,Lisa,Robinson,robinson.lisa@canva.com,15551234743,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,17/11/2000,01/07/2023,Active,No
+1382,Dorothy,Young,young.dorothy@canva.com,15551234744,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,26/08/1981,13/04/2016,Active,No
+1383,Brian,Perez,perez.brian@canva.com,15551234745,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,15/05/1983,01/02/2012,Active,No
+1384,Nancy,Rodriguez,rodriguez.nancy@canva.com,15551234746,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,21/08/1990,02/06/2019,Active,No
+1385,James,Green,green.james@canva.com,15551234747,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,28/10/1986,09/07/2024,Active,No
+1386,Robert,White,white.robert@canva.com,15551234748,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,20/12/1987,27/12/2011,Active,No
+1387,Margaret,Young,young.margaret@canva.com,15551234749,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,19/02/1991,27/11/2020,Active,No
+1388,Joseph,Young,young.joseph@canva.com,15551234750,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,12/07/1983,26/03/2012,Active,No
+1389,Deborah,Carter,carter.deborah@canva.com,15551234751,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,03/01/1982,14/12/2017,Active,No
+1390,Elizabeth,Torres,torres.elizabeth@canva.com,15551234752,Software Developer,Information Technology,New York,allen.william@canva.com,Female,USA,13/09/1981,28/08/2014,Active,No
+1391,David,Hall,hall.david@canva.com,15551234753,Software Developer,Information Technology,New York,allen.william@canva.com,Male,USA,06/12/1994,05/03/2022,Active,No
+1392,Kenneth,Thomas,thomas.kenneth@canva.com,15551234754,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,22/10/2001,23/11/2024,Active,No
+1393,Brian,Walker,walker.brian@canva.com,15551234755,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,28/04/1992,14/09/2024,Active,No
+1394,Brian,Gonzalez,gonzalez.brian@canva.com,15551234756,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,20/11/2000,07/11/2023,Active,No
+1395,Brian,Robinson,robinson.brian@canva.com,15551234757,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,03/03/1998,22/08/2021,Active,No
+1396,Barbara,Roberts,roberts.barbara@canva.com,15551234758,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Female,USA,23/01/1999,22/10/2021,Active,No
+1397,Sarah,Scott,scott.sarah@canva.com,15551234759,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,02/06/1998,07/05/2023,Active,No
+1398,Kimberly,King,king.kimberly@canva.com,15551234760,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Female,USA,11/12/1999,20/02/2022,Active,No
+1399,Susan,Nelson,nelson.susan@canva.com,15551234761,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Female,USA,01/08/1999,10/08/2023,Active,No
+1400,Mark,Moore,moore.mark@canva.com,15551234762,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,11/12/1999,06/11/2023,Active,No
+1401,Linda,Rivera,rivera.linda@canva.com,15551234763,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Female,USA,11/04/1992,09/07/2019,Active,No
+1402,Matthew,Rodriguez,rodriguez.matthew@canva.com,15551234764,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,11/03/1997,09/02/2021,Active,No
+1403,Patricia,Anderson,anderson.patricia@canva.com,15551234765,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Male,USA,21/02/2001,11/01/2023,Active,No
+1404,Brian,Jackson,jackson.brian@canva.com,15551234766,IT Support Specialist,Information Technology,New York,allen.william@canva.com,Female,USA,20/06/1996,02/01/2023,Active,No

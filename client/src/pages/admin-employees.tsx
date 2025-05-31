@@ -51,8 +51,8 @@ interface Employee {
   managerEmail: string | null;
   sex: string | null;
   nationality: string | null;
-  birthDate: string | null;
-  hireDate: string | null;
+  dateOfBirth: string | null;
+  dateJoined: string | null;
   isAdmin: boolean;
   status: string;
   avatarUrl: string | null;
@@ -317,8 +317,8 @@ export default function AdminEmployeesPage() {
       managerEmail: employee.managerEmail || "",
       sex: employee.sex || "",
       nationality: employee.nationality || "",
-      birthDate: employee.birthDate ? format(new Date(employee.birthDate), 'yyyy-MM-dd') : "",
-      hireDate: employee.hireDate ? format(new Date(employee.hireDate), 'yyyy-MM-dd') : "",
+      birthDate: employee.dateOfBirth ? format(new Date(employee.dateOfBirth), 'yyyy-MM-dd') : "",
+      hireDate: employee.dateJoined ? format(new Date(employee.dateJoined), 'yyyy-MM-dd') : "",
       isAdmin: employee.isAdmin,
       status: employee.status,
       avatarUrl: employee.avatarUrl || ""
