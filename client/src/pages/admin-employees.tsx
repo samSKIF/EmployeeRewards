@@ -315,12 +315,12 @@ export default function AdminEmployeesPage() {
       department: employee.department || "",
       location: employee.location || "",
       managerEmail: employee.managerEmail || "",
-      sex: employee.sex || "",
+      sex: employee.sex ? employee.sex.toLowerCase() : "",
       nationality: employee.nationality || "",
       birthDate: employee.dateOfBirth ? format(new Date(employee.dateOfBirth), 'yyyy-MM-dd') : "",
       hireDate: employee.dateJoined ? format(new Date(employee.dateJoined), 'yyyy-MM-dd') : "",
       isAdmin: employee.isAdmin,
-      status: employee.status,
+      status: employee.status ? employee.status.toLowerCase() : "active",
       avatarUrl: employee.avatarUrl || ""
     });
     setIsEditDialogOpen(true);
