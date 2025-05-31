@@ -2647,11 +2647,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  app.patch("/api/admin/employees/:id", verifyToken, verifyAdmin, tenantRouting, ensureTenantAccess, async (req: TenantRequest, res) => {
     try {
       const { id } = req.params;
       const employeeId = parseInt(id);
-      const companyId = (req as any).companyId;
+      const companyId = req.companyId;
 
       if (!companyId) {
         return res.status(401).json({ message: "Unauthorized" });
