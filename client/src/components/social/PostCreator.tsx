@@ -311,7 +311,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
           </AvatarFallback>
         </Avatar>
         <div 
-          className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-3 cursor-pointer"
+          className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-3 cursor-pointer transition-colors duration-200"
           onClick={() => setIsExpanded(true)}
         >
           <span className="text-gray-500 text-md">{t("social.whatOnYourMind")}</span>
