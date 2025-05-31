@@ -2917,12 +2917,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const department = row['Department'] || row.department || row.dept || row.Dept || '';
           const location = row['Location'] || row.location || row.office || row.Office || null;
           const username = row.username || row.Username || email.split('@')[0]; // default to email prefix
-          const status = row['Status'] || row.status || 'Active';
+          const status = row['Status'] || row.status || row.STATUS || row['Employee Status'] || 
+                        row['Employment Status'] || row.employmentStatus || row['Active/Inactive'] || 'Active';
           const managerEmail = row["Manager's Email"] || row['Manager Email'] || row.managerEmail || row.manager_email || null;
           const isAdmin = (row['Admin privileges'] || row['Admin Privileges'] || row.isAdmin || row.admin || '').toString().toLowerCase() === 'yes';
           const isManager = (row.isManager || row['Is Manager'] || row.manager || row.Manager || '').toString().toLowerCase() === 'yes';
-          const sex = row['Gender'] || row.gender || row.sex || row.Sex || null;
-          const nationality = row['Nationality'] || row.nationality || row.country || row.Country || null;
+          const sex = row['Gender'] || row.gender || row.sex || row.Sex || row.GENDER || row.SEX || 
+                     row['gender'] || row['Sex'] || row['Male/Female'] || row['M/F'] || null;
+          const nationality = row['Nationality'] || row.nationality || row.country || row.Country || 
+                             row.NATIONALITY || row.COUNTRY || row['Country'] || null;
           
           // Debug log to see what fields are being extracted
           console.log(`Field mapping for ${email}:`, {
