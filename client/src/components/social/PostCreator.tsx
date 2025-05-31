@@ -177,7 +177,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Expanded post composer with image preview
   if (isExpanded) {
     return (
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6 transition-all duration-300 ease-in-out">
         <div className="flex items-start">
           <Avatar className="w-12 h-12 mr-4">
             <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">
@@ -302,7 +302,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
 
   // Collapsed post composer
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-6 transition-all duration-300 ease-in-out">
       <div className="flex items-center gap-3 mb-4">
         <Avatar className="h-12 w-12 border-2 border-gray-100">
           <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
