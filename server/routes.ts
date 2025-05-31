@@ -2650,53 +2650,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/admin/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
-      const userId = parseInt(id);
+      const employeeId = parseInt(id);
+      const companyId = req.user?.companyId;
 
-      // Check if user exists
-      const user = await storage.getUser(userId);
-      if (!user) {
+      if (!companyId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Check if employee exists in the employees table
+      const [employee] = await db.select()
+        .from(employees)
+        .where(and(eq(employees.id, employeeId), eq(employees.companyId, companyId)));
+      
+      if (!employee) {
         return res.status(404).json({ message: "Employee not found" });
       }
 
-      const { password, email, ...otherUpdateData } = req.body;
+      const { password, email, birthDate, hireDate, ...otherUpdateData } = req.body;
       const updateData: any = { ...otherUpdateData };
       
+      // Convert form field names to database field names
+      if (birthDate) {
+        updateData.dateOfBirth = birthDate;
+      }
+      if (hireDate) {
+        updateData.dateJoined = hireDate;
+      }
+      if (email) {
+        updateData.email = email;
+      }
+
       // Handle email update if it's changing
-      if (email && email !== user.email && user.firebaseUid) {
+      if (email && email !== employee.email && employee.firebaseUid) {
         try {
-          console.log(`Updating Firebase user email from ${user.email} to ${email}`);
-          await auth.updateUser(user.firebaseUid, {
+          console.log(`Updating Firebase user email from ${employee.email} to ${email}`);
+          await auth.updateUser(employee.firebaseUid, {
             email: email,
             emailVerified: true
           });
-          console.log(`Firebase user email updated successfully for UID: ${user.firebaseUid}`);
-          
-          // Add email to the updateData
-          updateData.email = email;
+          console.log(`Firebase user email updated successfully for UID: ${employee.firebaseUid}`);
         } catch (firebaseError) {
-          console.error(`Error updating Firebase user email: ${user.firebaseUid}`, firebaseError);
+          console.error(`Error updating Firebase user email: ${employee.firebaseUid}`, firebaseError);
           return res.status(400).json({ 
             message: `Failed to update email in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
             field: 'email'
           });
         }
-      } else if (email) {
-        // If user doesn't have Firebase UID or email isn't changing
-        updateData.email = email;
       }
 
       // Handle password update if provided
       if (password) {
-        // Update password in Firebase if the user has a Firebase UID
-        if (user.firebaseUid) {
+        // Update password in Firebase if the employee has a Firebase UID
+        if (employee.firebaseUid) {
           try {
-            console.log(`Updating Firebase user password for UID: ${user.firebaseUid}`);
-            await auth.updateUser(user.firebaseUid, {
+            console.log(`Updating Firebase user password for UID: ${employee.firebaseUid}`);
+            await auth.updateUser(employee.firebaseUid, {
               password: password
             });
-            console.log(`Firebase user password updated successfully for UID: ${user.firebaseUid}`);
+            console.log(`Firebase user password updated successfully for UID: ${employee.firebaseUid}`);
           } catch (firebaseError) {
-            console.error(`Error updating Firebase user password: ${user.firebaseUid}`, firebaseError);
+            console.error(`Error updating Firebase user password: ${employee.firebaseUid}`, firebaseError);
             return res.status(400).json({ 
               message: `Failed to update password in Firebase: ${(firebaseError as Error).message || 'Unknown error'}`,
               field: 'password'
@@ -2708,17 +2721,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.password = await hash(password, 10);
       }
 
-      // Update user in database
-      const [updatedUser] = await db
-        .update(users)
+      // Update employee in database
+      const [updatedEmployee] = await db
+        .update(employees)
         .set(updateData)
-        .where(eq(users.id, userId))
+        .where(and(eq(employees.id, employeeId), eq(employees.companyId, companyId)))
         .returning();
 
       // Remove password from response
-      const { password: _, ...userWithoutPassword } = updatedUser;
+      const { password: _, ...employeeWithoutPassword } = updatedEmployee;
 
-      res.json(userWithoutPassword);
+      res.json(employeeWithoutPassword);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to update employee" });
     }
