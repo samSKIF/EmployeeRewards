@@ -96,6 +96,27 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const [location] = useLocation();
   const { branding } = useBranding();
   const { t } = useTranslation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch employees for search
+  const { data: employees } = useQuery<any[]>({
+    queryKey: ['/api/users'],
+    staleTime: 300000, // 5 minutes
+  });
+
+  // Filter employees based on search query
+  const filteredEmployees = employees?.filter((employee: any) => {
+    if (!searchQuery) return false;
+    const query = searchQuery.toLowerCase();
+    return (
+      employee.name?.toLowerCase().includes(query) ||
+      employee.surname?.toLowerCase().includes(query) ||
+      employee.email?.toLowerCase().includes(query) ||
+      employee.jobTitle?.toLowerCase().includes(query) ||
+      employee.department?.toLowerCase().includes(query)
+    );
+  }).slice(0, 8) || []; // Limit to 8 results
 
   // Navigation helper
   const navigateTo = (path: string) => {
@@ -188,16 +209,69 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
           <span className="text-sm font-medium hidden sm:block">{branding?.organizationName || "ThrivioHR"}</span>
         </div>
 
-        {/* Compact Search box */}
-        <div className="relative w-52 mx-2 hidden md:block">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
-            <Search className="w-3.5 h-3.5 text-gray-400" />
-          </div>
-          <input 
-            type="search" 
-            className="block w-full py-1 px-2 pl-7 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-teal-400 focus:border-transparent"
-            placeholder={t('common.search') + "..."} 
-          />
+        {/* Search box with popover */}
+        <div className="w-52 mx-2 hidden md:block">
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                  <Search className="w-3.5 h-3.5 text-gray-400" />
+                </div>
+                <input 
+                  type="search" 
+                  className="block w-full py-1 px-2 pl-7 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-teal-400 focus:border-transparent"
+                  placeholder={t('common.search') + "..."} 
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchOpen(e.target.value.length > 0);
+                  }}
+                  onFocus={() => setSearchOpen(searchQuery.length > 0)}
+                />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="start">
+              <Command>
+                <CommandList>
+                  {searchQuery.length > 0 && (
+                    <>
+                      {filteredEmployees && filteredEmployees.length > 0 ? (
+                        <CommandGroup heading="Employees">
+                          {filteredEmployees.map((employee: any) => (
+                            <CommandItem
+                              key={employee.id}
+                              onSelect={() => {
+                                setSearchOpen(false);
+                                setSearchQuery("");
+                                // Navigate to employee profile or directory
+                                navigate(`/employee/${employee.id}`);
+                              }}
+                              className="flex items-center gap-2 p-2"
+                            >
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-600 text-xs font-medium">
+                                {employee.name.charAt(0)}
+                                {employee.surname ? employee.surname.charAt(0) : ''}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm truncate">
+                                  {employee.name} {employee.surname || ''}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate">
+                                  {employee.jobTitle || 'No job title'} • {employee.department || 'No department'}
+                                </div>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ) : (
+                        <CommandEmpty>No employees found.</CommandEmpty>
+                      )}
+                    </>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Main nav items */}
