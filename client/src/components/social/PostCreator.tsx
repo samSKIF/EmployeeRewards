@@ -215,39 +215,39 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                 </div>
               )}
 
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-3">
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     type="button"
                     variant="outline" 
                     size="sm" 
-                    className="text-gray-600 rounded-full border-gray-200"
+                    className="text-gray-600 rounded-full border-gray-200 flex-shrink-0"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <ImageIcon className="h-4 w-4 mr-2 text-green-600" />
-                    <span>Image</span>
+                    <ImageIcon className="h-4 w-4 mr-1 text-green-600" />
+                    <span className="hidden sm:inline">Image</span>
                   </Button>
 
                   <Button 
                     type="button"
                     variant="outline" 
                     size="sm" 
-                    className="text-gray-600 rounded-full border-gray-200"
+                    className="text-gray-600 rounded-full border-gray-200 flex-shrink-0"
                     onClick={onPollClick}
                   >
-                    <BarChart className="h-4 w-4 mr-2 text-purple-600" />
-                    <span>Poll</span>
+                    <BarChart className="h-4 w-4 mr-1 text-purple-600" />
+                    <span className="hidden sm:inline">Poll</span>
                   </Button>
 
                   <Button 
                     type="button"
                     variant="outline" 
                     size="sm" 
-                    className="text-gray-600 rounded-full border-gray-200"
+                    className="text-gray-600 rounded-full border-gray-200 flex-shrink-0"
                     onClick={onRecognizeClick}
                   >
-                    <Award className="h-4 w-4 mr-2 text-amber-500" />
-                    <span>Recognize</span>
+                    <Award className="h-4 w-4 mr-1 text-amber-500" />
+                    <span className="hidden sm:inline">Recognize</span>
                   </Button>
 
                   <input
@@ -259,11 +259,11 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   />
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex gap-2 justify-end">
                   <Button 
                     type="button"
                     variant="outline" 
-                    className="rounded-full px-4 border-gray-200"
+                    className="rounded-full px-3 border-gray-200 flex-shrink-0"
                     onClick={() => {
                       setIsExpanded(false);
                       setContent("");
@@ -277,7 +277,7 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
                   <Button 
                     type="submit"
                     disabled={createPostMutation.isPending}
-                    className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-5"
+                    className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-4 flex-shrink-0"
                   >
                     {createPostMutation.isPending ? (
                       <div className="flex items-center">
