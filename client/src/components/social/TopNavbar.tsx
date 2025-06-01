@@ -317,7 +317,12 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 <span>{t('navigation.profile')}</span>
               </DropdownMenuItem>
               
-              {user?.isAdmin === true && (
+              {(() => {
+                console.log("TopNavbar admin check - user:", user);
+                console.log("TopNavbar admin check - user?.isAdmin:", user?.isAdmin);
+                console.log("TopNavbar admin check - user?.isAdmin === true:", user?.isAdmin === true);
+                return user?.isAdmin === true;
+              })() && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>{t('navigation.admin')}</DropdownMenuLabel>
