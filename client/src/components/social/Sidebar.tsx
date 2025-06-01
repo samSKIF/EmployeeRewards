@@ -197,7 +197,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
         ))}
 
         {/* Admin Console Section - Only visible to admins */}
-        {user?.isAdmin === true && user?.email?.endsWith('@demo.io') && (
+        {user?.isAdmin === true && (
           <div className="space-y-2 border-t border-gray-200 pt-4 mt-4">
             <button
               onClick={() => setIsAdminConsoleOpen(!isAdminConsoleOpen)}
