@@ -1,0 +1,250 @@
+ rest-express@1.0.0 dev
+Initializing Firebase app with project ID: employee-reward-fb8ea
+Using uploads directory: /home/runner/workspace/server/uploads
+Creating admin user in Firebase...
+Creating admin user: admin@demo.io
+Admin user already exists in Firebase: uZkwsK8qLzNL8SS7z6t0husSWC33
+Updated admin claims for user
+Admin user setup completed
+🎂 Scheduling birthday rewards job (daily at 08:00)
+3:17:00 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+3:17:17 PM [express] GET /api/users 403 in 310ms :: {"message":"Forbidden: Admin access required"}
+3:17:17 PM [express] GET /api/points/balance 304 in 379ms :: {"balance":0,"userId":16}
+Birthday users found: 8
+Anniversary users found: 2
+Total celebrations returning: 10
+3:17:17 PM [express] GET /api/celebrations/today 304 in 457ms :: [{"id":2258,"user":{"id":2258,"name…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+3:17:17 PM [express] GET /api/users/departments 304 in 382ms :: ["Engineering","Finance","HR","Infor…
+/api/users/me: Returning data for user 16 (Brian Lopez, lopez.brian@canva.com)
+User isAdmin value: false
+3:17:17 PM [express] GET /api/users/locations 304 in 406ms :: ["London","New York","New york office"…
+Final user object isAdmin: false
+3:17:17 PM [express] GET /api/users/me 304 in 150ms :: {"id":16,"username":"brian_lopez","name":"Bri…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Social microservice: Handling get posts request
+3:17:18 PM [express] GET /api/users 403 in 74ms :: {"message":"Forbidden: Admin access required"}
+3:17:18 PM [express] GET /api/celebrations/upcoming 304 in 1067ms :: [{"id":2167,"user":{"id":2167,"…
+3:17:18 PM [express] GET /api/social/stats 304 in 224ms :: {"posts":0,"comments":0,"reactions":0,"re…
+Social microservice: Filtering posts for company 1 (lopez.brian@canva.com)
+Social microservice: Retrieved 0 posts
+3:17:18 PM [express] GET /api/social/posts 304 in 223ms :: []
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+3:17:18 PM [express] GET /api/users 403 in 75ms :: {"message":"Forbidden: Admin access required"}
+3:17:18 PM [express] GET /api/points/balance 304 in 150ms :: {"balance":0,"userId":16}
+3:17:18 PM [express] GET /api/users/departments 304 in 150ms :: ["Engineering","Finance","HR","Infor…
+3:17:18 PM [express] GET /api/users/locations 304 in 150ms :: ["London","New York","New york office"…
+Birthday users found: 8
+Anniversary users found: 2
+Total celebrations returning: 10
+3:17:18 PM [express] GET /api/celebrations/today 304 in 283ms :: [{"id":2258,"user":{"id":2258,"name…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+/api/users/me: Returning data for user 16 (Brian Lopez, lopez.brian@canva.com)
+User isAdmin value: false
+Final user object isAdmin: false
+3:17:18 PM [express] GET /api/users/me 304 in 148ms :: {"id":16,"username":"brian_lopez","name":"Bri…
+3:17:19 PM [express] GET /api/celebrations/upcoming 304 in 824ms :: [{"id":2167,"user":{"id":2167,"n…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Social microservice: Handling get posts request
+3:17:19 PM [express] GET /api/users 403 in 75ms :: {"message":"Forbidden: Admin access required"}
+3:17:19 PM [express] GET /api/social/stats 304 in 223ms :: {"posts":0,"comments":0,"reactions":0,"re…
+Social microservice: Filtering posts for company 1 (lopez.brian@canva.com)
+Social microservice: Retrieved 0 posts
+3:17:19 PM [express] GET /api/social/posts 304 in 221ms :: []
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+3:17:59 PM [express] GET /api/users 403 in 316ms :: {"message":"Forbidden: Admin access required"}
+3:17:59 PM [express] GET /api/points/balance 304 in 379ms :: {"balance":0,"userId":16}
+3:17:59 PM [express] GET /api/users/departments 304 in 389ms :: ["Engineering","Finance","HR","Infor…
+3:17:59 PM [express] GET /api/users/locations 304 in 385ms :: ["London","New York","New york office"…
+Birthday users found: 8
+Anniversary users found: 2
+Total celebrations returning: 10
+3:17:59 PM [express] GET /api/celebrations/today 304 in 453ms :: [{"id":2258,"user":{"id":2258,"name…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+/api/users/me: Returning data for user 16 (Brian Lopez, lopez.brian@canva.com)
+User isAdmin value: false
+Final user object isAdmin: false
+3:17:59 PM [express] GET /api/users/me 304 in 149ms :: {"id":16,"username":"brian_lopez","name":"Bri…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: lopez.brian@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+3:17:59 PM [express] GET /api/celebrations/upcoming 304 in 1059ms :: [{"id":2167,"user":{"id":2167,"…
+3:17:59 PM [express] GET /api/users 403 in 76ms :: {"message":"Forbidden: Admin access required"}
+Social microservice: Handling get posts request
+Social microservice: Filtering posts for company 1 (lopez.brian@canva.com)
+Social microservice: Retrieved 0 posts
+3:18:00 PM [express] GET /api/social/posts 304 in 224ms :: []
+3:18:00 PM [express] GET /api/social/stats 304 in 228ms :: {"posts":0,"comments":0,"reactions":0,"re…
