@@ -66,14 +66,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               console.log("User metadata from API:", userData);
               
               // Set user with data from our database
+              console.log("User metadata from API:", userData);
               console.log("Setting user isAdmin based on API response:", userData.isAdmin);
-              setUser({
+              console.log("userData.isAdmin === true?", userData.isAdmin === true);
+              
+              const userToSet = {
                 id: userData.id,
                 name: userData.name || currentUser.displayName || "User",
                 email: userData.email || currentUser.email || "",
                 isAdmin: userData.isAdmin === true, // Only true if explicitly true
                 department: userData.department
-              });
+              };
+              
+              console.log("Final user object being set:", userToSet);
+              setUser(userToSet);
             } else {
               console.log("User metadata not found in DB, using Firebase data only");
               // Use Firebase data only
