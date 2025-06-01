@@ -322,7 +322,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 console.log("TopNavbar admin check - user?.isAdmin:", user?.isAdmin);
                 console.log("TopNavbar admin check - user?.isAdmin === true:", user?.isAdmin === true);
                 console.log("TopNavbar admin check - user?.email:", user?.email);
-                const shouldShowAdmin = user?.isAdmin === true || user?.email?.includes('admin@');
+                // Force admin menu to show for admin@canva.com for testing
+                const shouldShowAdmin = user?.isAdmin === true || user?.email === 'admin@canva.com';
                 console.log("TopNavbar admin check - shouldShowAdmin:", shouldShowAdmin);
                 return shouldShowAdmin;
               })() && (
