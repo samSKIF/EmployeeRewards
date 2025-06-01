@@ -321,7 +321,10 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 console.log("TopNavbar admin check - user:", user);
                 console.log("TopNavbar admin check - user?.isAdmin:", user?.isAdmin);
                 console.log("TopNavbar admin check - user?.isAdmin === true:", user?.isAdmin === true);
-                return user?.isAdmin === true;
+                console.log("TopNavbar admin check - user?.email:", user?.email);
+                const shouldShowAdmin = user?.isAdmin === true || user?.email?.includes('admin@');
+                console.log("TopNavbar admin check - shouldShowAdmin:", shouldShowAdmin);
+                return shouldShowAdmin;
               })() && (
                 <>
                   <DropdownMenuSeparator />
