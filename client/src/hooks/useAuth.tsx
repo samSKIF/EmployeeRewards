@@ -66,11 +66,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               console.log("User metadata from API:", userData);
               
               // Set user with data from our database
+              console.log("Setting user isAdmin based on API response:", userData.isAdmin);
               setUser({
                 id: userData.id,
                 name: userData.name || currentUser.displayName || "User",
                 email: userData.email || currentUser.email || "",
-                isAdmin: userData.isAdmin || (userData.email === "admin@demo.io"),
+                isAdmin: userData.isAdmin === true, // Only true if explicitly true
                 department: userData.department
               });
             } else {
