@@ -317,7 +317,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 <span>{t('navigation.profile')}</span>
               </DropdownMenuItem>
               
-              {user?.isAdmin && (
+              {user?.isAdmin === true && user?.email?.endsWith('@demo.io') && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>{t('navigation.admin')}</DropdownMenuLabel>
