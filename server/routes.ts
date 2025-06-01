@@ -927,6 +927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`/api/users/me: Returning data for user ${req.user.id} (${req.user.name}, ${req.user.email})`);
+      console.log(`User isAdmin value: ${req.user.isAdmin}`);
       
       if (req.firebaseUid) {
         console.log(`Firebase UID associated with request: ${req.firebaseUid}`);
@@ -935,12 +936,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user's balance
       const balance = await storage.getUserBalance(req.user.id);
       
-      // Combine user data with balance
+      // Combine user data with balance, ensuring isAdmin is explicitly set
       const userWithBalance = {
         ...req.user,
+        isAdmin: req.user.isAdmin === true, // Ensure boolean false for non-admins
         balance
       };
 
+      console.log(`Final user object isAdmin: ${userWithBalance.isAdmin}`);
       res.json(userWithBalance);
     } catch (error: any) {
       console.error("Error getting user data:", error);
