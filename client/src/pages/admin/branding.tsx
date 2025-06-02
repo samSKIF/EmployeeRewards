@@ -151,6 +151,11 @@ const BrandingPage = () => {
       };
       reader.readAsDataURL(file);
       setLogoFile(file);
+      
+      // Automatically upload the file immediately after selection
+      setTimeout(() => {
+        logoUploadMutation.mutate();
+      }, 100);
     }
   };
 
@@ -307,8 +312,17 @@ const BrandingPage = () => {
                                 className="relative"
                                 disabled={logoUploadMutation.isPending}
                               >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Select Logo
+                                {logoUploadMutation.isPending ? (
+                                  <>
+                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                    Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Select & Upload Logo
+                                  </>
+                                )}
                                 <input
                                   id="logo-upload"
                                   type="file"
@@ -318,27 +332,6 @@ const BrandingPage = () => {
                                   disabled={logoUploadMutation.isPending}
                                 />
                               </Button>
-                              
-                              {logoFile && (
-                                <Button 
-                                  type="button"
-                                  variant="secondary"
-                                  onClick={() => logoUploadMutation.mutate()}
-                                  disabled={logoUploadMutation.isPending || !logoFile}
-                                >
-                                  {logoUploadMutation.isPending ? (
-                                    <>
-                                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                      Uploading...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Check className="h-4 w-4 mr-2" />
-                                      Upload Logo
-                                    </>
-                                  )}
-                                </Button>
-                              )}
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
                               Recommended size: 200x200px. PNG or SVG with transparent background.

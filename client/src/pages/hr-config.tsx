@@ -1007,6 +1007,11 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Automatically upload the file immediately after selection
+      setTimeout(() => {
+        uploadLogoMutation.mutate(file);
+      }, 100);
     }
   };
   
