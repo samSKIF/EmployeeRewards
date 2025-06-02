@@ -58,6 +58,9 @@ export const verifyToken = async (
       try {
         // Decode the token without verification to get the Firebase UID
         // This is less secure but necessary while we fix the project ID mismatch
+        if (!token || typeof token !== 'string' || token.split('.').length !== 3) {
+          throw new Error('Invalid token format');
+        }
         const decodedPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
         
         // Log important fields from the token for debugging
