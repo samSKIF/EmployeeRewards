@@ -4537,9 +4537,15 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       
       if (isAdmin && currentUserId === targetUserId) {
         // Find the CEO (user with no manager_email in the organization)
-        const ceoUser = allOrgUsers.find(user => !user.managerEmail);
+        const ceoUser = allOrgUsers.find(user => !user.managerEmail && user.jobTitle && user.jobTitle.toLowerCase().includes('chief executive'));
         if (ceoUser) {
           targetUser = ceoUser;
+        } else {
+          // Fallback: find any user without a manager (top of hierarchy)
+          const topUser = allOrgUsers.find(user => !user.managerEmail && user.id !== currentUserId);
+          if (topUser) {
+            targetUser = topUser;
+          }
         }
       }
 
