@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronUp, ChevronDown, Search, Users, Mail, Building, User, ArrowUp, ArrowDown, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Users, Search, ChevronDown, Mail, Phone, MapPin, Calendar, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface OrgUser {
@@ -27,35 +27,31 @@ interface OrgChartData {
   peers: OrgUser[];
 }
 
-const OrgChart = () => {
+const OrgChart: React.FC = () => {
   const { user } = useAuth();
-  const [focusUserId, setFocusUserId] = useState<number | null>(null);
-  const [direction, setDirection] = useState<'up' | 'down' | 'center'>('center');
+  const [targetUserId, setTargetUserId] = useState<number | null>(user?.id || null);
+  const [direction] = useState<'up' | 'down' | 'center'>('center');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [selectedEmployee, setSelectedEmployee] = useState<OrgUser | null>(null);
   const [viewMode, setViewMode] = useState<'chart' | 'details'>('chart');
-
-  // Use current user as default focus
-  const targetUserId = focusUserId || user?.id;
 
   const { data: orgData, isLoading, error } = useQuery<OrgChartData>({
     queryKey: ['/api/org-chart', targetUserId, direction],
     enabled: !!targetUserId,
   });
 
-  const UserCard = ({ user, level = 0 }: { user: OrgUser; level?: number }) => {
+  const MindMapNode = ({ user, level = 0, isRoot = false }: { user: OrgUser; level?: number; isRoot?: boolean }) => {
     const isCurrentUser = user.id === targetUserId;
     const isExpanded = expandedNodes.has(user.id);
     const hasDirectReports = user.directReports && user.directReports.length > 0;
-    const hasManager = !!user.manager;
 
     const handleUserClick = () => {
       setSelectedEmployee(user);
       setViewMode('details');
     };
 
-    const toggleExpansion = (e: React.MouseEvent, expandDirection: 'up' | 'down') => {
+    const toggleExpansion = (e: React.MouseEvent) => {
       e.stopPropagation();
       const newExpanded = new Set(expandedNodes);
       if (isExpanded) {
@@ -81,252 +77,218 @@ const OrgChart = () => {
 
     if (!shouldShow) return null;
 
+    const nodeSize = isRoot ? 'w-72 h-24' : level === 0 ? 'w-64 h-20' : 'w-56 h-16';
+    const avatarSize = isRoot ? 'h-14 w-14' : level === 0 ? 'h-12 w-12' : 'h-10 w-10';
+    const textSize = isRoot ? 'text-lg' : level === 0 ? 'text-base' : 'text-sm';
+
     return (
-      <div className={`flex flex-col items-center space-y-2 ${level > 0 ? 'ml-8' : ''}`}>
-        <Card 
-          className={`w-80 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-            isCurrentUser ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'
-          }`}
-          onClick={handleUserClick}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={user.avatarUrl} />
-                <AvatarFallback>
-                  {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">
-                  {user.name} {user.surname}
-                </p>
-                <p className="text-sm text-gray-600 truncate">{user.jobTitle}</p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+      <div className="relative">
+        {!isRoot && level > 0 && (
+          <div className="absolute -top-8 left-1/2 w-0.5 h-8 bg-gray-300 transform -translate-x-0.5" />
+        )}
+        
+        <div className="flex flex-col items-center">
+          <Card 
+            className={`${nodeSize} cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+              isCurrentUser ? 'ring-3 ring-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg' : 
+              isRoot ? 'bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg' :
+              'hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100'
+            } ${level === 0 ? 'border-2 border-gray-300' : 'border border-gray-200'}`}
+            onClick={handleUserClick}
+          >
+            <CardContent className="p-3 h-full flex items-center">
+              <div className="flex items-center space-x-3 w-full">
+                <Avatar className={`${avatarSize} ring-2 ring-white shadow-md`}>
+                  <AvatarImage src={user.avatarUrl} />
+                  <AvatarFallback className={`${isRoot ? 'text-lg font-bold' : 'font-semibold'} bg-gradient-to-br from-blue-400 to-purple-400 text-white`}>
+                    {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className={`font-semibold text-gray-900 truncate ${textSize}`}>
+                    {user.name} {user.surname}
+                  </p>
+                  <p className={`text-gray-600 truncate ${isRoot ? 'text-sm' : 'text-xs'}`}>
+                    {user.jobTitle}
+                  </p>
+                  {!isRoot && (
+                    <p className="text-xs text-gray-400 truncate">{user.department}</p>
+                  )}
+                </div>
+                {hasDirectReports && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleExpansion}
+                    className={`${isRoot ? 'h-8 w-8' : 'h-6 w-6'} p-0 rounded-full hover:bg-blue-100`}
+                  >
+                    <ChevronDown className={`${isRoot ? 'h-5 w-5' : 'h-4 w-4'} transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {isExpanded && hasDirectReports && (
+            <div className="relative mt-8">
+              <div className="absolute -top-4 left-1/2 w-0.5 h-4 bg-gray-300 transform -translate-x-0.5" />
+              
+              <div className={`grid gap-8 ${filteredDirectReports.length === 1 ? 'grid-cols-1' : 
+                filteredDirectReports.length === 2 ? 'grid-cols-2' : 
+                filteredDirectReports.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {filteredDirectReports.map((report, index) => (
+                  <div key={report.id} className="relative">
+                    <div className="absolute -top-8 left-1/2 w-0.5 h-4 bg-gray-300 transform -translate-x-0.5" />
+                    {filteredDirectReports.length > 1 && (
+                      <div className={`absolute -top-4 bg-gray-300 h-0.5 ${
+                        index === 0 ? 'left-1/2 w-1/2' :
+                        index === filteredDirectReports.length - 1 ? 'right-1/2 w-1/2' :
+                        'left-0 w-full'
+                      }`} />
+                    )}
+                    <MindMapNode user={report} level={level + 1} />
+                  </div>
+                ))}
               </div>
             </div>
-          </CardContent>
-          
-          {/* Expansion controls */}
-          {(hasManager || hasDirectReports) && (
-            <div className="flex justify-center pb-2 space-x-2">
-              {hasManager && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => toggleExpansion(e, 'up')}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-              )}
-              {hasDirectReports && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => toggleExpansion(e, 'down')}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
           )}
-        </Card>
-
-        {/* Show expanded children */}
-        {isExpanded && hasDirectReports && (
-          <div className="flex flex-col space-y-4 pt-4">
-            {filteredDirectReports.map((report) => (
-              <UserCard key={report.id} user={report} level={level + 1} />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     );
   };
 
-  // Employee Details View Component
   const EmployeeDetailsView = () => {
     if (!selectedEmployee) return null;
 
     const handleFocusOnEmployee = (employee: OrgUser) => {
-      setSelectedEmployee(employee);
-      setViewMode('details');
-    };
-
-    const backToChart = () => {
-      setViewMode('chart');
+      setTargetUserId(employee.id);
       setSelectedEmployee(null);
+      setViewMode('chart');
     };
 
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        {/* Header with Back Button */}
-        <div className="mb-6">
-          <Button 
-            variant="outline" 
-            onClick={backToChart}
-            className="mb-4"
+        <div className="flex items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setViewMode('chart')}
+            className="mr-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Org Chart
           </Button>
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={selectedEmployee.avatarUrl} />
-              <AvatarFallback className="text-lg">
-                {selectedEmployee.name.charAt(0)}{selectedEmployee.surname?.charAt(0) || ''}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {selectedEmployee.name} {selectedEmployee.surname}
-              </h1>
-              <p className="text-xl text-gray-600">{selectedEmployee.jobTitle}</p>
-              <p className="text-gray-500">{selectedEmployee.email}</p>
-            </div>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Employee Profile</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Employee Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span>Employee Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Email:</span>
-                <span className="text-sm">{selectedEmployee.email}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Building className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Department:</span>
-                <Badge variant="outline">{selectedEmployee.department}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Manager */}
-          {selectedEmployee.manager ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <ArrowUp className="h-5 w-5" />
-                  <span>Reports To</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="flex items-center space-x-3 p-4 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => handleFocusOnEmployee(selectedEmployee.manager!)}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={selectedEmployee.manager.avatarUrl} />
-                    <AvatarFallback>
-                      {selectedEmployee.manager.name.charAt(0)}{selectedEmployee.manager.surname?.charAt(0) || ''}
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={selectedEmployee.avatarUrl} />
+                    <AvatarFallback className="text-lg bg-gradient-to-br from-blue-400 to-purple-400 text-white">
+                      {selectedEmployee.name.charAt(0)}{selectedEmployee.surname?.charAt(0) || ''}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-semibold text-lg">
-                      {selectedEmployee.manager.name} {selectedEmployee.manager.surname}
-                    </p>
-                    <p className="text-gray-600">{selectedEmployee.manager.jobTitle}</p>
-                    <p className="text-sm text-gray-500">{selectedEmployee.manager.email}</p>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {selectedEmployee.name} {selectedEmployee.surname}
+                    </h2>
+                    <p className="text-lg text-gray-600 mb-2">{selectedEmployee.jobTitle}</p>
+                    <Badge variant="secondary" className="mb-4">{selectedEmployee.department}</Badge>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4" />
+                        <span>{selectedEmployee.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>{selectedEmployee.department}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <ArrowUp className="h-5 w-5" />
-                  <span>Reports To</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 text-center py-4">No manager assigned</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          </div>
 
-        {/* Direct Reports */}
-        {selectedEmployee.directReports && selectedEmployee.directReports.length > 0 && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ArrowDown className="h-5 w-5" />
-                <span>Direct Reports</span>
-                <Badge variant="secondary">{selectedEmployee.directReports.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedEmployee.directReports.map((report) => (
-                  <div
-                    key={report.id}
-                    className="flex items-center space-x-3 p-4 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleFocusOnEmployee(report)}
+          <div className="space-y-6">
+            {selectedEmployee.manager && (
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3">Reports to</h3>
+                  <div 
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => handleFocusOnEmployee(selectedEmployee.manager!)}
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={report.avatarUrl} />
+                      <AvatarImage src={selectedEmployee.manager.avatarUrl} />
                       <AvatarFallback>
-                        {report.name.charAt(0)}{report.surname?.charAt(0) || ''}
+                        {selectedEmployee.manager.name.charAt(0)}{selectedEmployee.manager.surname?.charAt(0) || ''}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">
-                        {report.name} {report.surname}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {selectedEmployee.manager.name} {selectedEmployee.manager.surname}
                       </p>
-                      <p className="text-sm text-gray-600">{report.jobTitle}</p>
+                      <p className="text-sm text-gray-500 truncate">{selectedEmployee.manager.jobTitle}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* No Direct Reports */}
-        {(!selectedEmployee.directReports || selectedEmployee.directReports.length === 0) && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ArrowDown className="h-5 w-5" />
-                <span>Direct Reports</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500 text-center py-4">No direct reports</p>
-            </CardContent>
-          </Card>
-        )}
+            {selectedEmployee.directReports && selectedEmployee.directReports.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    Direct Reports ({selectedEmployee.directReports.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedEmployee.directReports.map((report) => (
+                      <div
+                        key={report.id}
+                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => handleFocusOnEmployee(report)}
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={report.avatarUrl} />
+                          <AvatarFallback className="text-xs">
+                            {report.name.charAt(0)}{report.surname?.charAt(0) || ''}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {report.name} {report.surname}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{report.jobTitle}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
 
-  // Org Chart View Component  
   const OrgChartView = () => {
     if (!orgData) return null;
     
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Organizational Chart</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Organizational Mindmap</h1>
           <p className="text-gray-600">
-            Explore your organization's structure. Click on any person to see their manager and direct reports.
+            Explore your organization's structure in a visual mindmap. Click nodes to expand teams and view employee details.
           </p>
         </div>
 
-        {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -339,69 +301,27 @@ const OrgChart = () => {
           </div>
         </div>
 
-        {/* Organizational Chart */}
-        <div className="space-y-8">
-          {/* Management Chain (Above) */}
-          {orgData.upHierarchy.length > 0 && (
-            <div className="text-center">
-              <h3 className="text-lg font-medium mb-4 text-gray-700">Management Chain</h3>
-            <div className="flex flex-col items-center space-y-4">
-              {orgData.upHierarchy.map((manager) => (
-                <UserCard key={manager.id} user={manager} />
-              ))}
-            </div>
+        <div className="flex justify-center overflow-x-auto">
+          <div className="inline-block min-w-max">
+            <MindMapNode 
+              user={orgData.centerUser} 
+              level={0} 
+              isRoot={true} 
+            />
           </div>
-        )}
-
-        {/* Center User */}
-        <div className="text-center">
-          <h3 className="text-lg font-medium mb-4 text-gray-700 flex items-center justify-center space-x-2">
-            <Users className="h-5 w-5" />
-            <span>
-              {orgData.centerUser.id === user?.id ? 'You' : 'Focused View'}
-            </span>
-          </h3>
-          <UserCard user={orgData.centerUser} />
         </div>
 
-        {/* Peers */}
-        {orgData.peers.length > 0 && (
-          <div className="text-center">
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Team Members</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
-              {orgData.peers.map((peer) => (
-                <UserCard key={peer.id} user={peer} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Direct Reports */}
-        {orgData.downHierarchy.length > 0 && (
-          <div className="text-center">
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Direct Reports</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
-              {orgData.downHierarchy.map((report) => (
-                <UserCard key={report.id} user={report} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Control buttons */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4 mt-8">
           <Button
             variant="outline"
             onClick={() => {
-              setFocusUserId(null);
-              setDirection('center');
+              setTargetUserId(user?.id || null);
             }}
           >
             Back to My Position
           </Button>
         </div>
       </div>
-    </div>
     );
   };
 
@@ -430,7 +350,6 @@ const OrgChart = () => {
     );
   }
 
-  // Render based on view mode
   return viewMode === 'details' ? <EmployeeDetailsView /> : <OrgChartView />;
 };
 
