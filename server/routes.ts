@@ -4552,11 +4552,35 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         }
       });
 
+      // Helper function to clean user data for JSON serialization (removes circular references)
+      const cleanUserData = (user: any): any => {
+        if (!user) return null;
+        return {
+          id: user.id,
+          name: user.name,
+          surname: user.surname,
+          email: user.email,
+          jobTitle: user.jobTitle,
+          department: user.department,
+          avatarUrl: user.avatarUrl,
+          directReports: user.directReports ? user.directReports.map((report: any) => cleanUserData(report)) : [],
+          manager: user.manager ? {
+            id: user.manager.id,
+            name: user.manager.name,
+            surname: user.manager.surname,
+            email: user.manager.email,
+            jobTitle: user.manager.jobTitle,
+            department: user.manager.department,
+            avatarUrl: user.manager.avatarUrl
+          } : null
+        };
+      };
+
       const getHierarchyData = (centerUser: any, direction: string) => {
         const result = {
-          centerUser: centerUser,
+          centerUser: cleanUserData(centerUser),
           upHierarchy: [],
-          downHierarchy: centerUser.directReports || [],
+          downHierarchy: centerUser.directReports ? centerUser.directReports.map((report: any) => cleanUserData(report)) : [],
           peers: []
         };
 
@@ -4564,7 +4588,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
           // Get management chain
           let current = centerUser.manager;
           while (current) {
-            result.upHierarchy.push(current);
+            result.upHierarchy.push(cleanUserData(current));
             current = current.manager;
           }
         }
@@ -4572,7 +4596,9 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         if (direction === 'center') {
           // Get peers (people with same manager)
           if (centerUser.manager) {
-            result.peers = centerUser.manager.directReports.filter((peer: any) => peer.id !== centerUser.id);
+            result.peers = centerUser.manager.directReports
+              .filter((peer: any) => peer.id !== centerUser.id)
+              .map((peer: any) => cleanUserData(peer));
           }
         }
 
