@@ -8,8 +8,7 @@ import path from "path";
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { hybridDb } from './hybrid-db';
 import { users, organizations } from '@shared/mysql-schema';
-import * as admin from 'firebase-admin';
-import serviceAccount from './firebase-admin';
+// Firebase admin removed - using custom JWT authentication only
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
