@@ -56,6 +56,7 @@ export const users = pgTable("users", {
   coverPhotoUrl: text("cover_photo_url"),  // Profile cover photo
   lastSeenAt: timestamp("last_seen_at"),  // Last login/activity timestamp
   managerId: integer("manager_id").references(() => users.id), // Reference to manager (self-referencing)
+  managerEmail: text("manager_email"), // Manager's email address for building org hierarchy
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
 });

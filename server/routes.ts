@@ -4521,6 +4521,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         department: users.department,
         avatarUrl: users.avatarUrl,
         managerId: users.managerId,
+        managerEmail: users.managerEmail,
         organizationId: users.organizationId
       }).from(users).where(eq(users.organizationId, organizationId));
 
@@ -4530,20 +4531,25 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         return res.status(404).json({ error: 'Target user not found' });
       }
 
-      // Build manager-employee relationships
+      // Build manager-employee relationships using email
       const userMap = new Map();
+      const emailMap = new Map();
+      
+      // First pass: create user objects and email mapping
       allOrgUsers.forEach(user => {
-        userMap.set(user.id, {
+        const userData = {
           ...user,
           directReports: [],
           manager: null
-        });
+        };
+        userMap.set(user.id, userData);
+        emailMap.set(user.email, userData);
       });
 
-      // Establish relationships
+      // Second pass: establish manager-employee relationships using manager email
       allOrgUsers.forEach(user => {
-        if (user.managerId) {
-          const manager = userMap.get(user.managerId);
+        if (user.managerEmail) {
+          const manager = emailMap.get(user.managerEmail);
           const employee = userMap.get(user.id);
           if (manager && employee) {
             manager.directReports.push(employee);
