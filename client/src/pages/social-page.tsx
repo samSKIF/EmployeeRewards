@@ -141,7 +141,6 @@ export default function SocialPage() {
     },
     enabled: !!user,
     staleTime: 30000, // 30 seconds - posts stay fresh for 30s
-    cacheTime: 300000, // 5 minutes - keep in cache for 5 minutes
     refetchOnWindowFocus: false, // Don't refetch when user returns to window
   });
   
@@ -154,7 +153,6 @@ export default function SocialPage() {
     },
     enabled: !!user,
     staleTime: 300000, // 5 minutes - user list changes less frequently
-    cacheTime: 600000, // 10 minutes
     refetchOnWindowFocus: false,
   });
   
