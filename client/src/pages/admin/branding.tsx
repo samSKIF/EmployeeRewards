@@ -394,72 +394,173 @@ const BrandingPage = () => {
                       )}
                     />
 
-                    {form.watch('colorScheme') === 'custom' && (
-                      <div className="space-y-4 border rounded-md p-4 bg-gray-50">
-                        <h3 className="text-sm font-medium text-gray-700">Custom Colors</h3>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                          <FormField
-                            control={form.control}
-                            name="primaryColor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Primary Color</FormLabel>
+                    {/* Always show color customization below schemes */}
+                    <div className="space-y-4 border rounded-md p-4 bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-gray-700">Customize Colors</h3>
+                        <p className="text-xs text-gray-500">Click color boxes to open palette</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <FormField
+                          control={form.control}
+                          name="primaryColor"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Primary Color</FormLabel>
+                              <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-8 h-8 rounded border" 
-                                    style={{ backgroundColor: field.value || '#FFFFFF' }}
-                                  ></div>
+                                  <input
+                                    type="color"
+                                    value={field.value || '#1976D2'}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      form.setValue('colorScheme', 'custom');
+                                    }}
+                                    className="w-12 h-10 rounded border cursor-pointer bg-white"
+                                    title="Click to open color picker"
+                                  />
                                   <FormControl>
-                                    <Input type="text" {...field} placeholder="#000000" />
+                                    <Input 
+                                      type="text" 
+                                      {...field} 
+                                      placeholder="#1976D2"
+                                      className="flex-1"
+                                      onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        form.setValue('colorScheme', 'custom');
+                                      }}
+                                    />
                                   </FormControl>
                                 </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="secondaryColor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Secondary Color</FormLabel>
+                                <div 
+                                  className="w-full h-6 rounded border shadow-sm"
+                                  style={{ backgroundColor: field.value || '#1976D2' }}
+                                  title={`Preview: ${field.value || '#1976D2'}`}
+                                ></div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="secondaryColor"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Secondary Color</FormLabel>
+                              <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-8 h-8 rounded border" 
-                                    style={{ backgroundColor: field.value || '#FFFFFF' }}
-                                  ></div>
+                                  <input
+                                    type="color"
+                                    value={field.value || '#0D47A1'}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      form.setValue('colorScheme', 'custom');
+                                    }}
+                                    className="w-12 h-10 rounded border cursor-pointer bg-white"
+                                    title="Click to open color picker"
+                                  />
                                   <FormControl>
-                                    <Input type="text" {...field} placeholder="#000000" />
+                                    <Input 
+                                      type="text" 
+                                      {...field} 
+                                      placeholder="#0D47A1"
+                                      className="flex-1"
+                                      onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        form.setValue('colorScheme', 'custom');
+                                      }}
+                                    />
                                   </FormControl>
                                 </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="accentColor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Accent Color</FormLabel>
+                                <div 
+                                  className="w-full h-6 rounded border shadow-sm"
+                                  style={{ backgroundColor: field.value || '#0D47A1' }}
+                                  title={`Preview: ${field.value || '#0D47A1'}`}
+                                ></div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="accentColor"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Accent Color</FormLabel>
+                              <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-8 h-8 rounded border" 
-                                    style={{ backgroundColor: field.value || '#FFFFFF' }}
-                                  ></div>
+                                  <input
+                                    type="color"
+                                    value={field.value || '#90CAF9'}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      form.setValue('colorScheme', 'custom');
+                                    }}
+                                    className="w-12 h-10 rounded border cursor-pointer bg-white"
+                                    title="Click to open color picker"
+                                  />
                                   <FormControl>
-                                    <Input type="text" {...field} placeholder="#000000" />
+                                    <Input 
+                                      type="text" 
+                                      {...field} 
+                                      placeholder="#90CAF9"
+                                      className="flex-1"
+                                      onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        form.setValue('colorScheme', 'custom');
+                                      }}
+                                    />
                                   </FormControl>
                                 </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                <div 
+                                  className="w-full h-6 rounded border shadow-sm"
+                                  style={{ backgroundColor: field.value || '#90CAF9' }}
+                                  title={`Preview: ${field.value || '#90CAF9'}`}
+                                ></div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Inline Color Preview */}
+                    <div className="space-y-4 border rounded-md p-4 bg-white">
+                      <h3 className="text-sm font-medium text-gray-700">Color Preview</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Navigation Preview */}
+                        <div className="border rounded-md overflow-hidden">
+                          <div 
+                            className="p-3 flex items-center justify-between text-white text-sm"
+                            style={{ backgroundColor: form.watch('primaryColor') || '#1976D2' }}
+                          >
+                            <span className="font-medium">{form.watch('organizationName') || 'Organization'}</span>
+                            <div className="w-5 h-5 bg-white/20 rounded"></div>
+                          </div>
+                        </div>
+
+                        {/* Button Preview */}
+                        <div className="flex gap-2">
+                          <button 
+                            className="px-3 py-2 rounded text-white text-xs font-medium flex-1"
+                            style={{ backgroundColor: form.watch('primaryColor') || '#1976D2' }}
+                          >
+                            Primary
+                          </button>
+                          <button 
+                            className="px-3 py-2 rounded text-gray-800 text-xs font-medium flex-1"
+                            style={{ backgroundColor: form.watch('accentColor') || '#90CAF9' }}
+                          >
+                            Accent
+                          </button>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                   <CardFooter className="flex justify-end">
                     <Button 
