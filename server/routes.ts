@@ -787,8 +787,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (email) {
         console.log(`Looking up user with email: ${email}`);
         
-        // Look up user directly in the main database
-        const [foundUser] = await db.select().from(users).where(eq(users.email, email));
+        // Look up user directly in the main database (case-insensitive)
+        const [foundUser] = await db.select().from(users).where(sql`LOWER(${users.email}) = LOWER(${email})`);
         user = foundUser;
         
         if (user) {
