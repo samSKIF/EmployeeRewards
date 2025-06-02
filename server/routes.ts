@@ -17,6 +17,7 @@ import recognitionRoutes from './microservices/recognition/index';
 import interestsRoutes from './microservices/interests/index';
 import employeeStatusRoutes from './microservices/employee-status/index';
 import recognitionAIRoutes from './api/recognition-ai';
+import { CacheService } from './cache/cacheService';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
@@ -371,15 +372,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/users/departments', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const result = await db
-        .selectDistinct({ department: users.department })
-        .from(users)
-        .where(sql`${users.department} IS NOT NULL`);
+      const orgId = req.user?.organizationId || 1;
+      
+      const departments = await CacheService.getOrSet(
+        CacheService.KEYS.DEPARTMENTS(orgId),
+        async () => {
+          const result = await db
+            .selectDistinct({ department: users.department })
+            .from(users)
+            .where(sql`${users.department} IS NOT NULL`);
 
-      const departments = result
-        .map(row => row.department)
-        .filter(dept => dept && dept.trim() !== '')
-        .sort();
+          return result
+            .map(row => row.department)
+            .filter(dept => dept && dept.trim() !== '')
+            .sort();
+        },
+        CacheService.EXPIRATION.DEPARTMENTS
+      );
 
       res.json(departments);
     } catch (error) {
@@ -390,15 +399,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/users/locations', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const result = await db
-        .selectDistinct({ location: users.location })
-        .from(users)
-        .where(sql`${users.location} IS NOT NULL`);
+      const orgId = req.user?.organizationId || 1;
+      
+      const locations = await CacheService.getOrSet(
+        CacheService.KEYS.LOCATIONS(orgId),
+        async () => {
+          const result = await db
+            .selectDistinct({ location: users.location })
+            .from(users)
+            .where(sql`${users.location} IS NOT NULL`);
 
-      const locations = result
-        .map(row => row.location)
-        .filter(location => location && location.trim() !== '')
-        .sort();
+          return result
+            .map(row => row.location)
+            .filter(location => location && location.trim() !== '')
+            .sort();
+        },
+        CacheService.EXPIRATION.LOCATIONS
+      );
 
       res.json(locations);
     } catch (error) {

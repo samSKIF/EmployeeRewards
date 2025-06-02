@@ -73,6 +73,10 @@ router.post('/posts', verifyToken, upload.single('image'), async (req: Authentic
     };
 
     const post = await socialService.createPost(postData);
+    
+    // Invalidate cache after creating new post
+    await CacheService.invalidateSocialCache(organizationId);
+    
     res.status(201).json(post);
   } catch (error: any) {
     console.error('Error creating post:', error);
