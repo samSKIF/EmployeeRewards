@@ -4511,24 +4511,33 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       const organizationId = currentUser[0].organizationId;
       
-      // Get all users in the same organization
-      const allOrgUsers = await db.select({
-        id: users.id,
-        name: users.name,
-        surname: users.surname,
-        email: users.email,
-        jobTitle: users.jobTitle,
-        department: users.department,
-        avatarUrl: users.avatarUrl,
-        managerId: users.managerId,
-        managerEmail: users.managerEmail,
-        organizationId: users.organizationId
-      }).from(users).where(eq(users.organizationId, organizationId));
+      // Get all employees in the same organization from employees table (with actual manager relationships)
+      const allOrgEmployees = await db.select({
+        id: employees.id,
+        name: employees.name,
+        surname: employees.surname,
+        email: employees.email,
+        jobTitle: employees.jobTitle,
+        department: employees.department,
+        avatarUrl: sql`NULL`.as('avatarUrl'),
+        managerId: sql`NULL`.as('managerId'),
+        managerEmail: employees.managerEmail,
+        organizationId: employees.companyId
+      }).from(employees).where(eq(employees.companyId, organizationId));
+      
+      // Map to same structure as users for compatibility
+      const allOrgUsers = allOrgEmployees;
 
-      // Get target user
-      let targetUser = allOrgUsers.find(user => user.id === targetUserId);
+      // Find target user by matching with users table (since request comes with user ID from users table)
+      const requestingUser = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
+      if (!requestingUser.length) {
+        return res.status(404).json({ error: 'Requesting user not found' });
+      }
+      
+      // Find corresponding employee by email
+      let targetUser = allOrgUsers.find(user => user.email === requestingUser[0].email);
       if (!targetUser) {
-        return res.status(404).json({ error: 'Target user not found' });
+        return res.status(404).json({ error: 'Target user not found in employee records' });
       }
 
       // Special handling for super admin accounts - show org chart from CEO perspective
