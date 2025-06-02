@@ -45,8 +45,29 @@ export class SocialService {
       filter.authorId = authorId;
     }
 
+    // Use projection to only fetch needed fields for better performance
     return await this.postsCollection
-      .find(filter)
+      .find(filter, {
+        projection: {
+          _id: 1,
+          authorId: 1,
+          authorName: 1,
+          organizationId: 1,
+          content: 1,
+          imageUrl: 1,
+          type: 1,
+          visibility: 1,
+          tags: 1,
+          reactions: 1,
+          commentsCount: 1,
+          sharesCount: 1,
+          viewsCount: 1,
+          isPinned: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          pollOptions: 1
+        }
+      })
       .sort({ isPinned: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)

@@ -47,13 +47,19 @@ export async function connectToMongoDB(): Promise<Db | null> {
 
 async function createIndexes() {
   try {
-    // Social posts indexes
-    await db.collection('social_posts').createIndex({ organizationId: 1, createdAt: -1 });
+    // Optimized compound index for main posts query
+    await db.collection('social_posts').createIndex({ 
+      organizationId: 1, 
+      isDeleted: 1, 
+      isPinned: -1, 
+      createdAt: -1 
+    });
+    
+    // Additional social posts indexes
     await db.collection('social_posts').createIndex({ authorId: 1, createdAt: -1 });
-    await db.collection('social_posts').createIndex({ type: 1, createdAt: -1 });
+    await db.collection('social_posts').createIndex({ type: 1, organizationId: 1, createdAt: -1 });
     await db.collection('social_posts').createIndex({ tags: 1 });
     await db.collection('social_posts').createIndex({ mentions: 1 });
-    await db.collection('social_posts').createIndex({ isDeleted: 1 });
 
     // Comments indexes
     await db.collection('comments').createIndex({ postId: 1, createdAt: 1 });
