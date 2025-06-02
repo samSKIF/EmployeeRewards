@@ -6,13 +6,18 @@ export async function initializeMongoDB() {
     console.log('Initializing MongoDB for social features...');
     
     // Connect to MongoDB
-    await connectToMongoDB();
+    const db = await connectToMongoDB();
     
-    console.log('MongoDB connected successfully');
-    return true;
+    if (db) {
+      console.log('MongoDB connected successfully');
+      return true;
+    } else {
+      console.log('MongoDB not available, continuing with PostgreSQL for social features');
+      return false;
+    }
   } catch (error) {
     console.error('Failed to initialize MongoDB:', error);
-    console.log('Continuing with MySQL fallback for social features');
+    console.log('Continuing with PostgreSQL fallback for social features');
     return false;
   }
 }
