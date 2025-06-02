@@ -4492,6 +4492,103 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Organizational Chart API
+  app.get('/api/org-chart', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const currentUserId = req.user?.id;
+      const targetUserId = req.query.userId ? parseInt(req.query.userId as string) : currentUserId;
+      const direction = req.query.direction as 'up' | 'down' | 'center' || 'center';
+      
+      if (!currentUserId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      // Get current user's organization
+      const currentUser = await db.select().from(users).where(eq(users.id, currentUserId)).limit(1);
+      if (!currentUser.length) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const organizationId = currentUser[0].organizationId;
+      
+      // Get all users in the same organization
+      const allOrgUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        surname: users.surname,
+        email: users.email,
+        jobTitle: users.jobTitle,
+        department: users.department,
+        avatarUrl: users.avatarUrl,
+        managerId: users.managerId,
+        organizationId: users.organizationId
+      }).from(users).where(eq(users.organizationId, organizationId));
+
+      // Get target user
+      const targetUser = allOrgUsers.find(user => user.id === targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ error: 'Target user not found' });
+      }
+
+      // Build manager-employee relationships
+      const userMap = new Map();
+      allOrgUsers.forEach(user => {
+        userMap.set(user.id, {
+          ...user,
+          directReports: [],
+          manager: null
+        });
+      });
+
+      // Establish relationships
+      allOrgUsers.forEach(user => {
+        if (user.managerId) {
+          const manager = userMap.get(user.managerId);
+          const employee = userMap.get(user.id);
+          if (manager && employee) {
+            manager.directReports.push(employee);
+            employee.manager = manager;
+          }
+        }
+      });
+
+      const getHierarchyData = (centerUser: any, direction: string) => {
+        const result = {
+          centerUser: centerUser,
+          upHierarchy: [],
+          downHierarchy: centerUser.directReports || [],
+          peers: []
+        };
+
+        if (direction === 'up' || direction === 'center') {
+          // Get management chain
+          let current = centerUser.manager;
+          while (current) {
+            result.upHierarchy.push(current);
+            current = current.manager;
+          }
+        }
+
+        if (direction === 'center') {
+          // Get peers (people with same manager)
+          if (centerUser.manager) {
+            result.peers = centerUser.manager.directReports.filter((peer: any) => peer.id !== centerUser.id);
+          }
+        }
+
+        return result;
+      };
+
+      const centerUserData = userMap.get(targetUser.id);
+      const hierarchyData = getHierarchyData(centerUserData, direction);
+
+      res.json(hierarchyData);
+    } catch (error) {
+      console.error('Error fetching org chart:', error);
+      res.status(500).json({ error: 'Failed to fetch organizational chart' });
+    }
+  });
+
   app.post("/api/survey-responses/:responseId/complete", verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
       const { responseId } = req.params;

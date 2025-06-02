@@ -22,7 +22,8 @@ import {
   LucideIcon,
   Eye,
   ListChecks,
-  CalendarDays
+  CalendarDays,
+  Sitemap
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
@@ -138,7 +139,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     { icon: Award, label: t('dashboard.awards'), onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: Eye, label: t('dashboard.insights'), onClick: () => navigateTo('/insights/recognition'), isActive: location === '/insights/recognition' },
     { icon: CalendarDays, label: t('dashboard.leave'), onClick: () => navigateTo('/leave-management'), isActive: location === '/leave-management' },
-    { icon: Settings, label: t('dashboard.setup'), onClick: () => navigateTo('/setup'), isActive: location === '/setup' },
+    { icon: Sitemap, label: 'Org Chart', onClick: () => navigateTo('/org-chart'), isActive: location === '/org-chart' },
   ];
 
   // Admin dropdown menu items
