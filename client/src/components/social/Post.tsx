@@ -67,8 +67,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Add reaction mutation
   const addReactionMutation = useMutation({
     mutationFn: async ({ postId, type }: { postId: number, type: string }) => {
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
       
       // Create request with token
       const res = await fetch("/api/social/reactions", {
@@ -105,8 +105,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Remove reaction mutation
   const removeReactionMutation = useMutation({
     mutationFn: async (postId: number) => {
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
       
       // Create request with token
       const res = await fetch(`/api/social/reactions/${postId}`, {
@@ -136,8 +136,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Delete post mutation
   const deletePostMutation = useMutation({
     mutationFn: async (postId: number) => {
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
       
       // Create request with token
       const res = await fetch(`/api/social/posts/${postId}`, {
@@ -171,8 +171,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
   // Add comment mutation
   const addCommentMutation = useMutation({
     mutationFn: async ({ postId, content }: { postId: number, content: string }) => {
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
       
       // Create request with token
       const res = await fetch("/api/social/comments", {
