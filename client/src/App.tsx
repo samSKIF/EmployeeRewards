@@ -31,6 +31,7 @@ import Recognition from "@/pages/recognition";
 import RecognitionAnalytics from "@/pages/recognition-analytics";
 import AdminStatusTypes from "@/pages/admin-status-types";
 import StatusDemo from "@/pages/status-demo";
+import OrgChart from "@/pages/org-chart";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -295,6 +296,12 @@ function App() {
               <Route path="/status-demo">
                 <SocialLayout>
                   <StatusDemo />
+                </SocialLayout>
+              </Route>
+
+              <Route path="/org-chart">
+                <SocialLayout>
+                  <OrgChart />
                 </SocialLayout>
               </Route>
 
