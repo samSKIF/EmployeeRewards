@@ -144,7 +144,7 @@ const BrandingPage = () => {
   // Handle logo file change
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && !logoUploadMutation.isPending) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result as string);
@@ -152,7 +152,7 @@ const BrandingPage = () => {
       reader.readAsDataURL(file);
       setLogoFile(file);
       
-      // Clear the input value to allow re-selection of same file
+      // Clear the input value to prevent double triggers
       event.target.value = '';
       
       // Automatically upload the file immediately after selection
@@ -306,33 +306,35 @@ const BrandingPage = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Button 
-                                type="button"
-                                variant="outline"
-                                onClick={() => document.getElementById('logo-upload')?.click()}
-                                className="relative"
-                                disabled={logoUploadMutation.isPending}
-                              >
-                                {logoUploadMutation.isPending ? (
-                                  <>
-                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                    Uploading...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Upload className="h-4 w-4 mr-2" />
-                                    Select & Upload Logo
-                                  </>
-                                )}
+                              <label className="relative">
+                                <Button 
+                                  type="button"
+                                  variant="outline"
+                                  asChild
+                                  disabled={logoUploadMutation.isPending}
+                                >
+                                  <span className="cursor-pointer">
+                                    {logoUploadMutation.isPending ? (
+                                      <>
+                                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                        Uploading...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Upload className="h-4 w-4 mr-2" />
+                                        Select & Upload Logo
+                                      </>
+                                    )}
+                                  </span>
+                                </Button>
                                 <input
-                                  id="logo-upload"
                                   type="file"
                                   accept="image/*"
-                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                   onChange={handleLogoChange}
                                   disabled={logoUploadMutation.isPending}
                                 />
-                              </Button>
+                              </label>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
                               Recommended size: 200x200px. PNG or SVG with transparent background.
