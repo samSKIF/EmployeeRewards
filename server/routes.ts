@@ -4526,9 +4526,21 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       }).from(users).where(eq(users.organizationId, organizationId));
 
       // Get target user
-      const targetUser = allOrgUsers.find(user => user.id === targetUserId);
+      let targetUser = allOrgUsers.find(user => user.id === targetUserId);
       if (!targetUser) {
         return res.status(404).json({ error: 'Target user not found' });
+      }
+
+      // Special handling for super admin accounts - show org chart from CEO perspective
+      const currentUserData = await db.select().from(users).where(eq(users.id, currentUserId)).limit(1);
+      const isAdmin = currentUserData[0]?.isAdmin || false;
+      
+      if (isAdmin && currentUserId === targetUserId) {
+        // Find the CEO (user with no manager_email in the organization)
+        const ceoUser = allOrgUsers.find(user => !user.managerEmail);
+        if (ceoUser) {
+          targetUser = ceoUser;
+        }
       }
 
       // Build manager-employee relationships using email
