@@ -54,7 +54,8 @@ router.post('/posts', verifyToken, upload.single('image'), async (req: Authentic
       type: type as 'text' | 'image' | 'poll' | 'recognition' | 'announcement',
       visibility: visibility as 'public' | 'team' | 'department',
       tags: tags ? (Array.isArray(tags) ? tags : [tags]) : [],
-      pollOptions: type === 'poll' && pollOptions ? JSON.parse(pollOptions) : undefined
+      pollOptions: type === 'poll' && pollOptions ? JSON.parse(pollOptions) : undefined,
+      isPinned: false
     };
 
     const post = await socialService.createPost(postData);

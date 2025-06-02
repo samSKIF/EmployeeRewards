@@ -2,12 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import managementRoutes from "./management-routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { createAdminUser } from "./create-admin-user";
+// import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { hybridDb } from './hybrid-db';
+// import { hybridDb } from './hybrid-db'; // Temporarily disabled for MongoDB migration
 import { users, organizations } from '@shared/mysql-schema';
+import { initializeMongoDB } from './mongodb/integration';
 // Firebase admin removed - using custom JWT authentication only
 
 const app = express();
@@ -56,22 +57,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize hybrid database service
-  try {
-    await hybridDb.initialize();
-    console.log('✅ Hybrid database service initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize hybrid database service:', error);
-    console.log('📝 Make sure all database environment variables are set:');
-    console.log('   - MYSQL_DATABASE_URL');
-    console.log('   - MONGODB_URL');
-    console.log('   - REDIS_URL');
-    console.log('   - ELASTICSEARCH_URL');
-    process.exit(1);
-  }
+  // Database initialization - PostgreSQL is primary, MongoDB for social features
 
-  // Firebase setup removed - using custom JWT authentication only
-  console.log("Using custom JWT authentication system");
+  // Initialize MongoDB for social features
+  console.log("Initializing MongoDB for social features...");
+  await initializeMongoDB();
 
   const server = await registerRoutes(app);
 

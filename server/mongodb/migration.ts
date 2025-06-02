@@ -245,15 +245,4 @@ export async function runSocialMigration() {
   await migration.migrateSocialData();
 }
 
-// Run migration if this file is executed directly
-if (require.main === module) {
-  runSocialMigration()
-    .then(() => {
-      console.log('Migration completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Migration failed:', error);
-      process.exit(1);
-    });
-}
+// Export the migration function for use in other modules

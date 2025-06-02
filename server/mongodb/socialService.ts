@@ -86,7 +86,7 @@ export class SocialService {
     return result.modifiedCount > 0;
   }
 
-  async addReactionToPost(postId: string, userId: number, userName: string, reactionType: string): Promise<boolean> {
+  async addReactionToPost(postId: string, userId: number, userName: string, reactionType: 'like' | 'love' | 'celebrate' | 'support' | 'insightful'): Promise<boolean> {
     // Remove existing reaction from same user
     await this.postsCollection.updateOne(
       { _id: new ObjectId(postId) },
@@ -175,7 +175,7 @@ export class SocialService {
     return result.modifiedCount > 0;
   }
 
-  async addReactionToComment(commentId: string, userId: number, userName: string, reactionType: string): Promise<boolean> {
+  async addReactionToComment(commentId: string, userId: number, userName: string, reactionType: 'like' | 'love' | 'celebrate' | 'support'): Promise<boolean> {
     // Remove existing reaction from same user
     await this.commentsCollection.updateOne(
       { _id: new ObjectId(commentId) },
