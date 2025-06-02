@@ -1,53 +1,56 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
-import { posts, comments, reactions } from '@shared/schema';
+
+import { Injectable } from '@nestjs/common';
+import { hybridDb } from '../../hybrid-db';
+import { auditLogger } from '../../db-elasticsearch';
+import { COLLECTIONS } from '@shared/mongodb-schemas';
 
 @Injectable()
 export class SocialService {
-  constructor(
-    private readonly socialGateway: SocialGateway,
-    @Inject('SOCIAL_SERVICE') private readonly client: ClientProxy,
-  ) {}
+  async getPosts(organizationId: number, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+    return await hybridDb.getOrganizationPosts(organizationId, limit, skip);
+  }
 
-  @MessagePattern('social.post.create')
-  async handlePostCreate(data: any) {
-    console.log('Social microservice: Handling post creation:', data);
-    const post = await this.createPost({
-      userId: data.userId,
-      content: data.content,
-      type: data.type,
-      imageUrl: data.imageUrl,
-      createdAt: new Date()
-    });
+  async createPost(postData: any) {
+    return await hybridDb.createPost(postData);
+  }
+
+  async addComment(commentData: any) {
+    return await hybridDb.addComment(commentData);
+  }
+
+  async addReaction(postId: string, userId: number, reactionType: string, organizationId: number) {
+    return await hybridDb.addReactionToPost(postId, userId, reactionType, organizationId);
+  }
+
+  async getStats(organizationId: number) {
+    const mongodb = (await import('../../db-mongodb')).mongoDb.getDb();
     
-    if (post) {
-      this.socialGateway.notifyNewPost(data.userId, post);
-    }
-    return post;
-  }
+    const [postsCount, commentsCount, reactionsCount] = await Promise.all([
+      mongodb.collection(COLLECTIONS.POSTS).countDocuments({ 
+        organizationId, 
+        isDeleted: false 
+      }),
+      mongodb.collection(COLLECTIONS.COMMENTS).countDocuments({ 
+        organizationId, 
+        isDeleted: false 
+      }),
+      mongodb.collection(COLLECTIONS.POSTS).aggregate([
+        { $match: { organizationId, isDeleted: false } },
+        { $project: { reactionCount: { $size: '$reactions' } } },
+        { $group: { _id: null, total: { $sum: '$reactionCount' } } }
+      ]).toArray()
+    ]);
 
-  @MessagePattern('social.post.get')
-  async handleGetPosts(data: any) {
-    return await this.getPosts(data.filters);
-  }
-
-  async getPosts(limit: number = 20, offset: number = 0) {
-    return await db.select().from(posts)
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(posts.createdAt));
-  }
-
-  async createPost(data: any) {
-    const [post] = await db.insert(posts)
-      .values(data)
-      .returning();
-    return post;
-  }
-
-  async getComments(postId: number) {
-    return await db.select().from(comments)
-      .where(eq(comments.postId, postId));
+    return {
+      posts: postsCount,
+      comments: commentsCount,
+      reactions: reactionsCount[0]?.total || 0,
+      activeUsers: await mongodb.collection(COLLECTIONS.POSTS).distinct('authorId', {
+        organizationId,
+        isDeleted: false,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
+      }).then(users => users.length)
+    };
   }
 }

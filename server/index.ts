@@ -6,6 +6,8 @@ import { createAdminUser } from "./create-admin-user";
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { hybridDb } from './hybrid-db';
+import { users, organizations } from '@shared/mysql-schema';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -53,6 +55,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize hybrid database service
+  await hybridDb.initialize();
+
+  // Firebase setup
+  console.log('Initializing Firebase app with project ID:', process.env.FIREBASE_PROJECT_ID);
+  const firebaseApp = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    projectId: process.env.FIREBASE_PROJECT_ID,
+  });
   // Create admin user in Firebase
   try {
     console.log("Creating admin user in Firebase...");
@@ -63,7 +74,7 @@ app.use((req, res, next) => {
   }
 
   const server = await registerRoutes(app);
-  
+
   // Add management routes for SaaS backend
   app.use('/management', managementRoutes);
 
@@ -83,6 +94,26 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Health check endpoint
+  app.get('/health', async (req, res) => {
+    try {
+      const health = await hybridDb.healthCheck();
+      const isHealthy = Object.values(health).every(status => status);
+
+      res.status(isHealthy ? 200 : 503).json({
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        timestamp: new Date().toISOString(),
+        services: health
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
