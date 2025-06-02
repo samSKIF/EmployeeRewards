@@ -46,71 +46,55 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   
   // Check for authentication on component mount and when token changes
   useEffect(() => {
-    const fetchUserMetadata = async () => {
+    console.log("useAuth: useEffect running - this should always appear!");
+    
+    const initAuth = async () => {
+      console.log("useAuth: initAuth function starting");
+      setIsLoading(true);
+      
       try {
-        setIsLoading(true);
-        
-        // Check if we have authentication token
         const token = localStorage.getItem("firebaseToken");
-        
-        console.log("useAuth: Checking authentication...");
-        console.log("useAuth: Custom token:", token ? "exists" : "null");
-        console.log("useAuth: Token value preview:", token ? token.substring(0, 20) + "..." : "no token");
+        console.log("useAuth: Token check:", token ? "FOUND" : "NOT FOUND");
         
         if (token) {
-          console.log("useAuth: Token found, fetching user metadata");
+          console.log("useAuth: Making API call to /api/users/me");
+          const response = await fetch("/api/users/me", {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
           
-          // Try to get user metadata from our API
-          try {
-            console.log("useAuth: Making API call with custom token");
+          if (response.ok) {
+            const userData = await response.json();
+            console.log("useAuth: API SUCCESS - User data:", userData);
             
-            const response = await fetch("/api/users/me", {
-              headers: {
-                "Authorization": `Bearer ${token}`
-              }
-            });
+            const user = {
+              id: userData.id,
+              name: userData.name || "User",
+              email: userData.email || "",
+              isAdmin: userData.isAdmin === true,
+              department: userData.department
+            };
             
-            if (response.ok) {
-              const userData = await response.json();
-              console.log("useAuth: User metadata from API:", userData);
-              console.log("useAuth: Setting user isAdmin based on API response:", userData.isAdmin);
-              console.log("useAuth: userData.isAdmin === true?", userData.isAdmin === true);
-              
-              const userToSet = {
-                id: userData.id,
-                name: userData.name || "User",
-                email: userData.email || "",
-                isAdmin: userData.isAdmin === true, // Only true if explicitly true
-                department: userData.department
-              };
-              
-              console.log("useAuth: Final user object being set:", userToSet);
-              console.log("useAuth: About to call setUser");
-              setUser(userToSet);
-              console.log("useAuth: setUser called successfully");
-            } else {
-              console.log("useAuth: API call failed, clearing user state");
-              localStorage.removeItem("firebaseToken");
-              setUser(null);
-            }
-          } catch (error) {
-            console.error("useAuth: Error fetching user metadata:", error);
+            console.log("useAuth: Setting user state:", user);
+            setUser(user);
+          } else {
+            console.log("useAuth: API FAILED - clearing state");
             localStorage.removeItem("firebaseToken");
             setUser(null);
           }
         } else {
-          console.log("useAuth: No token found, clearing user state");
+          console.log("useAuth: No token - setting user to null");
           setUser(null);
         }
       } catch (error) {
-        console.error("useAuth: Auth initialization failed:", error);
+        console.error("useAuth: ERROR:", error);
         setUser(null);
       } finally {
         setIsLoading(false);
+        console.log("useAuth: initAuth complete");
       }
     };
     
-    fetchUserMetadata();
+    initAuth();
   }, []); // Run once on mount
 
   const fetchUserProfile = async () => {
