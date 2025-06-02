@@ -115,6 +115,9 @@ export interface PostWithDetails extends Post {
   userReaction?: string;
   poll?: PollWithVotes;
   recognition?: RecognitionWithDetails;
+  // MongoDB fields
+  authorId?: number;
+  authorName?: string;
 }
 
 // Social types - Comments

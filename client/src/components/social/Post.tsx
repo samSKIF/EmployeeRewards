@@ -358,8 +358,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
           <div className="flex items-center">
             <UserAvatar 
               user={{
-                id: post.userId,
-                name: post.user?.name || post.userName || 'User',
+                id: post.authorId || post.userId,
+                name: post.authorName || post.user?.name || post.userName || 'User',
                 avatarUrl: post.user?.avatarUrl || post.userProfileImage || post.avatarUrl,
                 jobTitle: post.user?.jobTitle || post.userJobTitle,
                 dateJoined: post.user?.hireDate || (post as any).userHireDate
@@ -368,7 +368,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
               className="mr-3"
             />
             <div>
-              <div className="font-medium text-gray-900">{post.user?.name || post.userName || 'User'}</div>
+              <div className="font-medium text-gray-900">{post.authorName || post.user?.name || post.userName || 'User'}</div>
               <div className="text-xs text-gray-500">{timeAgoTranslation()}</div>
             </div>
           </div>
