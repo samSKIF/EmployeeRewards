@@ -3,13 +3,14 @@ import { getMongoDb } from './connection';
 import { SocialPost, Comment, Notification, ActivityFeed } from './models';
 
 export class SocialService {
-  private db = getMongoDb();
+  private db: any;
   private postsCollection: Collection<SocialPost>;
   private commentsCollection: Collection<Comment>;
   private notificationsCollection: Collection<Notification>;
   private activityCollection: Collection<ActivityFeed>;
 
   constructor() {
+    this.db = getMongoDb();
     this.postsCollection = this.db.collection('social_posts');
     this.commentsCollection = this.db.collection('comments');
     this.notificationsCollection = this.db.collection('notifications');

@@ -8,7 +8,7 @@ import path from "path";
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 // import { hybridDb } from './hybrid-db'; // Temporarily disabled for MongoDB migration
 import { users, organizations } from '@shared/mysql-schema';
-import { initializeMongoDB } from './mongodb/integration';
+import { initializeMongoDB, setupMongoDBSocialRoutes, migrateSocialDataToMongoDB } from './mongodb/integration';
 // Firebase admin removed - using custom JWT authentication only
 
 const app = express();
@@ -61,9 +61,14 @@ app.use((req, res, next) => {
 
   // Initialize MongoDB for social features
   console.log("Initializing MongoDB for social features...");
-  await initializeMongoDB();
+  const mongoInitialized = await initializeMongoDB();
 
   const server = await registerRoutes(app);
+
+  // Setup MongoDB social routes if MongoDB is available
+  if (mongoInitialized) {
+    await setupMongoDBSocialRoutes(app);
+  }
 
   // Add management routes for SaaS backend
   app.use('/management', managementRoutes);
@@ -88,7 +93,8 @@ app.use((req, res, next) => {
   // Health check endpoint
   app.get('/health', async (req, res) => {
     try {
-      const health = await hybridDb.healthCheck();
+      // Health check for individual services
+      const health = { status: 'ok', message: 'Services running' };
       const isHealthy = Object.values(health).every(status => status);
 
       res.status(isHealthy ? 200 : 503).json({

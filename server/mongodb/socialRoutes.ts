@@ -5,7 +5,13 @@ import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
 import { upload } from '../file-upload';
 
 const router = express.Router();
-const socialService = new SocialService();
+let socialService: SocialService;
+
+// Initialize social service after MongoDB connection
+export function initializeSocialRoutes() {
+  socialService = new SocialService();
+  return router;
+}
 
 // Get social feed posts
 router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Response) => {

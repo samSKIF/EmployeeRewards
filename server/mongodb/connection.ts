@@ -3,13 +3,18 @@ import { MongoClient, Db } from 'mongodb';
 let client: MongoClient;
 let db: Db;
 
-export async function connectToMongoDB(): Promise<Db> {
+export async function connectToMongoDB(): Promise<Db | null> {
   if (db) {
     return db;
   }
 
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+  const uri = process.env.MONGODB_URI || process.env.MONGODB_URL;
   const dbName = process.env.MONGODB_DB_NAME || 'employee_engagement_social';
+
+  if (!uri) {
+    console.log('MongoDB URI not provided, social features will use PostgreSQL fallback');
+    return null;
+  }
 
   try {
     client = new MongoClient(uri);
@@ -24,7 +29,8 @@ export async function connectToMongoDB(): Promise<Db> {
     return db;
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    throw error;
+    console.log('Social features will use PostgreSQL fallback');
+    return null;
   }
 }
 
