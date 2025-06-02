@@ -1,0 +1,72 @@
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing Firebase app with project ID: employee-reward-fb8ea
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Connected to MongoDB successfully
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+MongoDB indexes created successfully
+MongoDB connected successfully
+MongoDB social routes initialized
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+🎂 Scheduling birthday rewards job (daily at 08:00)
+12:20:53 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:21:04 PM [express] GET /api/points/balance 304 in 443ms :: {"balance":0,"userId":11}
+Birthday users found: 5
+Anniversary users found: 1
+Total celebrations returning: 6
+12:21:04 PM [express] GET /api/celebrations/today 304 in 567ms :: [{"id":2167,"user":{"id":2167,"name…
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:21:04 PM [express] GET /api/users/me 304 in 202ms :: {"id":11,"username":"admin_canva","name":"Can…
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Cache MISS for key: departments:org:1
+Cache MISS for key: locations:org:1
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Returning 801 users for company 1
+12:21:11 PM [express] GET /api/users 304 in 7675ms :: [{"id":16,"username":"brian_lopez","name":"Bria…
+12:21:11 PM [express] GET /api/users/departments 304 in 7687ms :: ["Engineering","Finance","HR","Info…
+12:21:11 PM [express] GET /api/users/locations 304 in 7686ms :: ["London","New York","New york office…
+Final user object isAdmin: true
+12:21:11 PM [express] GET /api/users/me 304 in 6663ms :: {"id":11,"username":"admin_canva","name":"Ca…
+Cache MISS for key: social:posts:org:1:limit:20:skip:0:author:all
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:21:12 PM [express] GET /api/users/me 304 in 145ms :: {"id":11,"username":"admin_canva","name":"Can…
+12:21:12 PM [express] GET /api/social/posts 304 in 428ms :: [{"_id":"683d85dd0379183dda2ac3be","autho…
+12:21:12 PM [express] GET /api/celebrations/upcoming 304 in 8346ms :: [{"id":2122,"user":{"id":2122,"…
+12:21:12 PM [express] GET /api/employee-status/users/11/statuses 304 in 199ms :: []
+12:21:12 PM [express] GET /api/social/stats 304 in 7890ms :: {"posts":4,"comments":0,"reactions":0,"r…
+12:21:12 PM [express] GET /api/employee-status/users/11/statuses 304 in 154ms :: []
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:21:13 PM [express] GET /api/employee-status/users/11/statuses 304 in 153ms :: []
+12:21:13 PM [express] GET /api/employee-status/users/11/statuses 304 in 155ms :: []
+12:21:14 PM [express] GET /api/employee-status/users/11/statuses 304 in 171ms :: []
+12:21:14 PM [express] GET /api/employee-status/users/11/statuses 304 in 156ms :: []
+12:21:14 PM [express] GET /api/employee-status/users/11/statuses 304 in 153ms :: []
+12:21:15 PM [express] GET /api/employee-status/users/11/statuses 304 in 154ms :: []
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379

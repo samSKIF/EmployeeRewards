@@ -33,6 +33,7 @@ import AdminStatusTypes from "@/pages/admin-status-types";
 import StatusDemo from "@/pages/status-demo";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
+import { AuthProvider } from "@/hooks/useAuth";
 import { useState, useEffect, lazy, Suspense } from "react";
 import SocialLayout from "@/layouts/SocialLayout";
 import { Loader2 } from "lucide-react";
@@ -99,9 +100,10 @@ function App() {
     <TooltipProvider>
       <Toaster />
       {appReady && (
-        <FirebaseAuthProvider>
-          <BrandingProvider>
-            <Switch>
+        <AuthProvider>
+          <FirebaseAuthProvider>
+            <BrandingProvider>
+              <Switch>
               {/* Management Dashboard - Separate from social platform */}
               <Route path="/management">
                 <ManagementDashboard />
@@ -310,6 +312,7 @@ function App() {
             </Switch>
           </BrandingProvider>
         </FirebaseAuthProvider>
+      </AuthProvider>
       )}
     </TooltipProvider>
   );
