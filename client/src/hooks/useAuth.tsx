@@ -50,14 +50,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         setIsLoading(true);
         
-        if (currentUser) {
+        // Check if we have any authentication token (Firebase or custom JWT)
+        const firebaseToken = localStorage.getItem("firebaseToken");
+        const customToken = localStorage.getItem("token");
+        const hasAnyToken = firebaseToken || customToken;
+        
+        console.log("useAuth: Checking authentication...");
+        console.log("useAuth: Firebase user:", currentUser ? "exists" : "null");
+        console.log("useAuth: Firebase token:", firebaseToken ? "exists" : "null");
+        console.log("useAuth: Custom token:", customToken ? "exists" : "null");
+        
+        if (currentUser || hasAnyToken) {
           console.log("Firebase user detected, fetching user metadata");
           
           // Try to get user metadata from our API
           try {
+            // Use the appropriate token for authentication
+            const token = firebaseToken || customToken;
+            console.log("useAuth: Making API call with token type:", firebaseToken ? "firebase" : "custom");
+            
             const response = await fetch("/api/users/me", {
               headers: {
-                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+                "Authorization": `Bearer ${token}`
               }
             });
             
@@ -78,9 +92,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 department: userData.department
               };
               
-              console.log("Final user object being set:", userToSet);
-              console.log("Setting user state immediately");
+              console.log("useAuth: Final user object being set:", userToSet);
+              console.log("useAuth: About to call setUser");
               setUser(userToSet);
+              console.log("useAuth: setUser called");
             } else {
               console.log("User metadata not found in DB, using Firebase data only");
               // Use Firebase data only
