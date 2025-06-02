@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     };
     
-    fetchUserMetadata();
+    initializeAuth();
   }, []); // Run once on mount
 
   const fetchUserProfile = async () => {
