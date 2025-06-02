@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { SocialService } from './socialService';
 import { verifyToken, AuthenticatedRequest } from '../middleware/auth-jwt';
 import { upload } from '../file-upload';
+import { CacheService } from '../cache/cacheService';
 
 const router = express.Router();
 let socialService: SocialService;
@@ -13,7 +14,7 @@ export function initializeSocialRoutes() {
   return router;
 }
 
-// Get social feed posts
+// Get social feed posts with caching
 router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
@@ -22,12 +23,19 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
 
     const { limit = 20, skip = 0, authorId } = req.query;
     const organizationId = req.user.organizationId || 1;
+    
+    // Create cache key based on query parameters
+    const cacheKey = `${CacheService.KEYS.SOCIAL_POSTS(organizationId)}:limit:${limit}:skip:${skip}:author:${authorId || 'all'}`;
 
-    const posts = await socialService.getPosts(
-      organizationId,
-      parseInt(limit as string),
-      parseInt(skip as string),
-      authorId ? parseInt(authorId as string) : undefined
+    const posts = await CacheService.getOrSet(
+      cacheKey,
+      () => socialService.getPosts(
+        organizationId,
+        parseInt(limit as string),
+        parseInt(skip as string),
+        authorId ? parseInt(authorId as string) : undefined
+      ),
+      CacheService.EXPIRATION.SOCIAL_POSTS
     );
 
     res.json(posts);
