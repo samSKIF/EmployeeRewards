@@ -70,20 +70,8 @@ app.use((req, res, next) => {
     process.exit(1);
   }
 
-  // Firebase setup
-  console.log('Initializing Firebase app with project ID:', process.env.FIREBASE_PROJECT_ID);
-  const firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
-  // Create admin user in Firebase
-  try {
-    console.log("Creating admin user in Firebase...");
-    await createAdminUser();
-    console.log("Admin user setup completed");
-  } catch (error) {
-    console.error("Error creating admin user:", error);
-  }
+  // Firebase setup removed - using custom JWT authentication only
+  console.log("Using custom JWT authentication system");
 
   const server = await registerRoutes(app);
 
