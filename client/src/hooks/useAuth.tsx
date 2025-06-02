@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+// import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 export type AuthUser = {
   id: number;
@@ -42,32 +42,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
-  const { currentUser, loading: firebaseLoading } = useFirebaseAuth();
+  // const { currentUser, loading: firebaseLoading } = useFirebaseAuth();
   
-  // Listen for Firebase auth changes
+  // Check for authentication on component mount and when token changes
   useEffect(() => {
     const fetchUserMetadata = async () => {
       try {
         setIsLoading(true);
         
-        // Check if we have any authentication token (Firebase or custom JWT)
-        const firebaseToken = localStorage.getItem("firebaseToken");
-        const customToken = localStorage.getItem("token");
-        const hasAnyToken = firebaseToken || customToken;
+        // Check if we have authentication token
+        const token = localStorage.getItem("token");
         
         console.log("useAuth: Checking authentication...");
-        console.log("useAuth: Firebase user:", currentUser ? "exists" : "null");
-        console.log("useAuth: Firebase token:", firebaseToken ? "exists" : "null");
-        console.log("useAuth: Custom token:", customToken ? "exists" : "null");
+        console.log("useAuth: Custom token:", token ? "exists" : "null");
         
-        if (currentUser || hasAnyToken) {
-          console.log("Firebase user detected, fetching user metadata");
+        if (token) {
+          console.log("useAuth: Token found, fetching user metadata");
           
           // Try to get user metadata from our API
           try {
-            // Use the appropriate token for authentication
-            const token = firebaseToken || customToken;
-            console.log("useAuth: Making API call with token type:", firebaseToken ? "firebase" : "custom");
+            console.log("useAuth: Making API call with custom token");
             
             const response = await fetch("/api/users/me", {
               headers: {
@@ -77,17 +71,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             
             if (response.ok) {
               const userData = await response.json();
-              console.log("User metadata from API:", userData);
-              
-              // Set user with data from our database
-              console.log("User metadata from API:", userData);
-              console.log("Setting user isAdmin based on API response:", userData.isAdmin);
-              console.log("userData.isAdmin === true?", userData.isAdmin === true);
+              console.log("useAuth: User metadata from API:", userData);
+              console.log("useAuth: Setting user isAdmin based on API response:", userData.isAdmin);
+              console.log("useAuth: userData.isAdmin === true?", userData.isAdmin === true);
               
               const userToSet = {
                 id: userData.id,
-                name: userData.name || currentUser.displayName || "User",
-                email: userData.email || currentUser.email || "",
+                name: userData.name || "User",
+                email: userData.email || "",
                 isAdmin: userData.isAdmin === true, // Only true if explicitly true
                 department: userData.department
               };
@@ -95,58 +86,60 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               console.log("useAuth: Final user object being set:", userToSet);
               console.log("useAuth: About to call setUser");
               setUser(userToSet);
-              console.log("useAuth: setUser called");
+              console.log("useAuth: setUser called successfully");
             } else {
-              console.log("User metadata not found in DB, using Firebase data only");
-              // Use Firebase data only
-              setUser({
-                id: 0, // Temporary ID
-                name: currentUser.displayName || "User",
-                email: currentUser.email || "",
-                isAdmin: currentUser.email === "admin@demo.io", // Admin if email is admin@demo.io
-                department: ""
-              });
+              console.log("useAuth: API call failed, clearing user state");
+              localStorage.removeItem("token");
+              setUser(null);
             }
           } catch (error) {
-            console.error("Error fetching user metadata:", error);
-            // Fallback to Firebase data
-            setUser({
-              id: 0,
-              name: currentUser.displayName || "User",
-              email: currentUser.email || "",
-              isAdmin: currentUser.email === "admin@demo.io",
-              department: ""
-            });
+            console.error("useAuth: Error fetching user metadata:", error);
+            localStorage.removeItem("token");
+            setUser(null);
           }
         } else {
-          console.log("No Firebase user, clearing local user state");
+          console.log("useAuth: No token found, clearing user state");
           setUser(null);
         }
       } catch (error) {
-        console.error("Auth initialization failed:", error);
+        console.error("useAuth: Auth initialization failed:", error);
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
     
-    // Only fetch user metadata when Firebase loading is done
-    if (!firebaseLoading) {
-      fetchUserMetadata();
-    }
-  }, [currentUser, firebaseLoading]);
+    fetchUserMetadata();
+  }, []); // Run once on mount
 
   const fetchUserProfile = async () => {
     try {
       setIsLoading(true);
       
-      // For now, let's skip the fetchUserProfile since we're transitioning to Firebase auth
-      console.log("Skipping user profile fetch during migration to Firebase auth");
-      setUser(null);
-      
-      // Remove any existing token to prevent future API calls
-      localStorage.removeItem("token");
-      
+      const token = localStorage.getItem("token");
+      if (token) {
+        const response = await fetch("/api/users/me", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUser({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            isAdmin: userData.isAdmin === true,
+            department: userData.department
+          });
+        } else {
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
     } catch (error) {
       console.error("Failed in fetchUserProfile:", error);
       localStorage.removeItem("token");
@@ -249,26 +242,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const { signOut: firebaseSignOut } = useFirebaseAuth();
-
   const logout = async () => {
     try {
       console.log("Dashboard: Starting logout process");
       
-      // Remove traditional token
+      // Remove authentication token
       localStorage.removeItem("token");
-
-      // Remove Firebase token
-      localStorage.removeItem("firebaseToken");
       
       // Set sessionStorage to prevent auto-login on auth page
       sessionStorage.setItem("skipAutoLogin", "true");
       
       // Clear all cached queries
       queryClient.clear();
-      
-      // Sign out from Firebase
-      await firebaseSignOut();
       
       // Reset local state
       setUser(null);
