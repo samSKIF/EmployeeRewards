@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { SocialService } from './socialService';
-import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
+import { verifyToken, AuthenticatedRequest } from '../middleware/auth-jwt';
 import { upload } from '../file-upload';
 
 const router = express.Router();

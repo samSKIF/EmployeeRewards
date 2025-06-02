@@ -12,10 +12,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Get auth token from localStorage - try Firebase token first, then fallback to JWT token
-  const firebaseToken = localStorage.getItem("firebaseToken");
-  const jwtToken = localStorage.getItem("token");
-  const token = firebaseToken || jwtToken;
+  // Get JWT token from localStorage
+  const token = localStorage.getItem("token");
   
   // Prepare headers with auth token
   const headers: Record<string, string> = {};
