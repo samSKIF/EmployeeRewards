@@ -26,7 +26,7 @@ export async function setupMongoDBSocialRoutes(app: any) {
   try {
     const { initializeSocialRoutes } = await import('./socialRoutes');
     const socialRoutes = initializeSocialRoutes();
-    app.use('/api/social-mongo', socialRoutes);
+    app.use('/api/social', socialRoutes);
     console.log('MongoDB social routes initialized');
     return true;
   } catch (error) {
