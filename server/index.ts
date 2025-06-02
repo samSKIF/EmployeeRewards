@@ -63,12 +63,12 @@ app.use((req, res, next) => {
   console.log("Initializing MongoDB for social features...");
   const mongoInitialized = await initializeMongoDB();
 
-  const server = await registerRoutes(app);
-
-  // Setup MongoDB social routes if MongoDB is available
+  // Setup MongoDB social routes BEFORE legacy routes if MongoDB is available
   if (mongoInitialized) {
     await setupMongoDBSocialRoutes(app);
   }
+
+  const server = await registerRoutes(app);
 
   // Add management routes for SaaS backend
   app.use('/management', managementRoutes);
