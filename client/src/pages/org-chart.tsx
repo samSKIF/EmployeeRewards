@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronUp, ChevronDown, Search, Users } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ChevronUp, ChevronDown, Search, Users, Mail, Building, User, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface OrgUser {
@@ -33,6 +34,8 @@ const OrgChart = () => {
   const [direction, setDirection] = useState<'up' | 'down' | 'center'>('center');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
+  const [selectedEmployee, setSelectedEmployee] = useState<OrgUser | null>(null);
+  const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
 
   // Use current user as default focus
   const targetUserId = focusUserId || user?.id;
@@ -53,8 +56,8 @@ const OrgChart = () => {
     const hasManager = !!user.manager;
 
     const handleUserClick = () => {
-      setFocusUserId(user.id);
-      setDirection('center');
+      setSelectedEmployee(user);
+      setShowEmployeeDetails(true);
     };
 
     const toggleExpansion = (e: React.MouseEvent, expandDirection: 'up' | 'down') => {
@@ -141,6 +144,149 @@ const OrgChart = () => {
     );
   };
 
+  // Employee Details Dialog Component
+  const EmployeeDetailsDialog = () => {
+    if (!selectedEmployee) return null;
+
+    const handleFocusOnEmployee = (employee: OrgUser) => {
+      setFocusUserId(employee.id);
+      setDirection('center');
+      setShowEmployeeDetails(false);
+    };
+
+    return (
+      <Dialog open={showEmployeeDetails} onOpenChange={setShowEmployeeDetails}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={selectedEmployee.avatarUrl} />
+                <AvatarFallback>
+                  {selectedEmployee.name.charAt(0)}{selectedEmployee.surname?.charAt(0) || ''}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {selectedEmployee.name} {selectedEmployee.surname}
+                </h2>
+                <p className="text-gray-600">{selectedEmployee.jobTitle}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 pt-4">
+            {/* Employee Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>Employee Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">Email:</span>
+                  <span className="text-sm">{selectedEmployee.email}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Building className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">Department:</span>
+                  <Badge variant="outline">{selectedEmployee.department}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Manager */}
+            {selectedEmployee.manager && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <ArrowUp className="h-5 w-5" />
+                    <span>Reports To</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => handleFocusOnEmployee(selectedEmployee.manager!)}
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={selectedEmployee.manager.avatarUrl} />
+                      <AvatarFallback>
+                        {selectedEmployee.manager.name.charAt(0)}{selectedEmployee.manager.surname?.charAt(0) || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">
+                        {selectedEmployee.manager.name} {selectedEmployee.manager.surname}
+                      </p>
+                      <p className="text-sm text-gray-600">{selectedEmployee.manager.jobTitle}</p>
+                      <p className="text-xs text-gray-500">{selectedEmployee.manager.email}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Direct Reports */}
+            {selectedEmployee.directReports && selectedEmployee.directReports.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <ArrowDown className="h-5 w-5" />
+                    <span>Direct Reports</span>
+                    <Badge variant="secondary">{selectedEmployee.directReports.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {selectedEmployee.directReports.map((report) => (
+                      <div
+                        key={report.id}
+                        className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => handleFocusOnEmployee(report)}
+                      >
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={report.avatarUrl} />
+                          <AvatarFallback>
+                            {report.name.charAt(0)}{report.surname?.charAt(0) || ''}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">
+                            {report.name} {report.surname}
+                          </p>
+                          <p className="text-sm text-gray-600">{report.jobTitle}</p>
+                          <p className="text-xs text-gray-500">{report.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* No Direct Reports Message */}
+            {(!selectedEmployee.directReports || selectedEmployee.directReports.length === 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <ArrowDown className="h-5 w-5" />
+                    <span>Direct Reports</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-500 text-center py-4">No direct reports</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="p-6">
@@ -172,7 +318,7 @@ const OrgChart = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Organizational Chart</h1>
         <p className="text-gray-600">
-          Explore your organization's structure. Click on any person to center the view on them.
+          Explore your organization's structure. Click on any person to see their manager and direct reports.
         </p>
       </div>
 
@@ -254,6 +400,9 @@ const OrgChart = () => {
           </Button>
         </div>
       </div>
+
+      {/* Employee Details Dialog */}
+      <EmployeeDetailsDialog />
     </div>
   );
 };
