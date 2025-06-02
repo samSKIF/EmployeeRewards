@@ -13,6 +13,9 @@ const SocialLayout: React.FC<SocialLayoutProps> = ({ children }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { user } = useAuth();
 
+  console.log("SocialLayout - user from useAuth:", user);
+  console.log("SocialLayout - user?.isAdmin:", user?.isAdmin);
+
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
   };

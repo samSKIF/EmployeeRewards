@@ -79,15 +79,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               };
               
               console.log("Final user object being set:", userToSet);
-              
-              // Force clear any previous state
-              if (user && user.isAdmin !== userToSet.isAdmin) {
-                console.log("Admin status changed, forcing state update");
-                setUser(null);
-                setTimeout(() => setUser(userToSet), 0);
-              } else {
-                setUser(userToSet);
-              }
+              console.log("Setting user state immediately");
+              setUser(userToSet);
             } else {
               console.log("User metadata not found in DB, using Firebase data only");
               // Use Firebase data only
