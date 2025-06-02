@@ -152,10 +152,11 @@ const BrandingPage = () => {
       reader.readAsDataURL(file);
       setLogoFile(file);
       
+      // Clear the input value to allow re-selection of same file
+      event.target.value = '';
+      
       // Automatically upload the file immediately after selection
-      setTimeout(() => {
-        logoUploadMutation.mutate();
-      }, 100);
+      logoUploadMutation.mutate();
     }
   };
 

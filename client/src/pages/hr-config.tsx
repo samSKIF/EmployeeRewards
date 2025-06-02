@@ -1008,10 +1008,11 @@ const BrandingSettings = ({ readOnly = false }: { readOnly?: boolean }) => {
       };
       reader.readAsDataURL(file);
       
+      // Clear the input value to allow re-selection of same file
+      e.target.value = '';
+      
       // Automatically upload the file immediately after selection
-      setTimeout(() => {
-        uploadLogoMutation.mutate(file);
-      }, 100);
+      uploadLogoMutation.mutate(file);
     }
   };
   
