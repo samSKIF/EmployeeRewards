@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoading(true);
       
       try {
-        const token = localStorage.getItem("firebaseToken");
+        const token = localStorage.getItem("token");
         console.log("useAuth: Token check:", token ? "FOUND" : "NOT FOUND");
         
         if (token) {
@@ -232,7 +232,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log("Dashboard: Starting logout process");
       
       // Remove authentication token
-      localStorage.removeItem("firebaseToken");
+      localStorage.removeItem("token");
       
       // Set sessionStorage to prevent auto-login on auth page
       sessionStorage.setItem("skipAutoLogin", "true");
