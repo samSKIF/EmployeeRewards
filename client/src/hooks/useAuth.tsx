@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoading(true);
         
         // Check if we have authentication token
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("firebaseToken");
         
         console.log("useAuth: Checking authentication...");
         console.log("useAuth: Custom token:", token ? "exists" : "null");
@@ -89,12 +89,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               console.log("useAuth: setUser called successfully");
             } else {
               console.log("useAuth: API call failed, clearing user state");
-              localStorage.removeItem("token");
+              localStorage.removeItem("firebaseToken");
               setUser(null);
             }
           } catch (error) {
             console.error("useAuth: Error fetching user metadata:", error);
-            localStorage.removeItem("token");
+            localStorage.removeItem("firebaseToken");
             setUser(null);
           }
         } else {
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setIsLoading(true);
       
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("firebaseToken");
       if (token) {
         const response = await fetch("/api/users/me", {
           headers: {
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             department: userData.department
           });
         } else {
-          localStorage.removeItem("token");
+          localStorage.removeItem("firebaseToken");
           setUser(null);
         }
       } else {
@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (error) {
       console.error("Failed in fetchUserProfile:", error);
-      localStorage.removeItem("token");
+      localStorage.removeItem("firebaseToken");
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -208,7 +208,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error("Server response missing required fields");
       }
       
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("firebaseToken", data.token);
       
       setUser({
         id: data.user.id,
@@ -247,7 +247,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log("Dashboard: Starting logout process");
       
       // Remove authentication token
-      localStorage.removeItem("token");
+      localStorage.removeItem("firebaseToken");
       
       // Set sessionStorage to prevent auto-login on auth page
       sessionStorage.setItem("skipAutoLogin", "true");
