@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         console.log("useAuth: Checking authentication...");
         console.log("useAuth: Custom token:", token ? "exists" : "null");
+        console.log("useAuth: Token value preview:", token ? token.substring(0, 20) + "..." : "no token");
         
         if (token) {
           console.log("useAuth: Token found, fetching user metadata");
