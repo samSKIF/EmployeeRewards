@@ -63,8 +63,8 @@ export const PostCreator = ({ user, onRecognizeClick, onPollClick }: PostCreator
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      // Get Firebase token from localStorage
-      const token = localStorage.getItem('firebaseToken');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('token');
 
       const res = await fetch("/api/social/posts", {
         method: "POST",

@@ -1,0 +1,384 @@
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+Initializing Firebase app with project ID: employee-reward-fb8ea
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Connected to MongoDB successfully
+MongoDB indexes created successfully
+MongoDB connected successfully
+MongoDB social routes initialized
+🎂 Scheduling birthday rewards job (daily at 08:00)
+10:55:59 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:56:13 AM [express] GET /api/users/departments 304 in 388ms :: ["Engineering","Finance","HR","Infor…
+10:56:13 AM [express] GET /api/users/locations 304 in 385ms :: ["London","New York","New york office"…
+10:56:13 AM [express] GET /api/points/balance 304 in 390ms :: {"balance":0,"userId":11}
+Birthday users found: 5
+Anniversary users found: 1
+Total celebrations returning: 6
+10:56:13 AM [express] GET /api/celebrations/today 304 in 451ms :: [{"id":2167,"user":{"id":2167,"name…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Returning 801 users for company 1
+10:56:19 AM [express] GET /api/users 304 in 7199ms :: [{"id":16,"username":"brian_lopez","name":"Bria…
+Final user object isAdmin: true
+10:56:19 AM [express] GET /api/users/me 304 in 6561ms :: {"id":11,"username":"admin_canva","name":"Ca…
+10:56:20 AM [express] GET /api/celebrations/upcoming 304 in 7472ms :: [{"id":2122,"user":{"id":2122,"…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:56:20 AM [express] GET /api/social/posts 200 in 293ms :: [{"_id":"683d832cc869388bba889372","autho…
+10:56:21 AM [express] GET /api/social/stats 200 in 1397ms :: {"posts":1,"comments":0,"reactions":0,"r…
+Custom token decode failed: Error: Invalid token format
+    at verifyToken (/home/runner/workspace/server/middleware/auth.ts:62:17)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/runner/workspace/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/index.ts:56:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/runner/workspace/node_modules/body-parser/lib/types/urlencoded.js:103:7)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:122:7)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/runner/workspace/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/runner/workspace/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/runner/workspace/node_modules/express/lib/express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1141:12)
+Failed to verify Firebase token, trying JWT: Decoding Firebase ID token failed. Make sure you passed the entire string JWT which represents an ID token. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+JWT verification also failed: jwt malformed
+10:56:31 AM [express] POST /api/social/posts 401 in 6ms :: {"message":"Unauthorized: Invalid token"}
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:57:04 AM [express] GET /api/points/balance 304 in 395ms :: {"balance":0,"userId":11}
+10:57:04 AM [express] GET /api/users/locations 304 in 381ms :: ["London","New York","New york office"…
+10:57:04 AM [express] GET /api/users/departments 304 in 387ms :: ["Engineering","Finance","HR","Infor…
+Birthday users found: 5
+Anniversary users found: 1
+Total celebrations returning: 6
+10:57:04 AM [express] GET /api/celebrations/today 304 in 469ms :: [{"id":2167,"user":{"id":2167,"name…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Returning 801 users for company 1
+10:57:10 AM [express] GET /api/users 304 in 6861ms :: [{"id":16,"username":"brian_lopez","name":"Bria…
+Final user object isAdmin: true
+10:57:10 AM [express] GET /api/users/me 304 in 6238ms :: {"id":11,"username":"admin_canva","name":"Ca…
+10:57:11 AM [express] GET /api/celebrations/upcoming 304 in 7149ms :: [{"id":2122,"user":{"id":2122,"…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:57:12 AM [express] GET /api/social/stats 200 in 1343ms :: {"posts":1,"comments":0,"reactions":0,"r…
+10:57:12 AM [express] GET /api/social/posts 304 in 1336ms :: [{"_id":"683d832cc869388bba889372","auth…
+LOGIN ATTEMPT - Raw body: { email: 'admin@canva.com', password: 'admin123' }
+Looking up user with email: admin@canva.com
+User found in main database: admin@canva.com
+User found: admin_canva, verifying password
+Stored password hash: $2b$10$hZRbMCJQ2/4j3mNQRDiXmeLc16SmcVW5gTehl4btmbZEK9LX7Xa/O
+Provided password: admin123
+Verifying password...
+Plain password: admin123
+Stored hashed password: $2b$10$hZRbMCJQ2/4j3mNQRDiXmeLc16SmcVW5gTehl4btmbZEK9LX7Xa/O
+Demo admin credentials detected, forcing verification
+Password verification result: true
+Password verified, generating token
+Login successful for: {
+  id: 11,
+  username: 'admin_canva',
+  name: 'Canva Administrator',
+  surname: null,
+  email: 'admin@canva.com',
+  phoneNumber: null,
+  jobTitle: null,
+  department: null,
+  sex: null,
+  nationality: null,
+  birthDate: null,
+  roleType: null,
+  isAdmin: true,
+  status: 'active',
+  avatarUrl: null,
+  hireDate: null,
+  firebaseUid: null,
+  organizationId: null,
+  permissions: null,
+  title: null,
+  location: null,
+  responsibilities: null,
+  coverPhotoUrl: null,
+  lastSeenAt: 2025-05-25T15:52:58.504Z,
+  createdAt: 2025-05-30T10:33:28.670Z,
+  createdBy: null
+}
+Generated token: eyJhbGciOiJIUzI1NiIs...
+10:57:41 AM [express] POST /api/auth/login 200 in 307ms :: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpX…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:57:41 AM [express] GET /api/social/posts 200 in 285ms :: [{"_id":"683d832cc869388bba889372","autho…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+10:58:04 AM [express] GET /api/points/balance 304 in 383ms :: {"balance":0,"userId":11}
+10:58:04 AM [express] GET /api/users/departments 304 in 375ms :: ["Engineering","Finance","HR","Infor…
+Birthday users found: 5
+Anniversary users found: 1
+Total celebrations returning: 6
+10:58:04 AM [express] GET /api/celebrations/today 304 in 458ms :: [{"id":2167,"user":{"id":2167,"name…
+10:58:04 AM [express] GET /api/users/locations 304 in 458ms :: ["London","New York","New york office"…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+/api/users/me: Returning data for user 11 (Canva Administrator, admin@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+10:58:05 AM [express] GET /api/users/me 304 in 196ms :: {"id":11,"username":"admin_canva","name":"Can…
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Custom token decode - important fields:
+- sub (Firebase UID): undefined
+- email: admin@canva.com
+- aud (audience): undefined
+- iss (issuer): undefined
+Failed to verify Firebase token, trying JWT: Firebase ID token has no "kid" claim. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+Returning 801 users for company 1
+10:58:11 AM [express] GET /api/users 304 in 6903ms :: [{"id":16,"username":"brian_lopez","name":"Bria…
+10:58:11 AM [express] GET /api/social/posts 304 in 6055ms :: [{"_id":"683d832cc869388bba889372","auth…
+10:58:11 AM [express] GET /api/social/stats 304 in 6027ms :: {"posts":1,"comments":0,"reactions":0,"r…
+10:58:11 AM [express] GET /api/celebrations/upcoming 304 in 7113ms :: [{"id":2122,"user":{"id":2122,"…
+Custom token decode failed: Error: Invalid token format
+    at verifyToken (/home/runner/workspace/server/middleware/auth.ts:62:17)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/runner/workspace/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/index.ts:56:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/runner/workspace/node_modules/body-parser/lib/types/urlencoded.js:103:7)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:122:7)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/runner/workspace/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/runner/workspace/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/runner/workspace/node_modules/express/lib/express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1141:12)
+Failed to verify Firebase token, trying JWT: Decoding Firebase ID token failed. Make sure you passed the entire string JWT which represents an ID token. See https://firebase.google.com/docs/auth/admin/verify-id-tokens for details on how to retrieve an ID token.
+JWT verification also failed: jwt malformed
+10:58:26 AM [express] POST /api/social/posts 401 in 2ms :: {"message":"Unauthorized: Invalid token"}
