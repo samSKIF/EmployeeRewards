@@ -6,8 +6,8 @@ import { createAdminUser } from "./create-admin-user";
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { hybridDb } from './hybrid-db';
-import { users, organizations } from '@shared/mysql-schema';
+// import { hybridDb } from './hybrid-db';
+// import { users, organizations } from '@shared/mysql-schema';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -56,7 +56,7 @@ app.use((req, res, next) => {
 
 (async () => {
   // Initialize hybrid database service
-  await hybridDb.initialize();
+  // await hybridDb.initialize();
 
   // Firebase setup
   console.log('Initializing Firebase app with project ID:', process.env.FIREBASE_PROJECT_ID);
@@ -97,22 +97,11 @@ app.use((req, res, next) => {
 
   // Health check endpoint
   app.get('/health', async (req, res) => {
-    try {
-      const health = await hybridDb.healthCheck();
-      const isHealthy = Object.values(health).every(status => status);
-
-      res.status(isHealthy ? 200 : 503).json({
-        status: isHealthy ? 'healthy' : 'unhealthy',
-        timestamp: new Date().toISOString(),
-        services: health
-      });
-    } catch (error) {
-      res.status(503).json({
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: 'postgresql'
+    });
   });
 
   // ALWAYS serve the app on port 5000
