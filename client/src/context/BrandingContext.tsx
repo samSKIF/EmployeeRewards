@@ -116,6 +116,16 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     }
   }, [branding, isLoading]);
 
+  // Clear localStorage cache when component mounts to force fresh data
+  useEffect(() => {
+    try {
+      localStorage.removeItem('appBranding');
+      console.log("Cleared branding cache to force refresh");
+    } catch (error) {
+      console.error("Failed to clear branding cache:", error);
+    }
+  }, []);
+
   // Apply branding to the entire app via CSS variables
   useEffect(() => {
     if (!branding || isLoading) return;
