@@ -5,7 +5,7 @@
 
 import { Request, Response } from 'express';
 import { db } from '../../db';
-import { employees, employeeStatusTypes, employeeStatuses } from '../../../shared/schema';
+import { users, employeeStatusTypes, employeeStatuses } from '../../../shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { verifyToken } from '../../middleware/auth';
 
@@ -18,7 +18,7 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
     // Find all employees whose birthday is today (month and day match)
     const employeesWithBirthday = await db
       .select()
-      .from(employees)
+      .from(users)
       .where(and(
         sql`EXTRACT(MONTH FROM birth_date) = ${today.getMonth() + 1}`,
         sql`EXTRACT(DAY FROM birth_date) = ${today.getDate()}`

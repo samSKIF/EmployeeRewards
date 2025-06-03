@@ -115,8 +115,7 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE ($1::integer IS NULL OR 
-             u.email LIKE '%' || (SELECT domain FROM companies WHERE id = $1) OR
-             EXISTS (SELECT 1 FROM employees e WHERE e.company_id = $1 AND e.email = u.email))
+             u.organization_id = $1)
       ORDER BY p.created_at DESC
       LIMIT 50
     `;

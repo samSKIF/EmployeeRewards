@@ -2698,8 +2698,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if employee exists in the employees table
       const [employee] = await db.select()
-        .from(employees)
-        .where(and(eq(employees.id, employeeId), eq(employees.companyId, companyId)));
+        .from(users)
+        .where(and(eq(users.id, employeeId), eq(users.organizationId, companyId)));
       
       if (!employee) {
         return res.status(404).json({ message: "Employee not found" });
@@ -2762,9 +2762,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update employee in database
       const [updatedEmployee] = await db
-        .update(employees)
+        .update(users)
         .set(updateData)
-        .where(and(eq(employees.id, employeeId), eq(employees.companyId, companyId)))
+        .where(and(eq(users.id, employeeId), eq(users.organizationId, companyId)))
         .returning();
 
       // Remove password from response
@@ -2907,8 +2907,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if the email already exists
           const [existingUser] = await db
             .select()
-            .from(employees)
-            .where(eq(employees.email, email));
+            .from(users)
+            .where(eq(users.email, email));
             
           if (existingUser) {
             console.error(`Row ${index + 1}: Email ${email} already exists in database`);
@@ -3047,7 +3047,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Importing employee: ${name} (${email}) to company ${companyId}${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
           
           // Insert the employee record
-          const result = await db.insert(employees).values(employeeData);
+          const result = await db.insert(users).values(employeeData);
           
           // Create corresponding user account
           const userUsername = `${name.toLowerCase()}.${(surname || '').toLowerCase()}`.replace(/\s+/g, '.');
@@ -3109,10 +3109,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate employee data
-      const validatedData = insertEmployeeSchema.parse(req.body);
+      const validatedData = insertUserSchema.parse(req.body);
 
       // Check if email already exists
-      const [existingEmployee] = await db.select().from(employees).where(eq(employees.email, validatedData.email));
+      const [existingEmployee] = await db.select().from(users).where(eq(users.email, validatedData.email));
       if (existingEmployee) {
         return res.status(409).json({ message: "Email already registered for another employee" });
       }
