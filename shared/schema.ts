@@ -968,19 +968,7 @@ export const conversationsRelations = relations(conversations, ({ many }) => ({
   messages: many(messages),
 }));
 
-// Employees relations
-export const employeesRelations = relations(employees, ({ one, many }) => ({
-  creator: one(users, {
-    fields: [employees.createdById],
-    references: [users.id],
-  }),
-  // Leave management relationships for employees
-  leaveRequests: many(leaveRequests),
-  leaveEntitlements: many(leaveEntitlements),
-  leaveApprovals: many(leaveRequests, { relationName: "employeeApprover" }),
-  // Interest relationships
-  interests: many(employeeInterests),
-}));
+
 
 // Branding settings relations
 export const brandingSettingsRelations = relations(brandingSettings, ({ one }) => ({
@@ -1075,7 +1063,7 @@ export const insertManagerBudgetSchema = createInsertSchema(managerBudgets).omit
 export const insertConversationSchema = createInsertSchema(conversations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertConversationParticipantSchema = createInsertSchema(conversationParticipants).omit({ id: true, joinedAt: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
-export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true });
+
 export const insertBrandingSettingsSchema = createInsertSchema(brandingSettings).omit({ id: true });
 export const insertFileTemplateSchema = createInsertSchema(fileTemplates).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true, updatedAt: true });
@@ -1243,9 +1231,9 @@ export const interestsRelations = relations(interests, ({ many }) => ({
 }));
 
 export const employeeInterestsRelations = relations(employeeInterests, ({ one }) => ({
-  employee: one(employees, {
+  employee: one(users, {
     fields: [employeeInterests.employeeId],
-    references: [employees.id],
+    references: [users.id],
   }),
   interest: one(interests, {
     fields: [employeeInterests.interestId],

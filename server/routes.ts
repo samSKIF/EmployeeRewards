@@ -181,29 +181,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const month = targetDate.getMonth() + 1;
         const day = targetDate.getDate();
 
-        // Get birthdays for this date from the same company
+        // Get birthdays for this date from the same organization
         const birthdayUsers = await db
           .select()
-          .from(employees)
+          .from(users)
           .where(
             and(
-              eq(employees.companyId, companyId),
-              sql`${employees.dateOfBirth} IS NOT NULL`,
-              sql`EXTRACT(MONTH FROM ${employees.dateOfBirth}) = ${month}`,
-              sql`EXTRACT(DAY FROM ${employees.dateOfBirth}) = ${day}`
+              eq(users.organizationId, companyId),
+              sql`${users.birthDate} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
             )
           );
 
-        // Get work anniversaries for this date from the same company
+        // Get work anniversaries for this date from the same organization
         const anniversaryUsers = await db
           .select()
-          .from(employees)
+          .from(users)
           .where(
             and(
-              eq(employees.companyId, companyId),
-              sql`${employees.dateJoined} IS NOT NULL`,
-              sql`EXTRACT(MONTH FROM ${employees.dateJoined}) = ${month}`,
-              sql`EXTRACT(DAY FROM ${employees.dateJoined}) = ${day}`
+              eq(users.organizationId, companyId),
+              sql`${users.hireDate} IS NOT NULL`,
+              sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+              sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
             )
           );
 

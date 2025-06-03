@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../../db";
-import { interests, employeeInterests, employees, visibilityEnum } from "@shared/schema";
+import { interests, employeeInterests, users, visibilityEnum } from "@shared/schema";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { AuthenticatedRequest, verifyToken } from "../../middleware/auth";
 import { Request, Response, NextFunction } from "express";

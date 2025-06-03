@@ -38,13 +38,13 @@ export const onboardingMissions = pgTable("onboarding_missions", {
 // Assignments are individual onboarding assignments for specific employees
 export const onboardingAssignments = pgTable("onboarding_assignments", {
   id: serial("id").primaryKey(),
-  employeeId: integer("employee_id").references(() => employees.id).notNull(),
+  employeeId: integer("employee_id").references(() => users.id).notNull(),
   planId: integer("plan_id").references(() => onboardingPlans.id).notNull(),
   startDate: date("start_date").notNull(),
   dueDate: date("due_date"),
   status: text("status").default("in_progress").notNull(), // in_progress, completed, overdue
   progress: integer("progress").default(0), // Percentage complete
-  mentorId: integer("mentor_id").references(() => employees.id),
+  mentorId: integer("mentor_id").references(() => users.id),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
