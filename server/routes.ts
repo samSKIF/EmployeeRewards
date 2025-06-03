@@ -4525,8 +4525,25 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         organizationId: employees.companyId
       }).from(employees).where(eq(employees.companyId, organizationId));
       
+      // Get admin status from users table by email
+      const usersInOrg = await db.select({
+        email: users.email,
+        isAdmin: users.isAdmin,
+        avatarUrl: users.avatarUrl
+      }).from(users).where(eq(users.organizationId, organizationId));
+      
+      // Create a map for quick lookup
+      const userDataMap = new Map(usersInOrg.map(u => [u.email, { isAdmin: u.isAdmin, avatarUrl: u.avatarUrl }]));
+      
+      // Enhance employee data with admin status and avatar from users table
+      const enhancedEmployees = allOrgEmployees.map(emp => ({
+        ...emp,
+        isAdmin: userDataMap.get(emp.email)?.isAdmin || false,
+        avatarUrl: userDataMap.get(emp.email)?.avatarUrl || null
+      }));
+      
       // Map to same structure as users for compatibility
-      const allOrgUsers = allOrgEmployees;
+      const allOrgUsers = enhancedEmployees;
 
       // Find target user by matching with users table (since request comes with user ID from users table)
       const requestingUser = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);

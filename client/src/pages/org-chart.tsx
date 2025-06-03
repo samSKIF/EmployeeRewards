@@ -17,6 +17,7 @@ interface OrgUser {
   jobTitle: string;
   department: string;
   avatarUrl?: string;
+  isAdmin?: boolean;
   manager?: OrgUser | null;
   directReports?: OrgUser[];
 }
@@ -109,12 +110,18 @@ const OrgChart: React.FC = () => {
             {/* Avatar Section */}
             <div className="flex justify-center pt-4">
               <div className="relative">
-                <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
-                  <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-gray-400 to-gray-500 text-white">
-                    {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
-                  </AvatarFallback>
-                </Avatar>
+                {user.isAdmin ? (
+                  <div className="h-16 w-16 border-4 border-white shadow-lg rounded-full bg-gray-50 flex items-center justify-center">
+                    <AdminIcon size={40} className="text-gray-700" />
+                  </div>
+                ) : (
+                  <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
+                    <AvatarImage src={user.avatarUrl} />
+                    <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-gray-400 to-gray-500 text-white">
+                      {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
               </div>
             </div>
 
@@ -241,12 +248,18 @@ const OrgChart: React.FC = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src={selectedEmployee.avatarUrl} />
-                    <AvatarFallback className="text-lg bg-gradient-to-br from-blue-400 to-purple-400 text-white">
-                      {selectedEmployee.name.charAt(0)}{selectedEmployee.surname?.charAt(0) || ''}
-                    </AvatarFallback>
-                  </Avatar>
+                  {selectedEmployee.isAdmin ? (
+                    <div className="h-20 w-20 border-2 border-gray-200 rounded-full bg-gray-50 flex items-center justify-center">
+                      <AdminIcon size={50} className="text-gray-700" />
+                    </div>
+                  ) : (
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={selectedEmployee.avatarUrl} />
+                      <AvatarFallback className="text-lg bg-gradient-to-br from-blue-400 to-purple-400 text-white">
+                        {selectedEmployee.name.charAt(0)}{selectedEmployee.surname?.charAt(0) || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-900">
                       {selectedEmployee.name} {selectedEmployee.surname}
@@ -279,12 +292,18 @@ const OrgChart: React.FC = () => {
                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => handleFocusOnEmployee(selectedEmployee.manager!)}
                   >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={selectedEmployee.manager.avatarUrl} />
-                      <AvatarFallback>
-                        {selectedEmployee.manager.name.charAt(0)}{selectedEmployee.manager.surname?.charAt(0) || ''}
-                      </AvatarFallback>
-                    </Avatar>
+                    {selectedEmployee.manager.isAdmin ? (
+                      <div className="h-10 w-10 border border-gray-200 rounded-full bg-gray-50 flex items-center justify-center">
+                        <AdminIcon size={24} className="text-gray-700" />
+                      </div>
+                    ) : (
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={selectedEmployee.manager.avatarUrl} />
+                        <AvatarFallback>
+                          {selectedEmployee.manager.name.charAt(0)}{selectedEmployee.manager.surname?.charAt(0) || ''}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 truncate">
                         {selectedEmployee.manager.name} {selectedEmployee.manager.surname}
