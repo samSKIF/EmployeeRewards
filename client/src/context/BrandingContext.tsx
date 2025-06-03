@@ -120,6 +120,7 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       localStorage.removeItem('appBranding');
+      sessionStorage.removeItem('appBranding');
       console.log("Cleared branding cache to force refresh");
     } catch (error) {
       console.error("Failed to clear branding cache:", error);
