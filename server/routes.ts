@@ -3149,11 +3149,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create employee record in database
-      const [newEmployee] = await db.insert(employees)
+      const [newEmployee] = await db.insert(users)
         .values({
           ...validatedData,
           password: hashedPassword,
-          createdById: req.user.id,
+          createdBy: req.user.id,
           createdAt: new Date(),
           firebaseUid: firebaseUser?.uid // Add Firebase UID if available
         })
@@ -3486,7 +3486,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       const { password, ...updateData } = req.body;
 
       // Find employee
-      const [employee] = await db.select().from(employees).where(eq(employees.id, parseInt(id)));
+      const [employee] = await db.select().from(users).where(eq(users.id, parseInt(id)));
 
       if (!employee) {
         return res.status(404).json({ message: "Employee not found" });
@@ -3494,7 +3494,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       // If email is being changed, check it's not already in use
       if (updateData.email && updateData.email !== employee.email) {
-        const [existingEmail] = await db.select().from(employees).where(eq(employees.email, updateData.email));
+        const [existingEmail] = await db.select().from(users).where(eq(users.email, updateData.email));
         if (existingEmail) {
           return res.status(409).json({ message: "Email already registered for another employee" });
         }
@@ -3544,9 +3544,9 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       }
 
       // Update employee record
-      const [updatedEmployee] = await db.update(employees)
+      const [updatedEmployee] = await db.update(users)
         .set(dataToUpdate)
-        .where(eq(employees.id, parseInt(id)))
+        .where(eq(users.id, parseInt(id)))
         .returning();
 
       // Remove password from response
@@ -3567,7 +3567,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       const { id } = req.params;
 
       // Find employee
-      const [employee] = await db.select().from(employees).where(eq(employees.id, parseInt(id)));
+      const [employee] = await db.select().from(users).where(eq(users.id, parseInt(id)));
 
       if (!employee) {
         return res.status(404).json({ message: "Employee not found" });
@@ -3585,7 +3585,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       }
 
       // Delete employee record
-      await db.delete(employees).where(eq(employees.id, parseInt(id)));
+      await db.delete(users).where(eq(users.id, parseInt(id)));
 
       res.json({ message: "Employee deleted successfully" });
     } catch (error: any) {
@@ -4530,19 +4530,19 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       const organizationId = currentUser[0].organizationId;
       
-      // Get all employees in the same organization from employees table (with actual manager relationships)
+      // Get all employees in the same organization from users table (with actual manager relationships)
       const allOrgEmployees = await db.select({
-        id: employees.id,
-        name: employees.name,
-        surname: employees.surname,
-        email: employees.email,
-        jobTitle: employees.jobTitle,
-        department: employees.department,
-        avatarUrl: sql`NULL`.as('avatarUrl'),
-        managerId: sql`NULL`.as('managerId'),
-        managerEmail: employees.managerEmail,
-        organizationId: employees.companyId
-      }).from(employees).where(eq(employees.companyId, organizationId));
+        id: users.id,
+        name: users.name,
+        surname: users.surname,
+        email: users.email,
+        jobTitle: users.jobTitle,
+        department: users.department,
+        avatarUrl: users.avatarUrl,
+        managerId: users.managerId,
+        managerEmail: users.managerEmail,
+        organizationId: users.organizationId
+      }).from(users).where(eq(users.organizationId, organizationId));
       
       // Get admin status from users table by email
       const usersInOrg = await db.select({
