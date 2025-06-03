@@ -2,7 +2,7 @@ import { pgTable, text, serial, integer, timestamp, boolean, date, jsonb } from 
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
-import { employees, users } from "./schema";
+import { users } from "./schema";
 
 // Onboarding plans table (templates for onboarding processes)
 export const onboardingPlans = pgTable("onboarding_plans", {

@@ -21,7 +21,6 @@ import { CacheService } from './cache/cacheService';
 import { 
   users, insertUserSchema, 
   products, insertProductSchema,
-  employees, insertEmployeeSchema,
   brandingSettings, insertBrandingSettingsSchema,
   fileTemplates, insertFileTemplateSchema, FileTemplate,
   organizations, organizationFeatures,
@@ -69,29 +68,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
 
-      // Get employees with birthdays today from the same company
+      // Get users with birthdays today from the same organization
       const birthdayUsers = await db
         .select()
-        .from(employees)
+        .from(users)
         .where(
           and(
-            eq(employees.companyId, companyId),
-            sql`${employees.dateOfBirth} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${employees.dateOfBirth}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-            sql`EXTRACT(DAY FROM ${employees.dateOfBirth}) = EXTRACT(DAY FROM CURRENT_DATE)`
+            eq(users.organizationId, companyId),
+            sql`${users.birthDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 
-      // Get employees with work anniversaries today from the same company
+      // Get users with work anniversaries today from the same organization
       const anniversaryUsers = await db
         .select()
-        .from(employees)
+        .from(users)
         .where(
           and(
-            eq(employees.companyId, companyId),
-            sql`${employees.dateJoined} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${employees.dateJoined}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-            sql`EXTRACT(DAY FROM ${employees.dateJoined}) = EXTRACT(DAY FROM CURRENT_DATE)`
+            eq(users.organizationId, companyId),
+            sql`${users.hireDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.hireDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+            sql`EXTRACT(DAY FROM ${users.hireDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
           )
         );
 

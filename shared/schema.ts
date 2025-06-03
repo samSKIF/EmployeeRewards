@@ -382,36 +382,12 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Employee accounts table - separate from admin users
-export const employees = pgTable("employees", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),                    // First name
-  surname: text("surname").notNull(),              // Last name
-  email: text("email").notNull().unique(),         // Email address (login)
-  password: text("password").notNull(),            // Hashed password
-  dateOfBirth: date("date_of_birth"),              // Date of birth
-  dateJoined: date("date_joined"),                 // Date joining company
-  jobTitle: text("job_title"),                     // Role name
-  department: text("department"),                  // Department
-  status: text("status").default("active"),        // active/inactive
-  isManager: boolean("is_manager").default(false), // Manager status
-  managerEmail: text("manager_email"),             // Direct manager's email
-  location: text("location"),                      // Office/work location
-  sex: text("sex"),                                // Gender (optional)
-  nationality: text("nationality"),                // Nationality (optional)
-  phoneNumber: text("phone_number"),               // Contact phone (optional)
-  photoUrl: text("photo_url"),                     // Profile photo URL
-  firebaseUid: text("firebase_uid"),               // Firebase User ID
-  companyId: integer("company_id"), // Company association for tenant isolation
-  lastSeenAt: timestamp("last_seen_at"),            // Last login/activity timestamp
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  createdById: integer("created_by_id").references(() => users.id), // Admin who created this employee
-});
+// Note: employees table removed - consolidated into users table with proper role management
 
 // Organization branding and settings
 export const brandingSettings = pgTable("branding_settings", {
   id: serial("id").primaryKey(),
-  organizationId: integer("organization_id").references(() => users.id), // Reference to admin user
+  organizationId: integer("organization_id").references(() => organizations.id), // Reference to organization
   organizationName: text("organization_name").notNull(),
   logoUrl: text("logo_url"),                       // Company logo URL
   colorScheme: text("color_scheme").default("default"), // "default", "blue", "green", "purple", "custom"
