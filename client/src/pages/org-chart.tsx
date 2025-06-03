@@ -51,6 +51,11 @@ const OrgChart: React.FC = () => {
       setViewMode('details');
     };
 
+    const handleFocusEmployee = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setTargetUserId(user.id);
+    };
+
     const toggleExpansion = (e: React.MouseEvent) => {
       e.stopPropagation();
       const newExpanded = new Set(expandedNodes);
@@ -77,74 +82,124 @@ const OrgChart: React.FC = () => {
 
     if (!shouldShow) return null;
 
-    const nodeSize = isRoot ? 'w-72 h-24' : level === 0 ? 'w-64 h-20' : 'w-56 h-16';
-    const avatarSize = isRoot ? 'h-14 w-14' : level === 0 ? 'h-12 w-12' : 'h-10 w-10';
-    const textSize = isRoot ? 'text-lg' : level === 0 ? 'text-base' : 'text-sm';
+    // Color scheme for different levels
+    const colorSchemes = [
+      'from-gray-600 to-gray-700',    // Root
+      'from-orange-500 to-orange-600', // Level 1
+      'from-green-500 to-green-600',   // Level 2  
+      'from-blue-500 to-blue-600',     // Level 3
+      'from-pink-500 to-pink-600',     // Level 4
+      'from-purple-500 to-purple-600', // Level 5+
+    ];
+
+    const colorIndex = Math.min(level, colorSchemes.length - 1);
+    const colorScheme = colorSchemes[colorIndex];
+
+    const nodeWidth = isRoot ? 'w-60' : 'w-52';
 
     return (
       <div className="relative">
         {!isRoot && level > 0 && (
-          <div className="absolute -top-8 left-1/2 w-0.5 h-8 bg-gray-300 transform -translate-x-0.5" />
+          <div className="absolute -top-12 left-1/2 w-0.5 h-12 bg-gray-400 transform -translate-x-0.5" />
         )}
         
         <div className="flex flex-col items-center">
-          <Card 
-            className={`${nodeSize} cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-              isCurrentUser ? 'ring-3 ring-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg' : 
-              isRoot ? 'bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg' :
-              'hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100'
-            } ${level === 0 ? 'border-2 border-gray-300' : 'border border-gray-200'}`}
-            onClick={handleUserClick}
-          >
-            <CardContent className="p-3 h-full flex items-center">
-              <div className="flex items-center space-x-3 w-full">
-                <Avatar className={`${avatarSize} ring-2 ring-white shadow-md`}>
+          <div className={`${nodeWidth} bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer`}>
+            {/* Avatar Section */}
+            <div className="flex justify-center pt-4">
+              <div className="relative">
+                <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
                   <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback className={`${isRoot ? 'text-lg font-bold' : 'font-semibold'} bg-gradient-to-br from-blue-400 to-purple-400 text-white`}>
+                  <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-gray-400 to-gray-500 text-white">
                     {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-gray-900 truncate ${textSize}`}>
-                    {user.name} {user.surname}
-                  </p>
-                  <p className={`text-gray-600 truncate ${isRoot ? 'text-sm' : 'text-xs'}`}>
-                    {user.jobTitle}
-                  </p>
-                  {!isRoot && (
-                    <p className="text-xs text-gray-400 truncate">{user.department}</p>
-                  )}
+              </div>
+            </div>
+
+            {/* Name Section */}
+            <div 
+              className={`mx-4 mt-2 rounded-lg bg-gradient-to-r ${colorScheme} text-white text-center py-2 cursor-pointer hover:opacity-90 transition-opacity`}
+              onClick={handleFocusEmployee}
+            >
+              <p className="font-bold text-sm truncate px-2">
+                {user.name.toUpperCase()} {user.surname?.toUpperCase()}
+              </p>
+            </div>
+
+            {/* Job Position Section */}
+            <div className="px-4 py-3 text-center">
+              <p className="text-xs text-gray-600 font-medium truncate">
+                {user.jobTitle}
+              </p>
+              
+              {/* Direct Reports Count */}
+              {hasDirectReports && !isExpanded && (
+                <div className="mt-2">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs cursor-pointer hover:bg-gray-200"
+                    onClick={toggleExpansion}
+                  >
+                    {user.directReports?.length} Direct Reports
+                  </Badge>
                 </div>
-                {hasDirectReports && (
+              )}
+              
+              {/* Expand/Collapse Button */}
+              {hasDirectReports && (
+                <div className="mt-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={toggleExpansion}
-                    className={`${isRoot ? 'h-8 w-8' : 'h-6 w-6'} p-0 rounded-full hover:bg-blue-100`}
+                    className="h-6 w-6 p-0 rounded-full hover:bg-gray-100"
                   >
-                    <ChevronDown className={`${isRoot ? 'h-5 w-5' : 'h-4 w-4'} transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              )}
+            </div>
 
+            {/* Employee Details Button */}
+            <div className="px-4 pb-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full text-xs h-7"
+                onClick={handleUserClick}
+              >
+                View Details
+              </Button>
+            </div>
+          </div>
+
+          {/* Expanded Children */}
           {isExpanded && hasDirectReports && (
-            <div className="relative mt-8">
-              <div className="absolute -top-4 left-1/2 w-0.5 h-4 bg-gray-300 transform -translate-x-0.5" />
+            <div className="relative mt-12">
+              {/* Vertical line from parent */}
+              <div className="absolute -top-6 left-1/2 w-0.5 h-6 bg-gray-400 transform -translate-x-0.5" />
               
-              <div className={`grid gap-8 ${filteredDirectReports.length === 1 ? 'grid-cols-1' : 
+              {/* Horizontal connector line */}
+              {filteredDirectReports.length > 1 && (
+                <div className="absolute -top-6 left-0 right-0 flex justify-center">
+                  <div className="h-0.5 bg-gray-400" style={{ 
+                    width: `${(filteredDirectReports.length - 1) * 220 + 40}px` 
+                  }} />
+                </div>
+              )}
+              
+              {/* Children grid */}
+              <div className={`grid gap-12 ${
+                filteredDirectReports.length === 1 ? 'grid-cols-1' : 
                 filteredDirectReports.length === 2 ? 'grid-cols-2' : 
-                filteredDirectReports.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                filteredDirectReports.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'
+              }`}>
                 {filteredDirectReports.map((report, index) => (
                   <div key={report.id} className="relative">
-                    <div className="absolute -top-8 left-1/2 w-0.5 h-4 bg-gray-300 transform -translate-x-0.5" />
+                    {/* Individual connector to horizontal line */}
                     {filteredDirectReports.length > 1 && (
-                      <div className={`absolute -top-4 bg-gray-300 h-0.5 ${
-                        index === 0 ? 'left-1/2 w-1/2' :
-                        index === filteredDirectReports.length - 1 ? 'right-1/2 w-1/2' :
-                        'left-0 w-full'
-                      }`} />
+                      <div className="absolute -top-6 left-1/2 w-0.5 h-6 bg-gray-400 transform -translate-x-0.5" />
                     )}
                     <MindMapNode user={report} level={level + 1} />
                   </div>
