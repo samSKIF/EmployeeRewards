@@ -328,12 +328,18 @@ const OrgChart: React.FC = () => {
                         className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                         onClick={() => handleFocusOnEmployee(report)}
                       >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={report.avatarUrl} />
-                          <AvatarFallback className="text-xs">
-                            {report.name.charAt(0)}{report.surname?.charAt(0) || ''}
-                          </AvatarFallback>
-                        </Avatar>
+                        {report.isAdmin ? (
+                          <div className="h-8 w-8 border border-gray-200 rounded-full bg-gray-50 flex items-center justify-center">
+                            <AdminIcon size={20} className="text-gray-700" />
+                          </div>
+                        ) : (
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={report.avatarUrl} />
+                            <AvatarFallback className="text-xs">
+                              {report.name.charAt(0)}{report.surname?.charAt(0) || ''}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
                             {report.name} {report.surname}
