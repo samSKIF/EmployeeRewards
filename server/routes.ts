@@ -3582,7 +3582,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       }
 
       // Get branding settings for the organization
-      const [settings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      const [settings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.organizationId));
 
       if (!settings) {
         // Return default settings if none are found
@@ -3611,7 +3611,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       console.log("Saving branding settings for user ID:", req.user.id, "Data:", req.body);
 
       // Check if settings already exist for this organization
-      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.organizationId));
 
       if (existingSettings) {
         console.log("Updating existing branding settings:", existingSettings.id);
@@ -3638,7 +3638,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       // Create new branding settings with minimal validation
       const insertData = {
-        organizationId: req.user.id,
+        organizationId: req.user.organizationId,
         organizationName: req.body.organizationName || "ThrivioHR",
         logoUrl: req.body.logoUrl || null,
         colorScheme: req.body.colorScheme || "default",
@@ -3680,7 +3680,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       }
 
       // Check if settings already exist for this organization
-      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.id));
+      const [existingSettings] = await db.select().from(brandingSettings).where(eq(brandingSettings.organizationId, req.user.organizationId));
 
       if (existingSettings) {
         // Update existing settings with new logo
@@ -3701,7 +3701,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         // Create new settings with logo
         const [newSettings] = await db.insert(brandingSettings)
           .values({
-            organizationId: req.user.id,
+            organizationId: req.user.organizationId,
             organizationName: "ThrivioHR",
             logoUrl,
             colorScheme: "default",
