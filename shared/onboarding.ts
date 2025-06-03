@@ -60,8 +60,8 @@ export const onboardingProgress = pgTable("onboarding_progress", {
   completedAt: timestamp("completed_at"),
   feedback: text("feedback"),
   rating: integer("rating"), // Optional rating (1-5)
-  completedBy: integer("completed_by").references(() => employees.id),
-  verifiedBy: integer("verified_by").references(() => employees.id),
+  completedBy: integer("completed_by").references(() => users.id),
+  verifiedBy: integer("verified_by").references(() => users.id),
   attachments: jsonb("attachments"), // URLs to any uploaded documents
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -82,17 +82,17 @@ export const onboardingMissionsRelations = relations(onboardingMissions, ({ one,
 }));
 
 export const onboardingAssignmentsRelations = relations(onboardingAssignments, ({ one, many }) => ({
-  employee: one(employees, {
+  employee: one(users, {
     fields: [onboardingAssignments.employeeId],
-    references: [employees.id],
+    references: [users.id],
   }),
   plan: one(onboardingPlans, {
     fields: [onboardingAssignments.planId],
     references: [onboardingPlans.id],
   }),
-  mentor: one(employees, {
+  mentor: one(users, {
     fields: [onboardingAssignments.mentorId],
-    references: [employees.id],
+    references: [users.id],
   }),
   progress: many(onboardingProgress),
 }));

@@ -1144,8 +1144,7 @@ export type InsertConversationParticipant = z.infer<typeof insertConversationPar
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
-export type Employee = typeof employees.$inferSelect;
-export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
 
 export type BrandingSetting = typeof brandingSettings.$inferSelect;
 export type InsertBrandingSetting = z.infer<typeof insertBrandingSettingsSchema>;
@@ -1213,7 +1212,7 @@ export const interests = pgTable("interests", {
 
 // Employee Interests junction table
 export const employeeInterests = pgTable("employee_interests", {
-  employeeId: integer("employee_id").notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  employeeId: integer("employee_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   interestId: integer("interest_id").notNull().references(() => interests.id, { onDelete: 'cascade' }),
   customLabel: text("custom_label"),
   isPrimary: boolean("is_primary").default(false).notNull(),
