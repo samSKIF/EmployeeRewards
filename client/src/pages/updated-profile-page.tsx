@@ -124,7 +124,7 @@ const UpdatedProfilePage = () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
               },
               body: JSON.stringify({ avatarUrl: base64Data })
             });
@@ -261,7 +261,7 @@ const UpdatedProfilePage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify(data)
       });
