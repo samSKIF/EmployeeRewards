@@ -950,6 +950,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Firebase UID associated with request: ${req.firebaseUid}`);
       }
 
+      // Update lastSeenAt timestamp for activity tracking
+      try {
+        await db.update(employees)
+          .set({ lastSeenAt: new Date() })
+          .where(eq(employees.id, req.user.id));
+      } catch (error) {
+        console.log("Failed to update lastSeenAt:", error);
+      }
+
       // Get the user's balance
       const balance = await storage.getUserBalance(req.user.id);
       
