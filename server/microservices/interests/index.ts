@@ -104,8 +104,8 @@ router.get("/employees/:id/interests", async (req: AuthenticatedRequest, res) =>
     // Check if the employee exists
     const [employee] = await db
       .select()
-      .from(employees)
-      .where(eq(employees.id, employeeId));
+      .from(users)
+      .where(eq(users.id, employeeId));
       
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
@@ -172,8 +172,8 @@ router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchem
     // Check if the employee exists
     const [employee] = await db
       .select()
-      .from(employees)
-      .where(eq(employees.id, employeeId));
+      .from(users)
+      .where(eq(users.id, employeeId));
       
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });

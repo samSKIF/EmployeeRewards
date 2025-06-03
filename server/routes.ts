@@ -1215,8 +1215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (companyId) {
         // Get employees from the same company
         const employeesFromCompany = await db.select()
-          .from(employees)
-          .where(eq(employees.companyId, companyId));
+          .from(users)
+          .where(eq(users.organizationId, companyId));
 
         // Get admins from the same domain
         const adminsFromCompany = await db.select()
@@ -2561,16 +2561,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (companyId) {
         // Get employees belonging to this specific company
         const employeesFromCompany = await tenantDb.select()
-          .from(employees)
-          .where(eq(employees.companyId, companyId));
+          .from(users)
+          .where(eq(users.organizationId, companyId));
         
         employeesList = employeesFromCompany;
         console.log(`Returning ${employeesList.length} employees for company ${companyId}`);
       } else {
         // Fallback: get employees created by current admin only
         const employeesCreatedByAdmin = await tenantDb.select()
-          .from(employees)
-          .where(eq(employees.createdById, currentUser.id));
+          .from(users)
+          .where(eq(users.createdBy, currentUser.id));
         
         employeesList = employeesCreatedByAdmin;
       }
@@ -2613,8 +2613,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const adminIds = adminUsersFromCompany.map((admin: any) => admin.id);
           
           const employeesFromTenant = await tenantDb.select()
-            .from(employees)
-            .where(inArray(employees.createdById, adminIds));
+            .from(users)
+            .where(inArray(users.createdBy, adminIds));
           
           const usersFromOrg = await tenantDb.select()
             .from(users)
@@ -2631,8 +2631,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else {
         const employeesCreatedByAdmin = await tenantDb.select()
-          .from(employees)
-          .where(eq(employees.createdById, currentUser.id));
+          .from(users)
+          .where(eq(users.createdBy, currentUser.id));
         
         employeesList = employeesCreatedByAdmin;
       }
