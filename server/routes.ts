@@ -824,6 +824,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Password verified, generating token");
+      
+      // Update last seen timestamp on successful authentication
+      try {
+        await db.update(users)
+          .set({ lastSeenAt: new Date() })
+          .where(eq(users.id, user.id));
+        console.log(`Updated last seen for user ${user.id}`);
+      } catch (error) {
+        console.log("Failed to update last seen on login:", error);
+      }
+      
       // Create JWT token
       const token = generateToken({
         id: user.id,
@@ -950,11 +961,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Firebase UID associated with request: ${req.firebaseUid}`);
       }
 
-      // Update lastSeenAt timestamp for activity tracking
+      // Update lastSeenAt timestamp for ongoing activity tracking
       try {
-        await db.update(employees)
+        await db.update(users)
           .set({ lastSeenAt: new Date() })
-          .where(eq(employees.id, req.user.id));
+          .where(eq(users.id, req.user.id));
       } catch (error) {
         console.log("Failed to update lastSeenAt:", error);
       }
