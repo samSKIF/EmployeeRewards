@@ -95,7 +95,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/interests/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/employees', user?.id, 'interests'] });
-      setIsAddDialogOpen(false);
+      // Keep dialog open after adding interest
     }
   });
 
