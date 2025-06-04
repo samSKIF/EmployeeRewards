@@ -386,61 +386,7 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Interest Groups - automatically created groups based on shared interests
-export const interestGroups = pgTable("interest_groups", {
-  id: serial("id").primaryKey(),
-  interestId: integer("interest_id").references(() => interests.id, { onDelete: 'cascade' }).notNull(),
-  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: 'cascade' }).notNull(),
-  name: text("name").notNull(), // e.g., "Running & Jogging Enthusiasts"
-  description: text("description"), // Optional group description
-  memberCount: integer("member_count").default(0).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at"),
-});
 
-// Interest Group Members - tracks which users are in which interest groups
-export const interestGroupMembers = pgTable("interest_group_members", {
-  id: serial("id").primaryKey(),
-  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  joinedAt: timestamp("joined_at").defaultNow().notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-});
-
-// Interest Group Posts - posts specific to interest groups
-export const interestGroupPosts = pgTable("interest_group_posts", {
-  id: serial("id").primaryKey(),
-  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  type: text("type").notNull().default("standard"), // standard, poll, question, tip, event
-  tags: text("tags").array(),
-  isPinned: boolean("is_pinned").default(false),
-  likeCount: integer("like_count").default(0),
-  commentCount: integer("comment_count").default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at"),
-});
-
-// Interest Group Post Comments
-export const interestGroupPostComments = pgTable("interest_group_post_comments", {
-  id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at"),
-});
-
-// Interest Group Post Likes
-export const interestGroupPostLikes = pgTable("interest_group_post_likes", {
-  id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
 
 // Note: employees table removed - consolidated into users table with proper role management
 
@@ -1028,65 +974,7 @@ export const conversationsRelations = relations(conversations, ({ many }) => ({
   messages: many(messages),
 }));
 
-// Interest Groups relations
-export const interestGroupsRelations = relations(interestGroups, ({ one, many }) => ({
-  interest: one(interests, {
-    fields: [interestGroups.interestId],
-    references: [interests.id],
-  }),
-  organization: one(organizations, {
-    fields: [interestGroups.organizationId],
-    references: [organizations.id],
-  }),
-  members: many(interestGroupMembers),
-  posts: many(interestGroupPosts),
-}));
 
-export const interestGroupMembersRelations = relations(interestGroupMembers, ({ one }) => ({
-  group: one(interestGroups, {
-    fields: [interestGroupMembers.groupId],
-    references: [interestGroups.id],
-  }),
-  user: one(users, {
-    fields: [interestGroupMembers.userId],
-    references: [users.id],
-  }),
-}));
-
-export const interestGroupPostsRelations = relations(interestGroupPosts, ({ one, many }) => ({
-  group: one(interestGroups, {
-    fields: [interestGroupPosts.groupId],
-    references: [interestGroups.id],
-  }),
-  user: one(users, {
-    fields: [interestGroupPosts.userId],
-    references: [users.id],
-  }),
-  comments: many(interestGroupPostComments),
-  likes: many(interestGroupPostLikes),
-}));
-
-export const interestGroupPostCommentsRelations = relations(interestGroupPostComments, ({ one }) => ({
-  post: one(interestGroupPosts, {
-    fields: [interestGroupPostComments.postId],
-    references: [interestGroupPosts.id],
-  }),
-  user: one(users, {
-    fields: [interestGroupPostComments.userId],
-    references: [users.id],
-  }),
-}));
-
-export const interestGroupPostLikesRelations = relations(interestGroupPostLikes, ({ one }) => ({
-  post: one(interestGroupPosts, {
-    fields: [interestGroupPostLikes.postId],
-    references: [interestGroupPosts.id],
-  }),
-  user: one(users, {
-    fields: [interestGroupPostLikes.userId],
-    references: [users.id],
-  }),
-}));
 
 
 
@@ -1372,7 +1260,90 @@ export const insertEmployeeInterestSchema = createInsertSchema(employeeInterests
 export type EmployeeInterest = typeof employeeInterests.$inferSelect;
 export type InsertEmployeeInterest = z.infer<typeof insertEmployeeInterestSchema>;
 
-// Interest Groups TypeScript types
+// Interest Groups - Auto-generated groups based on interests
+export const interestGroups = pgTable("interest_groups", {
+  id: serial("id").primaryKey(),
+  interestId: integer("interest_id").references(() => interests.id, { onDelete: 'cascade' }).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  memberCount: integer("member_count").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const interestGroupMembers = pgTable("interest_group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  role: text("role").default("member").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+}, (table) => ({
+  unique: primaryKey({ columns: [table.groupId, table.userId] }),
+}));
+
+export const interestGroupPosts = pgTable("interest_group_posts", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
+  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  likeCount: integer("like_count").default(0).notNull(),
+  commentCount: integer("comment_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const interestGroupPostComments = pgTable("interest_group_post_comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
+  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const interestGroupPostLikes = pgTable("interest_group_post_likes", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  unique: primaryKey({ columns: [table.postId, table.userId] }),
+}));
+
+// Groups Relations
+export const interestGroupsRelations = relations(interestGroups, ({ one, many }) => ({
+  interest: one(interests, { fields: [interestGroups.interestId], references: [interests.id] }),
+  organization: one(organizations, { fields: [interestGroups.organizationId], references: [organizations.id] }),
+  members: many(interestGroupMembers),
+  posts: many(interestGroupPosts),
+}));
+
+export const interestGroupMembersRelations = relations(interestGroupMembers, ({ one }) => ({
+  group: one(interestGroups, { fields: [interestGroupMembers.groupId], references: [interestGroups.id] }),
+  user: one(users, { fields: [interestGroupMembers.userId], references: [users.id] }),
+}));
+
+export const interestGroupPostsRelations = relations(interestGroupPosts, ({ one, many }) => ({
+  group: one(interestGroups, { fields: [interestGroupPosts.groupId], references: [interestGroups.id] }),
+  author: one(users, { fields: [interestGroupPosts.authorId], references: [users.id] }),
+  comments: many(interestGroupPostComments),
+  likes: many(interestGroupPostLikes),
+}));
+
+export const interestGroupPostCommentsRelations = relations(interestGroupPostComments, ({ one }) => ({
+  post: one(interestGroupPosts, { fields: [interestGroupPostComments.postId], references: [interestGroupPosts.id] }),
+  author: one(users, { fields: [interestGroupPostComments.authorId], references: [users.id] }),
+}));
+
+export const interestGroupPostLikesRelations = relations(interestGroupPostLikes, ({ one }) => ({
+  post: one(interestGroupPosts, { fields: [interestGroupPostLikes.postId], references: [interestGroupPosts.id] }),
+  user: one(users, { fields: [interestGroupPostLikes.userId], references: [users.id] }),
+}));
+
+// Groups TypeScript types
 export type InterestGroup = typeof interestGroups.$inferSelect;
 export const insertInterestGroupSchema = createInsertSchema(interestGroups).omit({ id: true, memberCount: true, createdAt: true, updatedAt: true });
 export type InsertInterestGroup = z.infer<typeof insertInterestGroupSchema>;
@@ -1392,6 +1363,8 @@ export type InsertInterestGroupPostComment = z.infer<typeof insertInterestGroupP
 export type InterestGroupPostLike = typeof interestGroupPostLikes.$inferSelect;
 export const insertInterestGroupPostLikeSchema = createInsertSchema(interestGroupPostLikes).omit({ id: true, createdAt: true });
 export type InsertInterestGroupPostLike = z.infer<typeof insertInterestGroupPostLikeSchema>;
+
+
 
 // Export Onboarding Schema
 export * from './onboarding';
