@@ -57,6 +57,9 @@ export const users = pgTable("users", {
   lastSeenAt: timestamp("last_seen_at"),  // Last login/activity timestamp
   managerId: integer("manager_id").references(() => users.id), // Reference to manager (self-referencing)
   managerEmail: text("manager_email"), // Manager's email address for building org hierarchy
+  adminScope: text("admin_scope").default("none"), // 'super', 'site', 'department', 'hybrid', 'none'
+  allowedSites: text("allowed_sites").array(), // Array of sites this admin can manage
+  allowedDepartments: text("allowed_departments").array(), // Array of departments this admin can manage
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
 });

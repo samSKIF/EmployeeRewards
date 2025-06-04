@@ -2539,7 +2539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(import.meta.dirname, "../client/direct-login.html"));
   });
 
-  // Admin API - Employee Management
+  // Admin API - Employee Management with Permission-Based Filtering
   app.get("/api/admin/employees", verifyToken, verifyAdmin, tenantRouting, ensureTenantAccess, async (req: TenantRequest, res) => {
     try {
       const currentUser = req.user;
@@ -2554,18 +2554,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Database connection not available" });
       }
 
+      // Get current user's admin scope and permissions
+      const [adminUser] = await tenantDb.select({
+        adminScope: users.adminScope,
+        allowedSites: users.allowedSites,
+        allowedDepartments: users.allowedDepartments
+      }).from(users).where(eq(users.id, currentUser.id));
+
+      const adminScope = adminUser?.adminScope || 'none';
+      const allowedSites = adminUser?.allowedSites || [];
+      const allowedDepartments = adminUser?.allowedDepartments || [];
+
+      console.log(`Admin scope: ${adminScope} for user ${currentUser.id}`);
+
       // Get employees from the tenant's company only
-      // This ensures complete data isolation between companies
       let employeesList = [];
 
       if (companyId) {
-        // Get employees belonging to this specific company
+        // Get all employees belonging to this specific company
         const employeesFromCompany = await tenantDb.select()
           .from(users)
           .where(eq(users.organizationId, companyId));
         
-        employeesList = employeesFromCompany;
-        console.log(`Returning ${employeesList.length} employees for company ${companyId}`);
+        // Apply permission-based filtering
+        if (adminScope === 'super') {
+          // Super admin sees all employees in the company
+          employeesList = employeesFromCompany;
+        } else if (adminScope === 'site') {
+          // Site admin sees only employees at their allowed sites
+          employeesList = employeesFromCompany.filter(employee => 
+            allowedSites.includes(employee.location)
+          );
+        } else if (adminScope === 'department') {
+          // Department admin sees only employees in their allowed departments
+          employeesList = employeesFromCompany.filter(employee => 
+            allowedDepartments.includes(employee.department)
+          );
+        } else if (adminScope === 'hybrid') {
+          // Hybrid admin sees employees matching both site AND department criteria
+          employeesList = employeesFromCompany.filter(employee => {
+            const siteMatch = allowedSites.length === 0 || allowedSites.includes(employee.location);
+            const deptMatch = allowedDepartments.length === 0 || allowedDepartments.includes(employee.department);
+            return siteMatch && deptMatch;
+          });
+        } else {
+          // Default: no scope or 'none' - only see employees they created
+          employeesList = employeesFromCompany.filter(employee => 
+            employee.createdBy === currentUser.id
+          );
+        }
+        
+        console.log(`Returning ${employeesList.length} employees for company ${companyId} with ${adminScope} scope`);
       } else {
         // Fallback: get employees created by current admin only
         const employeesCreatedByAdmin = await tenantDb.select()
@@ -2581,6 +2620,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching employees:", error);
       res.status(500).json({ message: error.message || "Failed to get employees" });
+    }
+  });
+
+  // Admin Permission Management Routes
+  app.get("/api/admin/permissions", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const currentUser = await db.select().from(users).where(eq(users.id, req.user.id));
+      if (currentUser.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const organizationId = currentUser[0].organizationId;
+
+      // Only super admins can view all admin permissions
+      if (currentUser[0].adminScope !== 'super') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      const adminUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        adminScope: users.adminScope,
+        allowedSites: users.allowedSites,
+        allowedDepartments: users.allowedDepartments,
+        location: users.location,
+        department: users.department,
+      }).from(users)
+        .where(and(
+          eq(users.organizationId, organizationId),
+          eq(users.isAdmin, true)
+        ));
+
+      res.json(adminUsers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch admin permissions" });
+    }
+  });
+
+  app.put("/api/admin/permissions/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const currentUser = await db.select().from(users).where(eq(users.id, req.user.id));
+      if (currentUser.length === 0 || currentUser[0].adminScope !== 'super') {
+        return res.status(403).json({ message: "Only super admins can modify permissions" });
+      }
+
+      const { id } = req.params;
+      const { adminScope, allowedSites, allowedDepartments } = req.body;
+
+      const [updatedUser] = await db.update(users)
+        .set({
+          adminScope,
+          allowedSites,
+          allowedDepartments,
+        })
+        .where(eq(users.id, parseInt(id)))
+        .returning();
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+
+      res.json({ message: "Permissions updated successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update admin permissions" });
     }
   });
 
