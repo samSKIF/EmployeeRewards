@@ -70,7 +70,16 @@ export function SimpleInterestsSection({ interests, isEditing, onInterestsChange
     );
   };
 
-  const groupedInterests = interests.reduce((acc, interest) => {
+  // Group all database interests by category
+  const databaseInterestsByCategory = (allInterests as any[] || []).reduce((acc: Record<string, any[]>, dbInterest: any) => {
+    const category = dbInterest.category || 'Other';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(dbInterest);
+    return acc;
+  }, {});
+
+  // Group user's current interests by category
+  const userInterestsByCategory = interests.reduce((acc, interest) => {
     const category = interest.category || 'Other';
     if (!acc[category]) acc[category] = [];
     acc[category].push(interest);
@@ -86,9 +95,9 @@ export function SimpleInterestsSection({ interests, isEditing, onInterestsChange
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {Object.entries(INTEREST_CATEGORIES).map(([category, categoryInterests]) => {
+        {Object.entries(databaseInterestsByCategory).map(([category, categoryInterests]) => {
           const isExpanded = expandedCategories.includes(category);
-          const userInterestsInCategory = groupedInterests[category] || [];
+          const userInterestsInCategory = userInterestsByCategory[category] || [];
           
           return (
             <div key={category} className="space-y-2">
@@ -105,19 +114,19 @@ export function SimpleInterestsSection({ interests, isEditing, onInterestsChange
               
               {isExpanded && (
                 <div className="grid grid-cols-1 gap-2 pl-4">
-                  {categoryInterests.map((interestName) => {
-                    const hasInterest = userInterestsInCategory.some(ui => ui.name === interestName);
-                    const stats = getInterestStats(interestName);
+                  {(categoryInterests as any[]).map((dbInterest: any) => {
+                    const hasInterest = userInterestsInCategory.some(ui => ui.name === dbInterest.label);
+                    const stats = getInterestStats(dbInterest.label);
                     
                     return (
                       <div
-                        key={interestName}
+                        key={dbInterest.id}
                         className={`flex items-center justify-between p-3 rounded-lg border ${
                           hasInterest ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium">{interestName}</span>
+                          <span className="text-sm font-medium">{dbInterest.label}</span>
                           {hasInterest && (
                             <Badge variant="secondary" className="text-xs">
                               Your Interest
@@ -136,7 +145,7 @@ export function SimpleInterestsSection({ interests, isEditing, onInterestsChange
                               size="sm"
                               variant="outline"
                               className="h-7 px-2 text-xs"
-                              onClick={() => joinInterestGroup(interestName)}
+                              onClick={() => joinInterestGroup(dbInterest.label)}
                             >
                               <MessageSquare className="h-3 w-3 mr-1" />
                               Join Group

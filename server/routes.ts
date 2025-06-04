@@ -5045,6 +5045,17 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
   // Leave Management Routes (commented out for now)
   // app.use('/api/leave', leaveRoutes);
 
+  // Fetch all interests endpoint
+  app.get('/api/interests', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const allInterests = await db.select().from(interests).orderBy(interests.category, interests.label);
+      res.json(allInterests);
+    } catch (error) {
+      console.error('Error fetching interests:', error);
+      res.status(500).json({ message: 'Failed to fetch interests' });
+    }
+  });
+
   // Interest Groups API Routes - using real database data
   app.get('/api/interests/stats', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
