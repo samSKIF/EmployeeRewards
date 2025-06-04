@@ -36,6 +36,9 @@ interface EmployeeFormData {
   isAdmin: boolean;
   status: string;
   avatarUrl: string;
+  adminScope: string;
+  allowedSites: string[];
+  allowedDepartments: string[];
 }
 
 // Define our user type
@@ -75,7 +78,10 @@ const defaultEmployeeFormData: EmployeeFormData = {
   hireDate: "",
   isAdmin: false,
   status: "active",
-  avatarUrl: ""
+  avatarUrl: "",
+  adminScope: "none",
+  allowedSites: [],
+  allowedDepartments: []
 };
 
 export default function AdminEmployeesPage() {
@@ -89,6 +95,36 @@ export default function AdminEmployeesPage() {
   const [formData, setFormData] = useState<EmployeeFormData>(defaultEmployeeFormData);
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
+  const [allSites, setAllSites] = useState<string[]>([]);
+  const [allDepartments, setAllDepartments] = useState<string[]>([]);
+  const [newSite, setNewSite] = useState('');
+  const [newDepartment, setNewDepartment] = useState('');
+
+  // Fetch sites and departments for admin configuration
+  useEffect(() => {
+    const fetchSitesAndDepartments = async () => {
+      try {
+        const [sitesResponse, deptResponse] = await Promise.all([
+          apiRequest('GET', '/api/users/locations'),
+          apiRequest('GET', '/api/users/departments')
+        ]);
+
+        if (sitesResponse.ok) {
+          const sites = await sitesResponse.json();
+          setAllSites(sites);
+        }
+
+        if (deptResponse.ok) {
+          const departments = await deptResponse.json();
+          setAllDepartments(departments);
+        }
+      } catch (error) {
+        console.error('Failed to fetch sites and departments:', error);
+      }
+    };
+
+    fetchSitesAndDepartments();
+  }, []);
 
   // Download all employees function
   const downloadAllEmployees = () => {
@@ -303,6 +339,53 @@ export default function AdminEmployeesPage() {
     setFormData(prev => ({ ...prev, [name]: checked }));
   }
 
+  // Handle admin scope change
+  function handleAdminScopeChange(value: string) {
+    setFormData(prev => ({ 
+      ...prev, 
+      adminScope: value,
+      // Reset arrays when scope changes
+      allowedSites: [],
+      allowedDepartments: []
+    }));
+  }
+
+  // Handle site selection for admin permissions
+  function handleSiteSelection(site: string, checked: boolean) {
+    setFormData(prev => ({
+      ...prev,
+      allowedSites: checked 
+        ? [...prev.allowedSites, site]
+        : prev.allowedSites.filter(s => s !== site)
+    }));
+  }
+
+  // Handle department selection for admin permissions
+  function handleDepartmentSelection(department: string, checked: boolean) {
+    setFormData(prev => ({
+      ...prev,
+      allowedDepartments: checked 
+        ? [...prev.allowedDepartments, department]
+        : prev.allowedDepartments.filter(d => d !== department)
+    }));
+  }
+
+  // Add new site
+  function addNewSite() {
+    if (newSite.trim() && !allSites.includes(newSite.trim())) {
+      setAllSites(prev => [...prev, newSite.trim()]);
+      setNewSite('');
+    }
+  }
+
+  // Add new department
+  function addNewDepartment() {
+    if (newDepartment.trim() && !allDepartments.includes(newDepartment.trim())) {
+      setAllDepartments(prev => [...prev, newDepartment.trim()]);
+      setNewDepartment('');
+    }
+  }
+
   function openEditDialog(employee: Employee) {
     setCurrentEmployee(employee);
     setFormData({
@@ -321,7 +404,10 @@ export default function AdminEmployeesPage() {
       hireDate: employee.dateJoined ? format(new Date(employee.dateJoined), 'yyyy-MM-dd') : "",
       isAdmin: employee.isAdmin,
       status: employee.status ? employee.status.toLowerCase() : "active",
-      avatarUrl: employee.avatarUrl || ""
+      avatarUrl: employee.avatarUrl || "",
+      adminScope: (employee as any).adminScope || "none",
+      allowedSites: (employee as any).allowedSites || [],
+      allowedDepartments: (employee as any).allowedDepartments || []
     });
     setIsEditDialogOpen(true);
   }
