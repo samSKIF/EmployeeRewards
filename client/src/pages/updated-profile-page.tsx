@@ -61,7 +61,7 @@ const UpdatedProfilePage = () => {
         department: user.department || '',
         location: user.location || '',
         responsibilities: user.responsibilities || '',
-        aboutMe: user.aboutMe || ''
+        aboutMe: ''
       });
     }
   }, [user]);
@@ -408,8 +408,13 @@ const UpdatedProfilePage = () => {
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Send the form data to the server
-    updateProfileMutation.mutate(formValues);
+    // Only send the editable fields to the server
+    const editableData = {
+      responsibilities: formValues.responsibilities,
+      aboutMe: formValues.aboutMe
+    };
+    
+    updateProfileMutation.mutate(editableData);
   };
 
   if (userLoading) {
@@ -678,10 +683,31 @@ const UpdatedProfilePage = () => {
               
               <Separator />
               
+              {/* About Me Section */}
+              <div>
+                <h3 className="text-md font-medium mb-4">About Me</h3>
+                {isEditing ? (
+                  <div>
+                    <textarea
+                      id="aboutMe"
+                      name="aboutMe"
+                      value={formValues.aboutMe}
+                      onChange={handleInputChange}
+                      rows={4}
+                      placeholder="Tell us about yourself..."
+                      className="w-full border rounded-md p-2 text-sm"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm">{formValues.aboutMe || "No information provided yet."}</p>
+                )}
+              </div>
+              
+              <Separator />
+              
               {/* Biographical Information */}
               <div>
                 <h3 className="text-md font-medium mb-4">Biographical Information</h3>
-                <p className="text-sm mb-4">A passionate team member with a focus on innovation and creative solutions.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
@@ -720,6 +746,25 @@ const UpdatedProfilePage = () => {
                   <p className="text-sm">{userDetails.responsibilities}</p>
                 )}
               </div>
+              
+              {/* Save/Cancel buttons when editing */}
+              {isEditing && (
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleEditToggle}
+                    className="px-4 py-2"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveProfile}
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
