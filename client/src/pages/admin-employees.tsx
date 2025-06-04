@@ -970,6 +970,152 @@ export default function AdminEmployeesPage() {
               />
               <Label htmlFor="edit-isAdmin">Admin privileges</Label>
             </div>
+
+            {/* Admin Permissions Configuration */}
+            {formData.isAdmin && (
+              <div className="mt-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">Admin Permissions Configuration</h3>
+                
+                <div className="grid gap-4">
+                  {/* Admin Scope Selection */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="adminScope">Admin Scope *</Label>
+                    <Select 
+                      value={formData.adminScope} 
+                      onValueChange={handleAdminScopeChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select admin scope" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="super">Super Admin (Full Access)</SelectItem>
+                        <SelectItem value="site">Site Admin (Multiple Sites)</SelectItem>
+                        <SelectItem value="department">Department Admin (Multiple Departments)</SelectItem>
+                        <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.adminScope === 'super' && "Complete administrative access to all company resources"}
+                      {formData.adminScope === 'site' && "Administrative access to selected sites/locations"}
+                      {formData.adminScope === 'department' && "Administrative access to selected departments"}
+                      {formData.adminScope === 'hybrid' && "Administrative access to selected sites AND departments"}
+                    </p>
+                  </div>
+
+                  {/* Site Selection for Site/Hybrid Admins */}
+                  {(formData.adminScope === 'site' || formData.adminScope === 'hybrid') && (
+                    <div className="grid gap-2">
+                      <Label>Allowed Sites/Locations</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
+                        {allSites.length > 0 ? (
+                          allSites.map(site => (
+                            <div key={site} className="flex items-center space-x-2 py-1">
+                              <Checkbox
+                                id={`site-${site}`}
+                                checked={formData.allowedSites.includes(site)}
+                                onCheckedChange={(checked) => handleSiteSelection(site, checked as boolean)}
+                              />
+                              <Label htmlFor={`site-${site}`} className="text-sm">{site}</Label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No sites available</p>
+                        )}
+                      </div>
+                      
+                      {/* Add new site */}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add new site/location"
+                          value={newSite}
+                          onChange={(e) => setNewSite(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addNewSite}
+                          disabled={!newSite.trim() || allSites.includes(newSite.trim())}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {formData.allowedSites.length} site(s)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Department Selection for Department/Hybrid Admins */}
+                  {(formData.adminScope === 'department' || formData.adminScope === 'hybrid') && (
+                    <div className="grid gap-2">
+                      <Label>Allowed Departments</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
+                        {allDepartments.length > 0 ? (
+                          allDepartments.map(department => (
+                            <div key={department} className="flex items-center space-x-2 py-1">
+                              <Checkbox
+                                id={`dept-${department}`}
+                                checked={formData.allowedDepartments.includes(department)}
+                                onCheckedChange={(checked) => handleDepartmentSelection(department, checked as boolean)}
+                              />
+                              <Label htmlFor={`dept-${department}`} className="text-sm">{department}</Label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No departments available</p>
+                        )}
+                      </div>
+                      
+                      {/* Add new department */}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add new department"
+                          value={newDepartment}
+                          onChange={(e) => setNewDepartment(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addNewDepartment}
+                          disabled={!newDepartment.trim() || allDepartments.includes(newDepartment.trim())}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {formData.allowedDepartments.length} department(s)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Admin Summary */}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <h4 className="font-medium text-blue-800 mb-2">Permission Summary</h4>
+                    <div className="text-sm text-blue-700">
+                      {formData.adminScope === 'super' && (
+                        <p>✓ Full administrative access to all company resources</p>
+                      )}
+                      {formData.adminScope === 'site' && (
+                        <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                      )}
+                      {formData.adminScope === 'department' && (
+                        <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                      )}
+                      {formData.adminScope === 'hybrid' && (
+                        <div>
+                          <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                          <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
