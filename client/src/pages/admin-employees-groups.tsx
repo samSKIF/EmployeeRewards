@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 
 // Define employee form data type
 interface EmployeeFormData {
@@ -153,7 +154,7 @@ function GroupsManagement() {
   const filteredGroups = groups?.filter((group: any) => {
     const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     if (selectedCategory === 'all') return matchesSearch;
     return group.category === selectedCategory && matchesSearch;
   }) || [];
@@ -166,7 +167,7 @@ function GroupsManagement() {
           <h2 className="text-2xl font-bold text-gray-900">Groups Management</h2>
           <p className="text-gray-600">Manage workplace groups within your administrative scope</p>
         </div>
-        
+
         <Button 
           onClick={() => setShowCreateDialog(true)}
           className="bg-blue-600 hover:bg-blue-700"
@@ -187,7 +188,7 @@ function GroupsManagement() {
             className="pl-10"
           />
         </div>
-        
+
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Categories" />
@@ -326,20 +327,11 @@ function GroupsManagement() {
       </Card>
 
       {/* Create Group Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create New Group</DialogTitle>
-            <DialogDescription>
-              Create a new group for your organization
-            </DialogDescription>
-          </DialogHeader>
-          <CreateGroupForm 
-            onSubmit={(data) => createGroupMutation.mutate(data)}
-            isLoading={createGroupMutation.isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      <CreateGroupDialog 
+        open={showCreateDialog} 
+        onOpenChange={setShowCreateDialog}
+        onSubmit={(data) => createGroupMutation.mutate(data)}
+      />
 
       {/* Group Details Dialog */}
       <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
@@ -465,7 +457,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
             required
           />
         </div>
-        
+
         <div>
           <Label htmlFor="description">Description</Label>
           <Textarea
@@ -500,7 +492,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
       {/* Access Control */}
       <div className="space-y-4">
         <Label className="text-base font-semibold">Access Control</Label>
-        
+
         <div>
           <Label htmlFor="accessLevel">Who can join?</Label>
           <Select 
@@ -584,7 +576,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
       {/* Advanced Settings */}
       <div className="space-y-4">
         <Label className="text-base font-semibold">Advanced Settings</Label>
-        
+
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -594,7 +586,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
             />
             <Label htmlFor="private">Private group (hidden from discovery)</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="approval"
@@ -617,7 +609,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           />
         </div>
       </div>
-      
+
       <DialogFooter>
         <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -658,7 +650,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -670,7 +662,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -695,7 +687,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             placeholder="Enter group name"
           />
         </div>
-        
+
         <div>
           <Label htmlFor="edit-description">Description</Label>
           <Textarea
@@ -706,7 +698,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             rows={3}
           />
         </div>
-        
+
         <div>
           <Label htmlFor="edit-category">Category</Label>
           <Select 
@@ -724,7 +716,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -734,7 +726,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             />
             <Label htmlFor="edit-private">Private group</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="edit-active"
@@ -744,7 +736,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             <Label htmlFor="edit-active">Active group</Label>
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -788,10 +780,10 @@ function EmployeeDirectory() {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
     const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
-    
+
     return matchesSearch && matchesDepartment && matchesLocation;
   }) || [];
 
@@ -803,7 +795,7 @@ function EmployeeDirectory() {
           <h2 className="text-2xl font-bold text-gray-900">Employee Directory</h2>
           <p className="text-gray-600">Manage employees and their information</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Button 
             variant="outline"
@@ -833,7 +825,7 @@ function EmployeeDirectory() {
             className="pl-10"
           />
         </div>
-        
+
         <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Departments" />
@@ -845,7 +837,7 @@ function EmployeeDirectory() {
             ))}
           </SelectContent>
         </Select>
-        
+
         <Select value={selectedLocation} onValueChange={setSelectedLocation}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Locations" />
@@ -949,6 +941,8 @@ export default function AdminEmployeesGroups() {
       <div className="border-b border-gray-200 pb-4">
         <h1 className="text-3xl font-bold text-gray-900">Employees and Groups</h1>
         <p className="text-gray-600 mt-1">Manage your organization's employees and workplace groups</p>
+```text
+
       </div>
 
       {/* Main Tabs */}
