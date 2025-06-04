@@ -13,6 +13,7 @@ import ProfilePage from "@/pages/profile-page";
 import NewProfilePage from "@/pages/new-profile-page";
 import UpdatedProfilePage from "@/pages/updated-profile-page";
 import AdminEmployees from "@/pages/admin-employees";
+import AdminPermissions from "@/pages/admin-permissions";
 import AdminSurveys from "@/pages/admin-surveys";
 import AdminSurveyCreator from "@/pages/admin-survey-creator";
 import AdminSurveyTemplates from "@/pages/admin-survey-templates";
@@ -134,6 +135,11 @@ function App() {
               <Route path="/admin/employees">
                 <SocialLayout>
                   <AdminEmployees />
+                </SocialLayout>
+              </Route>
+              <Route path="/admin/permissions">
+                <SocialLayout>
+                  <AdminPermissions />
                 </SocialLayout>
               </Route>
               <Route path="/admin/surveys/templates/:templateId">

@@ -1,45 +1,57 @@
+import { Badge } from '@/components/ui/badge';
+import { Users, Building, MapPin, Crown } from 'lucide-react';
+
 interface AdminIconProps {
-  size?: number;
-  className?: string;
+  adminScope: string;
+  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
 }
 
-export const AdminIcon = ({ size = 40, className = "" }: AdminIconProps) => {
+function AdminIcon({ adminScope, size = 'md', showLabel = true }: AdminIconProps) {
+  const getScopeIcon = (scope: string) => {
+    const iconSize = size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
+    
+    switch (scope) {
+      case 'super': return <Crown className={iconSize} />;
+      case 'site': return <Building className={iconSize} />;
+      case 'department': return <Users className={iconSize} />;
+      case 'hybrid': return <MapPin className={iconSize} />;
+      default: return null;
+    }
+  };
+
+  const getScopeColor = (scope: string) => {
+    switch (scope) {
+      case 'super': return 'bg-red-100 text-red-800';
+      case 'site': return 'bg-blue-100 text-blue-800';
+      case 'department': return 'bg-green-100 text-green-800';
+      case 'hybrid': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getScopeLabel = (scope: string) => {
+    switch (scope) {
+      case 'super': return 'Super Admin';
+      case 'site': return 'Site Admin';
+      case 'department': return 'Dept Admin';
+      case 'hybrid': return 'Hybrid Admin';
+      default: return 'User';
+    }
+  };
+
+  if (adminScope === 'none' || !adminScope) {
+    return null;
+  }
+
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      {/* User circle head */}
-      <circle
-        cx="50"
-        cy="30"
-        r="12"
-        stroke="#374151"
-        strokeWidth="3"
-        fill="none"
-      />
-      
-      {/* User body/shoulders */}
-      <path
-        d="M25 65 C25 55, 35 50, 50 50 C65 50, 75 55, 75 65 L75 75 L65 75 L65 70 L35 70 L35 75 L25 75 Z"
-        stroke="#374151"
-        strokeWidth="3"
-        fill="none"
-        strokeLinejoin="round"
-      />
-      
-      {/* Star badge */}
-      <path
-        d="M75 60 L78 67 L86 67 L80 72 L82 80 L75 75 L68 80 L70 72 L64 67 L72 67 Z"
-        stroke="#374151"
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Badge className={`${getScopeColor(adminScope)} ${size === 'sm' ? 'text-xs px-1' : ''}`}>
+      <div className="flex items-center gap-1">
+        {getScopeIcon(adminScope)}
+        {showLabel && <span>{getScopeLabel(adminScope)}</span>}
+      </div>
+    </Badge>
   );
-};
+}
+
+export default AdminIcon;

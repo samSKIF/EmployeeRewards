@@ -111,6 +111,13 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       className: "whitespace-nowrap",
     },
     { 
+      icon: Shield, 
+      label: "Admin Permissions", 
+      onClick: () => navigateTo('/admin/permissions'),
+      isActive: location === '/admin/permissions',
+      className: "whitespace-nowrap",
+    },
+    { 
       icon: Award, 
       label: "Recognition Settings", 
       onClick: () => navigateTo('/admin/recognition-settings'),
