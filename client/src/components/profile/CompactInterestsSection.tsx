@@ -37,7 +37,7 @@ interface DatabaseInterest {
 
 export function CompactInterestsSection({ interests, isEditing, onInterestsChange }: CompactInterestsSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('popular');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -101,13 +101,21 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   // Get unique categories from database interests
   const allInterestsArray = (allInterests as DatabaseInterest[] || []);
   const categorySet = new Set(allInterestsArray.map(i => i.category));
-  const categories = ['all', ...Array.from(categorySet)];
+  const categories = ['popular', ...Array.from(categorySet)];
 
   // Filter interests based on search and category
   const filteredInterests = allInterestsArray.filter(interest => {
     const matchesSearch = interest.label.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || interest.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'popular' || interest.category === selectedCategory;
     return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+    // Sort by member count descending for popular tab
+    if (selectedCategory === 'popular') {
+      const statsA = getInterestStats(a.label);
+      const statsB = getInterestStats(b.label);
+      return statsB.memberCount - statsA.memberCount;
+    }
+    return 0;
   });
 
   // Check if user has an interest
@@ -176,7 +184,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
 
                 <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                   <TabsList className="grid grid-cols-4 w-full mb-2">
-                    <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                    <TabsTrigger value="popular" className="text-xs">Popular</TabsTrigger>
                     <TabsTrigger value="Sport & Fitness" className="text-xs">Sports</TabsTrigger>
                     <TabsTrigger value="Technology & Gaming" className="text-xs">Tech</TabsTrigger>
                     <TabsTrigger value="Arts & Creativity" className="text-xs">Arts</TabsTrigger>
