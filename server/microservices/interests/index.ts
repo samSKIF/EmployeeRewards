@@ -186,20 +186,25 @@ router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchem
     
     // Start a transaction to delete old interests and insert new ones
     const interestsData = req.body;
+    console.log('Received interests data:', JSON.stringify(interestsData, null, 2));
     
     // Transaction to update interests
     await db.transaction(async (tx) => {
       // Delete all existing interests for this employee
+      console.log('Deleting existing interests for employee:', employeeId);
       await tx
         .delete(employeeInterests)
         .where(eq(employeeInterests.employeeId, employeeId));
       
       // Insert new interests
+      console.log('Processing', interestsData.length, 'interests');
       for (const interest of interestsData) {
+        console.log('Processing interest:', interest);
         let interestId = interest.interestId;
         
         // If no interestId is provided but customLabel is, create a new interest
         if (!interestId && interest.customLabel) {
+          console.log('Creating custom interest:', interest.customLabel);
           const [newInterest] = await tx
             .insert(interests)
             .values({
@@ -210,21 +215,30 @@ router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchem
             .returning();
           
           interestId = newInterest.id;
+          console.log('Created custom interest with ID:', interestId);
         }
         
         // Skip if no valid interestId
-        if (!interestId) continue;
+        if (!interestId) {
+          console.log('Skipping interest - no valid interestId:', interest);
+          continue;
+        }
         
         // Insert the employee interest relation
+        const insertData = {
+          employeeId,
+          interestId,
+          customLabel: interest.customLabel,
+          isPrimary: interest.isPrimary,
+          visibility: interest.visibility
+        };
+        console.log('Inserting employee interest:', insertData);
+        
         await tx
           .insert(employeeInterests)
-          .values({
-            employeeId,
-            interestId,
-            customLabel: interest.customLabel,
-            isPrimary: interest.isPrimary,
-            visibility: interest.visibility
-          });
+          .values(insertData);
+        
+        console.log('Successfully inserted employee interest');
       }
     });
     
