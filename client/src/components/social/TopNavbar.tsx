@@ -304,18 +304,12 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center">
-                {user?.isAdmin ? (
-                  <div className="h-8 w-8 border-2 border-teal-100 rounded-full bg-gray-50 flex items-center justify-center">
-                    <AdminIcon size={24} className="text-gray-700" />
-                  </div>
-                ) : (
-                  <Avatar className="h-8 w-8 border-2 border-teal-100">
-                    <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
-                    <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
-                      {user?.name?.charAt(0) || 'A'}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                <Avatar className="h-8 w-8 border-2 border-teal-100">
+                  <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+                  <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
+                    {user?.name?.charAt(0) || 'A'}
+                  </AvatarFallback>
+                </Avatar>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
