@@ -310,7 +310,7 @@ export default function AdminEmployeesPage() {
     onSuccess: (data) => {
       toast({
         title: "Success",
-        description: `Uploaded ${data.count} employees successfully`,
+        description: `Successfully imported ${data.success || data.count || 0} employees`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
       setIsUploadDialogOpen(false);

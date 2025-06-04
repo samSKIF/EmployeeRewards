@@ -3133,8 +3133,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isAdmin
           });
 
-          // Construct the employee record from CSV data
-          const employeeData = {
+          // Create a single user record with all employee data
+          const userUsername = `${name.toLowerCase()}.${(surname || '').toLowerCase()}`.replace(/\s+/g, '.');
+          const userData = {
+            username: userUsername,
             name,
             surname: surname || '',
             email,
@@ -3150,34 +3152,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isManager,
             sex,
             nationality,
-            companyId: companyId, // Assign to the correct company
+            organizationId: companyId, // Assign to the correct company
+            createdBy: currentUser.id, // Use the current authenticated user
             createdAt: new Date(),
-            createdById: currentUser.id, // Use the current authenticated user
-            firebaseUid: firebaseUid // Add Firebase UID if available
+            firebaseUid: firebaseUid, // Add Firebase UID if available
+            isAdmin: isAdmin // Add admin status from CSV
           };
           
           console.log(`Importing employee: ${name} (${email}) to company ${companyId}${firebaseUid ? ' with Firebase UID: ' + firebaseUid : ''}`);
           
-          // Insert the employee record
-          const result = await db.insert(users).values(employeeData);
-          
-          // Create corresponding user account
-          const userUsername = `${name.toLowerCase()}.${(surname || '').toLowerCase()}`.replace(/\s+/g, '.');
-          const userData = {
-            username: userUsername,
-            email,
-            password: hashedPassword,
-            name: `${name} ${surname || ''}`.trim(),
-            createdAt: new Date()
-          };
-          
-          try {
-            await db.insert(users).values(userData);
-            console.log(`Created user account for: ${email}`);
-          } catch (userError) {
-            console.error(`Failed to create user account for ${email}:`, userError);
-            // Don't fail the employee creation if user creation fails
-          }
+          // Insert the user record (which serves as both user and employee)
+          const result = await db.insert(users).values(userData);
           
           return result;
         } catch (err) {
