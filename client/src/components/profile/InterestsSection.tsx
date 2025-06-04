@@ -153,7 +153,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const [searchResults, setSearchResults] = useState<Interest[]>([]);
   const [editableInterests, setEditableInterests] = useState<Interest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('Sports & Fitness');
+  const [activeCategory, setActiveCategory] = useState<string>('Sport & Fitness');
 
   // Fetch user interests and available interests
   useEffect(() => {
@@ -506,155 +506,52 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                   <div className="p-1">
                     <div className="flex justify-between items-center border-b pb-2 mb-2">
                       <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.editTitle', 'Edit Your Interests')}</h4>
-                      <div className="flex px-2 bg-gray-50 rounded-md p-1">
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Sports & Fitness' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
-                          onClick={() => setActiveCategory('Sports & Fitness')}
-                          title={t('interests.categories.sportsAndFitness', 'Sports & Fitness')}
-                        >
-                          🏋️‍♀️
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Arts & Creativity' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
-                          onClick={() => setActiveCategory('Arts & Creativity')}
-                          title={t('interests.categories.artsAndCreativity', 'Arts & Creativity')}
-                        >
-                          🎨
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Technology & Gaming' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
-                          onClick={() => setActiveCategory('Technology & Gaming')}
-                          title={t('interests.categories.technologyAndGaming', 'Technology & Gaming')}
-                        >
-                          💻
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Food & Drink' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
-                          onClick={() => setActiveCategory('Food & Drink')}
-                          title={t('interests.categories.foodAndDrink', 'Food & Drink')}
-                        >
-                          🍳
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className={`rounded-full w-8 h-8 p-0 ${activeCategory === 'Lifestyle & Wellness' ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
-                          onClick={() => setActiveCategory('Lifestyle & Wellness')}
-                          title={t('interests.categories.lifestyleAndWellness', 'Lifestyle & Wellness')}
-                        >
-                          🧘‍♂️
-                        </Button>
+                      <div className="flex px-2 bg-gray-50 rounded-md p-1 overflow-x-auto">
+                        {Array.from(new Set(availableInterests.map(interest => interest.category))).map((category) => {
+                          const categoryIcons = {
+                            'Sport & Fitness': '🏃',
+                            'Arts & Creativity': '🎨',
+                            'Technology & Gaming': '💻',
+                            'Food & Drinks': '🍳',
+                            'Lifestyle & Wellness': '🧘‍♂️',
+                            'Entertainment & Pop Culture': '🎬',
+                            'Social Impact & Learning': '🌍'
+                          };
+                          
+                          return (
+                            <Button 
+                              key={category}
+                              variant="ghost"
+                              size="sm"
+                              className={`rounded-full w-8 h-8 p-0 flex-shrink-0 ${activeCategory === category ? 'bg-primary/10 text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                              onClick={() => setActiveCategory(category)}
+                              title={category}
+                            >
+                              {categoryIcons[category as keyof typeof categoryIcons] || '⭐'}
+                            </Button>
+                          );
+                        })}
                       </div>
                     </div>
 
                     <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">{activeCategory}</h4>
 
-                    {activeCategory === 'Sports & Fitness' && (
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        {availableInterests
-                          .filter(interest => interest.category === 'Sports & Fitness')
-                          .map(interest => (
-                            <div
-                              key={interest.id}
-                              className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
-                              onClick={() => handleAddInterest(interest)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">{interest.icon || '🏃'}</span>
-                                <span className="text-sm font-medium">{interest.label}</span>
-                              </div>
+                    <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
+                      {availableInterests
+                        .filter(interest => interest.category === activeCategory)
+                        .map(interest => (
+                          <div
+                            key={interest.id}
+                            className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
+                            onClick={() => handleAddInterest(interest)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{interest.icon || '⭐'}</span>
+                              <span className="text-sm font-medium">{interest.label}</span>
                             </div>
-                          ))}
-                      </div>
-                    )}
-
-                    {activeCategory === 'Arts & Creativity' && (
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        <InterestItem icon="🎨" label="Painting" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🖌️" label="Drawing" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🖼️" label="Art History" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎭" label="Theatre" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎬" label="Filmmaking" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎥" label="Videography" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="📷" label="Photography" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎤" label="Singing" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎸" label="Playing Guitar" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎹" label="Piano" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🩰" label="Dance / Ballet" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧵" label="Sewing" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧶" label="Knitting" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🪡" label="Embroidery" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="✂️" label="DIY Crafts" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="📚" label="Creative Writing" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="✍️" label="Calligraphy" category="Arts & Creativity" onAdd={handleAddInterest} />
-                        <InterestItem icon="🪕" label="Playing Ukulele" category="Arts & Creativity" onAdd={handleAddInterest} />
-                      </div>
-                    )}
-
-                    {activeCategory === 'Technology & Gaming' && (
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        <InterestItem icon="💻" label="Coding" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🤖" label="Robotics" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🕹️" label="Video Games" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎮" label="Retro Gaming" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎲" label="Board Games" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="♟️" label="Chess" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🔐" label="Cyber-Security" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧩" label="Puzzle Solving" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="📱" label="Mobile Apps" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🌐" label="Web Design" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏗️" label="3D Printing" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🛸" label="Drones" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🪙" label="Crypto / Blockchain" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎧" label="Audio Production" category="Technology & Gaming" onAdd={handleAddInterest} />
-                        <InterestItem icon="🖥️" label="PC Building" category="Technology & Gaming" onAdd={handleAddInterest} />
-                      </div>
-                    )}
-
-                    {activeCategory === 'Food & Drink' && (
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        <InterestItem icon="🍳" label="Cooking" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🥘" label="World Cuisines" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🍞" label="Baking" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🥗" label="Vegan Cooking" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🍣" label="Sushi Making" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🍺" label="Craft Beer" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🍷" label="Wine Tasting" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="🍸" label="Mixology" category="Food & Drink" onAdd={handleAddInterest} />
-                        <InterestItem icon="☕" label="Coffee Brewing" category="Food & Drink" onAdd={handleAddInterest} />
-                      </div>
-                    )}
-
-                    {activeCategory === 'Lifestyle & Wellness' && (
-                      <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        <InterestItem icon="🧘‍♂️" label="Meditation" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏕️" label="Camping" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🌿" label="Gardening" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🐕" label="Animal Care" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="✈️" label="Travel" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏰" label="History & Culture" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🗣️" label="Language Learning" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="📖" label="Reading" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="✨" label="Astrology" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🔭" label="Astronomy" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="💰" label="Personal Finance" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="📈" label="Investing" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🕰️" label="Collecting Antiques" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🪙" label="Coin Collecting" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧩" label="Jigsaw Puzzles" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="♻️" label="Sustainability" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🙌" label="Volunteering" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🎗️" label="Charity Fund-Raising" category="Lifestyle & Wellness" onAdd={handleAddInterest} />
-                      </div>
-                    )}
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 )}
               </div>
