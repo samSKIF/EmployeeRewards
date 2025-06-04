@@ -18,6 +18,7 @@ import {
   FileText,
   LogOut,
   Briefcase,
+  UserCheck,
   LucideIcon
 } from 'lucide-react';
 
@@ -115,6 +116,13 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       label: "Admin Permissions", 
       onClick: () => navigateTo('/admin/permissions'),
       isActive: location === '/admin/permissions',
+      className: "whitespace-nowrap",
+    },
+    { 
+      icon: UserCheck, 
+      label: "Employee Promotion", 
+      onClick: () => navigateTo('/admin/employee-promotion'),
+      isActive: location === '/admin/employee-promotion',
       className: "whitespace-nowrap",
     },
     { 
