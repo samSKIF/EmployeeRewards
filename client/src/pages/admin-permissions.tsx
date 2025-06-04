@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Save, Users, Building, MapPin } from 'lucide-react';
+import { Trash2, Plus, Save, Users, Building, MapPin, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
@@ -116,7 +116,7 @@ export default function AdminPermissions() {
 
   const getScopeIcon = (scope: string) => {
     switch (scope) {
-      case 'super': return <Users className="h-4 w-4" />;
+      case 'super': return <Crown className="h-4 w-4" />;
       case 'site': return <Building className="h-4 w-4" />;
       case 'department': return <Users className="h-4 w-4" />;
       case 'hybrid': return <MapPin className="h-4 w-4" />;
