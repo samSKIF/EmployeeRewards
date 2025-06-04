@@ -116,83 +116,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { interests, employeeInterests } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
       
-      const interestsData = req.body;
-      console.log('Processing', interestsData.length, 'interests for employee', employeeId);
+      const { interestId } = req.body;
+      console.log('Processing interest', interestId, 'for employee', employeeId);
       
-      // Transaction to update interests
-      await db.transaction(async (tx) => {
-        // Delete all existing interests for this employee
-        console.log('Deleting existing interests for employee:', employeeId);
-        await tx
-          .delete(employeeInterests)
-          .where(eq(employeeInterests.employeeId, employeeId));
-        
-        // Insert new interests
-        for (const interest of interestsData) {
-          console.log('Processing interest:', interest);
-          let interestId = interest.interestId;
-          
-          // If no interestId is provided but customLabel is, create a new interest
-          if (!interestId && interest.customLabel) {
-            console.log('Creating custom interest:', interest.customLabel);
-            const [newInterest] = await tx
-              .insert(interests)
-              .values({
-                label: interest.customLabel,
-                category: "Custom",
-                icon: "✨"
-              })
-              .returning();
-            
-            interestId = newInterest.id;
-            console.log('Created custom interest with ID:', interestId);
-          }
-          
-          // Skip if no valid interestId
-          if (!interestId) {
-            console.log('Skipping interest - no valid interestId:', interest);
-            continue;
-          }
-          
-          // Insert the employee interest relation
-          const insertData = {
-            employeeId,
-            interestId,
-            customLabel: interest.customLabel,
-            isPrimary: interest.isPrimary,
-            visibility: interest.visibility || 'EVERYONE'
-          };
-          console.log('Inserting employee interest:', insertData);
-          
-          await tx
-            .insert(employeeInterests)
-            .values(insertData);
-          
-          console.log('Successfully inserted employee interest');
-        }
-      });
-      
-      // Fetch the updated interests
-      const updatedInterests = await db
-        .select({
-          interest: interests,
-          customLabel: employeeInterests.customLabel,
-          isPrimary: employeeInterests.isPrimary,
-          visibility: employeeInterests.visibility
-        })
+      // First, get existing interests for this employee
+      const existingInterests = await db
+        .select()
         .from(employeeInterests)
-        .innerJoin(interests, eq(employeeInterests.interestId, interests.id))
         .where(eq(employeeInterests.employeeId, employeeId));
       
-      // Format the response
-      const formattedInterests = updatedInterests.map(item => ({
-        id: item.interest.id,
-        label: item.customLabel || item.interest.label,
-        category: item.interest.category,
-        icon: item.interest.icon,
-        isPrimary: item.isPrimary,
-        visibility: item.visibility
-      }));
+      // Check if this interest is already added
+      const alreadyExists = existingInterests.some(ei => ei.interestId === interestId);
+      
+      if (alreadyExists) {
+        return res.status(400).json({ message: 'Interest already added' });
+      }
+      
+      // Add the new interest
+      await db.transaction(async (tx) => {
+        await tx
+          .insert(employeeInterests)
+          .values({
+            employeeId: employeeId,
+            interestId: interestId
+          });
+      });
+      
+      res.json({ message: 'Interest added successfully' });
       
       console.log('Returning', formattedInterests.length, 'updated interests');
       res.status(200).json(formattedInterests);
