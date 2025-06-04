@@ -200,6 +200,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint to fetch all available interests
+  app.get('/api/interests', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      console.log("=== DIRECT ROUTE: GET all available interests ===");
+      
+      // Import interests schema directly
+      const { interests } = await import("@shared/schema");
+      
+      // Fetch all available interests
+      const allInterests = await db
+        .select()
+        .from(interests);
+      
+      console.log('Found', allInterests.length, 'available interests');
+      res.status(200).json(allInterests);
+    } catch (error: any) {
+      console.error("Error fetching available interests:", error);
+      res.status(500).json({ message: "Failed to fetch available interests" });
+    }
+  });
+
   // Celebrations API - Birthday and Work Anniversary tracking
   app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {

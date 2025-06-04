@@ -15,24 +15,39 @@ const InterestItem = ({
   icon, 
   label, 
   category, 
-  onAdd 
+  onAdd,
+  availableInterests
 }: { 
   icon: string; 
   label: string; 
   category: string; 
   onAdd: (interest: any) => void;
+  availableInterests: Interest[];
 }) => {
+  // Find the actual interest ID from the available interests list
+  const actualInterest = availableInterests.find(interest => 
+    interest.label === label && interest.category === category
+  );
+
   return (
     <div
       className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
-      onClick={() => onAdd({ 
-        id: Math.random(), // Temporary ID that will be replaced by the server
-        label,
-        category,
-        icon,
-        isPrimary: false,
-        visibility: 'EVERYONE'
-      })}
+      onClick={() => {
+        if (actualInterest) {
+          // Use the actual interest from the database
+          onAdd(actualInterest);
+        } else {
+          // For hardcoded interests not in database, create as custom
+          onAdd({ 
+            id: -Date.now(), // Negative ID for custom interests
+            label,
+            category,
+            icon,
+            isPrimary: false,
+            visibility: 'EVERYONE'
+          });
+        }
+      }}
     >
       <div className="flex items-center gap-2">
         <span className="text-lg">{icon}</span>
@@ -131,6 +146,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const { t } = useTranslation();
   const { toast } = useToast();
   const [interests, setInterests] = useState<Interest[]>([]);
+  const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -530,26 +546,20 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
                     {activeCategory === 'Sports & Fitness' && (
                       <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
-                        <InterestItem icon="🥾" label="Hiking" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="⚽" label="Football / Soccer" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏃" label="Running" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🚴" label="Cycling" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏊" label="Swimming" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧘" label="Yoga" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏋️‍♀️" label="Weightlifting" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="⛷️" label="Skiing" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏀" label="Basketball" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏈" label="American Football" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏸" label="Badminton" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="⛳" label="Golf" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🤸" label="Gymnastics" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏒" label="Ice Hockey" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🥊" label="Boxing" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🥋" label="Martial Arts" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏐" label="Volleyball" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🧗" label="Rock Climbing" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏄" label="Surfing" category="Sports & Fitness" onAdd={handleAddInterest} />
-                        <InterestItem icon="🏇" label="Horse Riding" category="Sports & Fitness" onAdd={handleAddInterest} />
+                        {availableInterests
+                          .filter(interest => interest.category === 'Sports & Fitness')
+                          .map(interest => (
+                            <div
+                              key={interest.id}
+                              className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
+                              onClick={() => handleAddInterest(interest)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{interest.icon || '🏃'}</span>
+                                <span className="text-sm font-medium">{interest.label}</span>
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     )}
 
