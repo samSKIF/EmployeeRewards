@@ -207,20 +207,18 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                 </div>
 
                 <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <TabsList className="grid grid-cols-4 w-full mb-2">
-                    <TabsTrigger value="popular" className="text-xs">Popular</TabsTrigger>
-                    <TabsTrigger value="Sport & Fitness" className="text-xs">Sports</TabsTrigger>
-                    <TabsTrigger value="Technology & Gaming" className="text-xs">Tech</TabsTrigger>
-                    <TabsTrigger value="Arts & Creativity" className="text-xs">Arts</TabsTrigger>
-                  </TabsList>
-                  <TabsList className="grid grid-cols-3 w-full">
-                    <TabsTrigger value="Food & Drinks" className="text-xs">Food</TabsTrigger>
-                    <TabsTrigger value="Lifestyle & Wellness" className="text-xs">Lifestyle</TabsTrigger>
-                    <TabsTrigger value="Entertainment & Pop Culture" className="text-xs">Entertainment</TabsTrigger>
-                  </TabsList>
-                  <TabsList className="grid grid-cols-1 w-full mt-2">
-                    <TabsTrigger value="Social Impact & Learning" className="text-xs">Social Impact</TabsTrigger>
-                  </TabsList>
+                  <div className="overflow-x-auto">
+                    <TabsList className="flex w-max min-w-full mb-2">
+                      <TabsTrigger value="popular" className="text-xs whitespace-nowrap">Popular</TabsTrigger>
+                      <TabsTrigger value="Sport & Fitness" className="text-xs whitespace-nowrap">Sports</TabsTrigger>
+                      <TabsTrigger value="Technology & Gaming" className="text-xs whitespace-nowrap">Tech</TabsTrigger>
+                      <TabsTrigger value="Arts & Creativity" className="text-xs whitespace-nowrap">Arts</TabsTrigger>
+                      <TabsTrigger value="Food & Drinks" className="text-xs whitespace-nowrap">Food</TabsTrigger>
+                      <TabsTrigger value="Lifestyle & Wellness" className="text-xs whitespace-nowrap">Lifestyle</TabsTrigger>
+                      <TabsTrigger value="Entertainment & Pop Culture" className="text-xs whitespace-nowrap">Entertainment</TabsTrigger>
+                      <TabsTrigger value="Social Impact & Learning" className="text-xs whitespace-nowrap">Social Impact</TabsTrigger>
+                    </TabsList>
+                  </div>
                   
                   <ScrollArea className="h-64 mt-4">
                     <div className="flex flex-wrap gap-2 p-1">
