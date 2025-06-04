@@ -368,69 +368,262 @@ function GroupsManagement() {
   );
 }
 
-// Create Group Form Component
+// Enhanced Create Group Form with HR Assistance
 function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void; isLoading: boolean }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: '',
-    isPrivate: false
+    groupType: 'interest',
+    accessLevel: 'open',
+    allowedDepartments: [] as string[],
+    allowedSites: [] as string[],
+    allowedRoles: [] as string[],
+    isPrivate: false,
+    requiresApproval: false,
+    maxMembers: '',
+    tags: [] as string[]
+  });
+
+  // Fetch departments and locations for HR assistance
+  const { data: departments } = useQuery({
+    queryKey: ['/api/users/departments'],
+  });
+
+  const { data: locations } = useQuery({
+    queryKey: ['/api/users/locations'],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const submitData = {
+      ...formData,
+      maxMembers: formData.maxMembers ? parseInt(formData.maxMembers) : null
+    };
+    onSubmit(submitData);
+  };
+
+  const groupTypeTemplates = {
+    department: {
+      name: 'Department Group',
+      description: 'A group for team collaboration and updates',
+      accessLevel: 'department_only'
+    },
+    site: {
+      name: 'Site Group', 
+      description: 'Connect with colleagues at your location',
+      accessLevel: 'site_only'
+    },
+    project: {
+      name: 'Project Team',
+      description: 'Collaborate on specific projects and initiatives',
+      accessLevel: 'approval_required'
+    },
+    company: {
+      name: 'Company-wide Group',
+      description: 'Open to all employees across the organization',
+      accessLevel: 'open'
+    }
+  };
+
+  const handleTemplateSelect = (template: keyof typeof groupTypeTemplates) => {
+    const templateData = groupTypeTemplates[template];
+    setFormData(prev => ({
+      ...prev,
+      groupType: template,
+      name: templateData.name,
+      description: templateData.description,
+      accessLevel: templateData.accessLevel
+    }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* HR Assistance - Group Templates */}
       <div>
-        <Label htmlFor="name">Group Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Enter group name"
-          required
-        />
+        <Label className="text-base font-semibold">Quick Setup Templates</Label>
+        <p className="text-sm text-gray-600 mb-3">Choose a template to get started quickly</p>
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(groupTypeTemplates).map(([key, template]) => (
+            <Button
+              key={key}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleTemplateSelect(key as keyof typeof groupTypeTemplates)}
+              className="text-left h-auto p-3"
+            >
+              <div>
+                <div className="font-medium text-sm">{template.name}</div>
+                <div className="text-xs text-gray-500">{template.description}</div>
+              </div>
+            </Button>
+          ))}
+        </div>
       </div>
-      
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Describe your group"
-          rows={3}
-        />
+
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Group Name *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Enter group name"
+            required
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Describe the group's purpose"
+            rows={3}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="groupType">Group Type</Label>
+          <Select 
+            value={formData.groupType} 
+            onValueChange={(value) => setFormData({ ...formData, groupType: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select group type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="interest">Interest Group</SelectItem>
+              <SelectItem value="department">Department Group</SelectItem>
+              <SelectItem value="site">Site/Location Group</SelectItem>
+              <SelectItem value="project">Project Team</SelectItem>
+              <SelectItem value="company">Company-wide</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      
-      <div>
-        <Label htmlFor="category">Category</Label>
-        <Select 
-          value={formData.category} 
-          onValueChange={(value) => setFormData({ ...formData, category: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Technology">Technology</SelectItem>
-            <SelectItem value="Sports">Sports</SelectItem>
-            <SelectItem value="Arts">Arts</SelectItem>
-            <SelectItem value="Business">Business</SelectItem>
-          </SelectContent>
-        </Select>
+
+      {/* Access Control */}
+      <div className="space-y-4">
+        <Label className="text-base font-semibold">Access Control</Label>
+        
+        <div>
+          <Label htmlFor="accessLevel">Who can join?</Label>
+          <Select 
+            value={formData.accessLevel} 
+            onValueChange={(value) => setFormData({ ...formData, accessLevel: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select access level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="open">Anyone in the company</SelectItem>
+              <SelectItem value="department_only">Department members only</SelectItem>
+              <SelectItem value="site_only">Site/Location members only</SelectItem>
+              <SelectItem value="approval_required">Requires approval to join</SelectItem>
+              <SelectItem value="invite_only">Invite only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {formData.accessLevel === 'department_only' && (
+          <div>
+            <Label>Allowed Departments</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2 max-h-32 overflow-y-auto">
+              {departments?.map((dept: string) => (
+                <div key={dept} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`dept-${dept}`}
+                    checked={formData.allowedDepartments.includes(dept)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setFormData(prev => ({
+                          ...prev,
+                          allowedDepartments: [...prev.allowedDepartments, dept]
+                        }));
+                      } else {
+                        setFormData(prev => ({
+                          ...prev,
+                          allowedDepartments: prev.allowedDepartments.filter(d => d !== dept)
+                        }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`dept-${dept}`} className="text-sm">{dept}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {formData.accessLevel === 'site_only' && (
+          <div>
+            <Label>Allowed Sites/Locations</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {locations?.map((location: string) => (
+                <div key={location} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`site-${location}`}
+                    checked={formData.allowedSites.includes(location)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setFormData(prev => ({
+                          ...prev,
+                          allowedSites: [...prev.allowedSites, location]
+                        }));
+                      } else {
+                        setFormData(prev => ({
+                          ...prev,
+                          allowedSites: prev.allowedSites.filter(s => s !== location)
+                        }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`site-${location}`} className="text-sm">{location}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="private"
-          checked={formData.isPrivate}
-          onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
-        />
-        <Label htmlFor="private">Make this group private</Label>
+
+      {/* Advanced Settings */}
+      <div className="space-y-4">
+        <Label className="text-base font-semibold">Advanced Settings</Label>
+        
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="private"
+              checked={formData.isPrivate}
+              onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
+            />
+            <Label htmlFor="private">Private group (hidden from discovery)</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="approval"
+              checked={formData.requiresApproval}
+              onCheckedChange={(checked) => setFormData({ ...formData, requiresApproval: !!checked })}
+            />
+            <Label htmlFor="approval">Require admin approval for new members</Label>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="maxMembers">Maximum Members (optional)</Label>
+          <Input
+            id="maxMembers"
+            type="number"
+            value={formData.maxMembers}
+            onChange={(e) => setFormData({ ...formData, maxMembers: e.target.value })}
+            placeholder="Leave empty for unlimited"
+            min="1"
+          />
+        </div>
       </div>
       
       <DialogFooter>

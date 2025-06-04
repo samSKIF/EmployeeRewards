@@ -5189,13 +5189,18 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
-  // Auto-create groups and manage memberships when interests are added/removed
+  // Enhanced auto-create groups and manage memberships when interests are added/removed
   async function syncGroupMemberships(userId: number, interestId: number, action: 'add' | 'remove') {
     try {
       const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       const organizationId = currentUser[0]?.organizationId;
       
       if (!organizationId) return;
+
+      // Check if we need to auto-create a group for this interest
+      if (action === 'add') {
+        await checkAndCreateAutoGroup(interestId, organizationId);
+      }
 
       if (action === 'add') {
         // Find or create group for this interest

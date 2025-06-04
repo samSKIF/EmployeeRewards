@@ -1260,15 +1260,39 @@ export const insertEmployeeInterestSchema = createInsertSchema(employeeInterests
 export type EmployeeInterest = typeof employeeInterests.$inferSelect;
 export type InsertEmployeeInterest = z.infer<typeof insertEmployeeInterestSchema>;
 
-// Interest Groups - Auto-generated groups based on interests
+// Enhanced Interest Groups - Auto-generated groups based on interests with enterprise features
 export const interestGroups = pgTable("interest_groups", {
   id: serial("id").primaryKey(),
-  interestId: integer("interest_id").references(() => interests.id, { onDelete: 'cascade' }).notNull(),
+  interestId: integer("interest_id").references(() => interests.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   description: text("description"),
   memberCount: integer("member_count").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  
+  // Enhanced enterprise features
+  groupType: text("group_type").default("interest").notNull(), // 'interest', 'department', 'site', 'project', 'company'
+  accessLevel: text("access_level").default("open").notNull(), // 'open', 'department_only', 'site_only', 'invite_only', 'approval_required'
+  isAutoCreated: boolean("is_auto_created").default(false), // Auto-created from interests
+  autoCreationThreshold: integer("auto_creation_threshold").default(5), // Minimum members for auto-creation
+  
+  // Department and site restrictions
+  allowedDepartments: text("allowed_departments").array(), // Array of department names
+  allowedSites: text("allowed_sites").array(), // Array of site/location names
+  allowedRoles: text("allowed_roles").array(), // Array of job titles/roles
+  
+  // Group management
+  createdBy: integer("created_by").references(() => users.id),
+  moderators: text("moderators").array(), // User IDs who can moderate
+  requiresApproval: boolean("requires_approval").default(false),
+  isPrivate: boolean("is_private").default(false),
+  maxMembers: integer("max_members"), // Optional member limit
+  
+  // Metadata
+  tags: text("tags").array(), // Searchable tags
+  coverImageUrl: text("cover_image_url"),
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
