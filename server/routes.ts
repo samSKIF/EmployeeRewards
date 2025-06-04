@@ -45,6 +45,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/employee-status', employeeStatusRoutes);
   app.use('/api/analytics', recognitionAIRoutes);
 
+  // Direct interests routes for employees (bypass microservice routing issue)
+  app.get('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      console.log("=== DIRECT ROUTE: GET employee interests ===");
+      const employeeId = parseInt(req.params.id);
+      
+      // Import interests schema directly
+      const { interests, employeeInterests } = await import("@shared/schema");
+      const { eq, and, or } = await import("drizzle-orm");
+      
+      // Get the current user's ID from the request
+      const currentUserId = req.user?.id;
+      const isCurrentUser = currentUserId === employeeId;
+      
+      // Fetch the employee's interests
+      const employeeInterestsData = await db
+        .select({
+          interest: interests,
+          customLabel: employeeInterests.customLabel,
+          isPrimary: employeeInterests.isPrimary,
+          visibility: employeeInterests.visibility
+        })
+        .from(employeeInterests)
+        .innerJoin(interests, eq(employeeInterests.interestId, interests.id))
+        .where(
+          and(
+            eq(employeeInterests.employeeId, employeeId),
+            or(
+              eq(employeeInterests.visibility, "EVERYONE"),
+              isCurrentUser ? sql`TRUE` : sql`FALSE`
+            )
+          )
+        );
+      
+      // Format the response
+      const formattedInterests = employeeInterestsData.map(item => ({
+        id: item.interest.id,
+        label: item.customLabel || item.interest.label,
+        category: item.interest.category,
+        icon: item.interest.icon,
+        isPrimary: item.isPrimary,
+        visibility: item.visibility
+      }));
+      
+      console.log("Found interests:", formattedInterests.length);
+      res.status(200).json(formattedInterests);
+    } catch (error: any) {
+      console.error("Error fetching employee interests:", error);
+      res.status(500).json({ message: "Failed to fetch interests" });
+    }
+  });
+
+  app.post('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      console.log("=== DIRECT ROUTE: POST employee interests ===");
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
+      const employeeId = parseInt(req.params.id);
+      const currentUserId = req.user?.id;
+      
+      // Check authorization
+      if (currentUserId !== employeeId) {
+        return res.status(403).json({ message: "Not authorized to update this employee's interests" });
+      }
+      
+      // Import interests schema directly
+      const { interests, employeeInterests } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      const interestsData = req.body;
+      console.log('Processing', interestsData.length, 'interests for employee', employeeId);
+      
+      // Transaction to update interests
+      await db.transaction(async (tx) => {
+        // Delete all existing interests for this employee
+        console.log('Deleting existing interests for employee:', employeeId);
+        await tx
+          .delete(employeeInterests)
+          .where(eq(employeeInterests.employeeId, employeeId));
+        
+        // Insert new interests
+        for (const interest of interestsData) {
+          console.log('Processing interest:', interest);
+          let interestId = interest.interestId;
+          
+          // If no interestId is provided but customLabel is, create a new interest
+          if (!interestId && interest.customLabel) {
+            console.log('Creating custom interest:', interest.customLabel);
+            const [newInterest] = await tx
+              .insert(interests)
+              .values({
+                label: interest.customLabel,
+                category: "Custom",
+                icon: "✨"
+              })
+              .returning();
+            
+            interestId = newInterest.id;
+            console.log('Created custom interest with ID:', interestId);
+          }
+          
+          // Skip if no valid interestId
+          if (!interestId) {
+            console.log('Skipping interest - no valid interestId:', interest);
+            continue;
+          }
+          
+          // Insert the employee interest relation
+          const insertData = {
+            employeeId,
+            interestId,
+            customLabel: interest.customLabel,
+            isPrimary: interest.isPrimary,
+            visibility: interest.visibility || 'EVERYONE'
+          };
+          console.log('Inserting employee interest:', insertData);
+          
+          await tx
+            .insert(employeeInterests)
+            .values(insertData);
+          
+          console.log('Successfully inserted employee interest');
+        }
+      });
+      
+      // Fetch the updated interests
+      const updatedInterests = await db
+        .select({
+          interest: interests,
+          customLabel: employeeInterests.customLabel,
+          isPrimary: employeeInterests.isPrimary,
+          visibility: employeeInterests.visibility
+        })
+        .from(employeeInterests)
+        .innerJoin(interests, eq(employeeInterests.interestId, interests.id))
+        .where(eq(employeeInterests.employeeId, employeeId));
+      
+      // Format the response
+      const formattedInterests = updatedInterests.map(item => ({
+        id: item.interest.id,
+        label: item.customLabel || item.interest.label,
+        category: item.interest.category,
+        icon: item.interest.icon,
+        isPrimary: item.isPrimary,
+        visibility: item.visibility
+      }));
+      
+      console.log('Returning', formattedInterests.length, 'updated interests');
+      res.status(200).json(formattedInterests);
+    } catch (error: any) {
+      console.error("Error updating employee interests:", error);
+      res.status(500).json({ message: "Failed to save interests" });
+    }
+  });
+
   // Celebrations API - Birthday and Work Anniversary tracking
   app.get('/api/celebrations/today', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
