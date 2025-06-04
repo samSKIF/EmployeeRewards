@@ -43,27 +43,16 @@ const ProfilePage = () => {
     retry: false
   });
 
-  // User details fallback values
-  const userDetailsFallback = {
-    title: "Deputy Director",
-    location: "Pawnee",
-    department: "Parks",
-    responsibilities: "Citizen Outreach, Council Meetings, Making Pawnee great",
-    hireDate: "8/24/17",
-    birthday: "Aug 15",
-    profileStatus: 89
-  };
-
   // Update form values when user data is fetched
   useEffect(() => {
     if (user) {
-      // Initialize form values with user data
+      // Initialize form values with user data only
       setFormValues({
         name: user.name || '',
-        title: user.title || userDetailsFallback.title || '',
-        department: user.department || userDetailsFallback.department || '',
-        location: user.location || userDetailsFallback.location || '',
-        responsibilities: user.responsibilities || userDetailsFallback.responsibilities || ''
+        title: user.jobTitle || '',
+        department: user.department || '',
+        location: user.location || '',
+        responsibilities: user.responsibilities || ''
       });
     }
   }, [user]);
@@ -95,16 +84,27 @@ const ProfilePage = () => {
     { id: 103, name: "Mike Chen", avatar: "/avatars/mike.jpg" }
   ];
 
-  // User details (combine with the fallback values)
+  // Format dates properly
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // User details (use real database values only)
   const userDetails = {
-    email: user?.email || "admin@demo.io",
-    title: user?.title || userDetailsFallback.title,
-    location: user?.location || userDetailsFallback.location, 
-    department: user?.department || userDetailsFallback.department,
-    responsibilities: user?.responsibilities || userDetailsFallback.responsibilities,
-    hireDate: userDetailsFallback.hireDate,
-    birthday: userDetailsFallback.birthday,
-    profileStatus: userDetailsFallback.profileStatus
+    email: user?.email || "",
+    title: user?.jobTitle || "",
+    location: user?.location || "", 
+    department: user?.department || "",
+    responsibilities: user?.responsibilities || "",
+    hireDate: formatDate(user?.dateJoined),
+    birthday: formatDate(user?.dateOfBirth),
+    profileStatus: 89 // This can remain as a calculated value
   };
 
   // Avatar upload mutation
