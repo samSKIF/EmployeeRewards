@@ -35,6 +35,7 @@ import AdminStatusTypes from "@/pages/admin-status-types";
 import StatusDemo from "@/pages/status-demo";
 import OrgChart from "@/pages/org-chart";
 import GroupsPage from "@/pages/groups";
+import GroupsPageFacebook from "@/pages/groups-facebook";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -320,7 +321,7 @@ function App() {
 
               <Route path="/groups">
                 <SocialLayout>
-                  <GroupsPage />
+                  <GroupsPageFacebook />
                 </SocialLayout>
               </Route>
 
