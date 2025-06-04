@@ -332,7 +332,35 @@ export default function AdminEmployeesPage() {
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Apply validation and normalization for department and location fields
+    if (name === 'department' || name === 'location') {
+      const normalizedValue = value.trim();
+      // Apply proper case formatting on blur
+      setFormData(prev => ({ ...prev, [name]: normalizedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  }
+
+  // Handle blur events for department and location to apply proper formatting
+  function handleFieldBlur(fieldName: 'department' | 'location', value: string) {
+    if (value.trim()) {
+      const properCase = value.trim()
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      setFormData(prev => ({ ...prev, [fieldName]: properCase }));
+      
+      // Auto-add to available options if it doesn't exist
+      if (fieldName === 'department' && !allDepartments.some(dept => normalizeText(dept) === normalizeText(properCase))) {
+        setAllDepartments(prev => [...prev, properCase]);
+      } else if (fieldName === 'location' && !allSites.some(site => normalizeText(site) === normalizeText(properCase))) {
+        setAllSites(prev => [...prev, properCase]);
+      }
+    }
   }
 
   function handleCheckboxChange(name: string, checked: boolean) {
@@ -370,20 +398,115 @@ export default function AdminEmployeesPage() {
     }));
   }
 
-  // Add new site
-  function addNewSite() {
-    if (newSite.trim() && !allSites.includes(newSite.trim())) {
-      setAllSites(prev => [...prev, newSite.trim()]);
-      setNewSite('');
-    }
+  // Normalize text for comparison (handles case, spacing, special chars)
+  function normalizeText(text: string): string {
+    return text.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
   }
 
-  // Add new department
-  function addNewDepartment() {
-    if (newDepartment.trim() && !allDepartments.includes(newDepartment.trim())) {
-      setAllDepartments(prev => [...prev, newDepartment.trim()]);
-      setNewDepartment('');
+  // Check for similar existing entries
+  function findSimilarEntry(newEntry: string, existingEntries: string[]): string | null {
+    const normalized = normalizeText(newEntry);
+    return existingEntries.find(entry => normalizeText(entry) === normalized) || null;
+  }
+
+  // Add new site with validation
+  function addNewSite() {
+    const trimmedSite = newSite.trim();
+    if (!trimmedSite) return;
+
+    // Check for exact duplicates (case-insensitive)
+    const similar = findSimilarEntry(trimmedSite, allSites);
+    if (similar) {
+      toast({
+        title: "Duplicate Site",
+        description: `"${trimmedSite}" is too similar to existing site "${similar}"`,
+        variant: "destructive"
+      });
+      return;
     }
+
+    // Validate format
+    if (trimmedSite.length < 2) {
+      toast({
+        title: "Invalid Site Name",
+        description: "Site name must be at least 2 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (trimmedSite.length > 50) {
+      toast({
+        title: "Invalid Site Name", 
+        description: "Site name must be less than 50 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Add proper capitalization
+    const properCase = trimmedSite
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    setAllSites(prev => [...prev, properCase]);
+    setNewSite('');
+    toast({
+      title: "Site Added",
+      description: `"${properCase}" has been added to available sites`
+    });
+  }
+
+  // Add new department with validation
+  function addNewDepartment() {
+    const trimmedDept = newDepartment.trim();
+    if (!trimmedDept) return;
+
+    // Check for exact duplicates (case-insensitive)
+    const similar = findSimilarEntry(trimmedDept, allDepartments);
+    if (similar) {
+      toast({
+        title: "Duplicate Department",
+        description: `"${trimmedDept}" is too similar to existing department "${similar}"`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate format
+    if (trimmedDept.length < 2) {
+      toast({
+        title: "Invalid Department Name",
+        description: "Department name must be at least 2 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (trimmedDept.length > 50) {
+      toast({
+        title: "Invalid Department Name",
+        description: "Department name must be less than 50 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Add proper capitalization
+    const properCase = trimmedDept
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    setAllDepartments(prev => [...prev, properCase]);
+    setNewDepartment('');
+    toast({
+      title: "Department Added",
+      description: `"${properCase}" has been added to available departments`
+    });
   }
 
   function openEditDialog(employee: Employee) {
@@ -662,7 +785,18 @@ export default function AdminEmployeesPage() {
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
+                onBlur={(e) => handleFieldBlur('department', e.target.value)}
+                placeholder="e.g., Engineering, Marketing, Sales"
+                list="create-departments-list"
               />
+              <datalist id="create-departments-list">
+                {allDepartments.map(dept => (
+                  <option key={dept} value={dept} />
+                ))}
+              </datalist>
+              {formData.department && formData.department.length > 50 && (
+                <p className="text-sm text-red-600">Department name must be less than 50 characters</p>
+              )}
             </div>
             
             <div className="grid gap-2">
@@ -672,8 +806,18 @@ export default function AdminEmployeesPage() {
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                placeholder="New York Office"
+                onBlur={(e) => handleFieldBlur('location', e.target.value)}
+                placeholder="e.g., New York Office, London, Remote"
+                list="create-locations-list"
               />
+              <datalist id="create-locations-list">
+                {allSites.map(site => (
+                  <option key={site} value={site} />
+                ))}
+              </datalist>
+              {formData.location && formData.location.length > 50 && (
+                <p className="text-sm text-red-600">Location name must be less than 50 characters</p>
+              )}
             </div>
             
             <div className="grid gap-2">
@@ -756,6 +900,114 @@ export default function AdminEmployeesPage() {
               />
               <Label htmlFor="isAdmin">Admin privileges</Label>
             </div>
+
+            {/* Admin Permissions Configuration for Create Form */}
+            {formData.isAdmin && (
+              <div className="mt-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">Admin Permissions Configuration</h3>
+                
+                <div className="grid gap-4">
+                  {/* Admin Scope Selection */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="create-adminScope">Admin Scope *</Label>
+                    <Select 
+                      value={formData.adminScope} 
+                      onValueChange={handleAdminScopeChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select admin scope" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="super">Super Admin (Full Access)</SelectItem>
+                        <SelectItem value="site">Site Admin (Multiple Sites)</SelectItem>
+                        <SelectItem value="department">Department Admin (Multiple Departments)</SelectItem>
+                        <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.adminScope === 'super' && "Complete administrative access to all company resources"}
+                      {formData.adminScope === 'site' && "Administrative access to selected sites/locations"}
+                      {formData.adminScope === 'department' && "Administrative access to selected departments"}
+                      {formData.adminScope === 'hybrid' && "Administrative access to selected sites AND departments"}
+                    </p>
+                  </div>
+
+                  {/* Site Selection for Site/Hybrid Admins */}
+                  {(formData.adminScope === 'site' || formData.adminScope === 'hybrid') && (
+                    <div className="grid gap-2">
+                      <Label>Allowed Sites/Locations</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
+                        {allSites.length > 0 ? (
+                          allSites.map(site => (
+                            <div key={site} className="flex items-center space-x-2 py-1">
+                              <Checkbox
+                                id={`create-site-${site}`}
+                                checked={formData.allowedSites.includes(site)}
+                                onCheckedChange={(checked) => handleSiteSelection(site, checked as boolean)}
+                              />
+                              <Label htmlFor={`create-site-${site}`} className="text-sm">{site}</Label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No sites available</p>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {formData.allowedSites.length} site(s)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Department Selection for Department/Hybrid Admins */}
+                  {(formData.adminScope === 'department' || formData.adminScope === 'hybrid') && (
+                    <div className="grid gap-2">
+                      <Label>Allowed Departments</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
+                        {allDepartments.length > 0 ? (
+                          allDepartments.map(department => (
+                            <div key={department} className="flex items-center space-x-2 py-1">
+                              <Checkbox
+                                id={`create-dept-${department}`}
+                                checked={formData.allowedDepartments.includes(department)}
+                                onCheckedChange={(checked) => handleDepartmentSelection(department, checked as boolean)}
+                              />
+                              <Label htmlFor={`create-dept-${department}`} className="text-sm">{department}</Label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No departments available</p>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {formData.allowedDepartments.length} department(s)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Admin Summary */}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <h4 className="font-medium text-blue-800 mb-2">Permission Summary</h4>
+                    <div className="text-sm text-blue-700">
+                      {formData.adminScope === 'super' && (
+                        <p>✓ Full administrative access to all company resources</p>
+                      )}
+                      {formData.adminScope === 'site' && (
+                        <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                      )}
+                      {formData.adminScope === 'department' && (
+                        <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                      )}
+                      {formData.adminScope === 'hybrid' && (
+                        <div>
+                          <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                          <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
@@ -876,7 +1128,18 @@ export default function AdminEmployeesPage() {
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
+                onBlur={(e) => handleFieldBlur('department', e.target.value)}
+                placeholder="e.g., Engineering, Marketing, Sales"
+                list="departments-list"
               />
+              <datalist id="departments-list">
+                {allDepartments.map(dept => (
+                  <option key={dept} value={dept} />
+                ))}
+              </datalist>
+              {formData.department && formData.department.length > 50 && (
+                <p className="text-sm text-red-600">Department name must be less than 50 characters</p>
+              )}
             </div>
             
             <div className="grid gap-2">
@@ -886,8 +1149,18 @@ export default function AdminEmployeesPage() {
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                placeholder="New York Office"
+                onBlur={(e) => handleFieldBlur('location', e.target.value)}
+                placeholder="e.g., New York Office, London, Remote"
+                list="locations-list"
               />
+              <datalist id="locations-list">
+                {allSites.map(site => (
+                  <option key={site} value={site} />
+                ))}
+              </datalist>
+              {formData.location && formData.location.length > 50 && (
+                <p className="text-sm text-red-600">Location name must be less than 50 characters</p>
+              )}
             </div>
             
             <div className="grid gap-2">
