@@ -109,10 +109,7 @@ function GroupsManagement() {
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (groupData: any) => {
-      return apiRequest('/api/groups', {
-        method: 'POST',
-        body: JSON.stringify(groupData)
-      });
+      return apiRequest('/api/admin/groups', groupData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
@@ -127,10 +124,7 @@ function GroupsManagement() {
   // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: any }) => {
-      return apiRequest(`/api/groups/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
+      return apiRequest(`/api/admin/groups/${id}`, data, 'PUT');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
@@ -145,9 +139,7 @@ function GroupsManagement() {
   // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/groups/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest(`/api/admin/groups/${id}`, {}, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });

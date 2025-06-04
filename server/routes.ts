@@ -5189,6 +5189,82 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Function to check and auto-create interest groups when threshold is met
+  async function checkAndCreateAutoGroup(interestId: number, organizationId: number) {
+    try {
+      // Get the interest details
+      const interest = await db.select().from(interests).where(eq(interests.id, interestId)).limit(1);
+      if (!interest[0]) return;
+
+      // Count users with this interest in the organization
+      const usersWithInterest = await db.select({ count: sql<number>`count(*)` })
+        .from(employeeInterests)
+        .innerJoin(users, eq(employeeInterests.userId, users.id))
+        .where(and(
+          eq(employeeInterests.interestId, interestId),
+          eq(users.organizationId, organizationId)
+        ));
+
+      const memberCount = usersWithInterest[0]?.count || 0;
+
+      // Check if we need to auto-create a group (threshold of 5+ members)
+      if (memberCount >= 5) {
+        // Check if group already exists for this interest
+        const existingGroup = await db.select()
+          .from(interestGroups)
+          .where(and(
+            eq(interestGroups.interestId, interestId),
+            eq(interestGroups.organizationId, organizationId)
+          ))
+          .limit(1);
+
+        if (!existingGroup[0]) {
+          // Create new auto-generated group
+          const newGroup = await db.insert(interestGroups).values({
+            name: `${interest[0].name} Interest Group`,
+            description: `Automatically created group for employees interested in ${interest[0].name}`,
+            interestId: interestId,
+            organizationId: organizationId,
+            groupType: 'interest',
+            accessLevel: 'open',
+            isAutoCreated: true,
+            autoCreationThreshold: 5,
+            memberCount: 0,
+            isActive: true
+          }).returning();
+
+          if (newGroup[0]) {
+            // Add all users with this interest to the group
+            const usersToAdd = await db.select({ userId: employeeInterests.userId })
+              .from(employeeInterests)
+              .innerJoin(users, eq(employeeInterests.userId, users.id))
+              .where(and(
+                eq(employeeInterests.interestId, interestId),
+                eq(users.organizationId, organizationId)
+              ));
+
+            if (usersToAdd.length > 0) {
+              await db.insert(interestGroupMembers).values(
+                usersToAdd.map(user => ({
+                  groupId: newGroup[0].id,
+                  userId: user.userId,
+                  role: 'member'
+                }))
+              );
+
+              // Update member count
+              await db.update(interestGroups)
+                .set({ memberCount: usersToAdd.length })
+                .where(eq(interestGroups.id, newGroup[0].id));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in checkAndCreateAutoGroup:', error);
+    }
+  }
+
   // Enhanced auto-create groups and manage memberships when interests are added/removed
   async function syncGroupMemberships(userId: number, interestId: number, action: 'add' | 'remove') {
     try {
