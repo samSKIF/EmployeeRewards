@@ -233,7 +233,9 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                         return (
                           <div
                             key={interest.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm cursor-pointer hover:bg-red-50 hover:border-red-200 transition-colors"
+                            onClick={() => handleRemoveInterest(interest.name)}
+                            title="Click to remove"
                           >
                             <span className="text-sm">{dbInterest?.icon || '📌'}</span>
                             <span className="font-medium whitespace-nowrap">{interest.name}</span>
@@ -241,15 +243,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                               <Users className="h-3 w-3" />
                               <span>{stats.memberCount}</span>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-4 w-4 p-0 hover:bg-red-100 ml-1"
-                              onClick={() => handleRemoveInterest(interest.name)}
-                              disabled={removeInterestMutation.isPending}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
+                            <X className="h-3 w-3 ml-1 text-muted-foreground" />
                           </div>
                         );
                       })}
