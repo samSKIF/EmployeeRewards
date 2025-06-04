@@ -143,9 +143,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       res.json({ message: 'Interest added successfully' });
-      
-      console.log('Returning', formattedInterests.length, 'updated interests');
-      res.status(200).json(formattedInterests);
     } catch (error: any) {
       console.error("Error updating employee interests:", error);
       res.status(500).json({ message: "Failed to save interests" });
