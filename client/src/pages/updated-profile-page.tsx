@@ -20,7 +20,7 @@ import {
   Zap, Heart, ImageIcon, Camera as CameraIcon
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
-import { SimpleInterestsSection } from "@/components/profile/SimpleInterestsSection";
+import { CompactInterestsSection } from "@/components/profile/CompactInterestsSection";
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {

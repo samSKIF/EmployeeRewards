@@ -5102,6 +5102,71 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Add interest to user profile
+  app.post('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { interestId } = req.body;
+      
+      if (!interestId || !req.user) {
+        return res.status(400).json({ message: 'Interest ID and authentication required' });
+      }
+
+      // Check if user already has this interest
+      const existing = await db
+        .select()
+        .from(employeeInterests)
+        .where(
+          and(
+            eq(employeeInterests.employeeId, parseInt(id)),
+            eq(employeeInterests.interestId, interestId)
+          )
+        );
+
+      if (existing.length > 0) {
+        return res.status(400).json({ message: 'Interest already added' });
+      }
+
+      // Add the interest
+      await db.insert(employeeInterests).values({
+        employeeId: parseInt(id),
+        interestId: interestId,
+        createdAt: new Date()
+      });
+
+      res.json({ success: true, message: 'Interest added successfully' });
+    } catch (error) {
+      console.error('Error adding interest:', error);
+      res.status(500).json({ message: 'Failed to add interest' });
+    }
+  });
+
+  // Remove interest from user profile
+  app.delete('/api/employees/:id/interests/:interestId', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id, interestId } = req.params;
+      
+      if (!req.user) {
+        return res.status(400).json({ message: 'Authentication required' });
+      }
+
+      // Remove the interest
+      await db
+        .delete(employeeInterests)
+        .where(
+          and(
+            eq(employeeInterests.employeeId, parseInt(id)),
+            eq(employeeInterests.interestId, parseInt(interestId))
+          )
+        );
+
+      res.json({ success: true, message: 'Interest removed successfully' });
+    } catch (error) {
+      console.error('Error removing interest:', error);
+      res.status(500).json({ message: 'Failed to remove interest' });
+    }
+  });
+
   app.post('/api/interests/groups/join', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { interestName } = req.body;
