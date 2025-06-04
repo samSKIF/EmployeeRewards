@@ -155,22 +155,34 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const [isLoading, setIsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('Sports & Fitness');
 
-  // Fetch user interests
+  // Fetch user interests and available interests
   useEffect(() => {
-    const fetchInterests = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await apiRequest('GET', `/api/employees/${userId}/interests`);
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // Fetch both user interests and available interests in parallel
+        const [userInterestsResponse, availableInterestsResponse] = await Promise.all([
+          apiRequest('GET', `/api/employees/${userId}/interests`),
+          apiRequest('GET', '/api/interests')
+        ]);
+        
+        // Process user interests
+        if (userInterestsResponse.ok) {
+          const userInterestsData = await userInterestsResponse.json();
+          console.log('Fetched user interests:', userInterestsData);
+          setInterests(Array.isArray(userInterestsData) ? userInterestsData : []);
         }
         
-        const data = await response.json();
-        console.log('Fetched interests data:', data);
-        setInterests(Array.isArray(data) ? data : []);
+        // Process available interests
+        if (availableInterestsResponse.ok) {
+          const availableInterestsData = await availableInterestsResponse.json();
+          console.log('Fetched available interests:', availableInterestsData);
+          setAvailableInterests(Array.isArray(availableInterestsData) ? availableInterestsData : []);
+        }
+        
       } catch (error) {
-        console.error('Failed to fetch interests:', error);
+        console.error('Failed to fetch data:', error);
         // Only show error toast if it's a real error, not just empty data
         if (error instanceof Error && !error.message.includes('404')) {
           toast({
@@ -179,15 +191,16 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             variant: 'destructive',
           });
         }
-        // Set empty array on error
+        // Set empty arrays on error
         setInterests([]);
+        setAvailableInterests([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (userId) {
-      fetchInterests();
+      fetchData();
     }
   }, [userId, toast, t]);
 
