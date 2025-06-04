@@ -28,6 +28,8 @@ import {
   supportTickets, ticketMessages, productReviews,
   posts, comments, reactions, polls, pollVotes, recognitions,
   interests, employeeInterests,
+  interestGroups, interestGroupMembers, interestGroupPosts, 
+  interestGroupPostComments, interestGroupPostLikes,
 
   // Onboarding schemas
   onboardingPlans, onboardingMissions, onboardingAssignments, onboardingProgress,
