@@ -13,7 +13,7 @@ import ProfilePage from "@/pages/profile-page";
 import NewProfilePage from "@/pages/new-profile-page";
 import UpdatedProfilePage from "@/pages/updated-profile-page";
 import AdminEmployees from "@/pages/admin-employees";
-import AdminEmployeesGroups from "@/pages/admin-employees-groups";
+import AdminEmployeesGroups from "@/pages/admin-employees-groups-new";
 import AdminPermissions from "@/pages/admin-permissions";
 import EmployeePromotion from "@/pages/employee-promotion";
 import AdminSurveys from "@/pages/admin-surveys";
