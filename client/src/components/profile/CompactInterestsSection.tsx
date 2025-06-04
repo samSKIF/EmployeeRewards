@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Plus, Users, Search, X } from 'lucide-react';
+import { Heart, Plus, Users, Search, X, Edit } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -185,8 +185,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="h-8">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Interest
+                <Edit className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh]">
