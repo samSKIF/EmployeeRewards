@@ -175,15 +175,23 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                 </div>
 
                 <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <TabsList className="grid grid-cols-4 w-full">
+                  <TabsList className="grid grid-cols-4 w-full mb-2">
                     <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
                     <TabsTrigger value="Sport & Fitness" className="text-xs">Sports</TabsTrigger>
                     <TabsTrigger value="Technology & Gaming" className="text-xs">Tech</TabsTrigger>
                     <TabsTrigger value="Arts & Creativity" className="text-xs">Arts</TabsTrigger>
                   </TabsList>
+                  <TabsList className="grid grid-cols-3 w-full">
+                    <TabsTrigger value="Food & Drinks" className="text-xs">Food</TabsTrigger>
+                    <TabsTrigger value="Lifestyle & Wellness" className="text-xs">Lifestyle</TabsTrigger>
+                    <TabsTrigger value="Entertainment & Pop Culture" className="text-xs">Entertainment</TabsTrigger>
+                  </TabsList>
+                  <TabsList className="grid grid-cols-1 w-full mt-2">
+                    <TabsTrigger value="Social Impact & Learning" className="text-xs">Social Impact</TabsTrigger>
+                  </TabsList>
                   
                   <ScrollArea className="h-96 mt-4">
-                    <div className="grid grid-cols-2 gap-2 p-1">
+                    <div className="space-y-1 p-1">
                       {filteredInterests.map((interest) => {
                         const userHasInterest = hasInterest(interest.label);
                         const stats = getInterestStats(interest.label);
@@ -191,37 +199,33 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                         return (
                           <div
                             key={interest.id}
-                            className={`p-3 rounded-lg border transition-colors ${
+                            className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                               userHasInterest 
                                 ? 'bg-blue-50 border-blue-200' 
                                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate" title={interest.label}>
-                                  {interest.label}
-                                </p>
-                                <p className="text-xs text-muted-foreground">{interest.category}</p>
-                                <div className="flex items-center gap-1 mt-1">
-                                  <Users className="h-3 w-3 text-muted-foreground" />
-                                  <span className="text-xs text-muted-foreground">{stats.memberCount}</span>
-                                </div>
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <span className="text-lg">{interest.icon || '📌'}</span>
+                              <span className="text-sm font-medium truncate">{interest.label}</span>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                                <Users className="h-3 w-3" />
+                                <span>{stats.memberCount}</span>
                               </div>
-                              
-                              <Button
-                                size="sm"
-                                variant={userHasInterest ? "destructive" : "default"}
-                                className="h-7 px-2 text-xs shrink-0"
-                                onClick={() => userHasInterest 
-                                  ? handleRemoveInterest(interest.label) 
-                                  : handleAddInterest(interest)
-                                }
-                                disabled={addInterestMutation.isPending || removeInterestMutation.isPending}
-                              >
-                                {userHasInterest ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                              </Button>
                             </div>
+                            
+                            <Button
+                              size="sm"
+                              variant={userHasInterest ? "destructive" : "default"}
+                              className="h-8 w-8 p-0 ml-3 shrink-0"
+                              onClick={() => userHasInterest 
+                                ? handleRemoveInterest(interest.label) 
+                                : handleAddInterest(interest)
+                              }
+                              disabled={addInterestMutation.isPending || removeInterestMutation.isPending}
+                            >
+                              {userHasInterest ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            </Button>
                           </div>
                         );
                       })}
