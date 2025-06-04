@@ -467,17 +467,16 @@ const UpdatedProfilePage = () => {
               {/* Profile Image */}
               <div className="absolute -bottom-12 left-8">
                 <div className="relative">
-                  {user?.isAdmin ? (
-                    <div className="h-24 w-24 border-4 border-white rounded-full bg-gray-50 flex items-center justify-center">
-                      <Badge className="bg-red-100 text-red-800">Admin</Badge>
-                    </div>
-                  ) : (
-                    <Avatar className="h-24 w-24 border-4 border-white">
-                      <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
-                        {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
-                      </AvatarFallback>
-                      <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
-                    </Avatar>
+                  <Avatar className="h-24 w-24 border-4 border-white">
+                    <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
+                      {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
+                    </AvatarFallback>
+                    <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+                  </Avatar>
+                  {user?.isAdmin && (
+                    <Badge className="absolute -top-2 -right-2 bg-red-100 text-red-800 text-xs">
+                      Admin
+                    </Badge>
                   )}
                   <Button
                     variant="outline"
