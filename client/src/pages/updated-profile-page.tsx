@@ -61,7 +61,7 @@ const UpdatedProfilePage = () => {
         department: user.department || '',
         location: user.location || '',
         responsibilities: user.responsibilities || '',
-        aboutMe: ''
+        aboutMe: user.aboutMe || ''
       });
     }
   }, [user]);

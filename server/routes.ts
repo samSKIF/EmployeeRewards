@@ -1002,19 +1002,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get fields to update from the request body
-      const { name, title, department, location, responsibilities, avatarUrl } = req.body;
+      const { name, title, department, location, responsibilities, aboutMe, avatarUrl } = req.body;
 
-      // Update user fields in a real app this would interact with the database
-      // For now, we just return the updated user object
-      const updatedUser = {
-        ...req.user,
-        name: name || req.user.name,
-        title: title || req.user.title,
-        department: department || req.user.department,
-        location: location || req.user.location,
-        responsibilities: responsibilities || req.user.responsibilities,
-        avatarUrl: avatarUrl || req.user.avatarUrl
-      };
+      // Build update object with only provided fields
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (title !== undefined) updateData.jobTitle = title;
+      if (department !== undefined) updateData.department = department;
+      if (location !== undefined) updateData.location = location;
+      if (responsibilities !== undefined) updateData.responsibilities = responsibilities;
+      if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
+      if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
+
+      // Update user in database
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, req.user.id))
+        .returning();
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
       // Get the user's balance
       const balance = await storage.getUserBalance(req.user.id);
