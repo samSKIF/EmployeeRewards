@@ -66,7 +66,14 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
         },
         body: JSON.stringify({ interestId })
       });
-      if (!response.ok) throw new Error('Failed to add interest');
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 400 && errorData.message === 'Interest already added') {
+          // Interest already exists, this is okay - just return success
+          return { message: 'Interest already in your profile' };
+        }
+        throw new Error(errorData.message || 'Failed to add interest');
+      }
       return response.json();
     },
     onSuccess: () => {
