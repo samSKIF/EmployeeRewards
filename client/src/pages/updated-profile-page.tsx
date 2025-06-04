@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AdminIcon } from "@/components/AdminIcon";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -470,7 +470,7 @@ const UpdatedProfilePage = () => {
                 <div className="relative">
                   {user?.isAdmin ? (
                     <div className="h-24 w-24 border-4 border-white rounded-full bg-gray-50 flex items-center justify-center">
-                      <AdminIcon size={60} className="text-gray-700" />
+                      <Badge className="bg-red-100 text-red-800">Admin</Badge>
                     </div>
                   ) : (
                     <Avatar className="h-24 w-24 border-4 border-white">
