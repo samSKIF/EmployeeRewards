@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminIcon } from '@/components/AdminIcon';
+
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, Search, ChevronDown, Mail, Phone, MapPin, Calendar, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -110,18 +110,12 @@ const OrgChart: React.FC = () => {
             {/* Avatar Section */}
             <div className="flex justify-center pt-4">
               <div className="relative">
-                {user.isAdmin ? (
-                  <div className="h-16 w-16 border-4 border-white shadow-lg rounded-full bg-gray-50 flex items-center justify-center">
-                    <AdminIcon size={40} className="text-gray-700" />
-                  </div>
-                ) : (
-                  <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
-                    <AvatarImage src={user.avatarUrl} />
-                    <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-gray-400 to-gray-500 text-white">
+                <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
+                  <AvatarImage src={user.avatarUrl} />
+                  <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-gray-400 to-gray-500 text-white">
                       {user.name.charAt(0)}{user.surname?.charAt(0) || ''}
                     </AvatarFallback>
                   </Avatar>
-                )}
               </div>
             </div>
 

@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminIcon } from '@/components/AdminIcon';
+
 import { Badge } from '@/components/ui/badge';
 import {
   Command,
