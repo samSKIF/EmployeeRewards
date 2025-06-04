@@ -54,6 +54,22 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     enabled: !isEditing
   });
 
+  // Fetch user's selected interests
+  const { data: userInterests } = useQuery({
+    queryKey: ['/api/employees', user?.id, 'interests'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/employees/${user.id}/interests`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !isEditing && !!user?.id
+  });
+
   // Add interest mutation
   const addInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
@@ -78,6 +94,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/interests/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/employees', user?.id, 'interests'] });
       setIsAddDialogOpen(false);
     }
   });
@@ -97,6 +114,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/interests/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/employees', user?.id, 'interests'] });
     }
   });
 
@@ -232,20 +250,19 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                 {/* Selected Interests Section - Bottom */}
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Your Selected Interests</h4>
-                  {interests.length > 0 ? (
+                  {userInterests && userInterests.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {interests.map((interest) => {
-                        const dbInterest = findDatabaseInterest(interest.name);
-                        const stats = getInterestStats(interest.name);
+                      {userInterests.map((interest: any) => {
+                        const stats = getInterestStats(interest.label);
                         return (
                           <div
                             key={interest.id}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm cursor-pointer hover:bg-red-50 hover:border-red-200 transition-colors"
-                            onClick={() => handleRemoveInterest(interest.name)}
+                            onClick={() => removeInterestMutation.mutate(interest.id)}
                             title="Click to remove"
                           >
-                            <span className="text-sm">{dbInterest?.icon || '📌'}</span>
-                            <span className="font-medium whitespace-nowrap">{interest.name}</span>
+                            <span className="text-sm">{interest.icon || '📌'}</span>
+                            <span className="font-medium whitespace-nowrap">{interest.label}</span>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Users className="h-3 w-3" />
                               <span>{stats.memberCount}</span>
