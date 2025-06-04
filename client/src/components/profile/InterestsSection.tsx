@@ -320,19 +320,34 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       
       const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
 
+      console.log('Save response status:', response.status);
+      console.log('Save response ok:', response.ok);
+
       if (response.ok) {
-        const updatedInterests = await response.json();
-        setInterests(updatedInterests);
-        setIsModalOpen(false);
-        toast({
-          title: t('interests.saveSuccess', 'Interests saved'),
-          description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
-        });
+        try {
+          const updatedInterests = await response.json();
+          console.log('Updated interests from server:', updatedInterests);
+          setInterests(Array.isArray(updatedInterests) ? updatedInterests : []);
+          setIsModalOpen(false);
+          toast({
+            title: t('interests.saveSuccess', 'Interests saved'),
+            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+          });
+        } catch (parseError) {
+          console.error('Error parsing response JSON:', parseError);
+          // Still consider it a success if the status was OK
+          setInterests(editableInterests);
+          setIsModalOpen(false);
+          toast({
+            title: t('interests.saveSuccess', 'Interests saved'),
+            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+          });
+        }
       } else {
         console.error('Server response not OK:', response.status, response.statusText);
         const errorData = await response.json().catch(() => null);
         console.error('Error data:', errorData);
-        throw new Error(errorData?.message || 'Failed to save interests');
+        throw new Error(errorData?.message || `Server error: ${response.status}`);
       }
     } catch (error) {
       console.error('Failed to save interests:', error);
