@@ -27,6 +27,7 @@ import {
   sellers, productCategories, orderItems,
   supportTickets, ticketMessages, productReviews,
   posts, comments, reactions, polls, pollVotes, recognitions,
+  interests, employeeInterests,
   // Onboarding schemas
   onboardingPlans, onboardingMissions, onboardingAssignments, onboardingProgress,
   insertOnboardingPlanSchema, insertOnboardingMissionSchema,
@@ -5042,6 +5043,95 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
   // Leave Management Routes
   app.use('/api/leave', leaveRoutes);
+
+  // Interest Groups API Routes
+  app.get('/api/interests/stats', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      // Query actual interest data from the database
+      const interestStats: Record<string, any> = {};
+      
+      // Get all interests with member counts
+      const allInterests = await db.select().from(interests);
+      
+      for (const interest of allInterests) {
+        const memberCount = await db
+          .select({ count: sql`count(*)` })
+          .from(employeeInterests)
+          .where(eq(employeeInterests.interestId, interest.id))
+          .then(result => result[0]?.count || 0);
+        
+        const userIsMember = req.user ? await db
+          .select()
+          .from(employeeInterests)
+          .where(
+            and(
+              eq(employeeInterests.interestId, interest.id),
+              eq(employeeInterests.userId, req.user.id)
+            )
+          )
+          .then(result => result.length > 0) : false;
+        
+        interestStats[interest.name] = {
+          memberCount: parseInt(memberCount as string),
+          isMember: userIsMember
+        };
+      }
+      
+      res.json(interestStats);
+    } catch (error) {
+      console.error('Error fetching interest stats:', error);
+      res.status(500).json({ message: 'Failed to fetch interest statistics' });
+    }
+  });
+
+  app.post('/api/interests/groups/join', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { interestName } = req.body;
+      
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      // Find the interest by name
+      const interest = await db
+        .select()
+        .from(interests)
+        .where(eq(interests.name, interestName))
+        .limit(1);
+      
+      if (interest.length === 0) {
+        return res.status(404).json({ message: 'Interest not found' });
+      }
+      
+      // Check if user already has this interest
+      const existingInterest = await db
+        .select()
+        .from(employeeInterests)
+        .where(
+          and(
+            eq(employeeInterests.userId, req.user.id),
+            eq(employeeInterests.interestId, interest[0].id)
+          )
+        );
+      
+      if (existingInterest.length === 0) {
+        // Add interest to user if not already added
+        await db.insert(employeeInterests).values({
+          userId: req.user.id,
+          interestId: interest[0].id
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully joined ${interestName} group`,
+        groupId: interest[0].id
+      });
+    } catch (error) {
+      console.error('Error joining interest group:', error);
+      res.status(500).json({ message: 'Failed to join interest group' });
+    }
+  });
 
   // Initialize the server
   const httpServer = createServer(app);
