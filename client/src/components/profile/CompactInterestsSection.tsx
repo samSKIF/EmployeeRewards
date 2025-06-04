@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Plus, Users, Search, X, Edit } from 'lucide-react';
+import { Heart, Plus, Users, Search, X, Edit, MessageCircle, ArrowRight } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -287,18 +287,28 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
             {userInterests.map((interest: any) => {
               const stats = getInterestStats(interest.label);
               return (
-                <Badge 
-                  key={interest.id} 
-                  variant="outline" 
-                  className="flex items-center gap-2 px-3 py-1 text-black border-gray-300"
-                >
-                  <span className="text-sm">{interest.icon || '📌'}</span>
-                  <span>{interest.label}</span>
-                  <div className="flex items-center gap-1 ml-1">
-                    <Users className="h-3 w-3 text-gray-500" />
-                    <span className="text-xs text-gray-500">{stats.memberCount}</span>
-                  </div>
-                </Badge>
+                <div key={interest.id} className="flex items-center gap-2">
+                  <Badge 
+                    variant="outline" 
+                    className="flex items-center gap-2 px-3 py-1 text-black border-gray-300"
+                  >
+                    <span className="text-sm">{interest.icon || '📌'}</span>
+                    <span>{interest.label}</span>
+                    <div className="flex items-center gap-1 ml-1">
+                      <Users className="h-3 w-3 text-gray-500" />
+                      <span className="text-xs text-gray-500">{stats.memberCount}</span>
+                    </div>
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-xs text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                    onClick={() => window.location.href = `/groups?interest=${encodeURIComponent(interest.label)}`}
+                  >
+                    <MessageCircle className="h-3 w-3 mr-1" />
+                    Join Group
+                  </Button>
+                </div>
               );
             })}
           </div>
