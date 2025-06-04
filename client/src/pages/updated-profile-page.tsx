@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +34,7 @@ const UpdatedProfilePage = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -151,13 +153,8 @@ const UpdatedProfilePage = () => {
       // Invalidate and refetch user data to ensure fresh avatar displays
       queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
       
-      // Also refresh auth context to update navigation avatar
-      try {
-        const { useAuth } = await import("@/hooks/useAuth");
-        // This will be handled by the component that uses this mutation
-      } catch (error) {
-        console.error("Error importing useAuth:", error);
-      }
+      // Refresh auth context to update navigation avatar immediately
+      await refreshUser();
       
       toast({
         title: "Avatar uploaded",
