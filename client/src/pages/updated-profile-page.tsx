@@ -20,7 +20,7 @@ import {
   Zap, Heart, ImageIcon, Camera as CameraIcon
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
-import InterestsSection from "@/components/profile/InterestsSection";
+import EnhancedInterestsSection from "@/components/profile/EnhancedInterestsSection";
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
@@ -799,9 +799,10 @@ const UpdatedProfilePage = () => {
           </Card>
           
           {/* Interests Section */}
-          <InterestsSection 
-            userId={user?.id || 0}
-            isCurrentUser={true}
+          <EnhancedInterestsSection 
+            interests={userInterests || []}
+            isEditing={false}
+            onInterestsChange={() => {}}
           />
           
           {/* Strengths Card */}

@@ -6058,4 +6058,449 @@ async function seedInitialData() {
   } catch (error) {
     console.error("Error seeding initial data:", error);
   }
-}
+
+  // === INTEREST GROUPS API ROUTES ===
+
+  // Get interests with member counts for the current user's organization
+  app.get('/api/interests/with-counts', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    
+    // Get user's organization
+    const user = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (!user[0]) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const organizationId = user[0].organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User not associated with an organization' });
+    }
+    
+    // Get all interests with member counts for this organization
+    const interestsWithCounts = await db.query.interests.findMany({
+      extras: {
+        memberCount: sql<number>`COALESCE((
+          SELECT COUNT(DISTINCT ei.employee_id) 
+          FROM employee_interests ei 
+          JOIN users u ON u.id = ei.employee_id 
+          WHERE ei.interest_id = ${schema.interests.id} 
+          AND u.organization_id = ${organizationId}
+        ), 0)::int`.as('member_count'),
+        hasGroup: sql<boolean>`CASE WHEN (
+          SELECT id FROM interest_groups 
+          WHERE interest_id = ${schema.interests.id} 
+          AND organization_id = ${organizationId}
+        ) IS NOT NULL THEN true ELSE false END`.as('has_group'),
+        groupId: sql<number>`(
+          SELECT id FROM interest_groups 
+          WHERE interest_id = ${schema.interests.id} 
+          AND organization_id = ${organizationId}
+        )`.as('group_id'),
+        userIsMember: sql<boolean>`CASE WHEN (
+          SELECT employee_id FROM employee_interests 
+          WHERE interest_id = ${schema.interests.id} 
+          AND employee_id = ${userId}
+        ) IS NOT NULL THEN true ELSE false END`.as('user_is_member')
+      },
+      orderBy: [schema.interests.category, schema.interests.label]
+    });
+    
+    res.json(interestsWithCounts);
+  } catch (error) {
+    console.error('Error fetching interests with counts:', error);
+    res.status(500).json({ message: 'Failed to fetch interests with counts' });
+  }
+});
+
+// Get or create interest group for a specific interest
+app.post('/api/interest-groups/:interestId', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const interestId = parseInt(req.params.interestId);
+    
+    // Get user's organization
+    const user = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (!user[0]) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const organizationId = user[0].organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User not associated with an organization' });
+    }
+    
+    // Get interest details
+    const interest = await db.select().from(schema.interests).where(eq(schema.interests.id, interestId)).limit(1);
+    if (!interest[0]) {
+      return res.status(404).json({ message: 'Interest not found' });
+    }
+    
+    // Check if group already exists
+    const existingGroup = await db.query(`
+      SELECT * FROM interest_groups 
+      WHERE interest_id = $1 AND organization_id = $2
+    `, [interestId, organizationId]);
+    
+    let groupId;
+    
+    if (existingGroup.rows.length === 0) {
+      // Create new group
+      const newGroup = await db.query(`
+        INSERT INTO interest_groups (interest_id, organization_id, name, description, member_count)
+        VALUES ($1, $2, $3, $4, 0)
+        RETURNING id
+      `, [
+        interestId,
+        organizationId,
+        `${interest[0].label} Community`,
+        `Connect with colleagues who share your interest in ${interest[0].label}`
+      ]);
+      
+      groupId = newGroup.rows[0].id;
+    } else {
+      groupId = existingGroup.rows[0].id;
+    }
+    
+    // Check if user is already a member
+    const membership = await db.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      // Add user to group
+      await db.query(`
+        INSERT INTO interest_group_members (group_id, user_id, is_active)
+        VALUES ($1, $2, true)
+      `, [groupId, userId]);
+      
+      // Update member count
+      await db.query(`
+        UPDATE interest_groups 
+        SET member_count = member_count + 1, updated_at = NOW()
+        WHERE id = $1
+      `, [groupId]);
+    }
+    
+    // Get final group details
+    const finalGroup = await db.query(`
+      SELECT * FROM interest_groups WHERE id = $1
+    `, [groupId]);
+    
+    res.json({ 
+      group: finalGroup.rows[0], 
+      joined: membership.rows.length === 0,
+      message: membership.rows.length === 0 ? 'Successfully joined group' : 'Already a member'
+    });
+  } catch (error) {
+    console.error('Error creating/joining interest group:', error);
+    res.status(500).json({ message: 'Failed to create or join interest group' });
+  }
+});
+
+// Get interest group details with recent posts
+app.get('/api/interest-groups/:groupId', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const groupId = parseInt(req.params.groupId);
+    const userId = req.user!.id;
+    
+    // Check if user is a member
+    const membership = await db.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: 'You must be a member to view this group' });
+    }
+    
+    // Get group details with interest info
+    const groupDetails = await db.query(`
+      SELECT ig.*, i.label as interest_label, i.category as interest_category, i.icon as interest_icon
+      FROM interest_groups ig
+      JOIN interests i ON i.id = ig.interest_id
+      WHERE ig.id = $1
+    `, [groupId]);
+    
+    if (groupDetails.rows.length === 0) {
+      return res.status(404).json({ message: 'Interest group not found' });
+    }
+    
+    // Get recent posts with user info
+    const posts = await db.query(`
+      SELECT 
+        igp.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title,
+        u.department as user_department
+      FROM interest_group_posts igp
+      JOIN users u ON u.id = igp.user_id
+      WHERE igp.group_id = $1
+      ORDER BY igp.is_pinned DESC, igp.created_at DESC
+      LIMIT 20
+    `, [groupId]);
+    
+    res.json({
+      group: {
+        id: groupDetails.rows[0].id,
+        name: groupDetails.rows[0].name,
+        description: groupDetails.rows[0].description,
+        memberCount: groupDetails.rows[0].member_count,
+        createdAt: groupDetails.rows[0].created_at,
+        interest: {
+          id: groupDetails.rows[0].interest_id,
+          label: groupDetails.rows[0].interest_label,
+          category: groupDetails.rows[0].interest_category,
+          icon: groupDetails.rows[0].interest_icon
+        }
+      },
+      posts: posts.rows.map(post => ({
+        id: post.id,
+        content: post.content,
+        imageUrl: post.image_url,
+        type: post.type,
+        tags: post.tags,
+        isPinned: post.is_pinned,
+        likeCount: post.like_count,
+        commentCount: post.comment_count,
+        createdAt: post.created_at,
+        user: {
+          id: post.user_id,
+          name: post.user_name,
+          avatarUrl: post.user_avatar_url,
+          jobTitle: post.user_job_title,
+          department: post.user_department
+        }
+      })),
+      isMember: true
+    });
+  } catch (error) {
+    console.error('Error fetching interest group details:', error);
+    res.status(500).json({ message: 'Failed to fetch interest group details' });
+  }
+});
+
+// Create a new post in an interest group
+app.post('/api/interest-groups/:groupId/posts', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const groupId = parseInt(req.params.groupId);
+    const userId = req.user!.id;
+    const { content, imageUrl, type = 'standard', tags = [] } = req.body;
+    
+    if (!content?.trim()) {
+      return res.status(400).json({ message: 'Post content is required' });
+    }
+    
+    // Verify user is a member of the group
+    const membership = await db.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: 'You must be a member to post in this group' });
+    }
+    
+    // Create the post
+    const newPost = await db.query(`
+      INSERT INTO interest_group_posts (group_id, user_id, content, image_url, type, tags)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id
+    `, [groupId, userId, content.trim(), imageUrl, type, tags]);
+    
+    // Get post with user details
+    const postWithUser = await db.query(`
+      SELECT 
+        igp.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title,
+        u.department as user_department
+      FROM interest_group_posts igp
+      JOIN users u ON u.id = igp.user_id
+      WHERE igp.id = $1
+    `, [newPost.rows[0].id]);
+    
+    const post = postWithUser.rows[0];
+    res.status(201).json({
+      id: post.id,
+      content: post.content,
+      imageUrl: post.image_url,
+      type: post.type,
+      tags: post.tags,
+      isPinned: post.is_pinned,
+      likeCount: post.like_count,
+      commentCount: post.comment_count,
+      createdAt: post.created_at,
+      user: {
+        id: post.user_id,
+        name: post.user_name,
+        avatarUrl: post.user_avatar_url,
+        jobTitle: post.user_job_title,
+        department: post.user_department
+      }
+    });
+  } catch (error) {
+    console.error('Error creating interest group post:', error);
+    res.status(500).json({ message: 'Failed to create post' });
+  }
+});
+
+// Like/unlike an interest group post
+app.post('/api/interest-groups/posts/:postId/like', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const postId = parseInt(req.params.postId);
+    const userId = req.user!.id;
+    
+    // Check if user already liked this post
+    const existingLike = await db.query(`
+      SELECT * FROM interest_group_post_likes 
+      WHERE post_id = $1 AND user_id = $2
+    `, [postId, userId]);
+    
+    if (existingLike.rows.length > 0) {
+      // Unlike the post
+      await db.query(`
+        DELETE FROM interest_group_post_likes 
+        WHERE post_id = $1 AND user_id = $2
+      `, [postId, userId]);
+      
+      // Decrease like count
+      await db.query(`
+        UPDATE interest_group_posts 
+        SET like_count = GREATEST(like_count - 1, 0), updated_at = NOW()
+        WHERE id = $1
+      `, [postId]);
+      
+      res.json({ liked: false, message: 'Post unliked' });
+    } else {
+      // Like the post
+      await db.query(`
+        INSERT INTO interest_group_post_likes (post_id, user_id)
+        VALUES ($1, $2)
+      `, [postId, userId]);
+      
+      // Increase like count
+      await db.query(`
+        UPDATE interest_group_posts 
+        SET like_count = like_count + 1, updated_at = NOW()
+        WHERE id = $1
+      `, [postId]);
+      
+      res.json({ liked: true, message: 'Post liked' });
+    }
+  } catch (error) {
+    console.error('Error toggling post like:', error);
+    res.status(500).json({ message: 'Failed to toggle like' });
+  }
+});
+
+// Add comment to interest group post
+app.post('/api/interest-groups/posts/:postId/comments', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const postId = parseInt(req.params.postId);
+    const userId = req.user!.id;
+    const { content } = req.body;
+    
+    if (!content?.trim()) {
+      return res.status(400).json({ message: 'Comment content is required' });
+    }
+    
+    // Verify post exists and user has access
+    const post = await db.query(`
+      SELECT igp.group_id FROM interest_group_posts igp WHERE igp.id = $1
+    `, [postId]);
+    
+    if (post.rows.length === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    
+    // Verify user is a member of the group
+    const membership = await db.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [post.rows[0].group_id, userId]);
+    
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: 'You must be a member to comment' });
+    }
+    
+    // Create comment
+    const newComment = await db.query(`
+      INSERT INTO interest_group_post_comments (post_id, user_id, content)
+      VALUES ($1, $2, $3)
+      RETURNING id
+    `, [postId, userId, content.trim()]);
+    
+    // Update comment count
+    await db.query(`
+      UPDATE interest_group_posts 
+      SET comment_count = comment_count + 1, updated_at = NOW()
+      WHERE id = $1
+    `, [postId]);
+    
+    // Get comment with user details
+    const commentWithUser = await db.query(`
+      SELECT 
+        igpc.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title
+      FROM interest_group_post_comments igpc
+      JOIN users u ON u.id = igpc.user_id
+      WHERE igpc.id = $1
+    `, [newComment.rows[0].id]);
+    
+    const comment = commentWithUser.rows[0];
+    res.status(201).json({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.created_at,
+      user: {
+        id: comment.user_id,
+        name: comment.user_name,
+        avatarUrl: comment.user_avatar_url,
+        jobTitle: comment.user_job_title
+      }
+    });
+  } catch (error) {
+    console.error('Error creating comment:', error);
+    res.status(500).json({ message: 'Failed to create comment' });
+  }
+});
+
+// Get comments for a post
+app.get('/api/interest-groups/posts/:postId/comments', authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    const postId = parseInt(req.params.postId);
+    
+    const comments = await db.query(`
+      SELECT 
+        igpc.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title
+      FROM interest_group_post_comments igpc
+      JOIN users u ON u.id = igpc.user_id
+      WHERE igpc.post_id = $1
+      ORDER BY igpc.created_at ASC
+    `, [postId]);
+    
+    res.json(comments.rows.map(comment => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.created_at,
+      user: {
+        id: comment.user_id,
+        name: comment.user_name,
+        avatarUrl: comment.user_avatar_url,
+        jobTitle: comment.user_job_title
+      }
+    })));
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Failed to fetch comments' });
+  }
+});
