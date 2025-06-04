@@ -3205,6 +3205,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
+      // Get company ID from admin's email domain
+      const domain = req.user.email.split('@')[1];
+      const domainToCompanyMap: Record<string, number> = {
+        'canva.com': 1,
+        'monday.com': 2, 
+        'loylogic.com': 3,
+        'fripl.com': 4,
+        'democorp.com': 5
+      };
+      const companyId = domainToCompanyMap[domain];
+
+      if (!companyId) {
+        return res.status(400).json({ message: "Unable to determine company for employee creation" });
+      }
+
       // Validate employee data
       const validatedData = insertUserSchema.parse(req.body);
 
@@ -3250,6 +3265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .values({
           ...validatedData,
           password: hashedPassword,
+          organizationId: companyId, // Assign to the correct company
           createdBy: req.user.id,
           createdAt: new Date(),
           firebaseUid: firebaseUser?.uid // Add Firebase UID if available
@@ -3299,9 +3315,9 @@ app.get("/api/file-templates/employee_import/download", async (req: Authenticate
     }
 
     // Simple template content with Employee ID as first column to match export format
-    const templateContent = 'Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Is Admin\n' +
-                           '1001,John,Doe,john.doe@example.com,123-456-7890,Developer,IT,New York,manager@example.com,Male,American,1990-01-01,2023-01-01,active,false\n' +
-                           '1002,Jane,Smith,jane.smith@example.com,098-765-4321,Designer,Marketing,London,manager@example.com,Female,British,1985-05-15,2022-03-01,active,false';
+    const templateContent = 'Employee ID,First Name,Last Name,Email,Phone Number,Job Title,Department,Location,Manager Email,Gender,Nationality,Birth Date,Hire Date,Status,Admin privileges\n' +
+                           '1001,John,Doe,john.doe@example.com,123-456-7890,Developer,IT,New York,manager@example.com,Male,American,1990-01-01,2023-01-01,active,no\n' +
+                           '1002,Jane,Smith,jane.smith@example.com,098-765-4321,Designer,Marketing,London,manager@example.com,Female,British,1985-05-15,2022-03-01,active,no';
 
     // Set CSV headers for proper file download
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
