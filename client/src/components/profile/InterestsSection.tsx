@@ -135,6 +135,7 @@ type Interest = {
   customLabel?: string;
   isPrimary: boolean;
   visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE';
+  memberCount?: number;
 };
 
 type InterestsSectionProps = {
@@ -160,27 +161,27 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         // Fetch both user interests and available interests in parallel
         const [userInterestsResponse, availableInterestsResponse] = await Promise.all([
           apiRequest('GET', `/api/employees/${userId}/interests`),
           apiRequest('GET', '/api/interests')
         ]);
-        
+
         // Process user interests
         if (userInterestsResponse.ok) {
           const userInterestsData = await userInterestsResponse.json();
           console.log('Fetched user interests:', userInterestsData);
           setInterests(Array.isArray(userInterestsData) ? userInterestsData : []);
         }
-        
+
         // Process available interests
         if (availableInterestsResponse.ok) {
           const availableInterestsData = await availableInterestsResponse.json();
           console.log('Fetched available interests:', availableInterestsData);
           setAvailableInterests(Array.isArray(availableInterestsData) ? availableInterestsData : []);
         }
-        
+
       } catch (error) {
         console.error('Failed to fetch data:', error);
         // Only show error toast if it's a real error, not just empty data
@@ -333,7 +334,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       const formattedData = editableInterests.map(interest => {
         // For custom interests (negative IDs), handle differently
         const isCustom = interest.id < 0;
-        
+
         return {
           // Server expects interestId, not id
           interestId: isCustom ? undefined : interest.id,
@@ -346,7 +347,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       });
 
       console.log('Saving interests:', formattedData);
-      
+
       const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
 
       console.log('Save response status:', response.status);
@@ -420,18 +421,21 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           <div className="flex justify-center py-4">
             <div className="animate-spin h-6 w-6 border-2 border-teal-500 rounded-full border-t-transparent"></div>
           </div>
-        ) : interests.length > 0 ? (
+        ) : (interests.length > 0 ? (
           <>
             <div className="flex flex-wrap gap-2 mb-2">
               {visibleInterests.map(interest => (
                 <Badge 
                   key={interest.id} 
                   variant="outline" 
-                  className={`${interest.isPrimary ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-gray-50'} hover:bg-gray-100`}
+                  className={`${interest.isPrimary ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-gray-50'} hover:bg-gray-100 flex items-center gap-1`}
                   title={interest.customLabel || interest.label}
                 >
-                  {interest.icon && <span className="mr-1">{interest.icon}</span>}
-                  {interest.customLabel || interest.label}
+                  {interest.icon && <span className="text-sm">{interest.icon}</span>}
+                  <span>{interest.customLabel || interest.label}</span>
+                  <span className="text-xs text-gray-500 ml-1">
+                    ({interest.memberCount || 0})
+                  </span>
                 </Badge>
               ))}
             </div>
@@ -449,7 +453,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           <div className="text-center py-4 text-gray-500">
             {isCurrentUser ? t('interests.emptyCurrentUser', 'You haven\'t added any interests yet.') : t('interests.emptyOtherUser', 'This user hasn\'t added any interests yet.')}
           </div>
-        )}
+        ))}
       </CardContent>
 
       {/* Edit Modal */}
@@ -517,7 +521,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                             'Entertainment & Pop Culture': '🎬',
                             'Social Impact & Learning': '🌍'
                           };
-                          
+
                           return (
                             <Button 
                               key={category}
@@ -548,6 +552,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                             <div className="flex items-center gap-2">
                               <span className="text-lg">{interest.icon || '⭐'}</span>
                               <span className="text-sm font-medium">{interest.label}</span>
+                              <span className="text-xs text-gray-500">({interest.memberCount || 0})</span>
                             </div>
                           </div>
                         ))}
