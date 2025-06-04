@@ -102,8 +102,8 @@ const ProfilePage = () => {
     location: user?.location || "", 
     department: user?.department || "",
     responsibilities: user?.responsibilities || "",
-    hireDate: formatDate(user?.dateJoined),
-    birthday: formatDate(user?.dateOfBirth),
+    hireDate: formatDate((user as any)?.hireDate || (user as any)?.hire_date),
+    birthday: formatDate((user as any)?.birthDate || (user as any)?.birth_date),
     profileStatus: 89 // This can remain as a calculated value
   };
 
