@@ -41,7 +41,8 @@ const UpdatedProfilePage = () => {
     title: '',
     department: '',
     location: '',
-    responsibilities: ''
+    responsibilities: '',
+    aboutMe: ''
   });
 
   // Fetch user data
@@ -59,7 +60,8 @@ const UpdatedProfilePage = () => {
         title: user.jobTitle || '',
         department: user.department || '',
         location: user.location || '',
-        responsibilities: user.responsibilities || ''
+        responsibilities: user.responsibilities || '',
+        aboutMe: user.aboutMe || ''
       });
     }
   }, [user]);
@@ -618,8 +620,8 @@ const UpdatedProfilePage = () => {
                           id="title"
                           name="title"
                           value={formValues.title}
-                          onChange={handleInputChange}
-                          className="h-8 text-sm"
+                          disabled
+                          className="h-8 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     ) : (
@@ -639,8 +641,8 @@ const UpdatedProfilePage = () => {
                           id="department"
                           name="department"
                           value={formValues.department}
-                          onChange={handleInputChange}
-                          className="h-8 text-sm"
+                          disabled
+                          className="h-8 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     ) : (
@@ -660,8 +662,8 @@ const UpdatedProfilePage = () => {
                           id="location"
                           name="location"
                           value={formValues.location}
-                          onChange={handleInputChange}
-                          className="h-8 text-sm"
+                          disabled
+                          className="h-8 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     ) : (
