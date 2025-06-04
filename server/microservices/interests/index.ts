@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../../db";
+import { db, pool } from "../../db";
 import { interests, employeeInterests, users, visibilityEnum } from "@shared/schema";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { AuthenticatedRequest, verifyToken } from "../../middleware/auth";
@@ -484,6 +484,289 @@ router.post("/admin/interests/merge", validateRequestBody(mergeInterestsSchema),
   } catch (error: any) {
     console.error("Error merging interests:", error);
     res.status(500).json({ message: error.message || "Failed to merge interests" });
+  }
+});
+
+// === INTEREST GROUPS API ROUTES ===
+
+// Get interests with member counts for the current user's organization
+router.get('/with-counts', async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    
+    // Get user's organization
+    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (!user[0]) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const organizationId = user[0].organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User not associated with an organization' });
+    }
+    
+    // Get all interests with member counts for this organization
+    const interestsWithCounts = await pool.query(`
+      SELECT 
+        i.*,
+        COALESCE(member_counts.count, 0)::int as "memberCount",
+        CASE WHEN ig.id IS NOT NULL THEN true ELSE false END as "hasGroup",
+        ig.id as "groupId",
+        CASE WHEN ui.employee_id IS NOT NULL THEN true ELSE false END as "userIsMember"
+      FROM interests i
+      LEFT JOIN (
+        SELECT 
+          ei.interest_id, 
+          COUNT(DISTINCT ei.employee_id) as count
+        FROM employee_interests ei 
+        JOIN users u ON u.id = ei.employee_id 
+        WHERE u.organization_id = $1
+        GROUP BY ei.interest_id
+      ) member_counts ON member_counts.interest_id = i.id
+      LEFT JOIN interest_groups ig ON ig.interest_id = i.id AND ig.organization_id = $1
+      LEFT JOIN employee_interests ui ON ui.interest_id = i.id AND ui.employee_id = $2
+      ORDER BY i.category, i.label
+    `, [organizationId, userId]);
+    
+    res.json(interestsWithCounts.rows);
+  } catch (error) {
+    console.error('Error fetching interests with counts:', error);
+    res.status(500).json({ message: 'Failed to fetch interests with counts' });
+  }
+});
+
+// Get or create interest group for a specific interest
+router.post('/groups/:interestId', async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const interestId = parseInt(req.params.interestId);
+    
+    // Get user's organization
+    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (!user[0]) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const organizationId = user[0].organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User not associated with an organization' });
+    }
+    
+    // Get interest details
+    const interest = await db.select().from(interests).where(eq(interests.id, interestId)).limit(1);
+    if (!interest[0]) {
+      return res.status(404).json({ message: 'Interest not found' });
+    }
+    
+    // Check if group already exists
+    const existingGroup = await pool.query(`
+      SELECT * FROM interest_groups 
+      WHERE interest_id = $1 AND organization_id = $2
+    `, [interestId, organizationId]);
+    
+    let groupId;
+    
+    if (existingGroup.rows.length === 0) {
+      // Create new group
+      const newGroup = await pool.query(`
+        INSERT INTO interest_groups (interest_id, organization_id, name, description, member_count)
+        VALUES ($1, $2, $3, $4, 0)
+        RETURNING id
+      `, [
+        interestId,
+        organizationId,
+        `${interest[0].label} Community`,
+        `Connect with colleagues who share your interest in ${interest[0].label}`
+      ]);
+      
+      groupId = newGroup.rows[0].id;
+    } else {
+      groupId = existingGroup.rows[0].id;
+    }
+    
+    // Check if user is already a member
+    const membership = await pool.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      // Add user to group
+      await pool.query(`
+        INSERT INTO interest_group_members (group_id, user_id, is_active)
+        VALUES ($1, $2, true)
+      `, [groupId, userId]);
+      
+      // Update member count
+      await pool.query(`
+        UPDATE interest_groups 
+        SET member_count = member_count + 1, updated_at = NOW()
+        WHERE id = $1
+      `, [groupId]);
+    }
+    
+    // Get final group details
+    const finalGroup = await pool.query(`
+      SELECT * FROM interest_groups WHERE id = $1
+    `, [groupId]);
+    
+    res.json({ 
+      group: finalGroup.rows[0], 
+      joined: membership.rows.length === 0,
+      message: membership.rows.length === 0 ? 'Successfully joined group' : 'Already a member'
+    });
+  } catch (error) {
+    console.error('Error creating/joining interest group:', error);
+    res.status(500).json({ message: 'Failed to create or join interest group' });
+  }
+});
+
+// Get interest group details with recent posts
+router.get('/groups/:groupId/details', async (req: AuthenticatedRequest, res) => {
+  try {
+    const groupId = parseInt(req.params.groupId);
+    const userId = req.user!.id;
+    
+    // Check if user is a member
+    const membership = await pool.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: 'You must be a member to view this group' });
+    }
+    
+    // Get group details with interest info
+    const groupDetails = await pool.query(`
+      SELECT ig.*, i.label as interest_label, i.category as interest_category, i.icon as interest_icon
+      FROM interest_groups ig
+      JOIN interests i ON i.id = ig.interest_id
+      WHERE ig.id = $1
+    `, [groupId]);
+    
+    if (groupDetails.rows.length === 0) {
+      return res.status(404).json({ message: 'Interest group not found' });
+    }
+    
+    // Get recent posts with user info
+    const posts = await pool.query(`
+      SELECT 
+        igp.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title,
+        u.department as user_department
+      FROM interest_group_posts igp
+      JOIN users u ON u.id = igp.user_id
+      WHERE igp.group_id = $1
+      ORDER BY igp.is_pinned DESC, igp.created_at DESC
+      LIMIT 20
+    `, [groupId]);
+    
+    res.json({
+      group: {
+        id: groupDetails.rows[0].id,
+        name: groupDetails.rows[0].name,
+        description: groupDetails.rows[0].description,
+        memberCount: groupDetails.rows[0].member_count,
+        createdAt: groupDetails.rows[0].created_at,
+        interest: {
+          id: groupDetails.rows[0].interest_id,
+          label: groupDetails.rows[0].interest_label,
+          category: groupDetails.rows[0].interest_category,
+          icon: groupDetails.rows[0].interest_icon
+        }
+      },
+      posts: posts.rows.map(post => ({
+        id: post.id,
+        content: post.content,
+        imageUrl: post.image_url,
+        type: post.type,
+        tags: post.tags,
+        isPinned: post.is_pinned,
+        likeCount: post.like_count,
+        commentCount: post.comment_count,
+        createdAt: post.created_at,
+        user: {
+          id: post.user_id,
+          name: post.user_name,
+          avatarUrl: post.user_avatar_url,
+          jobTitle: post.user_job_title,
+          department: post.user_department
+        }
+      })),
+      isMember: true
+    });
+  } catch (error) {
+    console.error('Error fetching interest group details:', error);
+    res.status(500).json({ message: 'Failed to fetch interest group details' });
+  }
+});
+
+// Create a new post in an interest group
+router.post('/groups/:groupId/posts', async (req: AuthenticatedRequest, res) => {
+  try {
+    const groupId = parseInt(req.params.groupId);
+    const userId = req.user!.id;
+    const { content, imageUrl, type = 'standard', tags = [] } = req.body;
+    
+    if (!content?.trim()) {
+      return res.status(400).json({ message: 'Post content is required' });
+    }
+    
+    // Verify user is a member of the group
+    const membership = await pool.query(`
+      SELECT * FROM interest_group_members 
+      WHERE group_id = $1 AND user_id = $2 AND is_active = true
+    `, [groupId, userId]);
+    
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: 'You must be a member to post in this group' });
+    }
+    
+    // Create the post
+    const newPost = await pool.query(`
+      INSERT INTO interest_group_posts (group_id, user_id, content, image_url, type, tags)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id
+    `, [groupId, userId, content.trim(), imageUrl, type, tags]);
+    
+    // Get post with user details
+    const postWithUser = await pool.query(`
+      SELECT 
+        igp.*,
+        u.name as user_name,
+        u.avatar_url as user_avatar_url,
+        u.job_title as user_job_title,
+        u.department as user_department
+      FROM interest_group_posts igp
+      JOIN users u ON u.id = igp.user_id
+      WHERE igp.id = $1
+    `, [newPost.rows[0].id]);
+    
+    const post = postWithUser.rows[0];
+    res.status(201).json({
+      id: post.id,
+      content: post.content,
+      imageUrl: post.image_url,
+      type: post.type,
+      tags: post.tags,
+      isPinned: post.is_pinned,
+      likeCount: post.like_count,
+      commentCount: post.comment_count,
+      createdAt: post.created_at,
+      user: {
+        id: post.user_id,
+        name: post.user_name,
+        avatarUrl: post.user_avatar_url,
+        jobTitle: post.user_job_title,
+        department: post.user_department
+      }
+    });
+  } catch (error) {
+    console.error('Error creating interest group post:', error);
+    res.status(500).json({ message: 'Failed to create post' });
   }
 });
 

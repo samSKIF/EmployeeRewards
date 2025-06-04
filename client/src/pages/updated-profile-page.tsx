@@ -800,7 +800,7 @@ const UpdatedProfilePage = () => {
           
           {/* Interests Section */}
           <EnhancedInterestsSection 
-            interests={userInterests || []}
+            interests={[]}
             isEditing={false}
             onInterestsChange={() => {}}
           />
