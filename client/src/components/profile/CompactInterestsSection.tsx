@@ -285,24 +285,24 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
       </CardHeader>
       
       <CardContent className="pt-0">
-        {interests.length > 0 ? (
+        {userInterests && userInterests.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {interests.map((interest) => {
-              const stats = getInterestStats(interest.name);
+            {userInterests.map((interest: any) => {
+              const stats = getInterestStats(interest.label);
               return (
                 <Badge 
                   key={interest.id} 
                   variant="secondary" 
                   className="flex items-center gap-1 px-3 py-1"
                 >
-                  <span>{interest.name}</span>
+                  <span>{interest.label}</span>
                   <div className="flex items-center gap-1 ml-1">
                     <Users className="h-3 w-3" />
                     <span className="text-xs">{stats.memberCount}</span>
                   </div>
                   {!isEditing && (
                     <button
-                      onClick={() => handleRemoveInterest(interest.name)}
+                      onClick={() => removeInterestMutation.mutate(interest.id)}
                       className="ml-1 hover:text-destructive"
                       disabled={removeInterestMutation.isPending}
                     >

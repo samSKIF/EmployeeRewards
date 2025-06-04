@@ -801,7 +801,7 @@ const UpdatedProfilePage = () => {
           {/* Interests Section */}
           <CompactInterestsSection 
             interests={[]}
-            isEditing={false}
+            isEditing={isEditing}
             onInterestsChange={() => {}}
           />
           
