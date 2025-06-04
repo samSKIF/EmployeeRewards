@@ -145,21 +145,34 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       try {
         setIsLoading(true);
         const response = await apiRequest('GET', `/api/employees/${userId}/interests`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        setInterests(data);
+        console.log('Fetched interests data:', data);
+        setInterests(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch interests:', error);
-        toast({
-          title: t('interests.fetchError', 'Error fetching interests'),
-          description: t('interests.fetchErrorDescription', 'Could not load your interests. Please try again later.'),
-          variant: 'destructive',
-        });
+        // Only show error toast if it's a real error, not just empty data
+        if (error instanceof Error && !error.message.includes('404')) {
+          toast({
+            title: t('interests.fetchError', 'Error Loading Interests'),
+            description: t('interests.fetchErrorDescription', 'Could not load interests. Please try again later.'),
+            variant: 'destructive',
+          });
+        }
+        // Set empty array on error
+        setInterests([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchInterests();
+    if (userId) {
+      fetchInterests();
+    }
   }, [userId, toast, t]);
 
   // Handle interest search

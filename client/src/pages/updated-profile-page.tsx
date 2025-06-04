@@ -27,6 +27,7 @@ interface UserType extends BaseUserType {
   title?: string;
   location?: string;
   responsibilities?: string;
+  aboutMe?: string;
   coverPhotoUrl?: string;
 }
 
