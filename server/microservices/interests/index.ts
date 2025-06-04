@@ -165,9 +165,15 @@ const updateInterestsSchema = z.array(z.object({
 
 router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchema), async (req: AuthenticatedRequest, res) => {
   try {
-    console.log("Interests microservice: Handling update employee interests");
+    console.log("=== INTERESTS MICROSERVICE: POST REQUEST RECEIVED ===");
+    console.log("URL:", req.url);
+    console.log("Method:", req.method);
+    console.log("Body:", req.body);
+    console.log("Params:", req.params);
+    
     const employeeId = parseInt(req.params.id);
     const currentUserId = req.user?.id;
+    console.log("Employee ID:", employeeId, "Current User ID:", currentUserId);
     
     // Check if the employee exists
     const [employee] = await db
