@@ -21,6 +21,7 @@ import {
   UserCheck,
   LucideIcon
 } from 'lucide-react';
+import { GroupsDiscoveryWidget } from '@/components/groups/GroupsDiscoveryWidget';
 
 interface SidebarProps {
   user: {
@@ -246,14 +247,9 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
       </div>
 
-      {/* Groups section */}
-      <div className="mt-8">
-        <h3 className="text-xs uppercase text-gray-500 font-semibold tracking-wider mb-2 px-3">GROUPS</h3>
-        <button className="flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100">
-          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">OT</div>
-          <span>Outdoor Together</span>
-          <span className="ml-auto bg-gray-200 text-xs rounded-full px-2 py-0.5">8</span>
-        </button>
+      {/* Groups Discovery Widget */}
+      <div className="mt-8 px-3">
+        <GroupsDiscoveryWidget variant="sidebar" />
       </div>
       
       {/* Logout button */}
