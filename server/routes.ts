@@ -5044,37 +5044,44 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
   // Leave Management Routes (commented out for now)
   // app.use('/api/leave', leaveRoutes);
 
-  // Interest Groups API Routes - simplified version for immediate functionality
+  // Interest Groups API Routes - using real database data
   app.get('/api/interests/stats', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      // Return realistic stats based on common workplace interests
-      const interestStats = {
-        'Programming': { memberCount: 12, isMember: false },
-        'AI': { memberCount: 8, isMember: false },
-        'Cybersecurity': { memberCount: 5, isMember: false },
-        'Data Science': { memberCount: 7, isMember: false },
-        'Cloud Computing': { memberCount: 9, isMember: false },
-        'Football': { memberCount: 15, isMember: false },
-        'Basketball': { memberCount: 9, isMember: false },
-        'Tennis': { memberCount: 6, isMember: false },
-        'Swimming': { memberCount: 4, isMember: false },
-        'Running': { memberCount: 11, isMember: false },
-        'Photography': { memberCount: 7, isMember: false },
-        'Painting': { memberCount: 3, isMember: false },
-        'Music': { memberCount: 8, isMember: false },
-        'Writing': { memberCount: 5, isMember: false },
-        'Design': { memberCount: 6, isMember: false },
-        'Cooking': { memberCount: 13, isMember: false },
-        'Gardening': { memberCount: 4, isMember: false },
-        'Reading': { memberCount: 10, isMember: false },
-        'Gaming': { memberCount: 14, isMember: false },
-        'Travel': { memberCount: 12, isMember: false },
-        'Yoga': { memberCount: 8, isMember: false },
-        'Meditation': { memberCount: 6, isMember: false },
-        'Fitness': { memberCount: 16, isMember: false },
-        'Nutrition': { memberCount: 7, isMember: false },
-        'Mental Health': { memberCount: 9, isMember: false }
-      };
+      // Query actual interest data from the database
+      const interestStats: Record<string, any> = {};
+      
+      // Get all interests
+      const allInterests = await db.select().from(interests);
+      
+      for (const interest of allInterests) {
+        // Count members for this interest
+        const memberCountResult = await db
+          .select({ count: sql`count(*)` })
+          .from(employeeInterests)
+          .where(eq(employeeInterests.interestId, interest.id));
+        
+        const memberCount = parseInt(memberCountResult[0]?.count as string) || 0;
+        
+        // Check if current user is a member
+        let isMember = false;
+        if (req.user) {
+          const userMembership = await db
+            .select()
+            .from(employeeInterests)
+            .where(
+              and(
+                eq(employeeInterests.interestId, interest.id),
+                eq(employeeInterests.employeeId, req.user.id)
+              )
+            );
+          isMember = userMembership.length > 0;
+        }
+        
+        interestStats[interest.label] = {
+          memberCount,
+          isMember
+        };
+      }
       
       res.json(interestStats);
     } catch (error) {
