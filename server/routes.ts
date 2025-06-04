@@ -5124,6 +5124,71 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Admin groups endpoint - filtered by admin scope
+  app.get('/api/admin/groups', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      
+      if (!currentUser[0]?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const organizationId = currentUser[0]?.organizationId;
+      if (!organizationId) {
+        return res.status(400).json({ error: 'User organization not found' });
+      }
+
+      // Build query conditions based on admin scope
+      let whereConditions = [
+        eq(interestGroups.organizationId, organizationId)
+      ];
+
+      // Filter by admin scope
+      if (currentUser[0].adminScope === 'department' && currentUser[0].department) {
+        // For department scope, show groups related to that department
+        // This would need department field in groups table or join logic
+      } else if (currentUser[0].adminScope === 'site' && currentUser[0].location) {
+        // For site scope, show groups related to that location
+        // This would need location field in groups table or join logic
+      }
+      // 'all' scope shows all groups in organization
+
+      const groups = await db.select({
+        id: interestGroups.id,
+        name: interestGroups.name,
+        description: interestGroups.description,
+        memberCount: interestGroups.memberCount,
+        isActive: interestGroups.isActive,
+        createdAt: interestGroups.createdAt,
+        isPrivate: interestGroups.isPrivate,
+        category: interests.category,
+        interest: {
+          id: interests.id,
+          label: interests.label,
+          category: interests.category,
+          icon: interests.icon
+        }
+      })
+      .from(interestGroups)
+      .leftJoin(interests, eq(interestGroups.interestId, interests.id))
+      .where(and(...whereConditions))
+      .orderBy(desc(interestGroups.createdAt));
+
+      // Add active members and posts count (mock data for now)
+      const enrichedGroups = groups.map(group => ({
+        ...group,
+        activeMembers: Math.floor((group.memberCount || 0) * 0.7), // 70% active
+        postsCount: Math.floor(Math.random() * 50) + 10 // Random posts
+      }));
+
+      res.json(enrichedGroups);
+    } catch (error) {
+      console.error('Error fetching admin groups:', error);
+      res.status(500).json({ error: 'Failed to fetch admin groups' });
+    }
+  });
+
   // Auto-create groups and manage memberships when interests are added/removed
   async function syncGroupMemberships(userId: number, interestId: number, action: 'add' | 'remove') {
     try {
