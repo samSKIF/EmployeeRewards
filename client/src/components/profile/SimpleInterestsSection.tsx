@@ -23,20 +23,20 @@ interface InterestStats {
   isMember: boolean;
 }
 
-const INTEREST_CATEGORIES = {
-  'Technology': ['Programming', 'AI', 'Cybersecurity', 'Data Science', 'Cloud Computing'],
-  'Sports': ['Football', 'Basketball', 'Tennis', 'Swimming', 'Running'],
-  'Arts': ['Photography', 'Painting', 'Music', 'Writing', 'Design'],
-  'Hobbies': ['Cooking', 'Gardening', 'Reading', 'Gaming', 'Travel'],
-  'Wellness': ['Yoga', 'Meditation', 'Fitness', 'Nutrition', 'Mental Health']
-};
+// Fetch all available interests from the database instead of hardcoded categories
 
 export function SimpleInterestsSection({ interests, isEditing, onInterestsChange }: SimpleInterestsSectionProps) {
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technology']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Sport & Fitness']);
 
   // Fetch interest statistics
   const { data: interestStats } = useQuery({
     queryKey: ['/api/interests/stats'],
+    enabled: !isEditing
+  });
+
+  // Fetch all available interests from database
+  const { data: allInterests } = useQuery({
+    queryKey: ['/api/interests'],
     enabled: !isEditing
   });
 
