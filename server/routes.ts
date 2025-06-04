@@ -27,6 +27,7 @@ import {
   sellers, productCategories, orderItems,
   supportTickets, ticketMessages, productReviews,
   posts, comments, reactions, polls, pollVotes, recognitions,
+  interests, employeeInterests,
 
   // Onboarding schemas
   onboardingPlans, onboardingMissions, onboardingAssignments, onboardingProgress,
