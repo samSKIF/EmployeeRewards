@@ -41,8 +41,8 @@ export function SimpleInterestsSection({ interests, isEditing, onInterestsChange
   });
 
   const getInterestStats = (interestName: string): InterestStats => {
-    if (!interestStats) return { memberCount: 0, isMember: false };
-    return interestStats[interestName] || { memberCount: 0, isMember: false };
+    if (!interestStats || typeof interestStats !== 'object') return { memberCount: 0, isMember: false };
+    return (interestStats as Record<string, InterestStats>)[interestName] || { memberCount: 0, isMember: false };
   };
 
   const joinInterestGroup = async (interestName: string) => {
