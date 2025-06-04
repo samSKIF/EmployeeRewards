@@ -198,48 +198,64 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                     <TabsTrigger value="Social Impact & Learning" className="text-xs">Social Impact</TabsTrigger>
                   </TabsList>
                   
-                  <ScrollArea className="h-96 mt-4">
-                    <div className="space-y-1 p-1">
-                      {filteredInterests.map((interest) => {
-                        const userHasInterest = hasInterest(interest.label);
+                  <ScrollArea className="h-64 mt-4">
+                    <div className="flex flex-wrap gap-2 p-1">
+                      {filteredInterests.filter(interest => !hasInterest(interest.label)).map((interest) => {
                         const stats = getInterestStats(interest.label);
                         
                         return (
                           <div
                             key={interest.id}
-                            className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                              userHasInterest 
-                                ? 'bg-blue-50 border-blue-200' 
-                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                            }`}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                            onClick={() => handleAddInterest(interest)}
                           >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <span className="text-lg">{interest.icon || '📌'}</span>
-                              <span className="text-sm font-medium truncate">{interest.label}</span>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                                <Users className="h-3 w-3" />
-                                <span>{stats.memberCount}</span>
-                              </div>
+                            <span className="text-sm">{interest.icon || '📌'}</span>
+                            <span className="text-xs font-medium whitespace-nowrap">{interest.label}</span>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Users className="h-2 w-2" />
+                              <span>{stats.memberCount}</span>
                             </div>
-                            
-                            <Button
-                              size="sm"
-                              variant={userHasInterest ? "destructive" : "default"}
-                              className="h-8 w-8 p-0 ml-3 shrink-0"
-                              onClick={() => userHasInterest 
-                                ? handleRemoveInterest(interest.label) 
-                                : handleAddInterest(interest)
-                              }
-                              disabled={addInterestMutation.isPending || removeInterestMutation.isPending}
-                            >
-                              {userHasInterest ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                            </Button>
                           </div>
                         );
                       })}
                     </div>
                   </ScrollArea>
                 </Tabs>
+
+                {/* Selected Interests Section - Bottom */}
+                {interests.length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <h4 className="text-sm font-medium mb-2">Your Selected Interests</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {interests.map((interest) => {
+                        const dbInterest = findDatabaseInterest(interest.name);
+                        const stats = getInterestStats(interest.name);
+                        return (
+                          <div
+                            key={interest.id}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm"
+                          >
+                            <span className="text-sm">{dbInterest?.icon || '📌'}</span>
+                            <span className="font-medium whitespace-nowrap">{interest.name}</span>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                              <span>{stats.memberCount}</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-4 w-4 p-0 hover:bg-red-100 ml-1"
+                              onClick={() => handleRemoveInterest(interest.name)}
+                              disabled={removeInterestMutation.isPending}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
