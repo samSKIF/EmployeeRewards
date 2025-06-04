@@ -223,9 +223,9 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                 </Tabs>
 
                 {/* Selected Interests Section - Bottom */}
-                {interests.length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <h4 className="text-sm font-medium mb-2">Your Selected Interests</h4>
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-2">Your Selected Interests</h4>
+                  {interests.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {interests.map((interest) => {
                         const dbInterest = findDatabaseInterest(interest.name);
@@ -248,8 +248,12 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                         );
                       })}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-sm text-muted-foreground py-2">
+                      No interests selected yet. Click interests above to add them.
+                    </div>
+                  )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>
