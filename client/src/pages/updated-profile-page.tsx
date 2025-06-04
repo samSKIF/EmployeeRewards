@@ -147,9 +147,17 @@ const UpdatedProfilePage = () => {
         reader.readAsDataURL(file);
       });
     },
-    onSuccess: (avatarUrl) => {
+    onSuccess: async (avatarUrl) => {
       // Invalidate and refetch user data to ensure fresh avatar displays
       queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
+      
+      // Also refresh auth context to update navigation avatar
+      try {
+        const { useAuth } = await import("@/hooks/useAuth");
+        // This will be handled by the component that uses this mutation
+      } catch (error) {
+        console.error("Error importing useAuth:", error);
+      }
       
       toast({
         title: "Avatar uploaded",

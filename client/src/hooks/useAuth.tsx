@@ -10,6 +10,7 @@ export type AuthUser = {
   email: string;
   isAdmin: boolean;
   department?: string;
+  avatarUrl?: string;
 };
 
 type AuthContextType = {
@@ -18,6 +19,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 const defaultContext: AuthContextType = {
@@ -26,6 +28,7 @@ const defaultContext: AuthContextType = {
   isAuthenticated: false,
   login: async () => false,
   logout: () => {},
+  refreshUser: async () => {},
 };
 
 // Create auth context
@@ -71,7 +74,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               name: userData.name || "User",
               email: userData.email || "",
               isAdmin: userData.isAdmin === true,
-              department: userData.department
+              department: userData.department,
+              avatarUrl: userData.avatarUrl
             };
             
             console.log("useAuth: Setting user state:", user);
@@ -262,12 +266,40 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  // Function to refresh user data from server
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const response = await fetch("/api/users/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          const user = {
+            id: userData.id,
+            name: userData.name || "User",
+            email: userData.email || "",
+            isAdmin: userData.isAdmin === true,
+            department: userData.department,
+            avatarUrl: userData.avatarUrl
+          };
+          setUser(user);
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  };
+
   const contextValue = {
     user,
     isLoading,
     isAuthenticated: !!user,
     login,
-    logout
+    logout,
+    refreshUser
   };
 
   return (
