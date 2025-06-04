@@ -5049,7 +5049,174 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
-  // Add interest to user profile
+  // Interest Groups API endpoints
+  
+  // Get all groups for current user's organization
+  app.get('/api/groups', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const organizationId = currentUser[0]?.organizationId;
+      
+      if (!organizationId) {
+        return res.status(400).json({ error: 'User organization not found' });
+      }
+
+      const groups = await db.select({
+        id: interestGroups.id,
+        name: interestGroups.name,
+        description: interestGroups.description,
+        memberCount: interestGroups.memberCount,
+        isActive: interestGroups.isActive,
+        interest: {
+          id: interests.id,
+          label: interests.label,
+          category: interests.category,
+          icon: interests.icon
+        }
+      })
+      .from(interestGroups)
+      .leftJoin(interests, eq(interestGroups.interestId, interests.id))
+      .where(and(
+        eq(interestGroups.organizationId, organizationId),
+        eq(interestGroups.isActive, true)
+      ))
+      .orderBy(desc(interestGroups.memberCount));
+
+      res.json(groups);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      res.status(500).json({ error: 'Failed to fetch groups' });
+    }
+  });
+
+  // Get user's joined groups
+  app.get('/api/groups/my-groups', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      
+      const myGroups = await db.select({
+        id: interestGroups.id,
+        name: interestGroups.name,
+        description: interestGroups.description,
+        memberCount: interestGroups.memberCount,
+        role: interestGroupMembers.role,
+        joinedAt: interestGroupMembers.joinedAt,
+        interest: {
+          id: interests.id,
+          label: interests.label,
+          category: interests.category,
+          icon: interests.icon
+        }
+      })
+      .from(interestGroupMembers)
+      .leftJoin(interestGroups, eq(interestGroupMembers.groupId, interestGroups.id))
+      .leftJoin(interests, eq(interestGroups.interestId, interests.id))
+      .where(eq(interestGroupMembers.userId, userId))
+      .orderBy(desc(interestGroupMembers.joinedAt));
+
+      res.json(myGroups);
+    } catch (error) {
+      console.error('Error fetching user groups:', error);
+      res.status(500).json({ error: 'Failed to fetch user groups' });
+    }
+  });
+
+  // Auto-create groups and manage memberships when interests are added/removed
+  async function syncGroupMemberships(userId: number, interestId: number, action: 'add' | 'remove') {
+    try {
+      const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const organizationId = currentUser[0]?.organizationId;
+      
+      if (!organizationId) return;
+
+      if (action === 'add') {
+        // Find or create group for this interest
+        let group = await db.select()
+          .from(interestGroups)
+          .where(and(
+            eq(interestGroups.interestId, interestId),
+            eq(interestGroups.organizationId, organizationId)
+          ))
+          .limit(1);
+
+        if (!group.length) {
+          // Get interest details for group name
+          const interest = await db.select().from(interests).where(eq(interests.id, interestId)).limit(1);
+          if (interest.length) {
+            // Create new group
+            const newGroup = await db.insert(interestGroups).values({
+              interestId,
+              organizationId,
+              name: `${interest[0].label} Group`,
+              description: `Connect with colleagues who share your interest in ${interest[0].label}`,
+              memberCount: 0
+            }).returning();
+            
+            group = newGroup;
+          }
+        }
+
+        if (group.length) {
+          // Add user to group if not already a member
+          const existingMember = await db.select()
+            .from(interestGroupMembers)
+            .where(and(
+              eq(interestGroupMembers.groupId, group[0].id),
+              eq(interestGroupMembers.userId, userId)
+            ))
+            .limit(1);
+
+          if (!existingMember.length) {
+            await db.insert(interestGroupMembers).values({
+              groupId: group[0].id,
+              userId
+            });
+
+            // Update member count
+            await db.update(interestGroups)
+              .set({ 
+                memberCount: sql`${interestGroups.memberCount} + 1`,
+                updatedAt: new Date()
+              })
+              .where(eq(interestGroups.id, group[0].id));
+          }
+        }
+      } else if (action === 'remove') {
+        // Find group for this interest
+        const group = await db.select()
+          .from(interestGroups)
+          .where(and(
+            eq(interestGroups.interestId, interestId),
+            eq(interestGroups.organizationId, organizationId)
+          ))
+          .limit(1);
+
+        if (group.length) {
+          // Remove user from group
+          const result = await db.delete(interestGroupMembers)
+            .where(and(
+              eq(interestGroupMembers.groupId, group[0].id),
+              eq(interestGroupMembers.userId, userId)
+            ));
+
+          if (result.rowCount > 0) {
+            // Update member count
+            await db.update(interestGroups)
+              .set({ 
+                memberCount: sql`${interestGroups.memberCount} - 1`,
+                updatedAt: new Date()
+              })
+              .where(eq(interestGroups.id, group[0].id));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing group memberships:', error);
+    }
+  }
+
+  // Add interest to user profile (updated to sync with groups)
   app.post('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
@@ -5081,6 +5248,9 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         createdAt: new Date()
       });
 
+      // Auto-join user to interest group
+      await syncGroupMemberships(parseInt(id), interestId, 'add');
+
       res.json({ success: true, message: 'Interest added successfully' });
     } catch (error) {
       console.error('Error adding interest:', error);
@@ -5088,7 +5258,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
-  // Remove interest from user profile
+  // Remove interest from user profile (updated to sync with groups)
   app.delete('/api/employees/:id/interests/:interestId', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id, interestId } = req.params;
@@ -5106,6 +5276,9 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
             eq(employeeInterests.interestId, parseInt(interestId))
           )
         );
+
+      // Auto-leave user from interest group
+      await syncGroupMemberships(parseInt(id), parseInt(interestId), 'remove');
 
       res.json({ success: true, message: 'Interest removed successfully' });
     } catch (error) {
