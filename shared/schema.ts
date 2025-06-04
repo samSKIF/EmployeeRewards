@@ -53,6 +53,7 @@ export const users = pgTable("users", {
   title: text("title"),                  // Job title for profile
   location: text("location"),            // Location/office
   responsibilities: text("responsibilities"), // Job responsibilities
+  aboutMe: text("about_me"), // About me section for profile
   coverPhotoUrl: text("cover_photo_url"),  // Profile cover photo
   lastSeenAt: timestamp("last_seen_at"),  // Last login/activity timestamp
   managerId: integer("manager_id").references(() => users.id), // Reference to manager (self-referencing)

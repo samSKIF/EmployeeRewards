@@ -556,7 +556,25 @@ const UpdatedProfilePage = () => {
                 {/* About Me Content */}
                 <TabsContent value="about" className="px-8 py-6">
                   <div className="space-y-6">
-                    {/* Left empty as per user request */}
+                    {/* About Me Section */}
+                    <div>
+                      <h3 className="text-md font-medium mb-4">About Me</h3>
+                      {isEditing ? (
+                        <div>
+                          <textarea
+                            id="aboutMe"
+                            name="aboutMe"
+                            value={formValues.aboutMe}
+                            onChange={handleInputChange}
+                            rows={4}
+                            placeholder="Tell us about yourself..."
+                            className="w-full border rounded-md p-2 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-sm">{formValues.aboutMe || "No information provided yet."}</p>
+                      )}
+                    </div>
                   </div>
                 </TabsContent>
                 
@@ -683,27 +701,7 @@ const UpdatedProfilePage = () => {
               
               <Separator />
               
-              {/* About Me Section */}
-              <div>
-                <h3 className="text-md font-medium mb-4">About Me</h3>
-                {isEditing ? (
-                  <div>
-                    <textarea
-                      id="aboutMe"
-                      name="aboutMe"
-                      value={formValues.aboutMe}
-                      onChange={handleInputChange}
-                      rows={4}
-                      placeholder="Tell us about yourself..."
-                      className="w-full border rounded-md p-2 text-sm"
-                    />
-                  </div>
-                ) : (
-                  <p className="text-sm">{formValues.aboutMe || "No information provided yet."}</p>
-                )}
-              </div>
-              
-              <Separator />
+
               
               {/* Biographical Information */}
               <div>
