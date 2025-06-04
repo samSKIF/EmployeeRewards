@@ -148,14 +148,8 @@ const UpdatedProfilePage = () => {
       });
     },
     onSuccess: (avatarUrl) => {
-      // Update the user data in the cache with the new avatar URL
-      const currentUser = queryClient.getQueryData<UserType>(["/api/users/me"]);
-      if (currentUser) {
-        queryClient.setQueryData(["/api/users/me"], {
-          ...currentUser,
-          avatarUrl
-        });
-      }
+      // Invalidate and refetch user data to ensure fresh avatar displays
+      queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
       
       toast({
         title: "Avatar uploaded",

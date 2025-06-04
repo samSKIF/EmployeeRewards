@@ -969,13 +969,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Failed to update lastSeenAt:", error);
       }
 
+      // Fetch fresh user data from database to include any recent updates (like avatarUrl)
+      const [freshUser] = await db.select().from(users).where(eq(users.id, req.user.id));
+      
+      if (!freshUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       // Get the user's balance
       const balance = await storage.getUserBalance(req.user.id);
       
-      // Combine user data with balance, ensuring isAdmin is explicitly set
+      // Combine fresh user data with balance, ensuring isAdmin is explicitly set
       const userWithBalance = {
-        ...req.user,
-        isAdmin: req.user.isAdmin === true, // Ensure boolean false for non-admins
+        ...freshUser,
+        isAdmin: freshUser.isAdmin === true, // Ensure boolean false for non-admins
         balance
       };
 
