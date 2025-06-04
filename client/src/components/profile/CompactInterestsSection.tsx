@@ -179,7 +179,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Heart className="h-5 w-5 text-pink-500" />
-            Interest
+            Interests & Hobbies
           </CardTitle>
           
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -285,13 +285,19 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
         {userInterests && userInterests.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {userInterests.map((interest: any) => {
+              const stats = getInterestStats(interest.label);
               return (
                 <Badge 
                   key={interest.id} 
                   variant="outline" 
-                  className="px-3 py-1 text-black border-gray-300"
+                  className="flex items-center gap-2 px-3 py-1 text-black border-gray-300"
                 >
+                  <span className="text-sm">{interest.icon || '📌'}</span>
                   <span>{interest.label}</span>
+                  <div className="flex items-center gap-1 ml-1">
+                    <Users className="h-3 w-3 text-gray-500" />
+                    <span className="text-xs text-gray-500">{stats.memberCount}</span>
+                  </div>
                 </Badge>
               );
             })}
