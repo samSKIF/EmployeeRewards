@@ -40,6 +40,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch interest statistics
   const { data: interestStats } = useQuery({
@@ -56,7 +57,8 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   // Add interest mutation
   const addInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
-      const response = await fetch(`/api/employees/${1680}/interests`, {
+      if (!user?.id) throw new Error('User not authenticated');
+      const response = await fetch(`/api/employees/${user.id}/interests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +78,8 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   // Remove interest mutation
   const removeInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
-      const response = await fetch(`/api/employees/${1680}/interests/${interestId}`, {
+      if (!user?.id) throw new Error('User not authenticated');
+      const response = await fetch(`/api/employees/${user.id}/interests/${interestId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

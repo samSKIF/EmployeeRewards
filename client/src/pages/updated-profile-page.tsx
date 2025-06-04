@@ -799,7 +799,7 @@ const UpdatedProfilePage = () => {
           </Card>
           
           {/* Interests Section */}
-          <SimpleInterestsSection 
+          <CompactInterestsSection 
             interests={[]}
             isEditing={false}
             onInterestsChange={() => {}}
