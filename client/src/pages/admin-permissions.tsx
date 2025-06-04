@@ -228,10 +228,10 @@ export default function AdminPermissions() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="super">Super Admin (Full Access)</SelectItem>
-                    <SelectItem value="site">Site Admin (Location-based)</SelectItem>
-                    <SelectItem value="department">Department Admin (Department-based)</SelectItem>
-                    <SelectItem value="hybrid">Hybrid Admin (Site + Department)</SelectItem>
+                    <SelectItem value="super">Super Admin (Full Company Access)</SelectItem>
+                    <SelectItem value="site">Site Admin (Multiple Sites Management)</SelectItem>
+                    <SelectItem value="department">Department Admin (Multiple Departments Management)</SelectItem>
+                    <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
                     <SelectItem value="none">No Admin Access</SelectItem>
                   </SelectContent>
                 </Select>

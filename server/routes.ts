@@ -1171,7 +1171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         department: department || null,
         password: defaultPassword,
         firebaseUid: firebaseUid || null,
-        isAdmin: isAdmin // Set isAdmin flag based on email check
+        isAdmin: false // Always create employees as regular users, admin promotion happens separately
       };
 
       const newUser = await storage.createUser(userData);
