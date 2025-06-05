@@ -334,7 +334,6 @@ function GroupsManagement() {
       <CreateChannelDialog 
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog}
-        onSubmit={(data) => createGroupMutation.mutate(data)}
       />
 
       {/* Channel Details Dialog */}
