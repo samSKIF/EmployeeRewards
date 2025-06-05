@@ -173,7 +173,12 @@ function GroupsManagement() {
         </div>
 
         <Button 
-          onClick={() => setShowCreateDialog(true)}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowCreateDialog(true);
+          }}
           className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
