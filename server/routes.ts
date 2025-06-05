@@ -5273,9 +5273,9 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       
       if (!organizationId) return;
 
-      // Check if we need to auto-create a group for this interest
+      // Check if we need to auto-create a channel for this interest
       if (action === 'add') {
-        await checkAndCreateAutoGroup(interestId, organizationId);
+        await checkAndCreateAutoChannel(interestId, organizationId);
       }
 
       if (action === 'add') {

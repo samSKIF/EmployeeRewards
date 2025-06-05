@@ -4,7 +4,7 @@ import { z } from "zod";
 import { relations, type InferSelectModel } from "drizzle-orm";
 
 // Organizations table (Corporate, Client, Seller)
-export const organizations = pgTable("organizations", {
+export const organizations: any = pgTable("organizations", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(), // 'corporate', 'client', 'seller'
