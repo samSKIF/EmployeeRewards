@@ -2506,24 +2506,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Channel name and type are required" });
       }
 
-      // For now, just return success response since we don't have a channels table yet
-      // This would typically insert into a channels table
-      const newChannel = {
-        id: Date.now(), // Temporary ID generation
+      // Determine access level based on privacy settings
+      let accessLevel = "open";
+      if (isPrivate) {
+        accessLevel = "invite_only";
+      } else if (requiresApproval) {
+        accessLevel = "approval_required";
+      } else if (allowedDepartments.length > 0) {
+        accessLevel = "department_only";
+      } else if (allowedLocations.length > 0) {
+        accessLevel = "site_only";
+      }
+
+      // Insert into interestChannels table
+      const [newChannel] = await db.insert(interestChannels).values({
         name,
         description,
         channelType,
-        maxMembers: maxMembers || null,
-        isPrivate: !!isPrivate,
-        requiresApproval: !!requiresApproval,
-        allowedDepartments,
-        allowedLocations,
-        autoAddMembers: !!autoAddMembers,
-        initialMembers,
+        accessLevel,
+        allowedDepartments: allowedDepartments.length > 0 ? allowedDepartments : null,
+        allowedSites: allowedLocations.length > 0 ? allowedLocations : null,
+        isAutoCreated: false,
         createdBy: req.user.id,
-        createdAt: new Date(),
-        memberCount: autoAddMembers ? allowedDepartments.length + allowedLocations.length : initialMembers.length
-      };
+        organizationId: req.user.organizationId || 1, // Default to org 1 if not set
+        memberCount: 0
+      }).returning();
+
+      // Add initial members if specified
+      if (initialMembers.length > 0) {
+        const memberInserts = initialMembers.map((userId: number) => ({
+          channelId: newChannel.id,
+          userId,
+          role: 'member'
+        }));
+
+        await db.insert(interestChannelMembers).values(memberInserts);
+        
+        // Update member count
+        await db.update(interestChannels)
+          .set({ memberCount: initialMembers.length })
+          .where(eq(interestChannels.id, newChannel.id));
+      }
+
+      // Auto-add members based on departments/locations if enabled
+      if (autoAddMembers && (allowedDepartments.length > 0 || allowedLocations.length > 0)) {
+        let whereConditions = [];
+        
+        if (allowedDepartments.length > 0) {
+          whereConditions.push(inArray(users.department, allowedDepartments));
+        }
+        
+        if (allowedLocations.length > 0) {
+          whereConditions.push(inArray(users.location, allowedLocations));
+        }
+
+        if (whereConditions.length > 0) {
+          const eligibleUsers = await db.select({ id: users.id })
+            .from(users)
+            .where(or(...whereConditions));
+
+          if (eligibleUsers.length > 0) {
+            const autoMemberInserts = eligibleUsers.map(user => ({
+              channelId: newChannel.id,
+              userId: user.id,
+              role: 'member'
+            }));
+
+            await db.insert(interestChannelMembers)
+              .values(autoMemberInserts)
+              .onConflictDoNothing();
+
+            // Update member count
+            await db.update(interestChannels)
+              .set({ memberCount: eligibleUsers.length })
+              .where(eq(interestChannels.id, newChannel.id));
+          }
+        }
+      }
 
       res.status(201).json({ 
         message: "Channel created successfully",
