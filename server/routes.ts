@@ -2491,17 +2491,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const {
         name,
         description,
-        type,
+        channelType,
         maxMembers,
         isPrivate,
         requiresApproval,
-        departments = [],
-        locations = [],
-        autoAddMembers = false
+        allowedDepartments = [],
+        allowedLocations = [],
+        autoAddMembers = false,
+        initialMembers = []
       } = req.body;
 
       // Validate required fields
-      if (!name || !type) {
+      if (!name || !channelType) {
         return res.status(400).json({ message: "Channel name and type are required" });
       }
 
@@ -2511,16 +2512,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: Date.now(), // Temporary ID generation
         name,
         description,
-        type,
+        channelType,
         maxMembers: maxMembers || null,
         isPrivate: !!isPrivate,
         requiresApproval: !!requiresApproval,
-        departments,
-        locations,
+        allowedDepartments,
+        allowedLocations,
         autoAddMembers: !!autoAddMembers,
+        initialMembers,
         createdBy: req.user.id,
         createdAt: new Date(),
-        memberCount: autoAddMembers ? departments.length + locations.length : 0
+        memberCount: autoAddMembers ? allowedDepartments.length + allowedLocations.length : initialMembers.length
       };
 
       res.status(201).json({ 

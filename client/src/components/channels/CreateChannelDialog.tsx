@@ -73,7 +73,7 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
   // Create channel mutation
   const createChannelMutation = useMutation({
     mutationFn: async (channelData: any) => {
-      return apiRequest('/api/admin/groups', channelData, 'POST');
+      return apiRequest('POST', '/api/channels', channelData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
