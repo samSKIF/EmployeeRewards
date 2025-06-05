@@ -5187,6 +5187,111 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
+  // Create new channel endpoint
+  app.post('/api/admin/groups', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      
+      if (!currentUser[0]?.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const organizationId = currentUser[0]?.organizationId;
+      if (!organizationId) {
+        return res.status(400).json({ error: 'User organization not found' });
+      }
+
+      const {
+        name,
+        description,
+        channelType,
+        isPrivate,
+        requiresApproval,
+        maxMembers,
+        departmentRestricted,
+        locationRestricted,
+        allowedDepartments = [],
+        allowedLocations = [],
+        autoAddMembers,
+        initialMembers = []
+      } = req.body;
+
+      // Create the channel
+      const [newChannel] = await db.insert(interestChannels).values({
+        name,
+        description,
+        organizationId,
+        channelType,
+        accessLevel: isPrivate ? 'invite_only' : (requiresApproval ? 'approval_required' : 'open'),
+        isAutoCreated: false,
+        allowedDepartments: departmentRestricted ? allowedDepartments : [],
+        allowedSites: locationRestricted ? allowedLocations : [],
+        createdBy: userId,
+        memberCount: 0
+      }).returning();
+
+      // Add initial members if specified
+      if (autoAddMembers && (allowedDepartments.length > 0 || allowedLocations.length > 0)) {
+        // Auto-add members from selected departments and locations
+        let userQuery = db.select().from(users).where(eq(users.organizationId, organizationId));
+        
+        const conditions = [];
+        if (allowedDepartments.length > 0) {
+          conditions.push(inArray(users.department, allowedDepartments));
+        }
+        if (allowedLocations.length > 0) {
+          conditions.push(inArray(users.location, allowedLocations));
+        }
+        
+        if (conditions.length > 0) {
+          userQuery = userQuery.where(or(...conditions));
+        }
+        
+        const eligibleUsers = await userQuery;
+        
+        // Add eligible users to channel
+        if (eligibleUsers.length > 0) {
+          const memberInserts = eligibleUsers.map(user => ({
+            channelId: newChannel.id,
+            userId: user.id,
+            role: 'member'
+          }));
+          
+          await db.insert(interestChannelMembers).values(memberInserts);
+          
+          // Update member count
+          await db.update(interestChannels)
+            .set({ memberCount: eligibleUsers.length })
+            .where(eq(interestChannels.id, newChannel.id));
+        }
+      } else if (initialMembers.length > 0) {
+        // Add manually selected members
+        const memberInserts = initialMembers.map((userId: number) => ({
+          channelId: newChannel.id,
+          userId,
+          role: 'member'
+        }));
+        
+        await db.insert(interestChannelMembers).values(memberInserts);
+        
+        // Update member count
+        await db.update(interestChannels)
+          .set({ memberCount: initialMembers.length })
+          .where(eq(interestChannels.id, newChannel.id));
+      }
+
+      res.status(201).json({ 
+        id: newChannel.id,
+        message: 'Channel created successfully',
+        channel: newChannel
+      });
+    } catch (error) {
+      console.error('Error creating channel:', error);
+      res.status(500).json({ error: 'Failed to create channel' });
+    }
+  });
+
   // Function to check and auto-create interest channels when threshold is met
   async function checkAndCreateAutoChannel(interestId: number, organizationId: number) {
     try {
