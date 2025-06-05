@@ -411,6 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let anniversaryConditions = [
           sql`${users.hireDate} IS NOT NULL`,
           sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+          sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
           sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
         ];
 
