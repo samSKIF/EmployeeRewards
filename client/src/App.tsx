@@ -57,16 +57,12 @@ function App() {
     setAppReady(true);
   }, []);
 
-  // Role-based redirect from root based on user type
   useEffect(() => {
-    // Skip all redirect logic for management routes
-    if (location.startsWith("/management")) {
-      return;
-    }
+    console.log("Current location:", location);
 
     const token = localStorage.getItem("token");
 
-    // Only handle routing for unauthenticated users or root path
+    // Only handle routing for unauthenticated users
     if (!token) {
       if (location !== "/auth") {
         console.log("No token found, redirecting to auth");
@@ -75,31 +71,24 @@ function App() {
       return;
     }
 
-    // Only proceed with role check if we're on the root path
-    if (location !== "/") {
-      console.log("Not on root path, skipping redirect checks");
-      return;
+    // Only redirect from root path, and only once
+    if (location === "/" && token) {
+      console.log("User authenticated, routing to social by default");
+      setLocation("/social");
     }
-
-    const checkAdminStatus = async () => {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log("Token payload for role check:", {
-          email: payload.email,
-          hasAdminClaim: payload.claims?.isAdmin === true
-        });
-
-        // Set default route - no longer redirecting admin users away from social
-        console.log("User authenticated, routing to social by default");
-        setLocation("/social");
-      } catch (e) {
-        console.error("Error checking admin status:", e);
-        setLocation("/social"); // Default to social on error
-      }
-    };
-
-    checkAdminStatus();
   }, []); // Remove location dependency to prevent constant re-routing
+
+  // Separate effect to handle initial route check without dependencies
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // Handle initial load routing
+    if (token && location === "/") {
+      setLocation("/social");
+    } else if (!token && location !== "/auth") {
+      setLocation("/auth");
+    }
+  }, []);
 
   // Main application
   return (
@@ -114,7 +103,7 @@ function App() {
               <Route path="/management">
                 <ManagementDashboard />
               </Route>
-              
+
               {/* Main dashboard routes */}
               <Route path="/social">
                 <SocialLayout>
@@ -295,19 +284,19 @@ function App() {
                   <UpdatedProfilePage />
                 </SocialLayout>
               </Route>
-              
+
               <Route path="/recognition">
                 <SocialLayout>
                   <Recognition />
                 </SocialLayout>
               </Route>
-              
+
               <Route path="/leave-management">
                 <SocialLayout>
                   <LeaveManagement />
                 </SocialLayout>
               </Route>
-              
+
               <Route path="/status-demo">
                 <SocialLayout>
                   <StatusDemo />
