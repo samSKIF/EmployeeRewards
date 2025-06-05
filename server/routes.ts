@@ -5189,8 +5189,8 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
     }
   });
 
-  // Function to check and auto-create interest groups when threshold is met
-  async function checkAndCreateAutoGroup(interestId: number, organizationId: number) {
+  // Function to check and auto-create interest channels when threshold is met
+  async function checkAndCreateAutoChannel(interestId: number, organizationId: number) {
     try {
       // Get the interest details
       const interest = await db.select().from(interests).where(eq(interests.id, interestId)).limit(1);
@@ -5209,23 +5209,23 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       // Check if we need to auto-create a group (threshold of 5+ members)
       if (memberCount >= 5) {
-        // Check if group already exists for this interest
-        const existingGroup = await db.select()
-          .from(interestGroups)
+        // Check if channel already exists for this interest
+        const existingChannel = await db.select()
+          .from(interestChannels)
           .where(and(
-            eq(interestGroups.interestId, interestId),
-            eq(interestGroups.organizationId, organizationId)
+            eq(interestChannels.interestId, interestId),
+            eq(interestChannels.organizationId, organizationId)
           ))
           .limit(1);
 
-        if (!existingGroup[0]) {
-          // Create new auto-generated group
-          const newGroup = await db.insert(interestGroups).values({
-            name: `${interest[0].name} Interest Group`,
-            description: `Automatically created group for employees interested in ${interest[0].name}`,
+        if (!existingChannel[0]) {
+          // Create new auto-generated channel
+          const newChannel = await db.insert(interestChannels).values({
+            name: `${interest[0].label} Interest Channel`,
+            description: `Automatically created channel for employees interested in ${interest[0].label}`,
             interestId: interestId,
             organizationId: organizationId,
-            groupType: 'interest',
+            channelType: 'interest',
             accessLevel: 'open',
             isAutoCreated: true,
             autoCreationThreshold: 5,
@@ -5233,29 +5233,29 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
             isActive: true
           }).returning();
 
-          if (newGroup[0]) {
-            // Add all users with this interest to the group
-            const usersToAdd = await db.select({ userId: employeeInterests.userId })
+          if (newChannel[0]) {
+            // Add all users with this interest to the channel
+            const usersToAdd = await db.select({ userId: employeeInterests.employeeId })
               .from(employeeInterests)
-              .innerJoin(users, eq(employeeInterests.userId, users.id))
+              .innerJoin(users, eq(employeeInterests.employeeId, users.id))
               .where(and(
                 eq(employeeInterests.interestId, interestId),
                 eq(users.organizationId, organizationId)
               ));
 
             if (usersToAdd.length > 0) {
-              await db.insert(interestGroupMembers).values(
+              await db.insert(interestChannelMembers).values(
                 usersToAdd.map(user => ({
-                  groupId: newGroup[0].id,
+                  channelId: newChannel[0].id,
                   userId: user.userId,
                   role: 'member'
                 }))
               );
 
               // Update member count
-              await db.update(interestGroups)
+              await db.update(interestChannels)
                 .set({ memberCount: usersToAdd.length })
-                .where(eq(interestGroups.id, newGroup[0].id));
+                .where(eq(interestChannels.id, newChannel[0].id));
             }
           }
         }
