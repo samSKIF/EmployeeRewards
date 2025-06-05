@@ -889,7 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      res.status(400).json({ message: error.message || "Registration failed" });
+      res.status(400).json({ message: error.message || "Registration failed"});
     }
   });
 
@@ -2473,11 +2473,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Demo products seeded successfully");
+    } catch (error) {
+      console.error("Error seeding initial data:", error);
     }
-  } catch (error) {
-    console.error("Error seeding initial data:", error);
   }
-}
 
   // Channel creation endpoint
   app.post("/api/channels", verifyToken, async (req: AuthenticatedRequest, res) => {
