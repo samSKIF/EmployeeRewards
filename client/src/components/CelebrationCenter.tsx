@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ export default function CelebrationCenter() {
   const [showModal, setShowModal] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
+  const queryClient = useQueryClient();
 
   // Fetch today's celebrations
   const { data: todayCelebrations } = useQuery<CelebrationEvent[]>({
@@ -352,7 +353,8 @@ export default function CelebrationCenter() {
                     }
                   }).then(() => {
                     // Refetch celebrations to update UI
-                    window.location.reload();
+                    queryClient.invalidateQueries({ queryKey: ['/api/celebrations/today'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/celebrations/upcoming'] });
                   });
                 }
               }}
