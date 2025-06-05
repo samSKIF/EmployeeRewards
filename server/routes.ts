@@ -2474,10 +2474,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Demo products seeded successfully");
+      res.json({ message: "Demo products seeded successfully" });
     } catch (error) {
       console.error("Error seeding initial data:", error);
+      res.status(500).json({ message: "Failed to seed demo products" });
     }
-  }
+  });
 
   // Channel creation endpoint
   app.post("/api/channels", verifyToken, async (req: AuthenticatedRequest, res) => {
@@ -2531,9 +2533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.use('/management', managementRoutes);
-
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.stack)
-  res.status(500).send('Something broke!')
-})
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
