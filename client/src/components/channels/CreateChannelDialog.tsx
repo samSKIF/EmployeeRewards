@@ -126,6 +126,8 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
       initialMembers: formData.initialMembers.map(user => user.id)
     };
 
+    console.log('Sending channel data:', channelData);
+
     createChannelMutation.mutate(channelData);
   };
 
