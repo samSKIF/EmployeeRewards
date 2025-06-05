@@ -1260,8 +1260,8 @@ export const insertEmployeeInterestSchema = createInsertSchema(employeeInterests
 export type EmployeeInterest = typeof employeeInterests.$inferSelect;
 export type InsertEmployeeInterest = z.infer<typeof insertEmployeeInterestSchema>;
 
-// Enhanced Interest Groups - Auto-generated groups based on interests with enterprise features
-export const interestGroups = pgTable("interest_groups", {
+// Enhanced Interest Channels - Auto-generated channels based on interests with enterprise features
+export const interestChannels = pgTable("interest_channels", {
   id: serial("id").primaryKey(),
   interestId: integer("interest_id").references(() => interests.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
@@ -1271,7 +1271,7 @@ export const interestGroups = pgTable("interest_groups", {
   organizationId: integer("organization_id").references(() => organizations.id).notNull(),
   
   // Enhanced enterprise features
-  groupType: text("group_type").default("interest").notNull(), // 'interest', 'department', 'site', 'project', 'company'
+  channelType: text("channel_type").default("interest").notNull(), // 'interest', 'department', 'site', 'project', 'company'
   accessLevel: text("access_level").default("open").notNull(), // 'open', 'department_only', 'site_only', 'invite_only', 'approval_required'
   isAutoCreated: boolean("is_auto_created").default(false), // Auto-created from interests
   autoCreationThreshold: integer("auto_creation_threshold").default(5), // Minimum members for auto-creation
@@ -1281,7 +1281,7 @@ export const interestGroups = pgTable("interest_groups", {
   allowedSites: text("allowed_sites").array(), // Array of site/location names
   allowedRoles: text("allowed_roles").array(), // Array of job titles/roles
   
-  // Group management
+  // Channel management
   createdBy: integer("created_by").references(() => users.id),
   moderators: text("moderators").array(), // User IDs who can moderate
   requiresApproval: boolean("requires_approval").default(false),
