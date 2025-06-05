@@ -110,7 +110,8 @@ function GroupsManagement() {
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (groupData: any) => {
-      return apiRequest('/api/admin/groups', groupData);
+      const response = await apiRequest('POST', '/api/admin/groups', groupData);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
@@ -125,7 +126,8 @@ function GroupsManagement() {
   // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: any }) => {
-      return apiRequest(`/api/admin/groups/${id}`, data, 'PUT');
+      const response = await apiRequest('PUT', `/api/admin/groups/${id}`, data);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
