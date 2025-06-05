@@ -529,5 +529,5 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
 }
 
 // Export both names for compatibility
-export { CreateChannelDialog };
+export { CreateChannelDialog as CreateGroupDialog };
 export default CreateChannelDialog;
