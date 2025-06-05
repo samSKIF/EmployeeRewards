@@ -164,7 +164,30 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Validate required fields
+    if (!formData.name.trim()) {
+      console.error('Channel name is required');
+      return;
+    }
+    
+    if (!selectedTemplate) {
+      console.error('Template selection is required');
+      return;
+    }
+    
+    // Prepare final form data
+    const submitData = {
+      ...formData,
+      type: formData.type,
+      allowedDepartments: selectedDepartments,
+      allowedLocations: selectedLocations,
+      initialMembers: selectedMembers.map(m => m.id),
+      maxMembers: formData.maxMembers ? parseInt(formData.maxMembers) : null
+    };
+    
+    console.log('Submitting channel data:', submitData);
+    onSubmit(submitData);
   };
 
   return (

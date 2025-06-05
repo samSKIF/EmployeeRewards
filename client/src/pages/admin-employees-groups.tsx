@@ -943,9 +943,7 @@ export default function AdminEmployeesGroups() {
         <p className="text-gray-600 mt-1">Manage your organization's employees and workplace channels</p>
       </div>
 
-      {/*This code fixes an import error by replacing `CreateGroupDialog` with `CreateChannelDialog`.
-```typescript
-      Main Tabs */}
+      {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="employees" className="flex items-center space-x-2">
