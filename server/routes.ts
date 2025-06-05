@@ -5217,14 +5217,14 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
         initialMembers = []
       } = req.body;
 
-      console.log('Creating channel with request body:', req.body);
+      console.log('Creating channel with request body:', JSON.stringify(req.body, null, 2));
 
       // Use raw SQL for channel creation to bypass TypeScript issues
       const insertQuery = `
         INSERT INTO interest_channels 
-        (name, description, organization_id, channel_type, access_level, is_auto_created, 
+        (interest_id, name, description, organization_id, channel_type, access_level, is_auto_created, 
          allowed_departments, allowed_sites, created_by, member_count, is_private, requires_approval, max_members)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *
       `;
 
@@ -5233,6 +5233,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       const sites = locationRestricted ? allowedLocations : [];
       
       const result = await pool.query(insertQuery, [
+        null, // interest_id (can be null for manually created channels)
         name,
         description,
         organizationId,
