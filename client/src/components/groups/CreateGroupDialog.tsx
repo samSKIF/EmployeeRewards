@@ -329,89 +329,87 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
 
           <Separator />
 
-          {/* Department Selection */}
-          {(formData.accessLevel === 'department_only' || selectedTemplate === 'department') && (
-            <div className="space-y-4">
-              <Label className="text-base font-medium flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Select Departments
-              </Label>
-              <p className="text-sm text-gray-600">Choose which departments can access this channel</p>
-              
-              <ScrollArea className="h-32 border rounded-md p-3">
-                <div className="space-y-2">
-                  {departments?.map((department: string) => (
-                    <div key={department} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`dept-${department}`}
-                        checked={selectedDepartments.includes(department)}
-                        onCheckedChange={() => handleDepartmentToggle(department)}
-                      />
-                      <Label htmlFor={`dept-${department}`} className="text-sm flex-1">
-                        {department}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              
-              {selectedDepartments.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedDepartments.map(dept => (
-                    <Badge key={dept} variant="secondary" className="flex items-center gap-1">
-                      {dept}
-                      <X 
-                        className="h-3 w-3 cursor-pointer" 
-                        onClick={() => handleDepartmentToggle(dept)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Department Selection - Always Available */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Select Departments (Optional)
+            </Label>
+            <p className="text-sm text-gray-600">Choose which departments can access this channel. Leave empty for all departments.</p>
+            
+            <ScrollArea className="h-32 border rounded-md p-3">
+              <div className="space-y-2">
+                {departments?.map((department: string) => (
+                  <div key={department} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`dept-${department}`}
+                      checked={selectedDepartments.includes(department)}
+                      onCheckedChange={() => handleDepartmentToggle(department)}
+                    />
+                    <Label htmlFor={`dept-${department}`} className="text-sm flex-1">
+                      {department}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            {selectedDepartments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedDepartments.map(dept => (
+                  <Badge key={dept} variant="secondary" className="flex items-center gap-1">
+                    {dept}
+                    <X 
+                      className="h-3 w-3 cursor-pointer" 
+                      onClick={() => handleDepartmentToggle(dept)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Location Selection */}
-          {(formData.accessLevel === 'location_only' || selectedTemplate === 'location') && (
-            <div className="space-y-4">
-              <Label className="text-base font-medium flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Select Locations
-              </Label>
-              <p className="text-sm text-gray-600">Choose which locations can access this channel</p>
-              
-              <ScrollArea className="h-32 border rounded-md p-3">
-                <div className="space-y-2">
-                  {locations?.map((location: string) => (
-                    <div key={location} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`loc-${location}`}
-                        checked={selectedLocations.includes(location)}
-                        onCheckedChange={() => handleLocationToggle(location)}
-                      />
-                      <Label htmlFor={`loc-${location}`} className="text-sm flex-1">
-                        {location}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              
-              {selectedLocations.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedLocations.map(loc => (
-                    <Badge key={loc} variant="secondary" className="flex items-center gap-1">
-                      {loc}
-                      <X 
-                        className="h-3 w-3 cursor-pointer" 
-                        onClick={() => handleLocationToggle(loc)}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <Separator />
+
+          {/* Location Selection - Always Available */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Select Locations (Optional)
+            </Label>
+            <p className="text-sm text-gray-600">Choose which locations can access this channel. Leave empty for all locations.</p>
+            
+            <ScrollArea className="h-32 border rounded-md p-3">
+              <div className="space-y-2">
+                {locations?.map((location: string) => (
+                  <div key={location} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`loc-${location}`}
+                      checked={selectedLocations.includes(location)}
+                      onCheckedChange={() => handleLocationToggle(location)}
+                    />
+                    <Label htmlFor={`loc-${location}`} className="text-sm flex-1">
+                      {location}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            {selectedLocations.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedLocations.map(loc => (
+                  <Badge key={loc} variant="secondary" className="flex items-center gap-1">
+                    {loc}
+                    <X 
+                      className="h-3 w-3 cursor-pointer" 
+                      onClick={() => handleLocationToggle(loc)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Separator />
 
@@ -530,5 +528,6 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
   );
 }
 
-// Export alias for backward compatibility
-export { CreateChannelDialog as CreateGroupDialog };
+// Export both names for compatibility
+export { CreateChannelDialog };
+export default CreateChannelDialog;
