@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-// import { CreateChannelDialog } from '@/components/channels/CreateChannelDialog';
+import { CreateChannelDialog } from '@/components/channels/CreateChannelDialog';
 
 // Define employee form data type
 interface EmployeeFormData {
@@ -140,7 +140,11 @@ function GroupsManagement() {
   // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/groups/${id}`, {}, 'DELETE');
+      const response = await fetch(`/api/admin/groups/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete group');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
@@ -151,13 +155,13 @@ function GroupsManagement() {
     }
   });
 
-  const filteredGroups = groups?.filter((group: any) => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredGroups = Array.isArray(groups) ? groups.filter((group: any) => {
+    const matchesSearch = group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (selectedCategory === 'all') return matchesSearch;
     return group.category === selectedCategory && matchesSearch;
-  }) || [];
+  }) : [];
 
   return (
     <div className="space-y-6">
