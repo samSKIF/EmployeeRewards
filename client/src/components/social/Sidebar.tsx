@@ -21,7 +21,7 @@ import {
   UserCheck,
   LucideIcon
 } from 'lucide-react';
-import { GroupsDiscoveryWidget } from '@/components/groups/GroupsDiscoveryWidget';
+import { ChannelsDiscoveryWidget } from '@/components/channels/ChannelsDiscoveryWidget';
 
 interface SidebarProps {
   user: {
@@ -249,7 +249,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
       {/* Groups Discovery Widget */}
       <div className="mt-8 px-3">
-        <GroupsDiscoveryWidget variant="sidebar" />
+        <ChannelsDiscoveryWidget />
       </div>
       
       {/* Logout button */}
