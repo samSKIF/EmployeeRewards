@@ -5141,7 +5141,7 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
 
       // Build query conditions based on admin scope
       let whereConditions = [
-        eq(interestGroups.organizationId, organizationId)
+        eq(interestChannels.organizationId, organizationId)
       ];
 
       // Filter by admin scope
@@ -5155,25 +5155,23 @@ app.post("/api/file-templates", verifyToken, verifyAdmin, async (req: Authentica
       // 'all' scope shows all groups in organization
 
       const groups = await db.select({
-        id: interestGroups.id,
-        name: interestGroups.name,
-        description: interestGroups.description,
-        memberCount: interestGroups.memberCount,
-        isActive: interestGroups.isActive,
-        createdAt: interestGroups.createdAt,
-        isPrivate: interestGroups.isPrivate,
-        category: interests.category,
-        interest: {
-          id: interests.id,
-          label: interests.label,
-          category: interests.category,
-          icon: interests.icon
-        }
+        id: interestChannels.id,
+        name: interestChannels.name,
+        description: interestChannels.description,
+        memberCount: interestChannels.memberCount,
+        isActive: interestChannels.isActive,
+        createdAt: interestChannels.createdAt,
+        category: interestChannels.channelType,
+        channelType: interestChannels.channelType,
+        accessLevel: interestChannels.accessLevel,
+        allowedDepartments: interestChannels.allowedDepartments,
+        allowedSites: interestChannels.allowedSites,
+        allowedRoles: interestChannels.allowedRoles,
+        isAutoCreated: interestChannels.isAutoCreated
       })
-      .from(interestGroups)
-      .leftJoin(interests, eq(interestGroups.interestId, interests.id))
+      .from(interestChannels)
       .where(and(...whereConditions))
-      .orderBy(desc(interestGroups.createdAt));
+      .orderBy(desc(interestChannels.createdAt));
 
       // Add active members and posts count (mock data for now)
       const enrichedGroups = groups.map(group => ({
