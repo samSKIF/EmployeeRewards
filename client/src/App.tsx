@@ -99,7 +99,7 @@ function App() {
     };
 
     checkAdminStatus();
-  }, [location, setLocation]);
+  }, []); // Remove location dependency to prevent constant re-routing
 
   // Main application
   return (

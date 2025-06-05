@@ -1,0 +1,198 @@
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing Firebase app with project ID: employee-reward-fb8ea
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Failed to connect to MongoDB: MongoServerSelectionError: 4092C2C1A57F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+
+    at Topology.selectServer (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:628:30)
+    at async Topology._connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:468:22)
+    at async Topology.connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:405:7)
+    at async topologyConnect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:620:9)
+    at async MongoClient._connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:632:7)
+    at async MongoClient.connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:544:7)
+    at async connectToMongoDB (/home/runner/workspace/server/mongodb/connection.ts:26:5)
+    at async initializeMongoDB (/home/runner/workspace/server/mongodb/integration.ts:9:16)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:64:28) {
+  errorLabelSet: Set(0) {},
+  reason: TopologyDescription {
+    type: 'ReplicaSetNoPrimary',
+    servers: Map(3) {
+      'ac-xasswr7-shard-00-00.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-02.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-01.7yjnylf.mongodb.net:27017' => [ServerDescription]
+    },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: 'atlas-feqa1d-shard-0',
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined,
+  [cause]: MongoNetworkError: 4092C2C1A57F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+  
+      at TLSSocket.<anonymous> (/home/runner/workspace/node_modules/mongodb/src/cmap/connect.ts:394:16)
+      at Object.onceWrapper (node:events:633:26)
+      at TLSSocket.emit (node:events:518:28)
+      at emitErrorNT (node:internal/streams/destroy:169:8)
+      at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+    errorLabelSet: Set(1) { 'ResetPool' },
+    beforeHandshake: false,
+    [cause]: [Error: 4092C2C1A57F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+    ] {
+      library: 'SSL routines',
+      reason: 'tlsv1 alert internal error',
+      code: 'ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR'
+    }
+  }
+}
+Social features will use PostgreSQL fallback
+MongoDB not available, continuing with PostgreSQL for social features
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+🎂 Scheduling birthday rewards job (daily at 08:00)
+12:25:01 PM [express] serving on port 5000
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:25:14 PM [express] GET /api/groups/trending 200 in 16ms
+12:25:14 PM [express] GET /api/groups/suggestions 200 in 12ms
+12:25:14 PM [express] GET /api/points/balance 304 in 688ms :: {"balance":0,"userId":1680}
+Birthday users found: 1
+Anniversary users found: 0
+Total celebrations returning: 1
+12:25:14 PM [express] GET /api/celebrations/today 304 in 754ms :: [{"id":1680,"user":{"id":1680,"name…
+Cache MISS for key: departments:org:1
+Cache MISS for key: locations:org:1
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Returning 804 users for company 1
+12:25:21 PM [express] GET /api/users 200 in 7004ms :: [{"id":1282,"username":"pamela.young","name":"P…
+12:25:21 PM [express] GET /api/users/departments 304 in 6708ms :: ["Administration","Executive","Fina…
+12:25:21 PM [express] GET /api/users/locations 304 in 6706ms :: ["Dubai","New York","Tokyo"]
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:25:21 PM [express] GET /api/users/me 200 in 6276ms :: {"id":1680,"username":"shams.aranib","passwo…
+12:25:21 PM [express] GET /api/celebrations/upcoming 304 in 7463ms :: []
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:25:21 PM [express] GET /api/users/me 200 in 303ms :: {"id":1680,"username":"shams.aranib","passwor…
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:25:22 PM [express] GET /api/users/me 200 in 319ms :: {"id":1680,"username":"shams.aranib","passwor…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:25:22 PM [express] GET /api/users/me 200 in 436ms :: {"id":1680,"username":"shams.aranib","passwor…
+Final user object isAdmin: true
+12:25:22 PM [express] GET /api/users/me 200 in 589ms :: {"id":1680,"username":"shams.aranib","passwor…
+12:25:22 PM [express] GET /api/social/posts 200 in 443ms :: [{"id":35,"userId":1680,"content":"I am s…
+12:25:22 PM [express] GET /api/social/stats 304 in 517ms :: {"posts":1,"comments":0,"reactions":0,"re…
+12:25:23 PM [express] GET /api/employee-status/users/1680/statuses 200 in 4ms
+12:25:23 PM [express] GET /api/employee-status/users/1680/statuses 200 in 4ms
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:25:56 PM [express] GET /api/admin/groups 304 in 755ms :: []
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:26:26 PM [express] GET /api/groups/suggestions 200 in 9ms
+12:26:26 PM [express] GET /api/groups/trending 200 in 24ms
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+12:26:27 PM [express] GET /api/points/balance 304 in 676ms :: {"balance":0,"userId":1680}
+Birthday users found: 1
+Anniversary users found: 0
+Total celebrations returning: 1
+12:26:27 PM [express] GET /api/celebrations/today 304 in 739ms :: [{"id":1680,"user":{"id":1680,"name…
+Cache MISS for key: departments:org:1
+Cache MISS for key: locations:org:1
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Returning 804 users for company 1
+12:26:33 PM [express] GET /api/users 200 in 7035ms :: [{"id":1282,"username":"pamela.young","name":"P…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+12:26:33 PM [express] GET /api/users/departments 304 in 6521ms :: ["Administration","Executive","Fina…
+12:26:33 PM [express] GET /api/users/locations 304 in 6502ms :: ["Dubai","New York","Tokyo"]
+Final user object isAdmin: true
+12:26:34 PM [express] GET /api/users/me 200 in 6330ms :: {"id":1680,"username":"shams.aranib","passwo…
+12:26:34 PM [express] GET /api/celebrations/upcoming 304 in 7459ms :: []
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:26:35 PM [express] GET /api/users/me 200 in 591ms :: {"id":1680,"username":"shams.aranib","passwor…
+12:26:35 PM [express] GET /api/social/posts 200 in 156ms :: [{"id":35,"userId":1680,"content":"I am s…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+12:26:35 PM [express] GET /api/social/stats 304 in 369ms :: {"posts":1,"comments":0,"reactions":0,"re…
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Final user object isAdmin: true
+12:26:35 PM [express] GET /api/users/me 200 in 447ms :: {"id":1680,"username":"shams.aranib","passwor…
+12:26:35 PM [express] GET /api/employee-status/users/1680/statuses 200 in 5ms
+12:26:35 PM [express] GET /api/employee-status/users/1680/statuses 200 in 5ms
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:26:36 PM [express] GET /api/users/me 200 in 308ms :: {"id":1680,"username":"shams.aranib","passwor…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+12:26:36 PM [express] GET /api/users/me 200 in 304ms :: {"id":1680,"username":"shams.aranib","passwor…
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
+Redis Client Error: connect ECONNREFUSED 127.0.0.1:6379
