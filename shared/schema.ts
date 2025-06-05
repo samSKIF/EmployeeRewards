@@ -1297,19 +1297,19 @@ export const interestChannels = pgTable("interest_channels", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const interestGroupMembers = pgTable("interest_group_members", {
+export const interestChannelMembers = pgTable("interest_channel_members", {
   id: serial("id").primaryKey(),
-  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
+  channelId: integer("channel_id").references(() => interestChannels.id, { onDelete: 'cascade' }).notNull(),
   userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   role: text("role").default("member").notNull(),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 }, (table) => ({
-  unique: primaryKey({ columns: [table.groupId, table.userId] }),
+  unique: primaryKey({ columns: [table.channelId, table.userId] }),
 }));
 
-export const interestGroupPosts = pgTable("interest_group_posts", {
+export const interestChannelPosts = pgTable("interest_channel_posts", {
   id: serial("id").primaryKey(),
-  groupId: integer("group_id").references(() => interestGroups.id, { onDelete: 'cascade' }).notNull(),
+  channelId: integer("channel_id").references(() => interestChannels.id, { onDelete: 'cascade' }).notNull(),
   authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
@@ -1319,74 +1319,74 @@ export const interestGroupPosts = pgTable("interest_group_posts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const interestGroupPostComments = pgTable("interest_group_post_comments", {
+export const interestChannelPostComments = pgTable("interest_channel_post_comments", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
+  postId: integer("post_id").references(() => interestChannelPosts.id, { onDelete: 'cascade' }).notNull(),
   authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const interestGroupPostLikes = pgTable("interest_group_post_likes", {
+export const interestChannelPostLikes = pgTable("interest_channel_post_likes", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => interestGroupPosts.id, { onDelete: 'cascade' }).notNull(),
+  postId: integer("post_id").references(() => interestChannelPosts.id, { onDelete: 'cascade' }).notNull(),
   userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   unique: primaryKey({ columns: [table.postId, table.userId] }),
 }));
 
-// Groups Relations
-export const interestGroupsRelations = relations(interestGroups, ({ one, many }) => ({
-  interest: one(interests, { fields: [interestGroups.interestId], references: [interests.id] }),
-  organization: one(organizations, { fields: [interestGroups.organizationId], references: [organizations.id] }),
-  members: many(interestGroupMembers),
-  posts: many(interestGroupPosts),
+// Channels Relations
+export const interestChannelsRelations = relations(interestChannels, ({ one, many }) => ({
+  interest: one(interests, { fields: [interestChannels.interestId], references: [interests.id] }),
+  organization: one(organizations, { fields: [interestChannels.organizationId], references: [organizations.id] }),
+  members: many(interestChannelMembers),
+  posts: many(interestChannelPosts),
 }));
 
-export const interestGroupMembersRelations = relations(interestGroupMembers, ({ one }) => ({
-  group: one(interestGroups, { fields: [interestGroupMembers.groupId], references: [interestGroups.id] }),
-  user: one(users, { fields: [interestGroupMembers.userId], references: [users.id] }),
+export const interestChannelMembersRelations = relations(interestChannelMembers, ({ one }) => ({
+  channel: one(interestChannels, { fields: [interestChannelMembers.channelId], references: [interestChannels.id] }),
+  user: one(users, { fields: [interestChannelMembers.userId], references: [users.id] }),
 }));
 
-export const interestGroupPostsRelations = relations(interestGroupPosts, ({ one, many }) => ({
-  group: one(interestGroups, { fields: [interestGroupPosts.groupId], references: [interestGroups.id] }),
-  author: one(users, { fields: [interestGroupPosts.authorId], references: [users.id] }),
-  comments: many(interestGroupPostComments),
-  likes: many(interestGroupPostLikes),
+export const interestChannelPostsRelations = relations(interestChannelPosts, ({ one, many }) => ({
+  channel: one(interestChannels, { fields: [interestChannelPosts.channelId], references: [interestChannels.id] }),
+  author: one(users, { fields: [interestChannelPosts.authorId], references: [users.id] }),
+  comments: many(interestChannelPostComments),
+  likes: many(interestChannelPostLikes),
 }));
 
-export const interestGroupPostCommentsRelations = relations(interestGroupPostComments, ({ one }) => ({
-  post: one(interestGroupPosts, { fields: [interestGroupPostComments.postId], references: [interestGroupPosts.id] }),
-  author: one(users, { fields: [interestGroupPostComments.authorId], references: [users.id] }),
+export const interestChannelPostCommentsRelations = relations(interestChannelPostComments, ({ one }) => ({
+  post: one(interestChannelPosts, { fields: [interestChannelPostComments.postId], references: [interestChannelPosts.id] }),
+  author: one(users, { fields: [interestChannelPostComments.authorId], references: [users.id] }),
 }));
 
-export const interestGroupPostLikesRelations = relations(interestGroupPostLikes, ({ one }) => ({
-  post: one(interestGroupPosts, { fields: [interestGroupPostLikes.postId], references: [interestGroupPosts.id] }),
-  user: one(users, { fields: [interestGroupPostLikes.userId], references: [users.id] }),
+export const interestChannelPostLikesRelations = relations(interestChannelPostLikes, ({ one }) => ({
+  post: one(interestChannelPosts, { fields: [interestChannelPostLikes.postId], references: [interestChannelPosts.id] }),
+  user: one(users, { fields: [interestChannelPostLikes.userId], references: [users.id] }),
 }));
 
-// Groups TypeScript types
-export type InterestGroup = typeof interestGroups.$inferSelect;
-export const insertInterestGroupSchema = createInsertSchema(interestGroups).omit({ id: true, memberCount: true, createdAt: true, updatedAt: true });
-export type InsertInterestGroup = z.infer<typeof insertInterestGroupSchema>;
+// Channels TypeScript types
+export type InterestChannel = typeof interestChannels.$inferSelect;
+export const insertInterestChannelSchema = createInsertSchema(interestChannels).omit({ id: true, memberCount: true, createdAt: true, updatedAt: true });
+export type InsertInterestChannel = z.infer<typeof insertInterestChannelSchema>;
 
-export type InterestGroupMember = typeof interestGroupMembers.$inferSelect;
-export const insertInterestGroupMemberSchema = createInsertSchema(interestGroupMembers).omit({ id: true, joinedAt: true });
-export type InsertInterestGroupMember = z.infer<typeof insertInterestGroupMemberSchema>;
+export type InterestChannelMember = typeof interestChannelMembers.$inferSelect;
+export const insertInterestChannelMemberSchema = createInsertSchema(interestChannelMembers).omit({ id: true, joinedAt: true });
+export type InsertInterestChannelMember = z.infer<typeof insertInterestChannelMemberSchema>;
 
-export type InterestGroupPost = typeof interestGroupPosts.$inferSelect;
-export const insertInterestGroupPostSchema = createInsertSchema(interestGroupPosts).omit({ id: true, likeCount: true, commentCount: true, createdAt: true, updatedAt: true });
-export type InsertInterestGroupPost = z.infer<typeof insertInterestGroupPostSchema>;
+export type InterestChannelPost = typeof interestChannelPosts.$inferSelect;
+export const insertInterestChannelPostSchema = createInsertSchema(interestChannelPosts).omit({ id: true, likeCount: true, commentCount: true, createdAt: true, updatedAt: true });
+export type InsertInterestChannelPost = z.infer<typeof insertInterestChannelPostSchema>;
 
-export type InterestGroupPostComment = typeof interestGroupPostComments.$inferSelect;
-export const insertInterestGroupPostCommentSchema = createInsertSchema(interestGroupPostComments).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertInterestGroupPostComment = z.infer<typeof insertInterestGroupPostCommentSchema>;
+export type InterestChannelPostComment = typeof interestChannelPostComments.$inferSelect;
+export const insertInterestChannelPostCommentSchema = createInsertSchema(interestChannelPostComments).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertInterestChannelPostComment = z.infer<typeof insertInterestChannelPostCommentSchema>;
 
-export type InterestGroupPostLike = typeof interestGroupPostLikes.$inferSelect;
-export const insertInterestGroupPostLikeSchema = createInsertSchema(interestGroupPostLikes).omit({ id: true, createdAt: true });
-export type InsertInterestGroupPostLike = z.infer<typeof insertInterestGroupPostLikeSchema>;
+export type InterestChannelPostLike = typeof interestChannelPostLikes.$inferSelect;
+export const insertInterestChannelPostLikeSchema = createInsertSchema(interestChannelPostLikes).omit({ id: true, createdAt: true });
+export type InsertInterestChannelPostLike = z.infer<typeof insertInterestChannelPostLikeSchema>;
 
 
 
