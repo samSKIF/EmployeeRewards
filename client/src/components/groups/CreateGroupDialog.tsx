@@ -9,7 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building, MapPin, Target, Briefcase, Heart, Globe, Lock, UserCheck, Settings } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useQuery } from '@tanstack/react-query';
+import { Users, Building, MapPin, Target, Briefcase, Heart, Globe, Lock, UserCheck, Settings, X, Plus, Search } from 'lucide-react';
 
 interface CreateChannelDialogProps {
   open: boolean;
@@ -70,6 +74,10 @@ const groupTemplates = {
 
 export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChannelDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<any[]>([]);
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -77,7 +85,23 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
     accessLevel: '',
     isPrivate: false,
     requireApproval: false,
-    maxMembers: ''
+    maxMembers: '',
+    allowedDepartments: [] as string[],
+    allowedLocations: [] as string[],
+    initialMembers: [] as number[]
+  });
+
+  // Fetch data for form options
+  const { data: departments } = useQuery({
+    queryKey: ['/api/users/departments'],
+  });
+
+  const { data: locations } = useQuery({
+    queryKey: ['/api/users/locations'],
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['/api/users'],
   });
 
   const handleTemplateSelect = (templateKey: string) => {
@@ -89,6 +113,54 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
       accessLevel: template.defaultAccess
     }));
   };
+
+  const handleDepartmentToggle = (department: string) => {
+    const newDepartments = selectedDepartments.includes(department)
+      ? selectedDepartments.filter(d => d !== department)
+      : [...selectedDepartments, department];
+    
+    setSelectedDepartments(newDepartments);
+    setFormData(prev => ({ ...prev, allowedDepartments: newDepartments }));
+  };
+
+  const handleLocationToggle = (location: string) => {
+    const newLocations = selectedLocations.includes(location)
+      ? selectedLocations.filter(l => l !== location)
+      : [...selectedLocations, location];
+    
+    setSelectedLocations(newLocations);
+    setFormData(prev => ({ ...prev, allowedLocations: newLocations }));
+  };
+
+  const handleMemberToggle = (user: any) => {
+    const isSelected = selectedMembers.some(m => m.id === user.id);
+    const newMembers = isSelected
+      ? selectedMembers.filter(m => m.id !== user.id)
+      : [...selectedMembers, user];
+    
+    setSelectedMembers(newMembers);
+    setFormData(prev => ({ 
+      ...prev, 
+      initialMembers: newMembers.map(m => m.id) 
+    }));
+  };
+
+  const filteredUsers = users?.filter((user: any) => {
+    const searchMatch = user.name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+                       user.email.toLowerCase().includes(memberSearchTerm.toLowerCase());
+    
+    // If departments are selected, only show users from those departments
+    if (selectedDepartments.length > 0) {
+      return searchMatch && selectedDepartments.includes(user.department);
+    }
+    
+    // If locations are selected, only show users from those locations
+    if (selectedLocations.length > 0) {
+      return searchMatch && selectedLocations.includes(user.location);
+    }
+    
+    return searchMatch;
+  }) || [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,6 +325,186 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
                 onChange={(e) => setFormData(prev => ({ ...prev, maxMembers: e.target.value }))}
               />
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Department Selection */}
+          {(formData.accessLevel === 'department_only' || selectedTemplate === 'department') && (
+            <div className="space-y-4">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Select Departments
+              </Label>
+              <p className="text-sm text-gray-600">Choose which departments can access this channel</p>
+              
+              <ScrollArea className="h-32 border rounded-md p-3">
+                <div className="space-y-2">
+                  {departments?.map((department: string) => (
+                    <div key={department} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`dept-${department}`}
+                        checked={selectedDepartments.includes(department)}
+                        onCheckedChange={() => handleDepartmentToggle(department)}
+                      />
+                      <Label htmlFor={`dept-${department}`} className="text-sm flex-1">
+                        {department}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              
+              {selectedDepartments.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedDepartments.map(dept => (
+                    <Badge key={dept} variant="secondary" className="flex items-center gap-1">
+                      {dept}
+                      <X 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => handleDepartmentToggle(dept)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Location Selection */}
+          {(formData.accessLevel === 'location_only' || selectedTemplate === 'location') && (
+            <div className="space-y-4">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Select Locations
+              </Label>
+              <p className="text-sm text-gray-600">Choose which locations can access this channel</p>
+              
+              <ScrollArea className="h-32 border rounded-md p-3">
+                <div className="space-y-2">
+                  {locations?.map((location: string) => (
+                    <div key={location} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`loc-${location}`}
+                        checked={selectedLocations.includes(location)}
+                        onCheckedChange={() => handleLocationToggle(location)}
+                      />
+                      <Label htmlFor={`loc-${location}`} className="text-sm flex-1">
+                        {location}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              
+              {selectedLocations.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedLocations.map(loc => (
+                    <Badge key={loc} variant="secondary" className="flex items-center gap-1">
+                      {loc}
+                      <X 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => handleLocationToggle(loc)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Manual Member Addition */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Add Initial Members (Optional)
+            </Label>
+            <p className="text-sm text-gray-600">Manually select employees to add to this channel</p>
+
+            {/* Member Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search employees by name or email..."
+                value={memberSearchTerm}
+                onChange={(e) => setMemberSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Selected Members Display */}
+            {selectedMembers.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Selected Members ({selectedMembers.length})</Label>
+                <ScrollArea className="h-20 border rounded-md p-2">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMembers.map(member => (
+                      <Badge key={member.id} variant="default" className="flex items-center gap-1">
+                        <Avatar className="h-4 w-4">
+                          <AvatarImage src={member.avatarUrl} />
+                          <AvatarFallback className="text-xs">
+                            {member.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {member.name}
+                        <X 
+                          className="h-3 w-3 cursor-pointer" 
+                          onClick={() => handleMemberToggle(member)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+
+            {/* Available Members List */}
+            {memberSearchTerm && (
+              <ScrollArea className="h-48 border rounded-md">
+                <div className="p-2 space-y-1">
+                  {filteredUsers.slice(0, 50).map((user: any) => {
+                    const isSelected = selectedMembers.some(m => m.id === user.id);
+                    return (
+                      <div
+                        key={user.id}
+                        className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50 ${
+                          isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                        }`}
+                        onClick={() => handleMemberToggle(user)}
+                      >
+                        <Checkbox checked={isSelected} />
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.avatarUrl} />
+                          <AvatarFallback className="text-sm">
+                            {user.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {user.email} • {user.department} • {user.location}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {filteredUsers.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No employees found matching your search
+                    </p>
+                  )}
+                  
+                  {filteredUsers.length > 50 && (
+                    <p className="text-xs text-gray-500 text-center py-2">
+                      Showing first 50 results. Refine your search for more specific results.
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+            )}
           </div>
 
           {/* Action Buttons */}
