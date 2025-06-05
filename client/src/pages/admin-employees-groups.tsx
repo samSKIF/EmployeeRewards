@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
+import { CreateChannelDialog } from '@/components/groups/CreateGroupDialog';
 
 // Define employee form data type
 interface EmployeeFormData {
@@ -164,8 +164,8 @@ function GroupsManagement() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Groups Management</h2>
-          <p className="text-gray-600">Manage workplace groups within your administrative scope</p>
+          <h2 className="text-2xl font-bold text-gray-900">Channels Management</h2>
+          <p className="text-gray-600">Manage workplace channels within your administrative scope</p>
         </div>
 
         <Button 
@@ -173,7 +173,7 @@ function GroupsManagement() {
           className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Create Group
+          Create Channel
         </Button>
       </div>
 
@@ -182,7 +182,7 @@ function GroupsManagement() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search groups..."
+            placeholder="Search channels..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -209,7 +209,7 @@ function GroupsManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Group</TableHead>
+                <TableHead>Channel</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Members</TableHead>
                 <TableHead>Privacy</TableHead>
@@ -228,7 +228,7 @@ function GroupsManagement() {
               ) : filteredGroups.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No groups found
+                    No channels found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -326,18 +326,18 @@ function GroupsManagement() {
         </CardContent>
       </Card>
 
-      {/* Create Group Dialog */}
-      <CreateGroupDialog 
+      {/* Create Channel Dialog */}
+      <CreateChannelDialog 
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog}
         onSubmit={(data) => createGroupMutation.mutate(data)}
       />
 
-      {/* Group Details Dialog */}
+      {/* Channel Details Dialog */}
       <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Group Details</DialogTitle>
+            <DialogTitle>Channel Details</DialogTitle>
           </DialogHeader>
           {selectedGroup && (
             <GroupDetailsForm 
@@ -952,7 +952,7 @@ export default function AdminEmployeesGroups() {
           </TabsTrigger>
           <TabsTrigger value="groups" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
-            <span>Groups</span>
+            <span>Channels</span>
           </TabsTrigger>
         </TabsList>
 

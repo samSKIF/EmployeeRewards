@@ -101,7 +101,7 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <Users className="h-5 w-5 text-blue-600" />
-            Create New Group
+            Create New Channel
           </DialogTitle>
           <p className="text-sm text-gray-600">
             Build communities and foster collaboration across your organization
@@ -112,7 +112,7 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
           {/* Template Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Choose a Template</Label>
-            <p className="text-sm text-gray-600">Select the type of group that best fits your needs</p>
+            <p className="text-sm text-gray-600">Select the type of channel that best fits your needs</p>
 
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(groupTemplates).map(([key, template]) => {
@@ -152,11 +152,11 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
 
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
-                Group Name <span className="text-red-500">*</span>
+                Channel Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="Enter a descriptive group name"
+                placeholder="Enter a descriptive channel name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 required
@@ -167,7 +167,7 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
               <Label htmlFor="description" className="text-sm font-medium">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe the purpose and goals of this group"
+                placeholder="Describe the purpose and goals of this channel"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
@@ -222,8 +222,8 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium">Private Group</Label>
-                  <p className="text-xs text-gray-500">Hidden from group discovery</p>
+                  <Label className="text-sm font-medium">Private Channel</Label>
+                  <p className="text-xs text-gray-500">Hidden from channel discovery</p>
                 </div>
                 <Switch
                   checked={formData.isPrivate}
@@ -269,7 +269,7 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
               className="bg-blue-600 hover:bg-blue-700"
               disabled={!formData.name || !selectedTemplate}
             >
-              Create Group
+              Create Channel
             </Button>
           </div>
         </form>
@@ -277,3 +277,6 @@ export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChan
     </Dialog>
   );
 }
+
+// Export alias for backward compatibility
+export { CreateChannelDialog as CreateGroupDialog };
