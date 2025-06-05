@@ -939,10 +939,8 @@ export default function AdminEmployeesGroups() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Employees and Groups</h1>
-        <p className="text-gray-600 mt-1">Manage your organization's employees and workplace groups</p>
-```text
-
+        <h1 className="text-3xl font-bold text-gray-900">Employees and Channels</h1>
+        <p className="text-gray-600 mt-1">Manage your organization's employees and workplace channels</p>
       </div>
 
       {/* Main Tabs */}

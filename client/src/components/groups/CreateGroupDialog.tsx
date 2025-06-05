@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building, MapPin, Target, Briefcase, Heart, Globe, Lock, UserCheck, Settings } from 'lucide-react';
 
-interface CreateGroupDialogProps {
+interface CreateChannelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
@@ -69,7 +68,7 @@ const groupTemplates = {
   }
 };
 
-export function CreateGroupDialog({ open, onOpenChange, onSubmit }: CreateGroupDialogProps) {
+export function CreateChannelDialog({ open, onOpenChange, onSubmit }: CreateChannelDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -114,7 +113,7 @@ export function CreateGroupDialog({ open, onOpenChange, onSubmit }: CreateGroupD
           <div className="space-y-3">
             <Label className="text-base font-medium">Choose a Template</Label>
             <p className="text-sm text-gray-600">Select the type of group that best fits your needs</p>
-            
+
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(groupTemplates).map(([key, template]) => {
                 const Icon = template.icon;
@@ -150,7 +149,7 @@ export function CreateGroupDialog({ open, onOpenChange, onSubmit }: CreateGroupD
           {/* Basic Information */}
           <div className="space-y-4">
             <Label className="text-base font-medium">Basic Information</Label>
-            
+
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 Group Name <span className="text-red-500">*</span>
