@@ -19,7 +19,8 @@ import {
   LogOut,
   Briefcase,
   UserCheck,
-  LucideIcon
+  LucideIcon,
+  MessageCircle
 } from 'lucide-react';
 import { ChannelsDiscoveryWidget } from '@/components/channels/ChannelsDiscoveryWidget';
 
