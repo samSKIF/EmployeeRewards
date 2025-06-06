@@ -1,30 +1,34 @@
 
 import Redis from 'ioredis';
 
-if (!process.env.REDIS_URL) {
-  throw new Error(
-    "REDIS_URL must be set. Did you forget to provision a Redis cache?",
-  );
-}
+// Redis is now optional - only connect if REDIS_URL is provided
+const isRedisEnabled = !!process.env.REDIS_URL;
 
 class RedisCache {
   private static instance: RedisCache;
-  private client: Redis;
+  private client: Redis | null = null;
+  private isEnabled: boolean = false;
 
   private constructor() {
-    this.client = new Redis(process.env.REDIS_URL!, {
-      maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
-      lazyConnect: true,
-    });
+    this.isEnabled = isRedisEnabled;
+    
+    if (this.isEnabled) {
+      this.client = new Redis(process.env.REDIS_URL!, {
+        maxRetriesPerRequest: 3,
+        retryDelayOnFailover: 100,
+        lazyConnect: true,
+      });
 
-    this.client.on('connect', () => {
-      console.log('Connected to Redis');
-    });
+      this.client.on('connect', () => {
+        console.log('Connected to Redis');
+      });
 
-    this.client.on('error', (err) => {
-      console.error('Redis connection error:', err);
-    });
+      this.client.on('error', (err) => {
+        console.error('Redis connection error:', err);
+      });
+    } else {
+      console.log('Redis disabled - no REDIS_URL environment variable set');
+    }
   }
 
   public static getInstance(): RedisCache {
@@ -34,11 +38,13 @@ class RedisCache {
     return RedisCache.instance;
   }
 
-  public getClient(): Redis {
+  public getClient(): Redis | null {
     return this.client;
   }
 
   public async set(key: string, value: any, ttl?: number): Promise<void> {
+    if (!this.isEnabled || !this.client) return;
+    
     const serializedValue = JSON.stringify(value);
     if (ttl) {
       await this.client.setex(key, ttl, serializedValue);
@@ -48,22 +54,30 @@ class RedisCache {
   }
 
   public async get(key: string): Promise<any> {
+    if (!this.isEnabled || !this.client) return null;
+    
     const value = await this.client.get(key);
     return value ? JSON.parse(value) : null;
   }
 
   public async del(key: string): Promise<number> {
+    if (!this.isEnabled || !this.client) return 0;
+    
     return await this.client.del(key);
   }
 
   public async exists(key: string): Promise<boolean> {
+    if (!this.isEnabled || !this.client) return false;
+    
     const result = await this.client.exists(key);
     return result === 1;
   }
 
   public async disconnect(): Promise<void> {
-    await this.client.quit();
-    console.log('Disconnected from Redis');
+    if (this.isEnabled && this.client) {
+      await this.client.quit();
+      console.log('Disconnected from Redis');
+    }
   }
 }
 

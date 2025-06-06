@@ -3,18 +3,24 @@ import Redis from 'redis';
 class RedisCache {
   private client: any;
   private isConnected: boolean = false;
+  private isEnabled: boolean = false;
 
   constructor() {
-    this.connect();
+    // Only enable Redis if REDIS_URL is explicitly set
+    if (process.env.REDIS_URL) {
+      this.isEnabled = true;
+      this.connect();
+    } else {
+      console.log('Redis disabled - no REDIS_URL environment variable set');
+    }
   }
 
   private async connect() {
+    if (!this.isEnabled) return;
+    
     try {
-      // Try to connect to Redis - use environment variable or default local connection
-      const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-      
       this.client = Redis.createClient({
-        url: redisUrl,
+        url: process.env.REDIS_URL!,
         socket: {
           connectTimeout: 5000,
           lazyConnect: true
@@ -49,7 +55,7 @@ class RedisCache {
   }
 
   async get(key: string): Promise<any> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isEnabled || !this.isConnected || !this.client) {
       return null;
     }
 
@@ -63,7 +69,7 @@ class RedisCache {
   }
 
   async set(key: string, value: any, expirationSeconds: number = 300): Promise<boolean> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isEnabled || !this.isConnected || !this.client) {
       return false;
     }
 
@@ -77,7 +83,7 @@ class RedisCache {
   }
 
   async del(key: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isEnabled || !this.isConnected || !this.client) {
       return false;
     }
 
@@ -91,7 +97,7 @@ class RedisCache {
   }
 
   async invalidatePattern(pattern: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isEnabled || !this.isConnected || !this.client) {
       return false;
     }
 
@@ -108,7 +114,7 @@ class RedisCache {
   }
 
   async exists(key: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isEnabled || !this.isConnected || !this.client) {
       return false;
     }
 
@@ -122,11 +128,11 @@ class RedisCache {
   }
 
   isReady(): boolean {
-    return this.isConnected;
+    return this.isEnabled && this.isConnected;
   }
 
   async disconnect(): Promise<void> {
-    if (this.client) {
+    if (this.isEnabled && this.client) {
       try {
         await this.client.disconnect();
       } catch (error) {
