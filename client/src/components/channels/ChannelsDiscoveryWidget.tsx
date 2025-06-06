@@ -17,11 +17,11 @@ interface Channel {
 
 export function ChannelsDiscoveryWidget() {
   const { data: trendingChannels } = useQuery({
-    queryKey: ['/api/groups/trending'],
+    queryKey: ['/api/channels/trending'],
   });
 
   const { data: suggestedChannels } = useQuery({
-    queryKey: ['/api/groups/suggestions'],
+    queryKey: ['/api/channels/suggestions'],
   });
 
   return (

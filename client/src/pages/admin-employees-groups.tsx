@@ -101,24 +101,29 @@ function GroupsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch groups based on admin scope
-  const { data: groups, isLoading: groupsLoading } = useQuery({
-    queryKey: ['/api/admin/groups'],
-    enabled: !!user
+  // Fetch channels data from the API
+  const { data: channels = [], isLoading: channelsLoading, refetch: refetchChannels } = useQuery({
+    queryKey: ['/api/admin/channels'],
   });
 
-  // Create group mutation
-  const createGroupMutation = useMutation({
-    mutationFn: async (groupData: any) => {
-      const response = await apiRequest('POST', '/api/admin/groups', groupData);
-      return response.json();
+  // Create channel mutation
+  const createChannelMutation = useMutation({
+    mutationFn: async (channelData: any) => {
+      return apiRequest('POST', '/api/channels', channelData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
+      refetchChannels();
       setShowCreateDialog(false);
       toast({
         title: "Success",
-        description: "Group created successfully",
+        description: "Channel created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create channel",
+        variant: "destructive",
       });
     }
   });
@@ -157,7 +162,7 @@ function GroupsManagement() {
     }
   });
 
-  const filteredGroups = Array.isArray(groups) ? groups.filter((group: any) => {
+  const filteredGroups = Array.isArray(channels) ? channels.filter((group: any) => {
     const matchesSearch = group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -230,7 +235,7 @@ function GroupsManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {groupsLoading ? (
+              {channelsLoading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
@@ -945,8 +950,7 @@ function EmployeeDirectory() {
 export default function AdminEmployeesGroups() {
   const [activeTab, setActiveTab] = useState("employees");
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
+  return (<div className="container mx-auto p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4">
         <h1 className="text-3xl font-bold text-gray-900">Employees and Channels</h1>

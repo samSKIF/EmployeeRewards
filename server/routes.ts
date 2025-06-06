@@ -2541,7 +2541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
 
         await db.insert(interestChannelMembers).values(memberInserts);
-        
+
         // Update member count
         await db.update(interestChannels)
           .set({ memberCount: initialMembers.length })
@@ -2551,11 +2551,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-add members based on departments/locations if enabled
       if (autoAddMembers && (allowedDepartments.length > 0 || allowedLocations.length > 0)) {
         let whereConditions = [];
-        
+
         if (allowedDepartments.length > 0) {
           whereConditions.push(inArray(users.department, allowedDepartments));
         }
-        
+
+        if (allowedLocations.length > 0) {
+          whereConditions.push(inArray(users.location, allowedLocations));
+        }
+
+        if (whereConditions.length > 0) {
+          const eligibleUsers = await db.select({ id: users.id })
+            .from(users)
+            .where(or(...whereConditions));
+
+          if (eligibleUsers.length > 0) {
+            const autoMemberInserts = eligibleUsers.map(user => ({
+              channelId: newChannel.id,
+              userId: user.id,
+              role: 'member'
+            }));
+
+            await db.insert(interestChannelMembers)
+              .values(autoMemberInserts)
+              .onConflictDoNothing();
+
+            // Update member count
+            await db.update(interestChannels)
+              .set({ memberCount: eligibleUsers.length })
+              .where(eq(interestChannels.id, newChannel.id));
+          }
+        }
+      }
+
+      res.status(201).json({ 
+        message: "Channel created successfully",
+        channel: newChannel 
+      });
+    } catch (error) {
+      console.error("Error creating channel:", error);
+      res.status(500).json({ message: "Failed to create channel" });
+    }
+  });
+
+  // Get channels trending
+  app.get('/api/channels/trending', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // For now, return empty array as we don't have trending logic yet
+      const trendingChannels = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.isActive, true))
+        .orderBy(desc(interestChannels.memberCount))
+        .limit(5);
+
+      res.json(trendingChannels);
+    } catch (error) {
+      console.error('Error fetching trending channels:', error);
+      res.status(500).json({ message: 'Failed to fetch trending channels' });
+    }
+  });
+
+  // Get channels suggestions
+  app.get('/api/channels/suggestions', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // For now, return channels the user hasn't joined
+      const userChannels = await db.select({ channelId: interestChannelMembers.channelId })
+        .from(interestChannelMembers)
+        .where(eq(interestChannelMembers.userId, req.user?.id || 0));
+
+      const userChannelIds = userChannels.map(uc => uc.channelId);
+
+      let suggestedChannels;
+      if (userChannelIds.length > 0) {
+        suggestedChannels = await db.select()
+          .from(interestChannels)
+          .where(
+            and(
+              eq(interestChannels.isActive, true),
+              sql`${interestChannels.id} NOT IN (${userChannelIds.join(',')})`
+            )
+          )
+          .limit(5);
+      } else {
+        suggestedChannels = await db.select()
+          .from(interestChannels)
+          .where(eq(interestChannels.isActive, true))
+          .limit(5);
+      }
+
+      res.json(suggestedChannels);
+    } catch (error) {
+      console.error('Error fetching suggested channels:', error);
+      res.status(500).json({ message: 'Failed to fetch suggested channels' });
+    }
+  });
+  
+  // Admin channels endpoint (for admin management)
+  app.get('/api/admin/channels', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get all channels for the admin's organization
+      const channels = await db.select({
+        id: interestChannels.id,
+        name: interestChannels.name,
+        description: interestChannels.description,
+        channelType: interestChannels.channelType,
+        accessLevel: interestChannels.accessLevel,
+        memberCount: interestChannels.memberCount,
+        isActive: interestChannels.isActive,
+        allowedDepartments: interestChannels.allowedDepartments,
+        allowedSites: interestChannels.allowedSites,
+        createdAt: interestChannels.createdAt,
+        createdBy: interestChannels.createdBy
+      })
+      .from(interestChannels)
+      .where(eq(interestChannels.organizationId, req.user.organizationId || 1))
+      .orderBy(desc(interestChannels.createdAt));
+
+      res.json(channels);
+    } catch (error) {
+      console.error("Error fetching admin channels:", error);
+      res.status(500).json({ message: "Failed to fetch channels" });
+    }
+  });
+
+  // Create channel endpoint (admin)
+  app.post('/api/admin/channels', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const {
+        name,
+        description,
+        channelType,
+        maxMembers,
+        isPrivate,
+        requiresApproval,
+        allowedDepartments = [],
+        allowedLocations = [],
+        autoAddMembers = false,
+        initialMembers = []
+      } = req.body;
+
+      // Validate required fields
+      if (!name || !channelType) {
+        return res.status(400).json({ message: "Channel name and type are required" });
+      }
+
+      // Determine access level based on privacy settings
+      let accessLevel = "open";
+      if (isPrivate) {
+        accessLevel = "invite_only";
+      } else if (requiresApproval) {
+        accessLevel = "approval_required";
+      } else if (allowedDepartments.length > 0) {
+        accessLevel = "department_only";
+      } else if (allowedLocations.length > 0) {
+        accessLevel = "site_only";
+      }
+
+      // Insert into interestChannels table
+      const [newChannel] = await db.insert(interestChannels).values({
+        name,
+        description,
+        channelType,
+        accessLevel,
+        allowedDepartments: allowedDepartments.length > 0 ? allowedDepartments : null,
+        allowedSites: allowedLocations.length > 0 ? allowedLocations : null,
+        isAutoCreated: false,
+        createdBy: req.user.id,
+        organizationId: req.user.organizationId || 1,
+        memberCount: 0
+      }).returning();
+
+      // Add initial members if specified
+      if (initialMembers.length > 0) {
+        const memberInserts = initialMembers.map((userId: number) => ({
+          channelId: newChannel.id,
+          userId,
+          role: 'member'
+        }));
+
+        await db.insert(interestChannelMembers).values(memberInserts);
+
+        // Update member count
+        await db.update(interestChannels)
+          .set({ memberCount: initialMembers.length })
+          .where(eq(interestChannels.id, newChannel.id));
+      }
+
+      // Auto-add members based on departments/locations if enabled
+      if (autoAddMembers && (allowedDepartments.length > 0 || allowedLocations.length > 0)) {
+        let whereConditions = [];
+
+        if (allowedDepartments.length > 0) {
+          whereConditions.push(inArray(users.department, allowedDepartments));
+        }
+
         if (allowedLocations.length > 0) {
           whereConditions.push(inArray(users.location, allowedLocations));
         }
