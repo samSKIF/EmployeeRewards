@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { CreateChannelDialog } from "@/components/channels/CreateChannelDialog";
+import { useLocation } from "wouter";
 
 interface Channel {
   id: number;
@@ -109,6 +110,7 @@ export default function ChannelsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
