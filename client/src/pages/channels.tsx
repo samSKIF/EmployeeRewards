@@ -268,7 +268,12 @@ export default function ChannelsPage() {
                 <div className="flex flex-col gap-2">
                   {isUserMember(channel.id) ? (
                     <>
-                      <Button variant="default" size="sm" className="min-w-24">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="min-w-24"
+                        onClick={() => setLocation(`/channels/${channel.id}`)}
+                      >
                         <MessageCircle className="h-4 w-4 mr-2" />
                         View Channel
                       </Button>
@@ -351,13 +356,16 @@ export default function ChannelsPage() {
                 ))}
               </div>
               
-              {isUserMember(channel.id) && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <Button variant="ghost" size="sm" className="w-full text-blue-600 hover:text-blue-700">
-                    View all posts in {channel.name}
-                  </Button>
-                </div>
-              )}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-blue-600 hover:text-blue-700"
+                  onClick={() => setLocation(`/channels/${channel.id}`)}
+                >
+                  {isUserMember(channel.id) ? `View all posts in ${channel.name}` : `Preview ${channel.name}`}
+                </Button>
+              </div>
             </div>
           </div>
         ))}

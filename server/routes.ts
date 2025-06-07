@@ -2611,6 +2611,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual channel by ID
+  app.get('/api/channels/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      // Get channel data
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(
+          and(
+            eq(interestChannels.id, channelId),
+            eq(interestChannels.isActive, true),
+            eq(interestChannels.organizationId, req.user.organizationId || 1)
+          )
+        );
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      res.json(channel);
+    } catch (error) {
+      console.error('Error fetching channel:', error);
+      res.status(500).json({ message: 'Failed to fetch channel' });
+    }
+  });
+
   // Get all channels (public endpoint for channels discovery page)
   app.get('/api/channels', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
