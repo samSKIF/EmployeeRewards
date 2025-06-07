@@ -113,12 +113,12 @@ export default function ChannelsPage() {
   const queryClient = useQueryClient();
 
   // Fetch channels with their recent posts
-  const { data: channels = [], isLoading } = useQuery({
+  const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels'],
   });
 
   // Fetch user's channel memberships
-  const { data: myChannels = [] } = useQuery({
+  const { data: myChannels = [] } = useQuery<number[]>({
     queryKey: ['/api/channels/my-channels'],
   });
 
@@ -166,13 +166,13 @@ export default function ChannelsPage() {
     }
   });
 
-  const filteredChannels = channels.filter((channel: Channel) => {
+  const filteredChannels = (channels as Channel[]).filter((channel: Channel) => {
     const matchesSearch = channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       channel.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     switch (selectedTab) {
       case 'my-channels':
-        return matchesSearch && myChannels.some((mc: any) => mc.channelId === channel.id);
+        return matchesSearch && (myChannels as any[]).some((mc: any) => mc.channelId === channel.id);
       case 'department':
         return matchesSearch && channel.channelType === 'department';
       case 'interest':
@@ -187,7 +187,7 @@ export default function ChannelsPage() {
   });
 
   const isUserMember = (channelId: number) => {
-    return myChannels.some((mc: any) => mc.channelId === channelId);
+    return (myChannels as any[]).some((mc: any) => mc.channelId === channelId);
   };
 
   if (isLoading) {

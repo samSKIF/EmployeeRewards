@@ -2611,6 +2611,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all channels (public endpoint for channels discovery page)
+  app.get('/api/channels', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get all active channels for the user's organization
+      const channels = await db.select({
+        id: interestChannels.id,
+        name: interestChannels.name,
+        description: interestChannels.description,
+        channelType: interestChannels.channelType,
+        accessLevel: interestChannels.accessLevel,
+        memberCount: interestChannels.memberCount,
+        isActive: interestChannels.isActive,
+        allowedDepartments: interestChannels.allowedDepartments,
+        allowedSites: interestChannels.allowedSites,
+        createdAt: interestChannels.createdAt,
+        createdBy: interestChannels.createdBy,
+        organizationId: interestChannels.organizationId
+      })
+      .from(interestChannels)
+      .where(
+        and(
+          eq(interestChannels.isActive, true),
+          eq(interestChannels.organizationId, req.user.organizationId || 1)
+        )
+      )
+      .orderBy(desc(interestChannels.createdAt));
+
+      res.json(channels);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+      res.status(500).json({ message: 'Failed to fetch channels' });
+    }
+  });
+
   // Get channels suggestions
   app.get('/api/channels/suggestions', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {
@@ -2788,6 +2826,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating channel:", error);
       res.status(500).json({ message: "Failed to create channel" });
+    }
+  });
+
+  // Join channel endpoint
+  app.post('/api/channels/:id/join', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      // Check if user is already a member
+      const existingMember = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (existingMember.length > 0) {
+        return res.status(400).json({ message: "Already a member of this channel" });
+      }
+
+      // Add user to channel
+      await db.insert(interestChannelMembers).values({
+        channelId,
+        userId: req.user.id,
+        role: 'member'
+      });
+
+      // Update member count
+      await db.update(interestChannels)
+        .set({ 
+          memberCount: sql`${interestChannels.memberCount} + 1`
+        })
+        .where(eq(interestChannels.id, channelId));
+
+      res.json({ message: "Successfully joined channel" });
+    } catch (error) {
+      console.error('Error joining channel:', error);
+      res.status(500).json({ message: 'Failed to join channel' });
+    }
+  });
+
+  // Leave channel endpoint
+  app.delete('/api/channels/:id/leave', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      // Remove user from channel
+      const result = await db.delete(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      // Update member count
+      await db.update(interestChannels)
+        .set({ 
+          memberCount: sql`${interestChannels.memberCount} - 1`
+        })
+        .where(eq(interestChannels.id, channelId));
+
+      res.json({ message: "Successfully left channel" });
+    } catch (error) {
+      console.error('Error leaving channel:', error);
+      res.status(500).json({ message: 'Failed to leave channel' });
     }
   });
 
