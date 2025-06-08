@@ -106,91 +106,116 @@ interface ChannelWithPosts extends Channel {
   recentPosts: ChannelPost[];
 }
 
+interface FeedHighlight {
+  id: number;
+  channelId: number;
+  channelName: string;
+  channelIcon: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  duration?: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  timestamp: string;
+  author: string;
+}
+
 export default function ChannelsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTab, setSelectedTab] = useState("all");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Fetch channels with their recent posts
+  // Fetch channels data
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels'],
   });
 
-  // Fetch user's channel memberships
-  const { data: myChannels = [] } = useQuery<number[]>({
-    queryKey: ['/api/channels/my-channels'],
-  });
+  // Get featured channels (top 4)
+  const featuredChannels = (channels as Channel[]).slice(0, 4);
 
-  // Join channel mutation
-  const joinChannelMutation = useMutation({
-    mutationFn: async (channelId: number) => {
-      return apiRequest('POST', `/api/channels/${channelId}/join`, {});
+  // Sample feed highlights with realistic corporate content
+  const feedHighlights: FeedHighlight[] = [
+    {
+      id: 1,
+      channelId: 1,
+      channelName: "Marketing Team Updates",
+      channelIcon: "📈",
+      title: "Our new five year commitment to help bridge our Marketing divide",
+      content: "Announcing our comprehensive strategy to enhance collaboration between digital and traditional marketing teams. This initiative will foster innovation and drive measurable results across all campaigns.",
+      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop",
+      likes: 24,
+      comments: 8,
+      shares: 5,
+      timestamp: "2h",
+      author: "Marketing Team"
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/channels'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/channels/my-channels'] });
-      toast({
-        title: "Success",
-        description: "Joined channel successfully",
-      });
+    {
+      id: 2,
+      channelId: 3,
+      channelName: "Coffee Enthusiasts",
+      channelIcon: "☕",
+      title: "Effectively manage your employee's preferences when returning to work",
+      content: "New guidelines for hybrid work arrangements and office coffee station protocols. Balancing remote work flexibility with in-person collaboration opportunities.",
+      videoUrl: "https://example.com/video",
+      duration: "1:09:36",
+      likes: 156,
+      comments: 42,
+      shares: 18,
+      timestamp: "4h",
+      author: "HR Department"
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to join channel",
-        variant: "destructive",
-      });
+    {
+      id: 3,
+      channelId: 2,
+      channelName: "New York Office",
+      channelIcon: "🏢",
+      title: "Virtual reality: the industry advantage",
+      content: "Exploring how VR technology is transforming our design processes and client presentations. Join us for an interactive demo session this Friday.",
+      imageUrl: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=250&fit=crop",
+      likes: 89,
+      comments: 23,
+      shares: 12,
+      timestamp: "6h",
+      author: "Innovation Lab"
+    },
+    {
+      id: 4,
+      channelId: 6,
+      channelName: "Tech Innovation Hub",
+      channelIcon: "💡",
+      title: "Meet the team behind the partnership: build inclusive ideas and innovation at Sitecloud",
+      content: "Get to know our diverse engineering team and learn about their latest projects in cloud infrastructure and AI-powered solutions.",
+      imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=250&fit=crop",
+      likes: 67,
+      comments: 15,
+      shares: 9,
+      timestamp: "8h",
+      author: "Engineering Team"
     }
-  });
+  ];
 
-  // Leave channel mutation
-  const leaveChannelMutation = useMutation({
-    mutationFn: async (channelId: number) => {
-      return apiRequest('DELETE', `/api/channels/${channelId}/leave`, {});
+  const suggestedContent = [
+    {
+      id: 1,
+      channelId: 4,
+      channelName: "Project Phoenix",
+      title: "Q4 Project Updates and Milestone Celebrations",
+      content: "Join us for a comprehensive review of our major project achievements and upcoming goals for the next quarter.",
+      imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&h=200&fit=crop",
+      members: 28
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/channels'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/channels/my-channels'] });
-      toast({
-        title: "Success",
-        description: "Left channel successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to leave channel",
-        variant: "destructive",
-      });
+    {
+      id: 2,
+      channelId: 5,
+      channelName: "Friday Social Club",
+      title: "Team Building Activities and Social Events",
+      content: "Discover upcoming social events, team building activities, and casual networking opportunities.",
+      imageUrl: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300&h=200&fit=crop",
+      members: 45
     }
-  });
-
-  const filteredChannels = (channels as Channel[]).filter((channel: Channel) => {
-    const matchesSearch = channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      channel.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    switch (selectedTab) {
-      case 'my-channels':
-        return matchesSearch && (myChannels as any[]).some((mc: any) => mc.channelId === channel.id);
-      case 'department':
-        return matchesSearch && channel.channelType === 'department';
-      case 'interest':
-        return matchesSearch && channel.channelType === 'interest';
-      case 'project':
-        return matchesSearch && channel.channelType === 'project';
-      case 'social':
-        return matchesSearch && channel.channelType === 'social';
-      default:
-        return matchesSearch;
-    }
-  });
-
-  const isUserMember = (channelId: number) => {
-    return (myChannels as any[]).some((mc: any) => mc.channelId === channelId);
-  };
+  ];
 
   if (isLoading) {
     return (

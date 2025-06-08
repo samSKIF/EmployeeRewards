@@ -37,7 +37,7 @@ import StatusDemo from "@/pages/status-demo";
 import OrgChart from "@/pages/org-chart";
 import GroupsPage from "@/pages/groups";
 import GroupsPageFacebook from "@/pages/groups-facebook";
-import ChannelsPage from "@/pages/channels";
+import ChannelsPage from "@/pages/channels-new";
 import ChannelDetailPage from "@/pages/channel-detail";
 import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
 import { BrandingProvider } from "@/context/BrandingContext";
