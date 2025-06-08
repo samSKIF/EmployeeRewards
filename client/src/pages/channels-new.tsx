@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface Channel {
