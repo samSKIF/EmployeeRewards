@@ -2749,7 +2749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const posts = await db.select({
         id: interestChannelPosts.id,
         content: interestChannelPosts.content,
-        userId: interestChannelPosts.authorId,
+        userId: sql<number>`${interestChannelPosts}.user_id`,
         userName: users.name,
         userAvatar: users.avatarUrl,
         createdAt: interestChannelPosts.createdAt,
@@ -2759,7 +2759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: sql`'text'`
       })
       .from(interestChannelPosts)
-      .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
+      .innerJoin(users, sql`${interestChannelPosts}.user_id = ${users.id}`)
       .where(
         and(
           eq(interestChannelPosts.channelId, channelId),
@@ -2810,16 +2810,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Channel not found" });
       }
 
-      // Create the post
-      const [newPost] = await db.insert(interestChannelPosts)
-        .values({
-          content: content.trim(),
-          authorId: req.user.id,
-          channelId: channelId,
-          likeCount: 0,
-          commentCount: 0
-        })
-        .returning();
+      // Create the post using raw SQL to match database schema
+      const result = await db.execute(sql`
+        INSERT INTO interest_channel_posts (channel_id, user_id, content, like_count, comment_count)
+        VALUES (${channelId}, ${req.user.id}, ${content.trim()}, 0, 0)
+        RETURNING *
+      `);
+      
+      const newPost = result[0];
 
       res.status(201).json(newPost);
     } catch (error) {
