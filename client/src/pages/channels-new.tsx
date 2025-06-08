@@ -155,11 +155,11 @@ export default function ChannelsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Top 4 Channel Headlines with Images */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 mb-8">
         {/* Big channel on the left */}
         {featuredChannels[0] && (
           <div 
-            className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[400px]"
+            className="relative rounded-l-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[400px]"
             onClick={() => setLocation(`/channels/${featuredChannels[0].id}`)}
           >
             <div 
@@ -176,11 +176,11 @@ export default function ChannelsPage() {
         )}
 
         {/* Three channels stacked on the right */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-0 h-[400px]">
           {/* First channel */}
           {featuredChannels[1] && (
             <div 
-              className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[125px]"
+              className="relative rounded-tr-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 flex-1"
               onClick={() => setLocation(`/channels/${featuredChannels[1].id}`)}
             >
               <div 
@@ -197,10 +197,10 @@ export default function ChannelsPage() {
           )}
 
           {/* Bottom two channels side by side as squares */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-0 flex-1">
             {featuredChannels[2] && (
               <div 
-                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 aspect-square"
+                className="relative overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-full"
                 onClick={() => setLocation(`/channels/${featuredChannels[2].id}`)}
               >
                 <div 
@@ -218,7 +218,7 @@ export default function ChannelsPage() {
 
             {featuredChannels[3] && (
               <div 
-                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 aspect-square"
+                className="relative rounded-br-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-full"
                 onClick={() => setLocation(`/channels/${featuredChannels[3].id}`)}
               >
                 <div 
