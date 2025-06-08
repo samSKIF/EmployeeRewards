@@ -196,43 +196,44 @@ export default function ChannelsPage() {
             </div>
           )}
 
-          {/* Second channel */}
-          {featuredChannels[2] && (
-            <div 
-              className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[125px]"
-              onClick={() => setLocation(`/channels/${featuredChannels[2].id}`)}
-            >
+          {/* Bottom two channels side by side as squares */}
+          <div className="grid grid-cols-2 gap-4">
+            {featuredChannels[2] && (
               <div 
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&h=250&fit=crop)` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white font-semibold text-sm leading-tight">
-                  Building a stronger, more sustainable world together
-                </h3>
+                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 aspect-square"
+                onClick={() => setLocation(`/channels/${featuredChannels[2].id}`)}
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=400&fit=crop)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-white font-semibold text-xs leading-tight">
+                    Building a stronger, more sustainable world together
+                  </h3>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Third channel */}
-          {featuredChannels[3] && (
-            <div 
-              className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[125px]"
-              onClick={() => setLocation(`/channels/${featuredChannels[3].id}`)}
-            >
+            {featuredChannels[3] && (
               <div 
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=250&fit=crop)` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white font-semibold text-sm leading-tight">
-                  Wellbeing: Carve out breaks in Outlook
-                </h3>
+                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 aspect-square"
+                onClick={() => setLocation(`/channels/${featuredChannels[3].id}`)}
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-white font-semibold text-xs leading-tight">
+                    Wellbeing: Carve out breaks in Outlook
+                  </h3>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
