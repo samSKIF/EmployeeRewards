@@ -2680,6 +2680,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's channel memberships
+  app.get('/api/channels/my-channels', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get channels the user is a member of
+      const userChannels = await db.select({
+        channelId: interestChannelMembers.channelId,
+        role: interestChannelMembers.role,
+        joinedAt: interestChannelMembers.joinedAt,
+        channelName: interestChannels.name,
+        channelType: interestChannels.channelType,
+        memberCount: interestChannels.memberCount
+      })
+      .from(interestChannelMembers)
+      .innerJoin(interestChannels, eq(interestChannelMembers.channelId, interestChannels.id))
+      .where(
+        and(
+          eq(interestChannelMembers.userId, req.user.id),
+          eq(interestChannels.isActive, true)
+        )
+      )
+      .orderBy(desc(interestChannelMembers.joinedAt));
+
+      res.json(userChannels);
+    } catch (error) {
+      console.error('Error fetching user channels:', error);
+      res.status(500).json({ message: 'Failed to fetch channels' });
+    }
+  });
+
   // Get channels suggestions
   app.get('/api/channels/suggestions', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {

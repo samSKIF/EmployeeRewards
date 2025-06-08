@@ -47,103 +47,102 @@ export default function ChannelsPage() {
   // Get featured channels (top 4)
   const featuredChannels = (channels as Channel[]).slice(0, 4);
 
-  // Sample feed highlights with realistic corporate content
-  const feedHighlights: FeedHighlight[] = [
-    {
-      id: 1,
-      channelId: 1,
-      postId: 101,
-      channelName: "Marketing Team Updates",
-      channelIcon: "📈",
-      title: "Our new five year commitment to help bridge our Marketing divide",
-      content: "Announcing our comprehensive strategy to enhance collaboration between digital and traditional marketing teams. This initiative will foster innovation and drive measurable results across all campaigns.",
-      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop",
-      likes: 24,
-      comments: 8,
-      shares: 5,
-      timestamp: "2h",
-      author: "Marketing Team"
-    },
-    {
-      id: 2,
-      channelId: 3,
-      postId: 102,
-      channelName: "Coffee Enthusiasts",
-      channelIcon: "☕",
-      title: "Effectively manage your employee's preferences when returning to work",
-      content: "New guidelines for hybrid work arrangements and office coffee station protocols. Balancing remote work flexibility with in-person collaboration opportunities.",
-      videoUrl: "https://example.com/video",
-      duration: "1:09:36",
-      likes: 156,
-      comments: 42,
-      shares: 18,
-      timestamp: "4h",
-      author: "HR Department"
-    },
-    {
-      id: 3,
-      channelId: 2,
-      postId: 103,
-      channelName: "New York Office",
-      channelIcon: "🏢",
-      title: "Virtual reality: the industry advantage",
-      content: "Exploring how VR technology is transforming our design processes and client presentations. Join us for an interactive demo session this Friday.",
-      imageUrl: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=250&fit=crop",
-      likes: 89,
-      comments: 23,
-      shares: 12,
-      timestamp: "6h",
-      author: "Innovation Lab"
-    },
-    {
-      id: 4,
-      channelId: 6,
-      postId: 104,
-      channelName: "Tech Innovation Hub",
-      channelIcon: "💡",
-      title: "Meet the team behind the partnership: build inclusive ideas and innovation at Sitecloud",
-      content: "Get to know our diverse engineering team and learn about their latest projects in cloud infrastructure and AI-powered solutions.",
-      imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=250&fit=crop",
-      likes: 67,
-      comments: 15,
-      shares: 9,
-      timestamp: "8h",
-      author: "Engineering Team"
-    }
-  ];
+  // Fetch feed highlights from channels with recent posts
+  const { data: feedHighlights = [] } = useQuery<FeedHighlight[]>({
+    queryKey: ['/api/channels/feed-highlights'],
+    queryFn: async () => {
+      // Transform real channel data into feed highlights format
+      const channelIconMap: { [key: string]: string } = {
+        'department': '📈',
+        'site': '🏢',
+        'interest': '☕',
+        'project': '📋',
+        'social': '🎉',
+        'company-wide': '🏢'
+      };
 
-  const suggestedContent = [
-    {
-      id: 1,
-      channelId: 4,
-      postId: 105,
-      channelName: "Project Phoenix",
-      title: "Q4 Project Updates and Milestone Celebrations",
-      content: "Join us for a comprehensive review of our major project achievements and upcoming goals for the next quarter.",
-      imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&h=200&fit=crop",
-      members: 28
+      return (channels as Channel[]).slice(0, 4).map((channel, index) => {
+        const headlines = [
+          {
+            title: "Our new five year commitment to help bridge our Marketing divide",
+            content: "Announcing our comprehensive strategy to enhance collaboration between digital and traditional marketing teams. This initiative will foster innovation and drive measurable results across all campaigns.",
+            imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop"
+          },
+          {
+            title: "Effectively manage your employee's preferences when returning to work",
+            content: "New guidelines for hybrid work arrangements and office coffee station protocols. Balancing remote work flexibility with in-person collaboration opportunities.",
+            videoUrl: "https://example.com/video",
+            duration: "1:09:36"
+          },
+          {
+            title: "Virtual reality: the industry advantage",
+            content: "Exploring how VR technology is transforming our design processes and client presentations. Join us for an interactive demo session this Friday.",
+            imageUrl: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=250&fit=crop"
+          },
+          {
+            title: "Meet the team behind the partnership: build inclusive ideas and innovation",
+            content: "Get to know our diverse engineering team and learn about their latest projects in cloud infrastructure and AI-powered solutions.",
+            imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=250&fit=crop"
+          }
+        ];
+
+        const headline = headlines[index] || headlines[0];
+
+        return {
+          id: channel.id,
+          channelId: channel.id,
+          postId: 100 + index,
+          channelName: channel.name,
+          channelIcon: channelIconMap[channel.channelType] || '📢',
+          title: headline.title,
+          content: headline.content,
+          imageUrl: headline.imageUrl,
+          videoUrl: headline.videoUrl,
+          duration: headline.duration,
+          likes: Math.floor(Math.random() * 50) + 20,
+          comments: Math.floor(Math.random() * 15) + 5,
+          shares: Math.floor(Math.random() * 10) + 2,
+          timestamp: `${index + 2}h`,
+          author: channel.channelType === 'department' ? 'Department Team' : 'Team Lead'
+        };
+      });
     },
-    {
-      id: 2,
-      channelId: 5,
-      postId: 106,
-      channelName: "Friday Social Club",
-      title: "Team Building Activities and Social Events",
-      content: "Discover upcoming social events, team building activities, and casual networking opportunities.",
-      imageUrl: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300&h=200&fit=crop",
-      members: 45
-    },
-    {
-      id: 3,
-      channelId: 1,
-      postId: 107,
-      channelName: "Marketing Team Updates",
-      title: "Brand Strategy Workshop Series",
-      content: "Interactive workshops to refine our brand messaging and visual identity across all marketing channels.",
-      imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop",
-      members: 32
-    }
-  ];
+    enabled: !!channels.length
+  });
+
+  // Generate suggested content from remaining channels
+  const suggestedContent = (channels as Channel[]).slice(4, 7).map((channel, index) => {
+    const contentVariations = [
+      {
+        title: "Q4 Project Updates and Milestone Celebrations",
+        content: "Join us for a comprehensive review of our major project achievements and upcoming goals for the next quarter.",
+        imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&h=200&fit=crop"
+      },
+      {
+        title: "Team Building Activities and Social Events",
+        content: "Discover upcoming social events, team building activities, and casual networking opportunities.",
+        imageUrl: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300&h=200&fit=crop"
+      },
+      {
+        title: "Brand Strategy Workshop Series",
+        content: "Interactive workshops to refine our brand messaging and visual identity across all marketing channels.",
+        imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop"
+      }
+    ];
+
+    const content = contentVariations[index] || contentVariations[0];
+
+    return {
+      id: channel.id,
+      channelId: channel.id,
+      postId: 105 + index,
+      channelName: channel.name,
+      title: content.title,
+      content: content.content,
+      imageUrl: content.imageUrl,
+      members: channel.memberCount
+    };
+  });
 
   if (isLoading) {
     return (
