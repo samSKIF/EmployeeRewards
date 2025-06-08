@@ -155,53 +155,91 @@ export default function ChannelsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Top 4 Channel Headlines with Images */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {featuredChannels.map((channel, index) => {
-          const headlines = [
-            {
-              title: "Launching new product innovation, developed in partnership with the disability community",
-              image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=250&fit=crop",
-              gradient: "from-gray-800 to-gray-900"
-            },
-            {
-              title: "Meet the team behind the design. Our partnerships build inclusive ideas and innovation at Melcloud", 
-              image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=250&fit=crop",
-              gradient: "from-blue-600 to-blue-800"
-            },
-            {
-              title: "Building a stronger world together",
-              image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=250&fit=crop", 
-              gradient: "from-green-600 to-green-800"
-            },
-            {
-              title: "We look forward to our tasks in Ouirscape",
-              image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=250&fit=crop",
-              gradient: "from-purple-600 to-purple-800"
-            }
-          ];
-          
-          const headline = headlines[index] || headlines[0];
-          
-          return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8 h-[400px]">
+        {/* Big channel on the left (spans 2 columns) */}
+        {featuredChannels[0] && (
+          <div 
+            className="lg:col-span-2 relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
+            onClick={() => setLocation(`/channels/${featuredChannels[0].id}`)}
+          >
             <div 
-              key={channel.id}
-              className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
-              onClick={() => setLocation(`/channels/${channel.id}`)}
-              style={{ height: index === 0 ? '300px' : '145px' }}
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=400&fit=crop)` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-800 to-gray-900 opacity-75" />
+            <div className="absolute inset-0 p-6 flex flex-col justify-end">
+              <div className="flex items-center mb-3">
+                <span className="text-white text-lg font-medium">{featuredChannels[0].name}</span>
+                <Users className="h-5 w-5 ml-3 text-white" />
+                <span className="text-white text-sm ml-1">{featuredChannels[0].memberCount}</span>
+              </div>
+              <h3 className="text-white font-bold text-2xl leading-tight mb-2">
+                Launching new product innovation, developed in partnership with the disability community
+              </h3>
+            </div>
+          </div>
+        )}
+
+        {/* Three channels on the right */}
+        <div className="flex flex-col gap-4">
+          {/* Top channel */}
+          {featuredChannels[1] && (
+            <div 
+              className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 flex-1"
+              onClick={() => setLocation(`/channels/${featuredChannels[1].id}`)}
             >
               <div 
                 className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${headline.image})` }}
+                style={{ backgroundImage: `url(https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=200&fit=crop)` }}
               />
-              <div className={`absolute inset-0 bg-gradient-to-t ${headline.gradient} opacity-75`} />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-600 to-blue-800 opacity-75" />
               <div className="absolute inset-0 p-4 flex flex-col justify-end">
                 <h3 className="text-white font-semibold text-sm leading-tight">
-                  {headline.title}
+                  Meet the team behind the design. Our partnerships build inclusive ideas and innovation at Melcloud
                 </h3>
               </div>
             </div>
-          );
-        })}
+          )}
+
+          {/* Bottom two channels side by side */}
+          <div className="grid grid-cols-2 gap-4 flex-1">
+            {featuredChannels[2] && (
+              <div 
+                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                onClick={() => setLocation(`/channels/${featuredChannels[2].id}`)}
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=200&h=150&fit=crop)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-green-600 to-green-800 opacity-75" />
+                <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                  <h3 className="text-white font-semibold text-xs leading-tight">
+                    Building a stronger world together
+                  </h3>
+                </div>
+              </div>
+            )}
+
+            {featuredChannels[3] && (
+              <div 
+                className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                onClick={() => setLocation(`/channels/${featuredChannels[3].id}`)}
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=150&fit=crop)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-600 to-purple-800 opacity-75" />
+                <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                  <h3 className="text-white font-semibold text-xs leading-tight">
+                    We look forward to our tasks in Ouirscape
+                  </h3>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Feed Highlights Section */}
