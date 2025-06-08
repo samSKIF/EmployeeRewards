@@ -2620,6 +2620,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const channelId = parseInt(req.params.id);
       
+      if (isNaN(channelId)) {
+        return res.status(400).json({ message: "Invalid channel ID" });
+      }
+      
       // Get channel data
       const [channel] = await db.select()
         .from(interestChannels)
@@ -2710,6 +2714,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching user channels:', error);
       res.status(500).json({ message: 'Failed to fetch channels' });
+    }
+  });
+
+  // Get channel posts
+  app.get('/api/channels/:id/posts', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      if (isNaN(channelId)) {
+        return res.status(400).json({ message: "Invalid channel ID" });
+      }
+
+      // Verify channel exists and user has access
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(
+          and(
+            eq(interestChannels.id, channelId),
+            eq(interestChannels.isActive, true),
+            eq(interestChannels.organizationId, req.user.organizationId || 1)
+          )
+        );
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      // Get posts from social posts table filtered by channel
+      const posts = await db.select({
+        id: socialPosts.id,
+        content: socialPosts.content,
+        userId: socialPosts.userId,
+        userName: users.name,
+        userAvatar: users.avatar,
+        createdAt: socialPosts.createdAt,
+        likeCount: socialPosts.likeCount,
+        commentCount: socialPosts.commentCount,
+        imageUrl: socialPosts.imageUrl,
+        type: socialPosts.type
+      })
+      .from(socialPosts)
+      .innerJoin(users, eq(socialPosts.userId, users.id))
+      .where(
+        and(
+          eq(socialPosts.channelId, channelId),
+          eq(socialPosts.organizationId, req.user.organizationId || 1)
+        )
+      )
+      .orderBy(desc(socialPosts.createdAt))
+      .limit(20);
+
+      res.json(posts);
+    } catch (error) {
+      console.error('Error fetching channel posts:', error);
+      res.status(500).json({ message: 'Failed to fetch posts' });
+    }
+  });
+
+  // Create a new post in channel
+  app.post('/api/channels/:id/posts', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      if (isNaN(channelId)) {
+        return res.status(400).json({ message: "Invalid channel ID" });
+      }
+
+      const { content } = req.body;
+
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      // Verify channel exists and user has access
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(
+          and(
+            eq(interestChannels.id, channelId),
+            eq(interestChannels.isActive, true),
+            eq(interestChannels.organizationId, req.user.organizationId || 1)
+          )
+        );
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      // Create the post
+      const [newPost] = await db.insert(socialPosts)
+        .values({
+          content: content.trim(),
+          userId: req.user.id,
+          organizationId: req.user.organizationId || 1,
+          channelId: channelId,
+          type: 'text',
+          likeCount: 0,
+          commentCount: 0
+        })
+        .returning();
+
+      res.status(201).json(newPost);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      res.status(500).json({ message: 'Failed to create post' });
+    }
+  });
+
+  // Get channel members
+  app.get('/api/channels/:id/members', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      if (isNaN(channelId)) {
+        return res.status(400).json({ message: "Invalid channel ID" });
+      }
+
+      // Verify channel exists and user has access
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(
+          and(
+            eq(interestChannels.id, channelId),
+            eq(interestChannels.isActive, true),
+            eq(interestChannels.organizationId, req.user.organizationId || 1)
+          )
+        );
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      // Get channel members
+      const members = await db.select({
+        id: users.id,
+        name: users.name,
+        role: interestChannelMembers.role,
+        department: users.department,
+        location: users.location,
+        avatar: users.avatar
+      })
+      .from(interestChannelMembers)
+      .innerJoin(users, eq(interestChannelMembers.userId, users.id))
+      .where(
+        and(
+          eq(interestChannelMembers.channelId, channelId),
+          eq(users.organizationId, req.user.organizationId || 1)
+        )
+      )
+      .orderBy(users.name)
+      .limit(50);
+
+      res.json(members);
+    } catch (error) {
+      console.error('Error fetching channel members:', error);
+      res.status(500).json({ message: 'Failed to fetch members' });
     }
   });
 
