@@ -2700,7 +2700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .innerJoin(interestChannels, eq(interestChannelMembers.channelId, interestChannels.id))
       .where(
         and(
-          eq(interestChannelMembers.userId, req.user.id),
+          eq(interestChannelMembers.userId, Number(req.user.id) || 0),
           eq(interestChannels.isActive, true)
         )
       )
@@ -2719,7 +2719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For now, return channels the user hasn't joined
       const userChannels = await db.select({ channelId: interestChannelMembers.channelId })
         .from(interestChannelMembers)
-        .where(eq(interestChannelMembers.userId, req.user?.id || 0));
+        .where(eq(interestChannelMembers.userId, Number(req.user?.id) || 0));
 
       const userChannelIds = userChannels.map(uc => uc.channelId);
 
