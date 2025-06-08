@@ -296,7 +296,7 @@ export default function ChannelDetail() {
                       <div className="flex space-x-3">
                         <Avatar>
                           <AvatarImage src={post.userAvatar} />
-                          <AvatarFallback>{post.userName.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{post.userName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
@@ -423,7 +423,7 @@ export default function ChannelDetail() {
                       <div key={member.id} className="flex items-center space-x-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={member.avatar} />
-                          <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{member.name?.charAt(0) || 'M'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
