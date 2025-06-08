@@ -2745,28 +2745,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Channel not found" });
       }
 
-      // Get posts from social posts table filtered by channel
+      // Get posts from interest channel posts table
       const posts = await db.select({
-        id: socialPosts.id,
-        content: socialPosts.content,
-        userId: socialPosts.userId,
+        id: interestChannelPosts.id,
+        content: interestChannelPosts.content,
+        userId: interestChannelPosts.authorId,
         userName: users.name,
-        userAvatar: users.avatar,
-        createdAt: socialPosts.createdAt,
-        likeCount: socialPosts.likeCount,
-        commentCount: socialPosts.commentCount,
-        imageUrl: socialPosts.imageUrl,
-        type: socialPosts.type
+        userAvatar: users.avatarUrl,
+        createdAt: interestChannelPosts.createdAt,
+        likeCount: interestChannelPosts.likeCount,
+        commentCount: interestChannelPosts.commentCount,
+        imageUrl: interestChannelPosts.imageUrl,
+        type: sql`'text'`
       })
-      .from(socialPosts)
-      .innerJoin(users, eq(socialPosts.userId, users.id))
+      .from(interestChannelPosts)
+      .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
       .where(
         and(
-          eq(socialPosts.channelId, channelId),
-          eq(socialPosts.organizationId, req.user.organizationId || 1)
+          eq(interestChannelPosts.channelId, channelId),
+          eq(users.organizationId, req.user.organizationId || 1)
         )
       )
-      .orderBy(desc(socialPosts.createdAt))
+      .orderBy(desc(interestChannelPosts.createdAt))
       .limit(20);
 
       res.json(posts);
@@ -2811,13 +2811,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create the post
-      const [newPost] = await db.insert(socialPosts)
+      const [newPost] = await db.insert(interestChannelPosts)
         .values({
           content: content.trim(),
-          userId: req.user.id,
-          organizationId: req.user.organizationId || 1,
+          authorId: req.user.id,
           channelId: channelId,
-          type: 'text',
           likeCount: 0,
           commentCount: 0
         })
