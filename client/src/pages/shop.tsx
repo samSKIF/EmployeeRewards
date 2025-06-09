@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { LogOut, Search, CreditCard, Tag, Gift, Ticket, ShoppingBag, Home, Award } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useBranding } from "@/context/BrandingContext";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+// Firebase authentication removed - using custom auth
 import { useTranslation } from "react-i18next";
 
 const Shop = () => {

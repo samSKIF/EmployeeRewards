@@ -3,7 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SocialController } from './social.controller';
 import { SocialService } from './social.service';
 import { SocialGateway } from './social.gateway';
-import { auth } from '../../firebase-admin';
+// Firebase admin removed - using PostgreSQL authentication only
 
 @Module({
   imports: [

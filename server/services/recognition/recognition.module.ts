@@ -3,7 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RecognitionController } from './recognition.controller';
 import { RecognitionService } from './recognition.service';
 import { RecognitionGateway } from './recognition.gateway';
-import { auth } from '../../firebase-admin';
+// Firebase admin removed - using PostgreSQL authentication only
 
 @Module({
   imports: [

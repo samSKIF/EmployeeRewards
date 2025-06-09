@@ -23,7 +23,7 @@ import { PostWithDetails, SocialStats, User } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBranding } from "@/context/BrandingContext";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+// Firebase authentication removed - using custom auth
 
 // Import our custom social components
 import { 
