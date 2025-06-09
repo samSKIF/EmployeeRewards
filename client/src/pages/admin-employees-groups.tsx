@@ -643,6 +643,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
     category: group.channelType || group.category || '',
     isPrivate: group.accessLevel === 'approval_required' || group.isPrivate || false,
     requiresApproval: group.accessLevel === 'approval_required' || false,
+    maxMembers: group.maxMembers || '',
     selectedDepartments: group.allowedDepartments || [],
     selectedLocations: group.allowedSites || [],
     isActive: group.isActive !== false
@@ -659,7 +660,16 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const submitData = {
+      ...formData,
+      accessLevel: formData.requiresApproval ? 'approval_required' : 
+                  formData.selectedDepartments.length > 0 ? 'department_only' :
+                  formData.selectedLocations.length > 0 ? 'site_only' : 'open',
+      allowedDepartments: formData.selectedDepartments,
+      allowedSites: formData.selectedLocations,
+      channelType: formData.category
+    };
+    onSubmit(submitData);
   };
 
   return (
@@ -715,15 +725,29 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
           />
         </div>
 
-        <div>
-          <Label htmlFor="edit-description">Description</Label>
-          <Textarea
-            id="edit-description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Describe your group"
-            rows={3}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="edit-description">Description</Label>
+            <Textarea
+              id="edit-description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe your group"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="edit-maxMembers">Maximum Members</Label>
+            <Input
+              id="edit-maxMembers"
+              type="number"
+              value={formData.maxMembers || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, maxMembers: e.target.value }))}
+              placeholder="Leave empty for unlimited"
+              min="1"
+            />
+          </div>
         </div>
 
         <div>
