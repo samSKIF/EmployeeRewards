@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, Users, MessageCircle, Heart, Share2, MoreHorizontal, 
   Building, MapPin, Briefcase, Coffee, Lock, Globe, UserCheck,
-  Image, Video, FileText, Calendar, Settings, Bell, Search, UserPlus,
+  Image, Video, FileText, Calendar, Settings, Bell, Search, UserPlus, UserMinus,
   ThumbsUp, MessageSquare, Send
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -123,9 +123,39 @@ export default function ChannelDetail() {
     enabled: !!channelId
   });
 
+  // Check if current user is a member
+  const { data: user } = useQuery({ queryKey: ['/api/users/me'] });
+  const isMember = members.some(member => member.id === user?.id);
+
+  // Join channel mutation
+  const joinChannelMutation = useMutation({
+    mutationFn: () => apiRequest('POST', `/api/channels/${channelId}/join`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'members'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
+      toast({ title: "Successfully joined channel!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to join channel", variant: "destructive" });
+    }
+  });
+
+  // Leave channel mutation
+  const leaveChannelMutation = useMutation({
+    mutationFn: () => apiRequest('DELETE', `/api/channels/${channelId}/leave`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'members'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
+      toast({ title: "Successfully left channel!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to leave channel", variant: "destructive" });
+    }
+  });
+
   // Create post mutation
   const createPostMutation = useMutation({
-    mutationFn: (content: string) => apiRequest(`/api/channels/${channelId}/posts`, 'POST', { content }),
+    mutationFn: (content: string) => apiRequest('POST', `/api/channels/${channelId}/posts`, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'posts'] });
       setNewPost("");
@@ -203,13 +233,37 @@ export default function ChannelDetail() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              {isMember ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => leaveChannelMutation.mutate()}
+                  disabled={leaveChannelMutation.isPending}
+                >
+                  {leaveChannelMutation.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                  ) : (
+                    <UserMinus className="h-4 w-4 mr-2" />
+                  )}
+                  Leave Channel
+                </Button>
+              ) : (
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => joinChannelMutation.mutate()}
+                  disabled={joinChannelMutation.isPending}
+                >
+                  {joinChannelMutation.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  ) : (
+                    <UserPlus className="h-4 w-4 mr-2" />
+                  )}
+                  Join Channel
+                </Button>
+              )}
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
-              </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite
               </Button>
             </div>
           </div>
