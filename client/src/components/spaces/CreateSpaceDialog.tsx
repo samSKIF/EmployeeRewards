@@ -184,15 +184,15 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Channel Type */}
+          {/* Space Type */}
           <div className="space-y-2">
-            <Label>Type of Channel</Label>
+            <Label>Type of Space</Label>
             <Select 
               value={formData.spaceType} 
               onValueChange={(value) => setFormData(prev => ({ ...prev, spaceType: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select channel type" />
+                <SelectValue placeholder="Select space type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="company-wide">Company-wide</SelectItem>
@@ -275,7 +275,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
               <div className="space-y-2">
                 <Select
                   onValueChange={(value) => {
-                    const user = users?.find((u: User) => u.id === parseInt(value));
+                    const user = Array.isArray(users) ? users.find((u: User) => u.id === parseInt(value)) : undefined;
                     if (user && !formData.spaceAdmins.find((admin: User) => admin.id === user.id)) {
                       setFormData(prev => ({
                         ...prev,
@@ -285,22 +285,22 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select channel admin" />
+                    <SelectValue placeholder="Select space admin" />
                   </SelectTrigger>
                   <SelectContent>
-                    {users?.filter((user: User) => 
+                    {Array.isArray(users) ? users.filter((user: User) => 
                       !formData.spaceAdmins.find((admin: User) => admin.id === user.id)
                     ).map((user: User) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} ({user.username}) - {user.department}
                       </SelectItem>
-                    ))}
+                    )) : null}
                   </SelectContent>
                 </Select>
 
-                {formData.channelAdmins.length > 0 && (
+                {formData.spaceAdmins.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.channelAdmins.map((admin) => (
+                    {formData.spaceAdmins.map((admin: User) => (
                       <Badge key={admin.id} variant="secondary" className="gap-2">
                         {admin.name}
                         <X 
@@ -308,7 +308,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                           onClick={() => {
                             setFormData(prev => ({
                               ...prev,
-                              channelAdmins: prev.channelAdmins.filter(a => a.id !== admin.id)
+                              spaceAdmins: prev.spaceAdmins.filter((a: User) => a.id !== admin.id)
                             }));
                           }}
                         />
@@ -428,9 +428,9 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
             </Button>
             <Button 
               type="submit" 
-              disabled={createChannelMutation.isPending || !formData.name || !formData.channelType}
+              disabled={createSpaceMutation.isPending || !formData.name || !formData.spaceType}
             >
-              {createChannelMutation.isPending ? "Creating..." : "Create Channel"}
+              {createSpaceMutation.isPending ? "Creating..." : "Create Space"}
             </Button>
           </div>
         </form>
