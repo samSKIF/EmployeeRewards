@@ -2881,6 +2881,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get featured posts for channel discovery page
+  app.get('/api/channels/featured-posts', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get all active channels with their latest posts
+      const channelsWithPosts = await db.select({
+        channelId: interestChannels.id,
+        channelName: interestChannels.name,
+        channelType: interestChannels.channelType,
+        postId: interestChannelPosts.id,
+        postContent: interestChannelPosts.content,
+        postImageUrl: interestChannelPosts.imageUrl,
+        postCreatedAt: interestChannelPosts.createdAt,
+        postLikeCount: interestChannelPosts.likeCount,
+        postCommentCount: interestChannelPosts.commentCount,
+        authorName: users.name,
+        authorAvatar: users.avatarUrl
+      })
+      .from(interestChannels)
+      .leftJoin(interestChannelPosts, eq(interestChannels.id, interestChannelPosts.channelId))
+      .leftJoin(users, sql`${interestChannelPosts}.user_id = ${users.id}`)
+      .where(
+        and(
+          eq(interestChannels.isActive, true),
+          eq(interestChannels.organizationId, req.user.organizationId || 1)
+        )
+      )
+      .orderBy(desc(interestChannelPosts.createdAt))
+      .limit(100);
+
+      // Group posts by channel and get the latest post for each
+      const channelPostsMap: Record<number, any> = {};
+      
+      channelsWithPosts.forEach(row => {
+        if (row.channelId && row.postId && !channelPostsMap[row.channelId]) {
+          channelPostsMap[row.channelId] = {
+            id: row.postId,
+            content: row.postContent,
+            imageUrl: row.postImageUrl,
+            createdAt: row.postCreatedAt,
+            likeCount: row.postLikeCount,
+            commentCount: row.postCommentCount,
+            authorName: row.authorName,
+            authorAvatar: row.authorAvatar,
+            channelName: row.channelName,
+            channelType: row.channelType
+          };
+        }
+      });
+
+      res.json(channelPostsMap);
+    } catch (error) {
+      console.error('Error fetching featured posts:', error);
+      res.status(500).json({ message: 'Failed to fetch featured posts' });
+    }
+  });
+
   // Get channels suggestions
   app.get('/api/channels/suggestions', verifyToken, async (req: AuthenticatedRequest, res) => {
     try {

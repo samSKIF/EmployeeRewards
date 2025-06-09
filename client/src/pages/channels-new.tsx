@@ -47,6 +47,12 @@ export default function ChannelsPage() {
   // Get featured channels (top 4)
   const featuredChannels = (channels as Channel[]).slice(0, 4);
 
+  // Fetch latest posts for each channel to display real content
+  const { data: channelPosts = {} } = useQuery<Record<number, any>>({
+    queryKey: ['/api/channels/featured-posts'],
+    enabled: featuredChannels.length > 0,
+  });
+
   // Fetch feed highlights from channels with recent posts
   const { data: feedHighlights = [] } = useQuery<FeedHighlight[]>({
     queryKey: ['/api/channels/feed-highlights'],
@@ -169,7 +175,7 @@ export default function ChannelsPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <h3 className="text-white font-bold text-2xl leading-tight mb-2">
-                Launching new product innovation, developed in partnership with the disability community
+                {channelPosts[featuredChannels[0].id]?.content || featuredChannels[0].name}
               </h3>
             </div>
           </div>
@@ -191,7 +197,7 @@ export default function ChannelsPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h3 className="text-white font-semibold text-sm leading-tight">
-                  Meet the team behind the design. Our partnerships build inclusive ideas and innovation at Relecloud
+                  {channelPosts[featuredChannels[1]?.id]?.content || featuredChannels[1]?.name}
                 </h3>
               </div>
             </div>
@@ -211,7 +217,7 @@ export default function ChannelsPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <h3 className="text-white font-semibold text-xs leading-tight">
-                    Building a stronger, more sustainable world together
+                    {channelPosts[featuredChannels[2]?.id]?.content || featuredChannels[2]?.name}
                   </h3>
                 </div>
               </div>
