@@ -26,42 +26,42 @@ export function SpacesDiscoveryWidget() {
 
   return (
     <div className="space-y-4">
-      {/* Trending Channels */}
+      {/* Trending Spaces */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
-            Trending Channels
+            Trending Spaces
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {trendingChannels?.slice(0, 3).map((channel: Channel) => (
-            <div key={channel.id} className="flex items-center justify-between">
+          {trendingSpaces?.slice(0, 3).map((space: Channel) => (
+            <div key={space.id} className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <Link href={`/groups/${channel.id}`}>
+                <Link href={`/spaces/${space.id}`}>
                   <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {channel.name}
+                    {space.name}
                   </p>
                 </Link>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3 text-gray-500" />
-                    <span className="text-xs text-gray-500">{channel.memberCount}</span>
+                    <span className="text-xs text-gray-500">{space.memberCount}</span>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {channel.channelType}
+                    {space.channelType}
                   </Badge>
                 </div>
               </div>
             </div>
           ))}
-          {(!trendingChannels || trendingChannels.length === 0) && (
-            <p className="text-sm text-gray-500">No trending channels yet</p>
+          {(!trendingSpaces || trendingSpaces.length === 0) && (
+            <p className="text-sm text-gray-500">No trending spaces yet</p>
           )}
         </CardContent>
       </Card>
 
-      {/* Suggested Channels */}
+      {/* Suggested Spaces */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -70,22 +70,22 @@ export function SpacesDiscoveryWidget() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {suggestedChannels?.slice(0, 3).map((channel: Channel) => (
-            <div key={channel.id} className="flex items-center justify-between">
+          {suggestedSpaces?.slice(0, 3).map((space: Channel) => (
+            <div key={space.id} className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <Link href={`/groups/${channel.id}`}>
+                <Link href={`/spaces/${space.id}`}>
                   <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {channel.name}
+                    {space.name}
                   </p>
                 </Link>
-                <p className="text-xs text-gray-500 truncate">{channel.description}</p>
+                <p className="text-xs text-gray-500 truncate">{space.description}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3 text-gray-500" />
-                    <span className="text-xs text-gray-500">{channel.memberCount}</span>
+                    <span className="text-xs text-gray-500">{space.memberCount}</span>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {channel.channelType}
+                    {space.channelType}
                   </Badge>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export function SpacesDiscoveryWidget() {
               </Button>
             </div>
           ))}
-          {(!suggestedChannels || suggestedChannels.length === 0) && (
+          {(!suggestedSpaces || suggestedSpaces.length === 0) && (
             <p className="text-sm text-gray-500">No suggestions available</p>
           )}
         </CardContent>
@@ -103,9 +103,9 @@ export function SpacesDiscoveryWidget() {
       {/* Discover More */}
       <Card>
         <CardContent className="pt-6">
-          <Link href="/channels">
+          <Link href="/spaces">
             <Button className="w-full" variant="outline">
-              Discover More Channels
+              Discover More Spaces
             </Button>
           </Link>
         </CardContent>
