@@ -625,9 +625,8 @@ export default function ChannelDetail() {
                                 size="sm" 
                                 variant="outline" 
                                 className="h-6 px-2 text-xs"
-                                onClick={() => {
-                                  // Handle approve request
-                                }}
+                                onClick={() => approveRequestMutation.mutate(request.id)}
+                                disabled={approveRequestMutation.isPending}
                               >
                                 Approve
                               </Button>
@@ -635,9 +634,8 @@ export default function ChannelDetail() {
                                 size="sm" 
                                 variant="outline" 
                                 className="h-6 px-2 text-xs text-red-600"
-                                onClick={() => {
-                                  // Handle reject request  
-                                }}
+                                onClick={() => rejectRequestMutation.mutate(request.id)}
+                                disabled={rejectRequestMutation.isPending}
                               >
                                 Decline
                               </Button>
