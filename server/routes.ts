@@ -2861,16 +2861,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: interestChannelMembers.role,
         department: users.department,
         location: users.location,
-        avatar: users.avatar
+        avatar: users.avatarUrl
       })
       .from(interestChannelMembers)
       .innerJoin(users, eq(interestChannelMembers.userId, users.id))
-      .where(
-        and(
-          eq(interestChannelMembers.channelId, channelId),
-          eq(users.organizationId, req.user.organizationId || 1)
-        )
-      )
+      .where(eq(interestChannelMembers.channelId, channelId))
       .orderBy(users.name)
       .limit(50);
 
