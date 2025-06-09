@@ -640,9 +640,21 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
   const [formData, setFormData] = useState({
     name: group.name || '',
     description: group.description || '',
-    category: group.category || '',
-    isPrivate: group.isPrivate || false,
+    category: group.channelType || group.category || '',
+    isPrivate: group.accessLevel === 'approval_required' || group.isPrivate || false,
+    requiresApproval: group.accessLevel === 'approval_required' || false,
+    selectedDepartments: group.allowedDepartments || [],
+    selectedLocations: group.allowedSites || [],
     isActive: group.isActive !== false
+  });
+
+  // Fetch departments and locations for access controls
+  const { data: departments } = useQuery({
+    queryKey: ['/api/users/departments'],
+  });
+
+  const { data: locations } = useQuery({
+    queryKey: ['/api/users/locations'],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -715,41 +727,115 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
         </div>
 
         <div>
-          <Label htmlFor="edit-category">Category</Label>
+          <Label htmlFor="edit-category">Channel Type</Label>
           <Select 
             value={formData.category} 
             onValueChange={(value) => setFormData({ ...formData, category: value })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder="Select channel type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Technology">Technology</SelectItem>
-              <SelectItem value="Sports">Sports</SelectItem>
-              <SelectItem value="Arts">Arts</SelectItem>
-              <SelectItem value="Business">Business</SelectItem>
+              <SelectItem value="company-wide">Company-wide</SelectItem>
+              <SelectItem value="department">Department</SelectItem>
+              <SelectItem value="site">Site/Location</SelectItem>
+              <SelectItem value="interest">Interest-based</SelectItem>
+              <SelectItem value="project">Project/Team</SelectItem>
+              <SelectItem value="social">Social</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="edit-private"
-              checked={formData.isPrivate}
-              onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
-            />
-            <Label htmlFor="edit-private">Private group</Label>
-          </div>
+        {/* Access and Privacy Controls */}
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">Access and Privacy</Label>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit-private"
+                checked={formData.isPrivate}
+                onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
+              />
+              <Label htmlFor="edit-private">Private Channel (invite only)</Label>
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="edit-active"
-              checked={formData.isActive}
-              onCheckedChange={(checked) => setFormData({ ...formData, isActive: !!checked })}
-            />
-            <Label htmlFor="edit-active">Active group</Label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit-approval"
+                checked={formData.requiresApproval || false}
+                onCheckedChange={(checked) => setFormData({ ...formData, requiresApproval: !!checked })}
+              />
+              <Label htmlFor="edit-approval">Requires approval to join</Label>
+            </div>
           </div>
+        </div>
+
+        {/* Department Access Controls */}
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">Select Departments (Optional)</Label>
+          <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+            {(departments || []).map((dept: string) => (
+              <div key={dept} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`edit-dept-${dept}`}
+                  checked={(formData.selectedDepartments || []).includes(dept)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedDepartments: [...(prev.selectedDepartments || []), dept]
+                      }));
+                    } else {
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedDepartments: (prev.selectedDepartments || []).filter(d => d !== dept)
+                      }));
+                    }
+                  }}
+                />
+                <Label htmlFor={`edit-dept-${dept}`} className="text-sm">{dept}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Location Access Controls */}
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">Select Locations (Optional)</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {(locations || []).map((location: string) => (
+              <div key={location} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`edit-loc-${location}`}
+                  checked={(formData.selectedLocations || []).includes(location)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedLocations: [...(prev.selectedLocations || []), location]
+                      }));
+                    } else {
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedLocations: (prev.selectedLocations || []).filter(l => l !== location)
+                      }));
+                    }
+                  }}
+                />
+                <Label htmlFor={`edit-loc-${location}`} className="text-sm">{location}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="edit-active"
+            checked={formData.isActive}
+            onCheckedChange={(checked) => setFormData({ ...formData, isActive: !!checked })}
+          />
+          <Label htmlFor="edit-active">Active group</Label>
         </div>
 
         <DialogFooter>
