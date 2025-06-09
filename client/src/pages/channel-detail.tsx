@@ -101,6 +101,12 @@ export default function ChannelDetail() {
     enabled: !!channelId
   });
 
+  // Debug channel data
+  console.log('Channel ID:', channelId);
+  console.log('Channel data:', channel);
+  console.log('Channel loading:', channelLoading);
+  console.log('Channel error:', channelError);
+
   // Fetch channel posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<ChannelPost[]>({
     queryKey: ['/api/channels', channelId, 'posts'],
@@ -167,8 +173,8 @@ export default function ChannelDetail() {
             </button>
             <span className="text-gray-400">/</span>
             <span className="font-medium text-gray-900 flex items-center">
-              {getChannelIcon(channel.channelType)}
-              <span className="ml-2">{channel.name}</span>
+              {channel && getChannelIcon(channel.channelType)}
+              <span className="ml-2">{channel?.name || 'Loading...'}</span>
             </span>
           </nav>
           
@@ -176,18 +182,18 @@ export default function ChannelDetail() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-blue-50 rounded-lg p-3">
-                {getChannelIcon(channel.channelType)}
+                {channel && getChannelIcon(channel.channelType)}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{channel.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{channel?.name || 'Loading...'}</h1>
                 <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
-                  <span className="capitalize">{channel.channelType}</span>
+                  <span className="capitalize">{channel?.channelType}</span>
                   <span>•</span>
-                  <span>{getAccessLevel(channel.accessLevel)}</span>
+                  <span>{channel && getAccessLevel(channel.accessLevel)}</span>
                   <span>•</span>
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4" />
-                    <span>{channel.memberCount} members</span>
+                    <span>{channel?.memberCount} members</span>
                   </div>
                 </div>
               </div>
@@ -220,21 +226,21 @@ export default function ChannelDetail() {
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center mb-3">
               <div className="bg-white bg-opacity-20 rounded-lg p-3 mr-4">
-                {getChannelIcon(channel.channelType)}
+                {channel && getChannelIcon(channel.channelType)}
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                  {channel.name}
+                  {channel?.name || 'Loading...'}
                 </h1>
                 <div className="flex items-center space-x-4 text-white text-opacity-90">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm capitalize">{channel.channelType}</span>
+                    <span className="text-sm capitalize">{channel?.channelType}</span>
                     <span className="text-xs">•</span>
-                    <span className="text-sm">{getAccessLevel(channel.accessLevel)}</span>
+                    <span className="text-sm">{channel && getAccessLevel(channel.accessLevel)}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm">{channel.memberCount} members</span>
+                    <span className="text-sm">{channel?.memberCount} members</span>
                   </div>
                 </div>
               </div>

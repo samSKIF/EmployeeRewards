@@ -2638,7 +2638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: interestChannels.createdBy,
         organizationId: interestChannels.organizationId,
         createdAt: interestChannels.createdAt,
-        coverImage: interestChannels.coverImage
+        coverImageUrl: interestChannels.coverImageUrl
       })
         .from(interestChannels)
         .where(
