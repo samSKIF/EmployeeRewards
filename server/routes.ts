@@ -2817,7 +2817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         RETURNING *
       `);
       
-      const newPost = result[0];
+      const newPost = result.rows[0] || result[0];
 
       res.status(201).json(newPost);
     } catch (error) {
@@ -2904,7 +2904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })
       .from(interestChannels)
       .leftJoin(interestChannelPosts, eq(interestChannels.id, interestChannelPosts.channelId))
-      .leftJoin(users, sql`${interestChannelPosts}.user_id = ${users.id}`)
+      .leftJoin(users, eq(interestChannelPosts.userId, users.id))
       .where(
         and(
           eq(interestChannels.isActive, true),

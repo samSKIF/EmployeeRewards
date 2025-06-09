@@ -53,67 +53,34 @@ export default function ChannelsPage() {
     enabled: featuredChannels.length > 0,
   });
 
-  // Fetch feed highlights from channels with recent posts
-  const { data: feedHighlights = [] } = useQuery<FeedHighlight[]>({
-    queryKey: ['/api/channels/feed-highlights'],
-    queryFn: async () => {
-      // Transform real channel data into feed highlights format
-      const channelIconMap: { [key: string]: string } = {
-        'department': '📈',
-        'site': '🏢',
-        'interest': '☕',
-        'project': '📋',
-        'social': '🎉',
-        'company-wide': '🏢'
-      };
+  // Generate feed highlights from real channel posts
+  const feedHighlights = featuredChannels.map((channel, index) => {
+    const channelIconMap: { [key: string]: string } = {
+      'department': '📈',
+      'site': '🏢', 
+      'interest': '☕',
+      'project': '📋',
+      'social': '🎉',
+      'company-wide': '🏢'
+    };
 
-      return (channels as Channel[]).slice(0, 4).map((channel, index) => {
-        const headlines = [
-          {
-            title: "Our new five year commitment to help bridge our Marketing divide",
-            content: "Announcing our comprehensive strategy to enhance collaboration between digital and traditional marketing teams. This initiative will foster innovation and drive measurable results across all campaigns.",
-            imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop"
-          },
-          {
-            title: "Effectively manage your employee's preferences when returning to work",
-            content: "New guidelines for hybrid work arrangements and office coffee station protocols. Balancing remote work flexibility with in-person collaboration opportunities.",
-            videoUrl: "https://example.com/video",
-            duration: "1:09:36"
-          },
-          {
-            title: "Virtual reality: the industry advantage",
-            content: "Exploring how VR technology is transforming our design processes and client presentations. Join us for an interactive demo session this Friday.",
-            imageUrl: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=250&fit=crop"
-          },
-          {
-            title: "Meet the team behind the partnership: build inclusive ideas and innovation",
-            content: "Get to know our diverse engineering team and learn about their latest projects in cloud infrastructure and AI-powered solutions.",
-            imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=250&fit=crop"
-          }
-        ];
-
-        const headline = headlines[index] || headlines[0];
-
-        return {
-          id: channel.id,
-          channelId: channel.id,
-          postId: 100 + index,
-          channelName: channel.name,
-          channelIcon: channelIconMap[channel.channelType] || '📢',
-          title: headline.title,
-          content: headline.content,
-          imageUrl: headline.imageUrl,
-          videoUrl: headline.videoUrl,
-          duration: headline.duration,
-          likes: Math.floor(Math.random() * 50) + 20,
-          comments: Math.floor(Math.random() * 15) + 5,
-          shares: Math.floor(Math.random() * 10) + 2,
-          timestamp: `${index + 2}h`,
-          author: channel.channelType === 'department' ? 'Department Team' : 'Team Lead'
-        };
-      });
-    },
-    enabled: !!channels.length
+    const post = channelPosts[channel.id];
+    
+    return {
+      id: channel.id,
+      channelId: channel.id,
+      postId: post?.id || 0,
+      channelName: channel.name,
+      channelIcon: channelIconMap[channel.channelType] || '📢',
+      title: post?.content || channel.name,
+      content: post?.content || `Latest updates from ${channel.name}`,
+      imageUrl: post?.imageUrl,
+      likes: post?.likeCount || 0,
+      comments: post?.commentCount || 0,
+      shares: 0,
+      timestamp: post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Recent',
+      author: post?.authorName || 'Team'
+    };
   });
 
   // Generate suggested content from remaining channels
@@ -235,7 +202,7 @@ export default function ChannelsPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <h3 className="text-white font-semibold text-xs leading-tight">
-                    Wellbeing: Carve out breaks in Outlook
+                    {channelPosts[featuredChannels[3]?.id]?.content || featuredChannels[3]?.name}
                   </h3>
                 </div>
               </div>
