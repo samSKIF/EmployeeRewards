@@ -19,7 +19,7 @@ import {
   Calendar
 } from "lucide-react";
 import { useMobile } from "@/hooks/use-mobile";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+// Firebase authentication removed - using custom auth
 import { useToast } from "@/hooks/use-toast";
 
 const Sidebar = () => {

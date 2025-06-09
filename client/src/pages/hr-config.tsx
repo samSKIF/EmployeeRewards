@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
+// Firebase authentication removed - using custom auth
 import { useToast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import MainLayout from "@/components/layout/MainLayout";

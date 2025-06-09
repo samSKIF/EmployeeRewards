@@ -43,7 +43,7 @@ export default function SocialPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { branding } = useBranding();
-  const { signOut } = useFirebaseAuth();
+  // Firebase authentication removed - using custom auth
   const { t } = useTranslation();
   const [postContent, setPostContent] = useState("");
   const [currentSection, setCurrentSection] = useState("townhall");

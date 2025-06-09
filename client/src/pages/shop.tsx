@@ -31,7 +31,7 @@ const Shop = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const { branding } = useBranding();
-  const { signOut } = useFirebaseAuth();
+  // Firebase authentication removed - using custom auth
 
   // Fetch user balance
   const { data: balanceData = { balance: 0 } } = useQuery<{ balance: number }>({
@@ -53,7 +53,8 @@ const Shop = () => {
       sessionStorage.setItem("skipAutoLogin", "true");
       
       // Sign out from Firebase
-      await signOut();
+      localStorage.removeItem("token");
+      window.location.href = "/auth";
       
       // Redirect to auth page
       window.location.href = "/auth";
