@@ -64,16 +64,16 @@ export default function SpacesPage() {
       'company-wide': '🏢'
     };
 
-    const post = channelPosts[channel.id];
+    const post = spacePosts[space.id];
     
     return {
-      id: channel.id,
-      channelId: channel.id,
+      id: space.id,
+      channelId: space.id,
       postId: post?.id || 0,
-      channelName: channel.name,
-      channelIcon: channelIconMap[channel.channelType] || '📢',
-      title: post?.content || channel.name,
-      content: post?.content || `Latest updates from ${channel.name}`,
+      channelName: space.name,
+      channelIcon: spaceIconMap[space.channelType] || '📢',
+      title: post?.content || space.name,
+      content: post?.content || `Latest updates from ${space.name}`,
       imageUrl: post?.imageUrl,
       likes: post?.likeCount || 0,
       comments: post?.commentCount || 0,
@@ -83,19 +83,19 @@ export default function SpacesPage() {
     };
   });
 
-  // Generate suggested content from remaining channels
-  const suggestedContent = (channels as Channel[]).slice(4, 7).map((channel, index) => {
-    const post = channelPosts[channel.id];
+  // Generate suggested content from remaining spaces
+  const suggestedContent = (spaces as Channel[]).slice(4, 7).map((space, index) => {
+    const post = spacePosts[space.id];
 
     return {
-      id: channel.id,
-      channelId: channel.id,
+      id: space.id,
+      channelId: space.id,
       postId: post?.id || 0,
-      channelName: channel.name,
-      title: post?.content || channel.name,
-      content: post?.content || `Latest discussions in ${channel.name}`,
+      channelName: space.name,
+      title: post?.content || space.name,
+      content: post?.content || `Latest discussions in ${space.name}`,
       imageUrl: post?.imageUrl,
-      members: channel.memberCount
+      members: space.memberCount
     };
   });
 
@@ -112,10 +112,10 @@ export default function SpacesPage() {
       {/* Top 4 Channel Headlines with Images */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
         {/* Big channel on the left */}
-        {featuredChannels[0] && (
+        {featuredSpaces[0] && (
           <div 
             className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-[400px]"
-            onClick={() => setLocation(`/channels/${featuredChannels[0].id}`)}
+            onClick={() => setLocation(`/spaces/${featuredSpaces[0].id}`)}
           >
             <div 
               className="absolute inset-0 bg-cover bg-center"
@@ -124,7 +124,7 @@ export default function SpacesPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <h3 className="text-white font-bold text-2xl leading-tight mb-2">
-                {channelPosts[featuredChannels[0].id]?.content || featuredChannels[0].name}
+                {spacePosts[featuredSpaces[0].id]?.content || featuredSpaces[0].name}
               </h3>
             </div>
           </div>
