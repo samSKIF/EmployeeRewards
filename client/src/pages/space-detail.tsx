@@ -330,31 +330,31 @@ export default function ChannelDetail() {
       <div className="relative">
         <div 
           className="h-80 bg-cover bg-center"
-          style={{ backgroundImage: `url(${getCoverImage(channel.channelType)})` }}
+          style={{ backgroundImage: `url(${getCoverImage(space.channelType)})` }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-30"></div>
         </div>
         
-        {/* Channel Info Overlay */}
+        {/* Space Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center mb-3">
               <div className="bg-white bg-opacity-20 rounded-lg p-3 mr-4">
-                {channel && getChannelIcon(channel.channelType)}
+                {space && getChannelIcon(space.channelType)}
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                  {channel?.name || 'Loading...'}
+                  {space?.name || 'Loading...'}
                 </h1>
                 <div className="flex items-center space-x-4 text-white text-opacity-90">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm capitalize">{channel?.channelType}</span>
+                    <span className="text-sm capitalize">{space?.channelType}</span>
                     <span className="text-xs">•</span>
-                    <span className="text-sm">{channel && getAccessLevel(channel.accessLevel)}</span>
+                    <span className="text-sm">{space && getAccessLevel(space.accessLevel)}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm">{channel?.memberCount} members</span>
+                    <span className="text-sm">{space?.memberCount} members</span>
                   </div>
                 </div>
               </div>
@@ -534,12 +534,12 @@ export default function ChannelDetail() {
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-3">About</h3>
-                <p className="text-sm text-gray-600 mb-4">{channel.description}</p>
+                <p className="text-sm text-gray-600 mb-4">{space.description}</p>
                 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 text-sm">
                     <Lock className="h-4 w-4 text-gray-400" />
-                    <span>{getAccessLevel(channel.accessLevel)}</span>
+                    <span>{getAccessLevel(space.accessLevel)}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
                     <Users className="h-4 w-4 text-gray-400" />
@@ -553,12 +553,12 @@ export default function ChannelDetail() {
               </CardContent>
             </Card>
 
-            {/* Channel Admins */}
-            {(channel.accessLevel === 'approval_required' || channel.accessLevel === 'invite_only') && (
+            {/* Space Admins */}
+            {(space.accessLevel === 'approval_required' || space.accessLevel === 'invite_only') && (
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">Channel Admins</h3>
+                    <h3 className="font-semibold">Space Admins</h3>
                     <span className="text-sm text-gray-500">{admins.length}</span>
                   </div>
                   
@@ -604,7 +604,7 @@ export default function ChannelDetail() {
                   </div>
                   
                   {/* Join Requests for Admins */}
-                  {user && (admins.some(admin => admin.id === user.id) || channel?.createdBy === user.id) && joinRequests.length > 0 && (
+                  {user && (admins.some(admin => admin.id === user.id) || space?.createdBy === user.id) && joinRequests.length > 0 && (
                     <div className="mt-4 pt-3 border-t">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-medium">Pending Join Requests</h4>
@@ -686,7 +686,7 @@ export default function ChannelDetail() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold">Members</h3>
-                  <span className="text-sm text-gray-500">{channel.memberCount}</span>
+                  <span className="text-sm text-gray-500">{space.memberCount}</span>
                 </div>
                 
                 <div className="space-y-3">
