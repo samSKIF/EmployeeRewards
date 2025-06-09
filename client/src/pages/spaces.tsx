@@ -128,8 +128,10 @@ export default function ChannelsPage() {
   const { toast } = useToast();
 
   // Fetch channels data
-  const { data: channels = [], isLoading } = useQuery<Channel[]>({
+  const { data: channels = [], isLoading, error } = useQuery<Channel[]>({
     queryKey: ['/api/channels'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Get featured channels (top 4)

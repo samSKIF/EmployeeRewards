@@ -16,12 +16,16 @@ interface Space {
 }
 
 export function SpacesDiscoveryWidget() {
-  const { data: trendingSpaces } = useQuery({
+  const { data: trendingSpaces = [], isLoading: trendingLoading, error: trendingError } = useQuery({
     queryKey: ['/api/channels/trending'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
-  const { data: suggestedSpaces } = useQuery({
+  const { data: suggestedSpaces = [], isLoading: suggestedLoading, error: suggestedError } = useQuery({
     queryKey: ['/api/channels/suggestions'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   return (
@@ -35,27 +39,41 @@ export function SpacesDiscoveryWidget() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {trendingSpaces?.slice(0, 3).map((space: Space) => (
-            <div key={space.id} className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <Link href={`/spaces/${space.id}`}>
-                  <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {space.name}
-                  </p>
-                </Link>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3 text-gray-500" />
-                    <span className="text-xs text-gray-500">{space.memberCount}</span>
+          {trendingLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-between animate-pulse">
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {space.channelType}
-                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : trendingError ? (
+            <p className="text-sm text-red-500">Failed to load trending spaces</p>
+          ) : trendingSpaces.length > 0 ? (
+            trendingSpaces.slice(0, 3).map((space: Space) => (
+              <div key={space.id} className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <Link href={`/spaces/${space.id}`}>
+                    <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
+                      {space.name}
+                    </p>
+                  </Link>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3 text-gray-500" />
+                      <span className="text-xs text-gray-500">{space.memberCount}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {space.channelType}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {(!trendingSpaces || trendingSpaces.length === 0) && (
+            ))
+          ) : (
             <p className="text-sm text-gray-500">No trending spaces yet</p>
           )}
         </CardContent>
@@ -70,31 +88,47 @@ export function SpacesDiscoveryWidget() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {suggestedSpaces?.slice(0, 3).map((space: Space) => (
-            <div key={space.id} className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <Link href={`/spaces/${space.id}`}>
-                  <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {space.name}
-                  </p>
-                </Link>
-                <p className="text-xs text-gray-500 truncate">{space.description}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3 text-gray-500" />
-                    <span className="text-xs text-gray-500">{space.memberCount}</span>
+          {suggestedLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between animate-pulse">
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {space.channelType}
-                  </Badge>
+                  <div className="w-8 h-8 bg-gray-200 rounded ml-2"></div>
                 </div>
-              </div>
-              <Button size="sm" variant="outline" className="ml-2">
-                <Plus className="w-3 h-3" />
-              </Button>
+              ))}
             </div>
-          ))}
-          {(!suggestedSpaces || suggestedSpaces.length === 0) && (
+          ) : suggestedError ? (
+            <p className="text-sm text-red-500">Failed to load suggested spaces</p>
+          ) : suggestedSpaces.length > 0 ? (
+            suggestedSpaces.slice(0, 3).map((space: Space) => (
+              <div key={space.id} className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <Link href={`/spaces/${space.id}`}>
+                    <p className="text-sm font-medium truncate hover:text-blue-600 cursor-pointer">
+                      {space.name}
+                    </p>
+                  </Link>
+                  <p className="text-xs text-gray-500 truncate">{space.description}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3 text-gray-500" />
+                      <span className="text-xs text-gray-500">{space.memberCount}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {space.channelType}
+                    </Badge>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="ml-2">
+                  <Plus className="w-3 h-3" />
+                </Button>
+              </div>
+            ))
+          ) : (
             <p className="text-sm text-gray-500">No suggestions available</p>
           )}
         </CardContent>
