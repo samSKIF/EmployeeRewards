@@ -208,10 +208,10 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Channel Name *</Label>
+              <Label htmlFor="name">Space Name *</Label>
               <Input
                 id="name"
-                placeholder="Enter channel name"
+                placeholder="Enter space name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 required
@@ -234,7 +234,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Enter channel description"
+              placeholder="Enter space description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
@@ -251,7 +251,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                   checked={formData.isPrivate}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: !!checked }))}
                 />
-                <Label htmlFor="isPrivate">Private Channel (invite only)</Label>
+                <Label htmlFor="isPrivate">Private Space (invite only)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox

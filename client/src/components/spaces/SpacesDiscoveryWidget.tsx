@@ -6,7 +6,7 @@ import { Users, Plus, TrendingUp, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 
-interface Channel {
+interface Space {
   id: number;
   name: string;
   description: string;
@@ -35,7 +35,7 @@ export function SpacesDiscoveryWidget() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {trendingSpaces?.slice(0, 3).map((space: Channel) => (
+          {trendingSpaces?.slice(0, 3).map((space: Space) => (
             <div key={space.id} className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <Link href={`/spaces/${space.id}`}>
@@ -70,7 +70,7 @@ export function SpacesDiscoveryWidget() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {suggestedSpaces?.slice(0, 3).map((space: Channel) => (
+          {suggestedSpaces?.slice(0, 3).map((space: Space) => (
             <div key={space.id} className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <Link href={`/spaces/${space.id}`}>
