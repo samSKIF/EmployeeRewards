@@ -2624,8 +2624,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid channel ID" });
       }
       
-      // Get channel data
-      const [channel] = await db.select()
+      // Get channel data with explicit field mapping
+      const [channel] = await db.select({
+        id: interestChannels.id,
+        name: interestChannels.name,
+        description: interestChannels.description,
+        channelType: interestChannels.channelType,
+        accessLevel: interestChannels.accessLevel,
+        memberCount: interestChannels.memberCount,
+        isActive: interestChannels.isActive,
+        allowedDepartments: interestChannels.allowedDepartments,
+        allowedSites: interestChannels.allowedSites,
+        createdBy: interestChannels.createdBy,
+        organizationId: interestChannels.organizationId,
+        createdAt: interestChannels.createdAt,
+        coverImage: interestChannels.coverImage
+      })
         .from(interestChannels)
         .where(
           and(
@@ -2639,6 +2653,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Channel not found" });
       }
 
+      console.log('Channel data being returned:', JSON.stringify(channel, null, 2));
       res.json(channel);
     } catch (error) {
       console.error('Error fetching channel:', error);

@@ -224,7 +224,7 @@ export default function ChannelDetail() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                  {channel.name || 'Channel Name'}
+                  {channel.name}
                 </h1>
                 <div className="flex items-center space-x-4 text-white text-opacity-90">
                   <div className="flex items-center space-x-2">
