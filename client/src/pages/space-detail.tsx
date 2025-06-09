@@ -131,10 +131,10 @@ export default function ChannelDetail() {
 
   // Check if current user is a member
   const { data: user } = useQuery({ queryKey: ['/api/users/me'] });
-  const isMember = members.some((member: any) => member.id === user?.id);
+  const isMember = Array.isArray(members) && members.some((member: any) => member.id === user?.id);
   
   // Check if user is admin
-  const isAdmin = user && (admins.some((admin: any) => admin.id === user.id) || space?.createdBy === user.id);
+  const isAdmin = user && Array.isArray(admins) && (admins.some((admin: any) => admin.id === user.id) || space?.createdBy === user.id);
 
   // Fetch join requests (for admins only)
   const { data: joinRequests = [], isLoading: joinRequestsLoading } = useQuery<any[]>({
@@ -148,7 +148,7 @@ export default function ChannelDetail() {
   console.log('Members array:', members);
   console.log('Is member:', isMember);
   console.log('User ID:', user?.id);
-  console.log('Member IDs:', members.map(m => m.id));
+  console.log('Member IDs:', Array.isArray(members) ? members.map(m => m.id) : 'Not an array');
   console.log('=== END MEMBERSHIP DEBUG ===');
 
   // Join channel mutation
@@ -604,7 +604,7 @@ export default function ChannelDetail() {
                   </div>
                   
                   {/* Join Requests for Admins */}
-                  {user && (admins.some(admin => admin.id === user.id) || space?.createdBy === user.id) && joinRequests.length > 0 && (
+                  {user && Array.isArray(admins) && (admins.some(admin => admin.id === user.id) || space?.createdBy === user.id) && Array.isArray(joinRequests) && joinRequests.length > 0 && (
                     <div className="mt-4 pt-3 border-t">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-medium">Pending Join Requests</h4>

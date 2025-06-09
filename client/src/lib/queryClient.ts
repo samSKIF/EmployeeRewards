@@ -71,12 +71,19 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "returnNull" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 2,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnReconnect: false,
+      staleTime: 10 * 60 * 1000, // 10 minutes - longer cache for better performance
+      gcTime: 15 * 60 * 1000, // 15 minutes garbage collection
+      retry: (failureCount, error) => {
+        if (error?.message?.includes("401") || error?.message?.includes("403")) {
+          return false; // Don't retry auth errors
+        }
+        return failureCount < 1; // Reduce retry attempts for faster response
+      },
+      retryDelay: attemptIndex => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retry delay
     },
     mutations: {
-      retry: 1,
+      retry: false, // Don't retry mutations for faster response
     },
   },
 });

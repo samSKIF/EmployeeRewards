@@ -16,13 +16,13 @@ interface Space {
 }
 
 export function SpacesDiscoveryWidget() {
-  const { data: trendingSpaces = [], isLoading: trendingLoading, error: trendingError } = useQuery({
+  const { data: trendingSpaces = [], isLoading: trendingLoading, error: trendingError } = useQuery<Space[]>({
     queryKey: ['/api/channels/trending'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
 
-  const { data: suggestedSpaces = [], isLoading: suggestedLoading, error: suggestedError } = useQuery({
+  const { data: suggestedSpaces = [], isLoading: suggestedLoading, error: suggestedError } = useQuery<Space[]>({
     queryKey: ['/api/channels/suggestions'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
