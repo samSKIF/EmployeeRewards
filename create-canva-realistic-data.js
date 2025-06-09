@@ -283,7 +283,7 @@ async function createCanvaRealisticData() {
       
       if (channel && author) {
         await pool.query(`
-          INSERT INTO interest_channel_posts (channel_id, author_id, content, image_url, like_count, comment_count, created_at)
+          INSERT INTO interest_channel_posts (channel_id, user_id, content, image_url, like_count, comment_count, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, NOW() - INTERVAL '${Math.floor(Math.random() * 7)} days')
         `, [
           channel.id,
