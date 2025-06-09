@@ -2904,7 +2904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })
       .from(interestChannels)
       .leftJoin(interestChannelPosts, eq(interestChannels.id, interestChannelPosts.channelId))
-      .leftJoin(users, eq(interestChannelPosts.userId, users.id))
+      .leftJoin(users, eq(interestChannelPosts.authorId, users.id))
       .where(
         and(
           eq(interestChannels.isActive, true),

@@ -85,34 +85,16 @@ export default function ChannelsPage() {
 
   // Generate suggested content from remaining channels
   const suggestedContent = (channels as Channel[]).slice(4, 7).map((channel, index) => {
-    const contentVariations = [
-      {
-        title: "Q4 Project Updates and Milestone Celebrations",
-        content: "Join us for a comprehensive review of our major project achievements and upcoming goals for the next quarter.",
-        imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&h=200&fit=crop"
-      },
-      {
-        title: "Team Building Activities and Social Events",
-        content: "Discover upcoming social events, team building activities, and casual networking opportunities.",
-        imageUrl: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300&h=200&fit=crop"
-      },
-      {
-        title: "Brand Strategy Workshop Series",
-        content: "Interactive workshops to refine our brand messaging and visual identity across all marketing channels.",
-        imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop"
-      }
-    ];
-
-    const content = contentVariations[index] || contentVariations[0];
+    const post = channelPosts[channel.id];
 
     return {
       id: channel.id,
       channelId: channel.id,
-      postId: 105 + index,
+      postId: post?.id || 0,
       channelName: channel.name,
-      title: content.title,
-      content: content.content,
-      imageUrl: content.imageUrl,
+      title: post?.content || channel.name,
+      content: post?.content || `Latest discussions in ${channel.name}`,
+      imageUrl: post?.imageUrl,
       members: channel.memberCount
     };
   });
@@ -233,18 +215,9 @@ export default function ChannelsPage() {
                     className="w-full h-40 object-cover rounded-t-xl"
                   />
                 )}
-                {highlight.videoUrl && (
-                  <div className="w-full h-40 bg-gray-900 rounded-t-xl flex items-center justify-center relative">
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                        <div className="w-0 h-0 border-l-4 border-l-gray-800 border-y-2 border-y-transparent ml-1"></div>
-                      </div>
-                    </div>
-                    {highlight.duration && (
-                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                        {highlight.duration}
-                      </div>
-                    )}
+                {!highlight.imageUrl && (
+                  <div className="w-full h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-xl flex items-center justify-center">
+                    <span className="text-4xl">{highlight.channelIcon}</span>
                   </div>
                 )}
               </div>
