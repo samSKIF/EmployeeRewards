@@ -15,12 +15,12 @@ interface Channel {
   isActive: boolean;
 }
 
-export function ChannelsDiscoveryWidget() {
-  const { data: trendingChannels } = useQuery({
+export function SpacesDiscoveryWidget() {
+  const { data: trendingSpaces } = useQuery({
     queryKey: ['/api/channels/trending'],
   });
 
-  const { data: suggestedChannels } = useQuery({
+  const { data: suggestedSpaces } = useQuery({
     queryKey: ['/api/channels/suggestions'],
   });
 

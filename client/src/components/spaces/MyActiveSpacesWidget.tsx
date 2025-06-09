@@ -68,48 +68,48 @@ export function MyActiveSpacesWidget() {
           </Link>
         </div>
         <CardDescription>
-          Quick access to your most active channels
+          Quick access to your most active spaces
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {activeChannels.length === 0 ? (
+        {activeSpaces.length === 0 ? (
           <div className="text-center py-8">
             <MessageCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 mb-3">You haven't joined any channels yet</p>
-            <Link href="/channels">
+            <p className="text-sm text-gray-600 mb-3">You haven't joined any spaces yet</p>
+            <Link href="/spaces">
               <Button size="sm" variant="outline">
-                Discover Channels
+                Discover Spaces
               </Button>
             </Link>
           </div>
         ) : (
           <>
-            {activeChannels.map((channel) => (
-              <Link key={channel.id} href={`/channels/${channel.id}`} className="block">
+            {activeSpaces.map((space) => (
+              <Link key={space.id} href={`/spaces/${space.id}`} className="block">
                 <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 hover:border-blue-200 transition-all cursor-pointer group">
                   <div className="flex items-center space-x-3 flex-1">
                     <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                      {getChannelIcon(channel.channelType)}
+                      {getChannelIcon(space.channelType)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                        {channel.name}
+                        {space.name}
                       </p>
                       <div className="flex items-center space-x-3 mt-1">
                         <div className="flex items-center text-xs text-gray-500">
                           <Users className="h-3 w-3 mr-1" />
-                          {channel.memberCount} members
+                          {space.memberCount} members
                         </div>
                         <Badge variant="outline" className="text-xs px-1 py-0">
-                          {channel.channelType}
+                          {space.channelType}
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {channel.unreadCount && channel.unreadCount > 0 && (
+                    {space.unreadCount && space.unreadCount > 0 && (
                       <Badge variant="destructive" className="text-xs">
-                        {channel.unreadCount > 99 ? '99+' : channel.unreadCount}
+                        {space.unreadCount > 99 ? '99+' : space.unreadCount}
                       </Badge>
                     )}
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -120,11 +120,11 @@ export function MyActiveSpacesWidget() {
               </Link>
             ))}
             
-            {myChannels.length > 6 && (
+            {mySpaces.length > 6 && (
               <div className="pt-2 border-t">
-                <Link href="/channels">
+                <Link href="/spaces">
                   <Button variant="ghost" size="sm" className="w-full text-xs">
-                    View {myChannels.length - 6} more channels
+                    View {mySpaces.length - 6} more spaces
                   </Button>
                 </Link>
               </div>

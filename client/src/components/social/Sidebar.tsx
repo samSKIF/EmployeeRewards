@@ -22,7 +22,7 @@ import {
   LucideIcon,
   MessageCircle
 } from 'lucide-react';
-import { ChannelsDiscoveryWidget } from '@/components/channels/ChannelsDiscoveryWidget';
+import { SpacesDiscoveryWidget } from '@/components/spaces/SpacesDiscoveryWidget';
 
 interface SidebarProps {
   user: {
@@ -251,7 +251,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
       {/* Groups Discovery Widget */}
       <div className="mt-8 px-3">
-        <ChannelsDiscoveryWidget />
+        <SpacesDiscoveryWidget />
       </div>
       
       {/* Logout button */}
