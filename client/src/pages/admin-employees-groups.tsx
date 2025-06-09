@@ -175,8 +175,8 @@ function GroupsManagement() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Channels Management</h2>
-          <p className="text-gray-600">Manage workplace channels within your administrative scope</p>
+          <h2 className="text-2xl font-bold text-gray-900">Spaces Management</h2>
+          <p className="text-gray-600">Manage workplace spaces within your administrative scope</p>
         </div>
 
         <Button 
@@ -189,7 +189,7 @@ function GroupsManagement() {
           className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Create Channel
+          Create Space
         </Button>
       </div>
 
@@ -1063,8 +1063,8 @@ export default function AdminEmployeesGroups() {
   return (<div className="container mx-auto p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Employees and Channels</h1>
-        <p className="text-gray-600 mt-1">Manage your organization's employees and workplace channels</p>
+        <h1 className="text-3xl font-bold text-gray-900">Employees and Spaces</h1>
+        <p className="text-gray-600 mt-1">Manage your organization's employees and workplace spaces</p>
       </div>
 
       {/* Main Tabs */}
@@ -1076,7 +1076,7 @@ export default function AdminEmployeesGroups() {
           </TabsTrigger>
           <TabsTrigger value="groups" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
-            <span>Channels</span>
+            <span>Spaces</span>
           </TabsTrigger>
         </TabsList>
 
