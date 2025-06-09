@@ -36,26 +36,26 @@ interface FeedHighlight {
   author: string;
 }
 
-export default function ChannelsPage() {
+export default function SpacesPage() {
   const [, setLocation] = useLocation();
 
-  // Fetch channels data
-  const { data: channels = [], isLoading } = useQuery<Channel[]>({
+  // Fetch spaces data
+  const { data: spaces = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels'],
   });
 
-  // Get featured channels (top 4)
-  const featuredChannels = (channels as Channel[]).slice(0, 4);
+  // Get featured spaces (top 4)
+  const featuredSpaces = (spaces as Channel[]).slice(0, 4);
 
-  // Fetch latest posts for each channel to display real content
-  const { data: channelPosts = {} } = useQuery<Record<number, any>>({
+  // Fetch latest posts for each space to display real content
+  const { data: spacePosts = {} } = useQuery<Record<number, any>>({
     queryKey: ['/api/channels/featured-posts'],
-    enabled: featuredChannels.length > 0,
+    enabled: featuredSpaces.length > 0,
   });
 
-  // Generate feed highlights from real channel posts
-  const feedHighlights = featuredChannels.map((channel, index) => {
-    const channelIconMap: { [key: string]: string } = {
+  // Generate feed highlights from real space posts
+  const feedHighlights = featuredSpaces.map((space, index) => {
+    const spaceIconMap: { [key: string]: string } = {
       'department': '📈',
       'site': '🏢', 
       'interest': '☕',

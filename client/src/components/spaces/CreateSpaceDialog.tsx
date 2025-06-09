@@ -264,12 +264,12 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
             </div>
           </div>
 
-          {/* Channel Admin Selection */}
+          {/* Space Admin Selection */}
           {(formData.isPrivate || formData.requiresApproval) && (
             <div className="space-y-3">
-              <Label className="text-base font-medium">Channel Admins</Label>
+              <Label className="text-base font-medium">Space Admins</Label>
               <p className="text-sm text-muted-foreground">
-                Select members who can approve join requests, invite users, and manage the channel.
+                Select members who can approve join requests, invite users, and manage the space.
               </p>
               
               <div className="space-y-2">

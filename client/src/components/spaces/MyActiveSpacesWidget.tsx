@@ -35,7 +35,7 @@ export function MyActiveSpacesWidget() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">My Active Channels</CardTitle>
+          <CardTitle className="text-lg">My Active Spaces</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
