@@ -126,6 +126,10 @@ interface FeedHighlight {
 export default function ChannelsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTab, setSelectedTab] = useState("all");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch channels data
   const { data: channels = [], isLoading, error } = useQuery<Channel[]>({
@@ -134,8 +138,61 @@ export default function ChannelsPage() {
     retry: 2,
   });
 
+  // Filter channels based on search and tab
+  const filteredChannels = channels.filter((channel: Channel) => {
+    const matchesSearch = channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         channel.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (selectedTab === "all") return matchesSearch;
+    if (selectedTab === "my-channels") return matchesSearch; // Would need user membership data
+    return matchesSearch && channel.channelType === selectedTab;
+  });
+
   // Get featured channels (top 4)
   const featuredChannels = (channels as Channel[]).slice(0, 4);
+
+  // Mock membership check - would be replaced with real data
+  const isUserMember = (channelId: number) => {
+    return channelId % 3 === 0; // Mock: every 3rd channel user is a member
+  };
+
+  // Join channel mutation
+  const joinChannelMutation = useMutation({
+    mutationFn: (channelId: number) => 
+      fetch(`/api/channels/${channelId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        }
+      }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/channels'] });
+      toast({ title: "Joined space successfully!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to join space", variant: "destructive" });
+    }
+  });
+
+  // Leave channel mutation
+  const leaveChannelMutation = useMutation({
+    mutationFn: (channelId: number) => 
+      fetch(`/api/channels/${channelId}/leave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        }
+      }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/channels'] });
+      toast({ title: "Left space successfully!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to leave space", variant: "destructive" });
+    }
+  });
 
   // Sample feed highlights with realistic corporate content
   const feedHighlights: FeedHighlight[] = [
@@ -221,8 +278,43 @@ export default function ChannelsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <div className="h-8 bg-gray-200 rounded w-48 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-80 animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+        </div>
+        
+        <div className="mb-6">
+          <div className="h-10 bg-gray-200 rounded mb-4 animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        <div className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 animate-pulse">
+              <div className="p-6">
+                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to load spaces</h2>
+          <p className="text-gray-600 mb-4">Please check your connection or contact support if the issue persists.</p>
+          <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+        </div>
       </div>
     );
   }
@@ -232,12 +324,12 @@ export default function ChannelsPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Channels</h1>
-          <p className="text-gray-600 mt-1">Discover and join channels to connect with your colleagues</p>
+          <h1 className="text-3xl font-bold text-gray-900">Spaces</h1>
+          <p className="text-gray-600 mt-1">Discover and join spaces to connect with your colleagues</p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Create Channel
+          Create Space
         </Button>
       </div>
 
@@ -255,8 +347,8 @@ export default function ChannelsPage() {
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="all">All Channels</TabsTrigger>
-            <TabsTrigger value="my-channels">My Channels</TabsTrigger>
+            <TabsTrigger value="all">All Spaces</TabsTrigger>
+            <TabsTrigger value="my-channels">My Spaces</TabsTrigger>
             <TabsTrigger value="department">Department</TabsTrigger>
             <TabsTrigger value="interest">Interest</TabsTrigger>
             <TabsTrigger value="project">Project</TabsTrigger>
