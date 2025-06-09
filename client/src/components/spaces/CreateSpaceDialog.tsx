@@ -96,7 +96,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
 
   const resetForm = () => {
     setFormData({
-      channelType: "",
+      spaceType: "",
       name: "",
       description: "",
       isPrivate: false,
@@ -106,17 +106,17 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
       selectedLocations: [],
       autoAddMembers: false,
       initialMembers: [],
-      channelAdmins: []
+      spaceAdmins: []
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const channelData = {
+    const spaceData = {
       name: formData.name,
       description: formData.description,
-      channelType: formData.channelType,
+      channelType: formData.spaceType,
       isPrivate: formData.isPrivate,
       requiresApproval: formData.requiresApproval,
       maxMembers: formData.maxMembers ? parseInt(formData.maxMembers) : null,
@@ -128,9 +128,9 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
       initialMembers: formData.initialMembers.map(user => user.id)
     };
 
-    console.log('Sending channel data:', channelData);
+    console.log('Sending space data:', spaceData);
 
-    createChannelMutation.mutate(channelData);
+    createSpaceMutation.mutate(spaceData);
   };
 
   const addMember = (user: User) => {
@@ -188,8 +188,8 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
           <div className="space-y-2">
             <Label>Type of Channel</Label>
             <Select 
-              value={formData.channelType} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, channelType: value }))}
+              value={formData.spaceType} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, spaceType: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select channel type" />
@@ -276,10 +276,10 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                 <Select
                   onValueChange={(value) => {
                     const user = users?.find((u: User) => u.id === parseInt(value));
-                    if (user && !formData.channelAdmins.find(admin => admin.id === user.id)) {
+                    if (user && !formData.spaceAdmins.find((admin: User) => admin.id === user.id)) {
                       setFormData(prev => ({
                         ...prev,
-                        channelAdmins: [...prev.channelAdmins, user]
+                        spaceAdmins: [...prev.spaceAdmins, user]
                       }));
                     }
                   }}
@@ -289,7 +289,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                   </SelectTrigger>
                   <SelectContent>
                     {users?.filter((user: User) => 
-                      !formData.channelAdmins.find(admin => admin.id === user.id)
+                      !formData.spaceAdmins.find((admin: User) => admin.id === user.id)
                     ).map((user: User) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} ({user.username}) - {user.department}
