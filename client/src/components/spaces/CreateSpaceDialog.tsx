@@ -23,7 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-export interface CreateChannelDialogProps {
+export interface CreateSpaceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -36,7 +36,7 @@ interface User {
   location: string;
 }
 
-export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogProps) {
+export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps) {
   const [formData, setFormData] = useState({
     channelType: "",
     name: "",

@@ -27,7 +27,7 @@ const getChannelIcon = (type: string) => {
 };
 
 export function MyActiveSpacesWidget() {
-  const { data: myChannels = [], isLoading } = useQuery<Channel[]>({
+  const { data: mySpaces = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels/my-channels'],
   });
 
@@ -54,14 +54,14 @@ export function MyActiveSpacesWidget() {
     );
   }
 
-  const activeChannels = myChannels.slice(0, 6);
+  const activeSpaces = mySpaces.slice(0, 6);
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">My Active Channels</CardTitle>
-          <Link href="/channels">
+          <CardTitle className="text-lg">My Active Spaces</CardTitle>
+          <Link href="/spaces">
             <Button variant="ghost" size="sm" className="text-xs">
               View All <ArrowRight className="h-3 w-3 ml-1" />
             </Button>

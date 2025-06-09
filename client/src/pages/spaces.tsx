@@ -9,7 +9,7 @@ import { Search, Users, Lock, Settings, MessageCircle, TrendingUp, Building, Map
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CreateChannelDialog } from "@/components/channels/CreateChannelDialog";
+import { CreateSpaceDialog } from "@/components/spaces/CreateSpaceDialog";
 import { useLocation } from "wouter";
 
 interface Channel {
@@ -410,7 +410,7 @@ export default function ChannelsPage() {
         </div>
       )}
 
-      <CreateChannelDialog 
+      <CreateSpaceDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen} 
       />

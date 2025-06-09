@@ -342,8 +342,8 @@ function GroupsManagement() {
         </CardContent>
       </Card>
 
-      {/* Create Channel Dialog */}
-      <CreateChannelDialog 
+      {/* Create Space Dialog */}
+      <CreateSpaceDialog 
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog}
       />
