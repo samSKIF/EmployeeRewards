@@ -30,6 +30,7 @@ import {
   interests, employeeInterests,
   interestChannels, interestChannelMembers, interestChannelPosts, 
   interestChannelPostComments, interestChannelPostLikes,
+  interestChannelJoinRequests, interestChannelPinnedPosts,
 
   // Onboarding schemas
   onboardingPlans, onboardingMissions, onboardingAssignments, onboardingProgress,

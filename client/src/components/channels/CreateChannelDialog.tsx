@@ -47,7 +47,8 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
     selectedDepartments: [] as string[],
     selectedLocations: [] as string[],
     autoAddMembers: false,
-    initialMembers: [] as User[]
+    initialMembers: [] as User[],
+    channelAdmins: [] as User[]
   });
 
   const { toast } = useToast();
@@ -261,6 +262,62 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
               </div>
             </div>
           </div>
+
+          {/* Channel Admin Selection */}
+          {(formData.isPrivate || formData.requiresApproval) && (
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Channel Admins</Label>
+              <p className="text-sm text-muted-foreground">
+                Select members who can approve join requests, invite users, and manage the channel.
+              </p>
+              
+              <div className="space-y-2">
+                <Select
+                  onValueChange={(value) => {
+                    const user = users?.find((u: User) => u.id === parseInt(value));
+                    if (user && !formData.channelAdmins.find(admin => admin.id === user.id)) {
+                      setFormData(prev => ({
+                        ...prev,
+                        channelAdmins: [...prev.channelAdmins, user]
+                      }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select channel admin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users?.filter((user: User) => 
+                      !formData.channelAdmins.find(admin => admin.id === user.id)
+                    ).map((user: User) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.name} ({user.username}) - {user.department}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {formData.channelAdmins.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.channelAdmins.map((admin) => (
+                      <Badge key={admin.id} variant="secondary" className="gap-2">
+                        {admin.name}
+                        <X 
+                          className="h-3 w-3 cursor-pointer" 
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              channelAdmins: prev.channelAdmins.filter(a => a.id !== admin.id)
+                            }));
+                          }}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Department Selection */}
           {Array.isArray(departments) && departments.length > 0 && (
