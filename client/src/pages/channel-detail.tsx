@@ -155,9 +155,9 @@ export default function ChannelDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Breadcrumb */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-6xl mx-auto">
-          <nav className="flex items-center space-x-2 text-sm">
+          <nav className="flex items-center space-x-2 text-sm mb-3">
             <button 
               onClick={() => setLocation('/channels')}
               className="text-gray-500 hover:text-gray-700 flex items-center"
@@ -171,6 +171,38 @@ export default function ChannelDetail() {
               <span className="ml-2">{channel.name}</span>
             </span>
           </nav>
+          
+          {/* Channel Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-50 rounded-lg p-3">
+                {getChannelIcon(channel.channelType)}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{channel.name}</h1>
+                <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
+                  <span className="capitalize">{channel.channelType}</span>
+                  <span>•</span>
+                  <span>{getAccessLevel(channel.accessLevel)}</span>
+                  <span>•</span>
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-4 w-4" />
+                    <span>{channel.memberCount} members</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -191,7 +223,9 @@ export default function ChannelDetail() {
                 {getChannelIcon(channel.channelType)}
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white mb-1">{channel.name}</h1>
+                <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">
+                  {channel.name || 'Channel Name'}
+                </h1>
                 <div className="flex items-center space-x-4 text-white text-opacity-90">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm capitalize">{channel.channelType}</span>
