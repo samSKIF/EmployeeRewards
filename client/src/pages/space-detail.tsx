@@ -101,14 +101,14 @@ export default function ChannelDetail() {
     enabled: !!channelId
   });
 
-  // Debug channel data
-  console.log('=== CHANNEL DEBUG ===');
-  console.log('Channel ID:', channelId);
+  // Debug space data
+  console.log('=== SPACE DEBUG ===');
+  console.log('Space ID:', channelId);
   console.log('Query Key:', `/api/channels/${channelId}`);
-  console.log('Channel data:', channel);
-  console.log('Channel loading:', channelLoading);
-  console.log('Channel error:', channelError);
-  console.log('Channel name from data:', channel?.name);
+  console.log('Space data:', space);
+  console.log('Space loading:', spaceLoading);
+  console.log('Space error:', spaceError);
+  console.log('Space name from data:', space?.name);
   console.log('=== END DEBUG ===');
 
   // Fetch space posts
@@ -219,7 +219,7 @@ export default function ChannelDetail() {
     }
   });
 
-  if (channelLoading) {
+  if (spaceLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -227,16 +227,16 @@ export default function ChannelDetail() {
     );
   }
 
-  if (channelError || !channel) {
+  if (spaceError || !space) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Channel not found</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Space not found</h1>
         <Button 
           onClick={() => setLocation('/channels')}
           className="bg-teal-600 hover:bg-teal-700"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Channels
+          Back to Spaces
         </Button>
       </div>
     );
