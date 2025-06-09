@@ -10,7 +10,7 @@ import ExcelJS from 'exceljs';
 import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
-import { auth } from './firebase-admin';
+// Firebase admin removed - using PostgreSQL authentication only
 // import socialRoutes from './microservices/social/index';
 // import leaveRoutes from './microservices/leave/index';
 // import recognitionRoutes from './microservices/recognition/index';

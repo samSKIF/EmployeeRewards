@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { SocialModule } from './services/social/social.module';
 import { RecognitionModule } from './services/recognition/recognition.module';
-import { auth } from './firebase-admin';
+// Firebase admin removed - using PostgreSQL authentication only
 
 @Module({
   imports: [SocialModule, RecognitionModule],

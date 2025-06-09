@@ -39,7 +39,7 @@ import GroupsPage from "@/pages/groups";
 import GroupsPageFacebook from "@/pages/groups-facebook";
 import ChannelsPage from "@/pages/channels-new";
 import ChannelDetailPage from "@/pages/channel-detail";
-import { FirebaseAuthProvider } from "@/context/FirebaseAuthContext";
+
 import { BrandingProvider } from "@/context/BrandingContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -98,9 +98,8 @@ function App() {
       <Toaster />
       {appReady && (
         <AuthProvider>
-          <FirebaseAuthProvider>
-            <BrandingProvider>
-              <Switch>
+          <BrandingProvider>
+            <Switch>
               {/* Management Dashboard - Separate from social platform */}
               <Route path="/management">
                 <ManagementDashboard />
@@ -342,8 +341,7 @@ function App() {
               </Route>
             </Switch>
           </BrandingProvider>
-        </FirebaseAuthProvider>
-      </AuthProvider>
+        </AuthProvider>
       )}
     </TooltipProvider>
   );
