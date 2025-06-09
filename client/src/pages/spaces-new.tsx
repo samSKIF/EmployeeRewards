@@ -133,11 +133,11 @@ export default function SpacesPage() {
         {/* Three channels stacked on the right */}
         <div className="flex flex-col gap-2 h-[400px]">
           {/* First channel */}
-          {featuredChannels[1] && (
+          {featuredSpaces[1] && (
             <div 
               className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
               style={{ height: 'calc(50% - 4px)' }}
-              onClick={() => setLocation(`/channels/${featuredChannels[1].id}`)}
+              onClick={() => setLocation(`/spaces/${featuredSpaces[1].id}`)}
             >
               <div 
                 className="absolute inset-0 bg-cover bg-center"
@@ -146,7 +146,7 @@ export default function SpacesPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h3 className="text-white font-semibold text-sm leading-tight">
-                  {channelPosts[featuredChannels[1]?.id]?.content || featuredChannels[1]?.name}
+                  {spacePosts[featuredSpaces[1]?.id]?.content || featuredSpaces[1]?.name}
                 </h3>
               </div>
             </div>
@@ -154,10 +154,10 @@ export default function SpacesPage() {
 
           {/* Bottom two channels side by side as squares */}
           <div className="grid grid-cols-2 gap-2" style={{ height: 'calc(50% - 4px)' }}>
-            {featuredChannels[2] && (
+            {featuredSpaces[2] && (
               <div 
                 className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-full"
-                onClick={() => setLocation(`/channels/${featuredChannels[2].id}`)}
+                onClick={() => setLocation(`/spaces/${featuredSpaces[2].id}`)}
               >
                 <div 
                   className="absolute inset-0 bg-cover bg-center"
@@ -166,16 +166,16 @@ export default function SpacesPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <h3 className="text-white font-semibold text-xs leading-tight">
-                    {channelPosts[featuredChannels[2]?.id]?.content || featuredChannels[2]?.name}
+                    {spacePosts[featuredSpaces[2]?.id]?.content || featuredSpaces[2]?.name}
                   </h3>
                 </div>
               </div>
             )}
 
-            {featuredChannels[3] && (
+            {featuredSpaces[3] && (
               <div 
                 className="relative rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200 h-full"
-                onClick={() => setLocation(`/channels/${featuredChannels[3].id}`)}
+                onClick={() => setLocation(`/spaces/${featuredSpaces[3].id}`)}
               >
                 <div 
                   className="absolute inset-0 bg-cover bg-center"
@@ -184,7 +184,7 @@ export default function SpacesPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <h3 className="text-white font-semibold text-xs leading-tight">
-                    {channelPosts[featuredChannels[3]?.id]?.content || featuredChannels[3]?.name}
+                    {spacePosts[featuredSpaces[3]?.id]?.content || featuredSpaces[3]?.name}
                   </h3>
                 </div>
               </div>
