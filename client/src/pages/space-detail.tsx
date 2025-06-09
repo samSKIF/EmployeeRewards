@@ -232,7 +232,7 @@ export default function ChannelDetail() {
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Space not found</h1>
         <Button 
-          onClick={() => setLocation('/channels')}
+          onClick={() => setLocation('/spaces')}
           className="bg-teal-600 hover:bg-teal-700"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -255,35 +255,35 @@ export default function ChannelDetail() {
         <div className="max-w-6xl mx-auto">
           <nav className="flex items-center space-x-2 text-sm mb-3">
             <button 
-              onClick={() => setLocation('/channels')}
+              onClick={() => setLocation('/spaces')}
               className="text-gray-500 hover:text-gray-700 flex items-center"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Channels
+              Spaces
             </button>
             <span className="text-gray-400">/</span>
             <span className="font-medium text-gray-900 flex items-center">
-              {channel && getChannelIcon(channel.channelType)}
-              <span className="ml-2">{channel?.name || 'Loading...'}</span>
+              {space && getChannelIcon(space.channelType)}
+              <span className="ml-2">{space?.name || 'Loading...'}</span>
             </span>
           </nav>
           
-          {/* Channel Header */}
+          {/* Space Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-blue-50 rounded-lg p-3">
-                {channel && getChannelIcon(channel.channelType)}
+                {space && getChannelIcon(space.channelType)}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{channel?.name || 'Loading...'}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{space?.name || 'Loading...'}</h1>
                 <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
-                  <span className="capitalize">{channel?.channelType}</span>
+                  <span className="capitalize">{space?.channelType}</span>
                   <span>•</span>
-                  <span>{channel && getAccessLevel(channel.accessLevel)}</span>
+                  <span>{space && getAccessLevel(space.accessLevel)}</span>
                   <span>•</span>
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4" />
-                    <span>{channel?.memberCount} members</span>
+                    <span>{space?.memberCount} members</span>
                   </div>
                 </div>
               </div>
