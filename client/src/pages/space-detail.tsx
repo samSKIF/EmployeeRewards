@@ -134,7 +134,7 @@ export default function ChannelDetail() {
   const isMember = members.some((member: any) => member.id === user?.id);
   
   // Check if user is admin
-  const isAdmin = user && (admins.some((admin: any) => admin.id === user.id) || channel?.createdBy === user.id);
+  const isAdmin = user && (admins.some((admin: any) => admin.id === user.id) || space?.createdBy === user.id);
 
   // Fetch join requests (for admins only)
   const { data: joinRequests = [], isLoading: joinRequestsLoading } = useQuery<any[]>({
