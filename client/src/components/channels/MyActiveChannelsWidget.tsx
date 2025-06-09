@@ -27,7 +27,7 @@ const getChannelIcon = (type: string) => {
 };
 
 export function MyActiveChannelsWidget() {
-  const { data: myChannels = [], isLoading } = useQuery({
+  const { data: myChannels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels/my-channels'],
   });
 
@@ -54,7 +54,7 @@ export function MyActiveChannelsWidget() {
     );
   }
 
-  const activeChannels = (myChannels as Channel[]).slice(0, 6);
+  const activeChannels = myChannels.slice(0, 6);
 
   return (
     <Card>
@@ -120,11 +120,11 @@ export function MyActiveChannelsWidget() {
               </Link>
             ))}
             
-            {(myChannels as Channel[]).length > 6 && (
+            {myChannels.length > 6 && (
               <div className="pt-2 border-t">
                 <Link href="/channels">
                   <Button variant="ghost" size="sm" className="w-full text-xs">
-                    View {(myChannels as Channel[]).length - 6} more channels
+                    View {myChannels.length - 6} more channels
                   </Button>
                 </Link>
               </div>
