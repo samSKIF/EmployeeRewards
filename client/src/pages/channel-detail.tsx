@@ -97,15 +97,19 @@ export default function ChannelDetail() {
 
   // Fetch channel details
   const { data: channel, isLoading: channelLoading, error: channelError } = useQuery<Channel>({
-    queryKey: ['/api/channels', channelId],
+    queryKey: [`/api/channels/${channelId}`],
     enabled: !!channelId
   });
 
   // Debug channel data
+  console.log('=== CHANNEL DEBUG ===');
   console.log('Channel ID:', channelId);
+  console.log('Query Key:', `/api/channels/${channelId}`);
   console.log('Channel data:', channel);
   console.log('Channel loading:', channelLoading);
   console.log('Channel error:', channelError);
+  console.log('Channel name from data:', channel?.name);
+  console.log('=== END DEBUG ===');
 
   // Fetch channel posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<ChannelPost[]>({
