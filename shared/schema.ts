@@ -1337,6 +1337,33 @@ export const interestChannelPostLikes = pgTable("interest_channel_post_likes", {
   unique: primaryKey({ columns: [table.postId, table.userId] }),
 }));
 
+// Channel Join Requests - for approval-required and invite-only channels
+export const interestChannelJoinRequests = pgTable("interest_channel_join_requests", {
+  id: serial("id").primaryKey(),
+  channelId: integer("channel_id").references(() => interestChannels.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  status: text("status").default("pending").notNull(), // 'pending', 'approved', 'rejected'
+  requestMessage: text("request_message"), // User's message when requesting to join
+  reviewedBy: integer("reviewed_by").references(() => users.id), // Admin who reviewed the request
+  reviewedAt: timestamp("reviewed_at"),
+  reviewMessage: text("review_message"), // Admin's response message
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  unique: primaryKey({ columns: [table.channelId, table.userId] }),
+}));
+
+// Pinned Posts - for channel admins to pin important posts
+export const interestChannelPinnedPosts = pgTable("interest_channel_pinned_posts", {
+  id: serial("id").primaryKey(),
+  channelId: integer("channel_id").references(() => interestChannels.id, { onDelete: 'cascade' }).notNull(),
+  postId: integer("post_id").references(() => interestChannelPosts.id, { onDelete: 'cascade' }).notNull(),
+  pinnedBy: integer("pinned_by").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  pinnedAt: timestamp("pinned_at").defaultNow().notNull(),
+  order: integer("order").default(0), // Display order for multiple pinned posts
+}, (table) => ({
+  unique: primaryKey({ columns: [table.channelId, table.postId] }),
+}));
+
 // Channels Relations
 export const interestChannelsRelations = relations(interestChannels, ({ one, many }) => ({
   interest: one(interests, { fields: [interestChannels.interestId], references: [interests.id] }),
@@ -1367,6 +1394,18 @@ export const interestChannelPostLikesRelations = relations(interestChannelPostLi
   user: one(users, { fields: [interestChannelPostLikes.userId], references: [users.id] }),
 }));
 
+export const interestChannelJoinRequestsRelations = relations(interestChannelJoinRequests, ({ one }) => ({
+  channel: one(interestChannels, { fields: [interestChannelJoinRequests.channelId], references: [interestChannels.id] }),
+  user: one(users, { fields: [interestChannelJoinRequests.userId], references: [users.id] }),
+  reviewer: one(users, { fields: [interestChannelJoinRequests.reviewedBy], references: [users.id] }),
+}));
+
+export const interestChannelPinnedPostsRelations = relations(interestChannelPinnedPosts, ({ one }) => ({
+  channel: one(interestChannels, { fields: [interestChannelPinnedPosts.channelId], references: [interestChannels.id] }),
+  post: one(interestChannelPosts, { fields: [interestChannelPinnedPosts.postId], references: [interestChannelPosts.id] }),
+  pinnedBy: one(users, { fields: [interestChannelPinnedPosts.pinnedBy], references: [users.id] }),
+}));
+
 // Channels TypeScript types
 export type InterestChannel = typeof interestChannels.$inferSelect;
 export const insertInterestChannelSchema = createInsertSchema(interestChannels).omit({ id: true, memberCount: true, createdAt: true, updatedAt: true });
@@ -1387,6 +1426,14 @@ export type InsertInterestChannelPostComment = z.infer<typeof insertInterestChan
 export type InterestChannelPostLike = typeof interestChannelPostLikes.$inferSelect;
 export const insertInterestChannelPostLikeSchema = createInsertSchema(interestChannelPostLikes).omit({ id: true, createdAt: true });
 export type InsertInterestChannelPostLike = z.infer<typeof insertInterestChannelPostLikeSchema>;
+
+export type InterestChannelJoinRequest = typeof interestChannelJoinRequests.$inferSelect;
+export const insertInterestChannelJoinRequestSchema = createInsertSchema(interestChannelJoinRequests).omit({ id: true, createdAt: true, reviewedAt: true });
+export type InsertInterestChannelJoinRequest = z.infer<typeof insertInterestChannelJoinRequestSchema>;
+
+export type InterestChannelPinnedPost = typeof interestChannelPinnedPosts.$inferSelect;
+export const insertInterestChannelPinnedPostSchema = createInsertSchema(interestChannelPinnedPosts).omit({ id: true, pinnedAt: true });
+export type InsertInterestChannelPinnedPost = z.infer<typeof insertInterestChannelPinnedPostSchema>;
 
 
 

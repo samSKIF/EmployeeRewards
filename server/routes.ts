@@ -3139,7 +3139,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const channelId = parseInt(req.params.id);
+      const { requestMessage } = req.body; // Optional message for approval-required channels
       
+      // Get channel details
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
       // Check if user is already a member
       const existingMember = await db.select()
         .from(interestChannelMembers)
@@ -3154,21 +3164,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Already a member of this channel" });
       }
 
-      // Add user to channel
-      await db.insert(interestChannelMembers).values({
-        channelId,
-        userId: req.user.id,
-        role: 'member'
-      });
+      // Check if there's already a pending join request
+      const existingRequest = await db.select()
+        .from(interestChannelJoinRequests)
+        .where(
+          and(
+            eq(interestChannelJoinRequests.channelId, channelId),
+            eq(interestChannelJoinRequests.userId, req.user.id),
+            eq(interestChannelJoinRequests.status, 'pending')
+          )
+        );
 
-      // Update member count
-      await db.update(interestChannels)
-        .set({ 
-          memberCount: sql`${interestChannels.memberCount} + 1`
-        })
-        .where(eq(interestChannels.id, channelId));
+      if (existingRequest.length > 0) {
+        return res.status(400).json({ message: "Join request already pending" });
+      }
 
-      res.json({ message: "Successfully joined channel" });
+      // Handle different access levels
+      if (channel.accessLevel === 'approval_required') {
+        // Create join request for approval
+        await db.insert(interestChannelJoinRequests).values({
+          channelId,
+          userId: req.user.id,
+          requestMessage: requestMessage || null,
+          status: 'pending'
+        });
+
+        res.json({ message: "Join request submitted for approval" });
+      } else if (channel.accessLevel === 'invite_only') {
+        return res.status(403).json({ message: "This channel is invite-only. You need an invitation to join." });
+      } else {
+        // For open, department_only, and site_only channels - join directly
+        await db.insert(interestChannelMembers).values({
+          channelId,
+          userId: req.user.id,
+          role: 'member'
+        });
+
+        // Update member count
+        await db.update(interestChannels)
+          .set({ 
+            memberCount: sql`${interestChannels.memberCount} + 1`
+          })
+          .where(eq(interestChannels.id, channelId));
+
+        res.json({ message: "Successfully joined channel" });
+      }
     } catch (error) {
       console.error('Error joining channel:', error);
       res.status(500).json({ message: 'Failed to join channel' });
@@ -3204,6 +3244,322 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error leaving channel:', error);
       res.status(500).json({ message: 'Failed to leave channel' });
+    }
+  });
+
+  // Get channel admins endpoint
+  app.get('/api/channels/:id/admins', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      const admins = await db.select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        avatarUrl: users.avatarUrl,
+        department: users.department,
+        role: interestChannelMembers.role
+      })
+      .from(interestChannelMembers)
+      .innerJoin(users, eq(interestChannelMembers.userId, users.id))
+      .where(
+        and(
+          eq(interestChannelMembers.channelId, channelId),
+          eq(interestChannelMembers.role, 'admin')
+        )
+      );
+
+      res.json(admins);
+    } catch (error) {
+      console.error('Error fetching channel admins:', error);
+      res.status(500).json({ message: 'Failed to fetch channel admins' });
+    }
+  });
+
+  // Add channel admin endpoint
+  app.post('/api/channels/:id/admins', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      const { userId } = req.body;
+
+      // Check if current user is an admin or channel creator
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      const [currentUserMember] = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (channel.createdBy !== req.user.id && (!currentUserMember || currentUserMember.role !== 'admin')) {
+        return res.status(403).json({ message: "Only channel creators and admins can add new admins" });
+      }
+
+      // Update user role to admin
+      await db.update(interestChannelMembers)
+        .set({ role: 'admin' })
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, userId)
+          )
+        );
+
+      res.json({ message: "User promoted to admin successfully" });
+    } catch (error) {
+      console.error('Error adding channel admin:', error);
+      res.status(500).json({ message: 'Failed to add channel admin' });
+    }
+  });
+
+  // Remove channel admin endpoint
+  app.delete('/api/channels/:id/admins/:userId', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+
+      // Check if current user is an admin or channel creator
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      if (channel.createdBy !== req.user.id && req.user.id !== userId) {
+        return res.status(403).json({ message: "Only channel creators can remove admins, or admins can remove themselves" });
+      }
+
+      // Update user role to member
+      await db.update(interestChannelMembers)
+        .set({ role: 'member' })
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, userId)
+          )
+        );
+
+      res.json({ message: "Admin removed successfully" });
+    } catch (error) {
+      console.error('Error removing channel admin:', error);
+      res.status(500).json({ message: 'Failed to remove channel admin' });
+    }
+  });
+
+  // Get join requests endpoint
+  app.get('/api/channels/:id/join-requests', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      
+      // Check if user is admin or channel creator
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      const [currentUserMember] = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (channel.createdBy !== req.user.id && (!currentUserMember || currentUserMember.role !== 'admin')) {
+        return res.status(403).json({ message: "Only channel creators and admins can view join requests" });
+      }
+
+      const joinRequests = await db.select({
+        id: interestChannelJoinRequests.id,
+        userId: interestChannelJoinRequests.userId,
+        status: interestChannelJoinRequests.status,
+        requestMessage: interestChannelJoinRequests.requestMessage,
+        createdAt: interestChannelJoinRequests.createdAt,
+        userName: users.name,
+        userUsername: users.username,
+        userAvatarUrl: users.avatarUrl,
+        userDepartment: users.department
+      })
+      .from(interestChannelJoinRequests)
+      .innerJoin(users, eq(interestChannelJoinRequests.userId, users.id))
+      .where(
+        and(
+          eq(interestChannelJoinRequests.channelId, channelId),
+          eq(interestChannelJoinRequests.status, 'pending')
+        )
+      )
+      .orderBy(desc(interestChannelJoinRequests.createdAt));
+
+      res.json(joinRequests);
+    } catch (error) {
+      console.error('Error fetching join requests:', error);
+      res.status(500).json({ message: 'Failed to fetch join requests' });
+    }
+  });
+
+  // Approve/reject join request endpoint
+  app.patch('/api/channels/:id/join-requests/:requestId', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      const requestId = parseInt(req.params.requestId);
+      const { status, reviewMessage } = req.body; // 'approved' or 'rejected'
+
+      // Check if user is admin or channel creator
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      const [currentUserMember] = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (channel.createdBy !== req.user.id && (!currentUserMember || currentUserMember.role !== 'admin')) {
+        return res.status(403).json({ message: "Only channel creators and admins can approve join requests" });
+      }
+
+      // Get the join request
+      const [joinRequest] = await db.select()
+        .from(interestChannelJoinRequests)
+        .where(eq(interestChannelJoinRequests.id, requestId));
+
+      if (!joinRequest) {
+        return res.status(404).json({ message: "Join request not found" });
+      }
+
+      // Update join request status
+      await db.update(interestChannelJoinRequests)
+        .set({
+          status,
+          reviewedBy: req.user.id,
+          reviewedAt: new Date(),
+          reviewMessage
+        })
+        .where(eq(interestChannelJoinRequests.id, requestId));
+
+      // If approved, add user to channel
+      if (status === 'approved') {
+        await db.insert(interestChannelMembers).values({
+          channelId,
+          userId: joinRequest.userId,
+          role: 'member'
+        });
+
+        // Update member count
+        await db.update(interestChannels)
+          .set({ 
+            memberCount: sql`${interestChannels.memberCount} + 1`
+          })
+          .where(eq(interestChannels.id, channelId));
+      }
+
+      res.json({ message: `Join request ${status} successfully` });
+    } catch (error) {
+      console.error('Error processing join request:', error);
+      res.status(500).json({ message: 'Failed to process join request' });
+    }
+  });
+
+  // Remove member endpoint (admin only)
+  app.delete('/api/channels/:id/members/:userId', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const channelId = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+
+      // Check if user is admin or channel creator
+      const [channel] = await db.select()
+        .from(interestChannels)
+        .where(eq(interestChannels.id, channelId));
+
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+
+      const [currentUserMember] = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (channel.createdBy !== req.user.id && (!currentUserMember || currentUserMember.role !== 'admin')) {
+        return res.status(403).json({ message: "Only channel creators and admins can remove members" });
+      }
+
+      // Don't allow removing the channel creator
+      if (userId === channel.createdBy) {
+        return res.status(400).json({ message: "Cannot remove channel creator" });
+      }
+
+      // Remove user from channel
+      await db.delete(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, userId)
+          )
+        );
+
+      // Update member count
+      await db.update(interestChannels)
+        .set({ 
+          memberCount: sql`${interestChannels.memberCount} - 1`
+        })
+        .where(eq(interestChannels.id, channelId));
+
+      res.json({ message: "Member removed successfully" });
+    } catch (error) {
+      console.error('Error removing member:', error);
+      res.status(500).json({ message: 'Failed to remove member' });
     }
   });
 
