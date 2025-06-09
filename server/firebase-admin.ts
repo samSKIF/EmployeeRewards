@@ -23,8 +23,12 @@ export const initializeFirebase = (appName?: string) => {
   return getApps()[0];
 };
 
-// Initialize default app
-const app = initializeFirebase();
-const auth = getAuth(app);
+// Initialize default app - DISABLED for Channel Admin system
+// const app = initializeFirebase();
+// const auth = getAuth(app);
+
+// Export placeholder objects to maintain compatibility
+const app = null;
+const auth = null;
 
 export { app, auth };
