@@ -105,7 +105,8 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
       selectedDepartments: [],
       selectedLocations: [],
       autoAddMembers: false,
-      initialMembers: []
+      initialMembers: [],
+      channelAdmins: []
     });
   };
 

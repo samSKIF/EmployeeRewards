@@ -123,9 +123,24 @@ export default function ChannelDetail() {
     enabled: !!channelId
   });
 
+  // Fetch channel admins
+  const { data: admins = [], isLoading: adminsLoading } = useQuery<ChannelMember[]>({
+    queryKey: [`/api/channels/${channelId}/admins`],
+    enabled: !!channelId
+  });
+
   // Check if current user is a member
   const { data: user } = useQuery({ queryKey: ['/api/users/me'] });
-  const isMember = members.some(member => member.id === user?.id);
+  const isMember = members.some((member: any) => member.id === user?.id);
+  
+  // Check if user is admin
+  const isAdmin = user && (admins.some((admin: any) => admin.id === user.id) || channel?.createdBy === user.id);
+
+  // Fetch join requests (for admins only)
+  const { data: joinRequests = [], isLoading: joinRequestsLoading } = useQuery<any[]>({
+    queryKey: [`/api/channels/${channelId}/join-requests`],
+    enabled: !!channelId && !!isAdmin
+  });
   
   // Debug membership
   console.log('=== MEMBERSHIP DEBUG ===');
@@ -159,6 +174,38 @@ export default function ChannelDetail() {
     },
     onError: () => {
       toast({ title: "Failed to leave channel", variant: "destructive" });
+    }
+  });
+
+  // Approve join request mutation
+  const approveRequestMutation = useMutation({
+    mutationFn: (requestId: number) => 
+      apiRequest('PATCH', `/api/channels/${channelId}/join-requests/${requestId}`, { 
+        status: 'approved' 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/join-requests`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/members`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
+      toast({ title: "Join request approved!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to approve request", variant: "destructive" });
+    }
+  });
+
+  // Reject join request mutation
+  const rejectRequestMutation = useMutation({
+    mutationFn: (requestId: number) => 
+      apiRequest('PATCH', `/api/channels/${channelId}/join-requests/${requestId}`, { 
+        status: 'rejected' 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/join-requests`] });
+      toast({ title: "Join request rejected!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to reject request", variant: "destructive" });
     }
   });
 
@@ -505,6 +552,109 @@ export default function ChannelDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Channel Admins */}
+            {(channel.accessLevel === 'approval_required' || channel.accessLevel === 'invite_only') && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Channel Admins</h3>
+                    <span className="text-sm text-gray-500">{admins.length}</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {adminsLoading ? (
+                      <div className="space-y-3">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="flex items-center space-x-3 animate-pulse">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                            <div className="flex-1">
+                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : admins.length > 0 ? (
+                      admins.map((admin) => (
+                        <div key={admin.id} className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={admin.avatar} />
+                            <AvatarFallback>{admin.name?.charAt(0) || 'A'}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {admin.name}
+                              </p>
+                              <Badge variant="secondary" className="text-xs">
+                                Admin
+                              </Badge>
+                            </div>
+                            {admin.department && (
+                              <p className="text-xs text-gray-500 truncate">
+                                {admin.department}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No admins assigned</p>
+                    )}
+                  </div>
+                  
+                  {/* Join Requests for Admins */}
+                  {user && (admins.some(admin => admin.id === user.id) || channel?.createdBy === user.id) && joinRequests.length > 0 && (
+                    <div className="mt-4 pt-3 border-t">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium">Pending Join Requests</h4>
+                        <Badge variant="outline">{joinRequests.length}</Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {joinRequests.slice(0, 3).map((request) => (
+                          <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={request.userAvatarUrl} />
+                                <AvatarFallback>{request.userName?.charAt(0) || 'U'}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{request.userName}</span>
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => {
+                                  // Handle approve request
+                                }}
+                              >
+                                Approve
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-6 px-2 text-xs text-red-600"
+                                onClick={() => {
+                                  // Handle reject request  
+                                }}
+                              >
+                                Decline
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {joinRequests.length > 3 && (
+                        <Button variant="link" className="w-full mt-2 text-blue-600 text-sm">
+                          View all requests ({joinRequests.length})
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Recent Media */}
             <Card>
