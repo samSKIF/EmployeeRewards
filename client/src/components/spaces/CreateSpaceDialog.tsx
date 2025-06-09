@@ -180,7 +180,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Channel</DialogTitle>
+          <DialogTitle>Create New Space</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
