@@ -37,8 +37,8 @@ import StatusDemo from "@/pages/status-demo";
 import OrgChart from "@/pages/org-chart";
 import GroupsPage from "@/pages/groups";
 import GroupsPageFacebook from "@/pages/groups-facebook";
-import ChannelsPage from "@/pages/channels-new";
-import ChannelDetailPage from "@/pages/channel-detail";
+import SpacesPage from "@/pages/spaces-new";
+import SpaceDetailPage from "@/pages/space-detail";
 
 import { BrandingProvider } from "@/context/BrandingContext";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -316,15 +316,15 @@ function App() {
                 </SocialLayout>
               </Route>
 
-              <Route path="/channels/:id">
+              <Route path="/spaces/:id">
                 <SocialLayout>
-                  <ChannelDetailPage />
+                  <SpaceDetailPage />
                 </SocialLayout>
               </Route>
 
-              <Route path="/channels">
+              <Route path="/spaces">
                 <SocialLayout>
-                  <ChannelsPage />
+                  <SpacesPage />
                 </SocialLayout>
               </Route>
 

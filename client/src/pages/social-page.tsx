@@ -36,7 +36,7 @@ import {
   PrioritiesWidget
 } from "@/components/social";
 import CelebrationCenter from "@/components/CelebrationCenter";
-import { MyActiveChannelsWidget } from "@/components/channels/MyActiveChannelsWidget";
+import { MyActiveSpacesWidget } from "@/components/spaces/MyActiveSpacesWidget";
 
 export default function SocialPage() {
   const [location, setLocation] = useLocation();
@@ -508,7 +508,7 @@ export default function SocialPage() {
         <div className="hidden lg:block lg:col-span-3 w-full" style={{ maxWidth: "750px" }}>
           {/* My Active Channels Widget */}
           <div className="mb-6">
-            <MyActiveChannelsWidget />
+            <MyActiveSpacesWidget />
           </div>
           
           {/* Celebrations section */}

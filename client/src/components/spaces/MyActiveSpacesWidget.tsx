@@ -26,7 +26,7 @@ const getChannelIcon = (type: string) => {
   }
 };
 
-export function MyActiveChannelsWidget() {
+export function MyActiveSpacesWidget() {
   const { data: myChannels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['/api/channels/my-channels'],
   });

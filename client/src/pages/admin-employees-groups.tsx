@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import { CreateChannelDialog } from '@/components/channels/CreateChannelDialog';
+import { CreateSpaceDialog } from '@/components/spaces/CreateSpaceDialog';
 
 // Define employee form data type
 interface EmployeeFormData {
