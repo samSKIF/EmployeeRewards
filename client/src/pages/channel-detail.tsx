@@ -154,6 +154,26 @@ export default function ChannelDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Breadcrumb */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="max-w-6xl mx-auto">
+          <nav className="flex items-center space-x-2 text-sm">
+            <button 
+              onClick={() => setLocation('/channels')}
+              className="text-gray-500 hover:text-gray-700 flex items-center"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Channels
+            </button>
+            <span className="text-gray-400">/</span>
+            <span className="font-medium text-gray-900 flex items-center">
+              {getChannelIcon(channel.channelType)}
+              <span className="ml-2">{channel.name}</span>
+            </span>
+          </nav>
+        </div>
+      </div>
+
       {/* Cover Photo */}
       <div className="relative">
         <div 
@@ -166,15 +186,23 @@ export default function ChannelDetail() {
         {/* Channel Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-4xl font-bold text-white mb-2">{channel.name}</h1>
-            <div className="flex items-center space-x-4 text-white">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center mb-3">
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 mr-4">
                 {getChannelIcon(channel.channelType)}
-                <span className="text-sm">{getAccessLevel(channel.accessLevel)}</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <Users className="h-4 w-4" />
-                <span className="text-sm">{channel.memberCount} members</span>
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-1">{channel.name}</h1>
+                <div className="flex items-center space-x-4 text-white text-opacity-90">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm capitalize">{channel.channelType}</span>
+                    <span className="text-xs">•</span>
+                    <span className="text-sm">{getAccessLevel(channel.accessLevel)}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm">{channel.memberCount} members</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

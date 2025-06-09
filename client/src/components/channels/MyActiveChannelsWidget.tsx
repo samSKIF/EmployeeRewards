@@ -85,44 +85,46 @@ export function MyActiveChannelsWidget() {
         ) : (
           <>
             {activeChannels.map((channel) => (
-              <div key={channel.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    {getChannelIcon(channel.channelType)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {channel.name}
-                    </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Users className="h-3 w-3 mr-1" />
-                        {channel.memberCount}
+              <Link key={channel.id} href={`/channels/${channel.id}`} className="block">
+                <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 hover:border-blue-200 transition-all cursor-pointer group">
+                  <div className="flex items-center space-x-3 flex-1">
+                    <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                      {getChannelIcon(channel.channelType)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                        {channel.name}
+                      </p>
+                      <div className="flex items-center space-x-3 mt-1">
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Users className="h-3 w-3 mr-1" />
+                          {channel.memberCount} members
+                        </div>
+                        <Badge variant="outline" className="text-xs px-1 py-0">
+                          {channel.channelType}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs px-1 py-0">
-                        {channel.channelType}
-                      </Badge>
                     </div>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    {channel.unreadCount && channel.unreadCount > 0 && (
+                      <Badge variant="destructive" className="text-xs">
+                        {channel.unreadCount > 99 ? '99+' : channel.unreadCount}
+                      </Badge>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {channel.unreadCount && channel.unreadCount > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {channel.unreadCount > 99 ? '99+' : channel.unreadCount}
-                    </Badge>
-                  )}
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              </Link>
             ))}
             
-            {myChannels.length > 6 && (
+            {(myChannels as Channel[]).length > 6 && (
               <div className="pt-2 border-t">
                 <Link href="/channels">
                   <Button variant="ghost" size="sm" className="w-full text-xs">
-                    View {myChannels.length - 6} more channels
+                    View {(myChannels as Channel[]).length - 6} more channels
                   </Button>
                 </Link>
               </div>
