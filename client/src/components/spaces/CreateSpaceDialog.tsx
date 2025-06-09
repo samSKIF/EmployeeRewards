@@ -38,7 +38,7 @@ interface User {
 
 export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps) {
   const [formData, setFormData] = useState({
-    channelType: "",
+    spaceType: "",
     name: "",
     description: "",
     isPrivate: false,
@@ -48,7 +48,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
     selectedLocations: [] as string[],
     autoAddMembers: false,
     initialMembers: [] as User[],
-    channelAdmins: [] as User[]
+    spaceAdmins: [] as User[]
   });
 
   const { toast } = useToast();
@@ -71,16 +71,16 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
     enabled: open
   });
 
-  // Create channel mutation
-  const createChannelMutation = useMutation({
-    mutationFn: async (channelData: any) => {
-      return apiRequest('POST', '/api/channels', channelData);
+  // Create space mutation
+  const createSpaceMutation = useMutation({
+    mutationFn: async (spaceData: any) => {
+      return apiRequest('POST', '/api/channels', spaceData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
       toast({
         title: "Success",
-        description: "Channel created successfully",
+        description: "Space created successfully",
       });
       onOpenChange(false);
       resetForm();

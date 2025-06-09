@@ -137,7 +137,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const navItems = [
     { icon: Home, label: t('dashboard.home'), onClick: () => navigateTo('/social'), isActive: location === '/social' },
     { icon: Store, label: t('dashboard.shop'), onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
-    { icon: MessageCircle, label: 'Channels', onClick: () => navigateTo('/channels'), isActive: location === '/channels' },
+    { icon: MessageCircle, label: 'Spaces', onClick: () => navigateTo('/spaces'), isActive: location === '/spaces' },
     { icon: ListChecks, label: t('dashboard.milestones'), onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
     { icon: Award, label: t('dashboard.awards'), onClick: () => navigateTo('/recognize'), isActive: location === '/recognize' },
     { icon: Eye, label: t('dashboard.insights'), onClick: () => navigateTo('/insights/recognition'), isActive: location === '/insights/recognition' },
