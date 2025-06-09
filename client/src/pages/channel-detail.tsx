@@ -113,25 +113,34 @@ export default function ChannelDetail() {
 
   // Fetch channel posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<ChannelPost[]>({
-    queryKey: ['/api/channels', channelId, 'posts'],
+    queryKey: [`/api/channels/${channelId}/posts`],
     enabled: !!channelId
   });
 
   // Fetch channel members
   const { data: members = [], isLoading: membersLoading } = useQuery<ChannelMember[]>({
-    queryKey: ['/api/channels', channelId, 'members'],
+    queryKey: [`/api/channels/${channelId}/members`],
     enabled: !!channelId
   });
 
   // Check if current user is a member
   const { data: user } = useQuery({ queryKey: ['/api/users/me'] });
   const isMember = members.some(member => member.id === user?.id);
+  
+  // Debug membership
+  console.log('=== MEMBERSHIP DEBUG ===');
+  console.log('Current user:', user);
+  console.log('Members array:', members);
+  console.log('Is member:', isMember);
+  console.log('User ID:', user?.id);
+  console.log('Member IDs:', members.map(m => m.id));
+  console.log('=== END MEMBERSHIP DEBUG ===');
 
   // Join channel mutation
   const joinChannelMutation = useMutation({
     mutationFn: () => apiRequest('POST', `/api/channels/${channelId}/join`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'members'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/members`] });
       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
       toast({ title: "Successfully joined channel!" });
     },
@@ -144,7 +153,7 @@ export default function ChannelDetail() {
   const leaveChannelMutation = useMutation({
     mutationFn: () => apiRequest('DELETE', `/api/channels/${channelId}/leave`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'members'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/members`] });
       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
       toast({ title: "Successfully left channel!" });
     },
@@ -157,7 +166,7 @@ export default function ChannelDetail() {
   const createPostMutation = useMutation({
     mutationFn: (content: string) => apiRequest('POST', `/api/channels/${channelId}/posts`, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/channels', channelId, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/posts`] });
       setNewPost("");
       toast({ title: "Post created successfully!" });
     }
