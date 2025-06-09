@@ -6,7 +6,7 @@ import { MessageCircle, Users, ArrowRight, Building, MapPin, Heart, Briefcase, C
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 
-interface Channel {
+interface Space {
   id: number;
   name: string;
   channelType: string;
@@ -27,7 +27,7 @@ const getChannelIcon = (type: string) => {
 };
 
 export function MyActiveSpacesWidget() {
-  const { data: mySpaces = [], isLoading } = useQuery<Channel[]>({
+  const { data: mySpaces = [], isLoading } = useQuery<Space[]>({
     queryKey: ['/api/channels/my-channels'],
   });
 

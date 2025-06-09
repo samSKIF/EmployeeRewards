@@ -16,7 +16,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-interface Channel {
+interface Space {
   id: number;
   name: string;
   description: string;
@@ -32,7 +32,7 @@ interface Channel {
   coverImage?: string;
 }
 
-interface ChannelPost {
+interface SpacePost {
   id: number;
   content: string;
   userId: number;
@@ -45,7 +45,7 @@ interface ChannelPost {
   type: string;
 }
 
-interface ChannelMember {
+interface SpaceMember {
   id: number;
   name: string;
   role: string;
@@ -95,8 +95,8 @@ export default function ChannelDetail() {
 
   const channelId = params.id;
 
-  // Fetch channel details
-  const { data: channel, isLoading: channelLoading, error: channelError } = useQuery<Channel>({
+  // Fetch space details
+  const { data: space, isLoading: spaceLoading, error: spaceError } = useQuery<Space>({
     queryKey: [`/api/channels/${channelId}`],
     enabled: !!channelId
   });
@@ -111,20 +111,20 @@ export default function ChannelDetail() {
   console.log('Channel name from data:', channel?.name);
   console.log('=== END DEBUG ===');
 
-  // Fetch channel posts
-  const { data: posts = [], isLoading: postsLoading } = useQuery<ChannelPost[]>({
+  // Fetch space posts
+  const { data: posts = [], isLoading: postsLoading } = useQuery<SpacePost[]>({
     queryKey: [`/api/channels/${channelId}/posts`],
     enabled: !!channelId
   });
 
-  // Fetch channel members
-  const { data: members = [], isLoading: membersLoading } = useQuery<ChannelMember[]>({
+  // Fetch space members
+  const { data: members = [], isLoading: membersLoading } = useQuery<SpaceMember[]>({
     queryKey: [`/api/channels/${channelId}/members`],
     enabled: !!channelId
   });
 
-  // Fetch channel admins
-  const { data: admins = [], isLoading: adminsLoading } = useQuery<ChannelMember[]>({
+  // Fetch space admins
+  const { data: admins = [], isLoading: adminsLoading } = useQuery<SpaceMember[]>({
     queryKey: [`/api/channels/${channelId}/admins`],
     enabled: !!channelId
   });

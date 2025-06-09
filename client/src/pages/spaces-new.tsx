@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Heart, MessageCircle, Share2, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-interface Channel {
+interface Space {
   id: number;
   name: string;
   description: string;
@@ -40,12 +40,12 @@ export default function SpacesPage() {
   const [, setLocation] = useLocation();
 
   // Fetch spaces data
-  const { data: spaces = [], isLoading } = useQuery<Channel[]>({
+  const { data: spaces = [], isLoading } = useQuery<Space[]>({
     queryKey: ['/api/channels'],
   });
 
   // Get featured spaces (top 4)
-  const featuredSpaces = (spaces as Channel[]).slice(0, 4);
+  const featuredSpaces = (spaces as Space[]).slice(0, 4);
 
   // Fetch latest posts for each space to display real content
   const { data: spacePosts = {} } = useQuery<Record<number, any>>({
@@ -84,7 +84,7 @@ export default function SpacesPage() {
   });
 
   // Generate suggested content from remaining spaces
-  const suggestedContent = (spaces as Channel[]).slice(4, 7).map((space, index) => {
+  const suggestedContent = (spaces as Space[]).slice(4, 7).map((space, index) => {
     const post = spacePosts[space.id];
 
     return {
