@@ -737,7 +737,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
               rows={3}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="edit-maxMembers">Maximum Members</Label>
             <Input
@@ -942,7 +942,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Basic Information</h3>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="name">First Name *</Label>
@@ -952,7 +952,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
-          </div>
+                    </div>
           <div>
             <Label htmlFor="surname">Last Name</Label>
             <Input
@@ -1023,7 +1023,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
       {/* Work Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Work Information</h3>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="jobTitle">Job Title</Label>
@@ -1093,7 +1093,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
       {/* Admin Settings */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Admin Settings</h3>
-        
+
         <div className="flex items-center space-x-2">
           <Checkbox
             id="isAdmin"
@@ -1124,7 +1124,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
       {/* Profile Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Profile</h3>
-        
+
         <div>
           <Label htmlFor="avatarUrl">Avatar URL</Label>
           <Input
@@ -1185,7 +1185,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
   // Check for duplicates
   const checkDuplicates = async (email: string, name?: string, surname?: string) => {
     if (!email.trim()) return;
-    
+
     try {
       const response = await fetch('/api/users/check-duplicate', {
         method: 'POST',
@@ -1199,7 +1199,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       if (response.ok) {
         const result = await response.json();
         setDuplicateCheck(result);
-        
+
         const errors: string[] = [];
         if (result.emailExists) {
           errors.push(`Email ${email} is already in use`);
@@ -1216,7 +1216,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check for validation errors
     if (validationErrors.length > 0) {
       toast({
@@ -1285,7 +1285,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Basic Information</h3>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="create-name">First Name *</Label>
@@ -1396,7 +1396,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       {/* Work Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Work Information</h3>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="create-jobTitle">Job Title</Label>
@@ -1466,7 +1466,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       {/* Security */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Security</h3>
-        
+
         <div>
           <Label htmlFor="create-password">Initial Password</Label>
           <Input
@@ -1485,7 +1485,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       {/* Admin Settings */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Admin Settings</h3>
-        
+
         <div className="flex items-center space-x-2">
           <Checkbox
             id="create-isAdmin"
@@ -1516,7 +1516,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       {/* Profile Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Profile</h3>
-        
+
         <div>
           <Label htmlFor="create-avatarUrl">Avatar URL</Label>
           <Input
@@ -1639,40 +1639,34 @@ function EmployeeDirectory() {
     queryKey: ['/api/users/locations'],
   });
 
-  const filteredEmployees = useMemo(() => {
-    if (!Array.isArray(employees)) return [];
-    
-    const filtered = employees.filter((employee: Employee) => {
-      if (!employee) return false;
-      
-      // Apply department and location filters
-      const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
-      const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
-      
-      // If no search term, just apply department/location filters
-      if (!searchTerm.trim()) {
-        return matchesDepartment && matchesLocation;
-      }
-      
-      // Apply search filter - only show employees that match the search term
+const filteredEmployees = useMemo(() => {
+    if (!employees) return [];
+
+    let filtered = employees.filter((employee: Employee) => {
+      // Search filter - check if any field contains the search term
       const searchLower = searchTerm.toLowerCase().trim();
-      const matchesSearch = (
+      const matchesSearch = !searchTerm || (
         (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
         (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
         (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
         (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
         (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
-        (employee.phoneNumber && employee.phoneNumber.toLowerCase().includes(searchLower)) ||
-        (employee.username && employee.username.toLowerCase().includes(searchLower))
+        (employee.location && employee.location.toLowerCase().includes(searchLower)) ||
+        // Also check full name
+        (`${employee.name} ${employee.surname || ''}`.toLowerCase().includes(searchLower))
       );
 
+      // Department filter
+      const matchesDepartment = selectedDepartment === 'all' || 
+        employee.department === selectedDepartment;
 
+      // Location filter  
+      const matchesLocation = selectedLocation === 'all' || 
+        employee.location === selectedLocation;
 
-      // When searching, ONLY return employees that match the search AND department/location filters
+      // Return employees that match all active filters
       return matchesSearch && matchesDepartment && matchesLocation;
     });
-
-
 
     // Debug logging to check filtering
     if (searchTerm) {
@@ -1847,7 +1841,7 @@ function EmployeeDirectory() {
               Update employee information and settings
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedEmployee && (
             <EditEmployeeForm 
               employee={selectedEmployee}
@@ -1876,7 +1870,7 @@ function EmployeeDirectory() {
               Create a new employee account
             </DialogDescription>
           </DialogHeader>
-          
+
           <CreateEmployeeForm 
             onClose={() => setIsCreateDialogOpen(false)}
             onSuccess={() => {
@@ -1899,7 +1893,7 @@ function EmployeeDirectory() {
               Upload a CSV or Excel file with employee data
             </DialogDescription>
           </DialogHeader>
-          
+
           <BulkUploadForm 
             onClose={() => setIsBulkUploadDialogOpen(false)}
             onSuccess={() => {
