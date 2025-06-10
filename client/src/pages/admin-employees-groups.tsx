@@ -1666,25 +1666,22 @@ function EmployeeDirectory() {
         (employee.username && employee.username.toLowerCase().includes(searchLower))
       );
 
-      // Debug individual employee matches
-      if (searchTerm === "jacob") {
-        const nameMatch = employee.name && employee.name.toLowerCase().includes(searchLower);
-        const surnameMatch = employee.surname && employee.surname.toLowerCase().includes(searchLower);
-        const emailMatch = employee.email && employee.email.toLowerCase().includes(searchLower);
-        
-        if (nameMatch || surnameMatch || emailMatch) {
-          console.log(`Match found: ${employee.name} ${employee.surname} (${employee.email}) - name:${nameMatch}, surname:${surnameMatch}, email:${emailMatch}`);
-        }
-      }
+
 
       // When searching, ONLY return employees that match the search AND department/location filters
       return matchesSearch && matchesDepartment && matchesLocation;
     });
 
-    // Debug the final filtered results
-    if (searchTerm === "jacob") {
-      console.log(`Search "${searchTerm}" - Total employees: ${employees.length}, Filtered: ${filtered.length}`);
-      console.log('Filtered employees:', filtered.map(e => `${e.name} ${e.surname}`));
+
+
+    // Debug logging to check filtering
+    if (searchTerm) {
+      console.log('Filter Debug:', {
+        searchTerm,
+        totalEmployees: employees.length,
+        filteredCount: filtered.length,
+        firstFiltered: filtered.slice(0, 3).map(e => `${e.name} ${e.surname}`)
+      });
     }
 
     return filtered;
