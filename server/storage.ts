@@ -183,6 +183,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
+    // Check for duplicates before creating
+    const duplicateCheck = await this.checkDuplicateUser(
+      userData.email,
+      userData.name,
+      userData.surname || undefined
+    );
+
+    if (duplicateCheck.emailExists) {
+      throw new Error(`User with email ${userData.email} already exists`);
+    }
+
+    if (duplicateCheck.nameExists && userData.name && userData.surname) {
+      throw new Error(`User with name ${userData.name} ${userData.surname} already exists`);
+    }
+
     // Hash password before storing
     const hashedPassword = await hash(userData.password, 10);
 

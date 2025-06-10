@@ -17,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Loader2, 
-  Plus, 
+  Plus,
+  AlertCircle, 
   User, 
   UserPlus, 
   FileText, 
@@ -1177,10 +1178,55 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [duplicateCheck, setDuplicateCheck] = useState({ emailExists: false, nameExists: false });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Check for duplicates
+  const checkDuplicates = async (email: string, name?: string, surname?: string) => {
+    if (!email.trim()) return;
+    
+    try {
+      const response = await fetch('/api/users/check-duplicate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('firebaseToken')}`
+        },
+        body: JSON.stringify({ email, name, surname }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setDuplicateCheck(result);
+        
+        const errors: string[] = [];
+        if (result.emailExists) {
+          errors.push(`Email ${email} is already in use`);
+        }
+        if (result.nameExists && name && surname) {
+          errors.push(`Employee ${name} ${surname} already exists`);
+        }
+        setValidationErrors(errors);
+      }
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check for validation errors
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: validationErrors.join('. '),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -1188,20 +1234,22 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('firebaseToken')}`
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create employee');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create employee');
       }
 
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create employee",
+        description: error.message || "Failed to create employee",
         variant: "destructive",
       });
     } finally {
@@ -1211,6 +1259,29 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Duplicate entries found
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <ul className="list-disc pl-5 space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -1221,7 +1292,15 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => {
+                const newName = e.target.value;
+                setFormData({ ...formData, name: newName });
+                // Check duplicates when both name and surname are present
+                if (newName && formData.surname && formData.email) {
+                  checkDuplicates(formData.email, newName, formData.surname);
+                }
+              }}
+              className={duplicateCheck.nameExists ? 'border-red-500' : ''}
               required
             />
           </div>
@@ -1230,7 +1309,15 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-surname"
               value={formData.surname}
-              onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+              onChange={(e) => {
+                const newSurname = e.target.value;
+                setFormData({ ...formData, surname: newSurname });
+                // Check duplicates when both name and surname are present
+                if (formData.name && newSurname && formData.email) {
+                  checkDuplicates(formData.email, formData.name, newSurname);
+                }
+              }}
+              className={duplicateCheck.nameExists ? 'border-red-500' : ''}
             />
           </div>
         </div>
@@ -1241,9 +1328,23 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             id="create-email"
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) => {
+              const newEmail = e.target.value;
+              setFormData({ ...formData, email: newEmail });
+              // Check duplicates on email change
+              if (newEmail) {
+                checkDuplicates(newEmail, formData.name, formData.surname);
+              } else {
+                setValidationErrors([]);
+                setDuplicateCheck({ emailExists: false, nameExists: false });
+              }
+            }}
+            className={duplicateCheck.emailExists ? 'border-red-500' : ''}
             required
           />
+          {duplicateCheck.emailExists && (
+            <p className="text-sm text-red-600 mt-1">This email is already in use</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

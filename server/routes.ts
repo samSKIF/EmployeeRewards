@@ -1301,6 +1301,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check for duplicate users endpoint
+  app.post("/api/users/check-duplicate", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { email, name, surname } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const duplicateCheck = await storage.checkDuplicateUser(email, name, surname);
+      
+      res.json(duplicateCheck);
+    } catch (error: any) {
+      console.error("Error checking duplicates:", error);
+      res.status(500).json({ message: error.message || "Failed to check duplicates" });
+    }
+  });
+
   app.get("/api/users", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
     try {
       const currentUser = req.user;
