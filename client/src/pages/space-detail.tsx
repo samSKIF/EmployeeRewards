@@ -216,6 +216,13 @@ export default function ChannelDetail() {
       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/posts`] });
       setNewPost("");
       toast({ title: "Post created successfully!" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to create post", 
+        description: error.message || "You must be a member of this space to create posts",
+        variant: "destructive" 
+      });
     }
   });
 

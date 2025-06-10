@@ -2796,6 +2796,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Channel not found" });
       }
 
+      // Check if user is a member of the channel
+      const [membership] = await db.select()
+        .from(interestChannelMembers)
+        .where(
+          and(
+            eq(interestChannelMembers.channelId, channelId),
+            eq(interestChannelMembers.userId, req.user.id)
+          )
+        );
+
+      if (!membership) {
+        return res.status(403).json({ message: "You must be a member of this space to create posts" });
+      }
+
       // Create the post using raw SQL to match database schema
       const result = await db.execute(sql`
         INSERT INTO interest_channel_posts (channel_id, user_id, content, like_count, comment_count)
