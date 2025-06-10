@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -1639,32 +1639,56 @@ function EmployeeDirectory() {
     queryKey: ['/api/users/locations'],
   });
 
-  const filteredEmployees = Array.isArray(employees) ? employees.filter((employee: Employee) => {
-    if (!employee) return false;
+  const filteredEmployees = useMemo(() => {
+    if (!Array.isArray(employees)) return [];
     
-    // Apply department and location filters first
-    const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
-    const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
-    
-    // If no search term, just apply department/location filters
-    if (!searchTerm.trim()) {
-      return matchesDepartment && matchesLocation;
-    }
-    
-    // Apply search filter
-    const searchLower = searchTerm.toLowerCase().trim();
-    const matchesSearch = (
-      (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
-      (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
-      (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
-      (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
-      (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
-      (employee.phoneNumber && employee.phoneNumber.toLowerCase().includes(searchLower)) ||
-      (employee.username && employee.username.toLowerCase().includes(searchLower))
-    );
+    const filtered = employees.filter((employee: Employee) => {
+      if (!employee) return false;
+      
+      // Apply department and location filters
+      const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
+      const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
+      
+      // If no search term, just apply department/location filters
+      if (!searchTerm.trim()) {
+        return matchesDepartment && matchesLocation;
+      }
+      
+      // Apply search filter - only show employees that match the search term
+      const searchLower = searchTerm.toLowerCase().trim();
+      const matchesSearch = (
+        (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
+        (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
+        (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
+        (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
+        (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
+        (employee.phoneNumber && employee.phoneNumber.toLowerCase().includes(searchLower)) ||
+        (employee.username && employee.username.toLowerCase().includes(searchLower))
+      );
 
-    return matchesSearch && matchesDepartment && matchesLocation;
-  }) : [];
+      // Debug individual employee matches
+      if (searchTerm === "jacob") {
+        const nameMatch = employee.name && employee.name.toLowerCase().includes(searchLower);
+        const surnameMatch = employee.surname && employee.surname.toLowerCase().includes(searchLower);
+        const emailMatch = employee.email && employee.email.toLowerCase().includes(searchLower);
+        
+        if (nameMatch || surnameMatch || emailMatch) {
+          console.log(`Match found: ${employee.name} ${employee.surname} (${employee.email}) - name:${nameMatch}, surname:${surnameMatch}, email:${emailMatch}`);
+        }
+      }
+
+      // When searching, ONLY return employees that match the search AND department/location filters
+      return matchesSearch && matchesDepartment && matchesLocation;
+    });
+
+    // Debug the final filtered results
+    if (searchTerm === "jacob") {
+      console.log(`Search "${searchTerm}" - Total employees: ${employees.length}, Filtered: ${filtered.length}`);
+      console.log('Filtered employees:', filtered.map(e => `${e.name} ${e.surname}`));
+    }
+
+    return filtered;
+  }, [employees, searchTerm, selectedDepartment, selectedLocation]);
 
   return (
     <div className="space-y-6">
