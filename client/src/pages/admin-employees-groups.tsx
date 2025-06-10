@@ -952,7 +952,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
-                    </div>
+          </div>
           <div>
             <Label htmlFor="surname">Last Name</Label>
             <Input
@@ -1903,6 +1903,87 @@ const filteredEmployees = useMemo(() => {
   );
 }
 
+interface Space {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  memberCount: number;
+}
+
+//Trending Spaces component
+function TrendingSpaces() {
+  const [trendingSpaces, setTrendingSpaces] = useState<Space[]>([]);
+  const [isLoadingSpaces, setIsLoadingSpaces] = useState(false);
+
+  useEffect(() => {
+    const fetchSpaces = async () => {
+      setIsLoadingSpaces(true);
+      try {
+        const response = await fetch('/api/spaces/trending');
+        if (!response.ok) {
+          throw new Error('Failed to fetch trending spaces');
+        }
+        const data = await response.json();
+        setTrendingSpaces(data);
+      } catch (error) {
+        console.error('Error fetching spaces:', error);
+        setTrendingSpaces([]);
+      } finally {
+        setIsLoadingSpaces(false);
+      }
+    };
+
+    fetchSpaces();
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Trending Spaces</CardTitle>
+        <CardDescription>
+          Explore popular workplace spaces
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        {isLoadingSpaces ? (
+          <div className="text-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+          </div>
+        ) : trendingSpaces.length === 0 ? (
+          <div className="text-center py-4 text-gray-500">
+            No trending spaces found.
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            {(trendingSpaces || []).slice(0, 3).map((space: Space) => (
+              <Link key={space.id} href={`/spaces/${space.id}`}>
+                <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <img
+                    src={space.imageUrl}
+                    alt={space.name}
+                    className="w-full h-32 object-cover object-center"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900">{space.name}</h3>
+                    <p className="text-sm text-gray-600 truncate">{space.description}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center space-x-2 text-gray-500">
+                        <Users className="h-4 w-4" />
+                        <span>{space.memberCount}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // Main Component
 export default function AdminEmployeesGroups() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -1933,6 +2014,7 @@ export default function AdminEmployeesGroups() {
 
         <TabsContent value="groups" className="space-y-6">
           <GroupsManagement />
+          <TrendingSpaces/>
         </TabsContent>
       </Tabs>
     </div>
