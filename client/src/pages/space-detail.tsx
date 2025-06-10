@@ -405,47 +405,78 @@ export default function ChannelDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Create Post */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex space-x-3">
-                  <Avatar>
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-3">
-                    <Input
-                      placeholder="Write something..."
-                      value={newPost}
-                      onChange={(e) => setNewPost(e.target.value)}
-                      className="border-gray-300"
-                    />
-                    <div className="flex items-center justify-between">
-                      <div className="flex space-x-3">
-                        <Button variant="ghost" size="sm">
-                          <Image className="h-4 w-4 mr-1" />
-                          Photo
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Video className="h-4 w-4 mr-1" />
-                          Video
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <FileText className="h-4 w-4 mr-1" />
-                          File
+            {/* Create Post - Only for Members */}
+            {isMember ? (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex space-x-3">
+                    <Avatar>
+                      <AvatarFallback>
+                        {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-3">
+                      <Input
+                        placeholder="Write something..."
+                        value={newPost}
+                        onChange={(e) => setNewPost(e.target.value)}
+                        className="border-gray-300"
+                      />
+                      <div className="flex items-center justify-between">
+                        <div className="flex space-x-3">
+                          <Button variant="ghost" size="sm">
+                            <Image className="h-4 w-4 mr-1" />
+                            Photo
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Video className="h-4 w-4 mr-1" />
+                            Video
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <FileText className="h-4 w-4 mr-1" />
+                            File
+                          </Button>
+                        </div>
+                        <Button 
+                          onClick={handleCreatePost}
+                          disabled={!newPost.trim() || createPostMutation.isPending}
+                          size="sm"
+                        >
+                          <Send className="h-4 w-4" />
                         </Button>
                       </div>
-                      <Button 
-                        onClick={handleCreatePost}
-                        disabled={!newPost.trim() || createPostMutation.isPending}
-                        size="sm"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Join to participate</h3>
+                  <p className="text-gray-600 mb-4">You need to be a member of this space to create posts and interact with content.</p>
+                  {space.accessLevel === 'approval_required' ? (
+                    <Button 
+                      onClick={() => joinChannelMutation.mutate(parseInt(channelId))}
+                      disabled={joinChannelMutation.isPending}
+                      className="bg-teal-600 hover:bg-teal-700"
+                    >
+                      {joinChannelMutation.isPending ? 'Requesting...' : 'Request to Join'}
+                    </Button>
+                  ) : space.accessLevel === 'invite_only' ? (
+                    <p className="text-sm text-gray-500">This space is invite-only. Contact an admin to request access.</p>
+                  ) : (
+                    <Button 
+                      onClick={() => joinChannelMutation.mutate(parseInt(channelId))}
+                      disabled={joinChannelMutation.isPending}
+                      className="bg-teal-600 hover:bg-teal-700"
+                    >
+                      {joinChannelMutation.isPending ? 'Joining...' : 'Join Space'}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Posts Feed */}
             <div className="space-y-4">
