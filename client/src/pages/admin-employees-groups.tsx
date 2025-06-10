@@ -1640,21 +1640,27 @@ function EmployeeDirectory() {
   });
 
 const filteredEmployees = useMemo(() => {
-    if (!employees) return [];
+    if (!employees || !Array.isArray(employees)) return [];
 
-    let filtered = employees.filter((employee: Employee) => {
+    return employees.filter((employee: Employee) => {
       // Search filter - check if any field contains the search term
       const searchLower = searchTerm.toLowerCase().trim();
-      const matchesSearch = !searchTerm || (
-        (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
-        (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
-        (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
-        (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
-        (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
-        (employee.location && employee.location.toLowerCase().includes(searchLower)) ||
-        // Also check full name
-        (`${employee.name} ${employee.surname || ''}`.toLowerCase().includes(searchLower))
-      );
+      let matchesSearch = true;
+
+      if (searchTerm && searchLower.length > 0) {
+        const fullName = `${employee.name || ''} ${employee.surname || ''}`.toLowerCase().trim();
+        const email = (employee.email || '').toLowerCase();
+        const jobTitle = (employee.jobTitle || '').toLowerCase();
+        const department = (employee.department || '').toLowerCase();
+        const location = (employee.location || '').toLowerCase();
+
+        matchesSearch = 
+          fullName.includes(searchLower) ||
+          email.includes(searchLower) ||
+          jobTitle.includes(searchLower) ||
+          department.includes(searchLower) ||
+          location.includes(searchLower);
+      }
 
       // Department filter
       const matchesDepartment = selectedDepartment === 'all' || 
@@ -1664,21 +1670,8 @@ const filteredEmployees = useMemo(() => {
       const matchesLocation = selectedLocation === 'all' || 
         employee.location === selectedLocation;
 
-      // Return employees that match all active filters
       return matchesSearch && matchesDepartment && matchesLocation;
     });
-
-    // Debug logging to check filtering
-    if (searchTerm) {
-      console.log('Filter Debug:', {
-        searchTerm,
-        totalEmployees: employees.length,
-        filteredCount: filtered.length,
-        firstFiltered: filtered.slice(0, 3).map(e => `${e.name} ${e.surname}`)
-      });
-    }
-
-    return filtered;
   }, [employees, searchTerm, selectedDepartment, selectedLocation]);
 
   return (
