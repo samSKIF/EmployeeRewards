@@ -937,67 +937,205 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Basic Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="name">First Name *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="surname">Last Name</Label>
+            <Input
+              id="surname"
+              value={formData.surname}
+              onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+            />
+          </div>
+        </div>
+
         <div>
-          <Label htmlFor="name">First Name</Label>
+          <Label htmlFor="email">Email *</Label>
           <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
         </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <Input
+              id="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="sex">Gender</Label>
+            <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="nationality">Nationality</Label>
+            <Input
+              id="nationality"
+              value={formData.nationality}
+              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="birthDate">Birth Date</Label>
+            <Input
+              id="birthDate"
+              type="date"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Work Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Work Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="jobTitle">Job Title</Label>
+            <Input
+              id="jobTitle"
+              value={formData.jobTitle}
+              onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="department">Department</Label>
+            <Input
+              id="department"
+              value={formData.department}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="managerEmail">Manager Email</Label>
+            <Input
+              id="managerEmail"
+              type="email"
+              value={formData.managerEmail}
+              onChange={(e) => setFormData({ ...formData, managerEmail: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="hireDate">Hire Date</Label>
+            <Input
+              id="hireDate"
+              type="date"
+              value={formData.hireDate}
+              onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="terminated">Terminated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Settings */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Admin Settings</h3>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isAdmin"
+            checked={formData.isAdmin}
+            onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
+          />
+          <Label htmlFor="isAdmin">Admin User</Label>
+        </div>
+
+        {formData.isAdmin && (
+          <div>
+            <Label htmlFor="adminScope">Admin Scope</Label>
+            <Select value={formData.adminScope} onValueChange={(value) => setFormData({ ...formData, adminScope: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select admin scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="super">Super Admin</SelectItem>
+                <SelectItem value="department">Department Admin</SelectItem>
+                <SelectItem value="site">Site Admin</SelectItem>
+                <SelectItem value="limited">Limited Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      {/* Profile Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Profile</h3>
+        
         <div>
-          <Label htmlFor="surname">Last Name</Label>
+          <Label htmlFor="avatarUrl">Avatar URL</Label>
           <Input
-            id="surname"
-            value={formData.surname}
-            onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+            id="avatarUrl"
+            value={formData.avatarUrl}
+            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+            placeholder="https://example.com/avatar.jpg"
           />
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="jobTitle">Job Title</Label>
-          <Input
-            id="jobTitle"
-            value={formData.jobTitle}
-            onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="department">Department</Label>
-          <Input
-            id="department"
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isAdmin"
-          checked={formData.isAdmin}
-          onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
-        />
-        <Label htmlFor="isAdmin">Admin User</Label>
-      </div>
-
-      <DialogFooter>
+      <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
@@ -1072,58 +1210,224 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Basic Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-name">First Name *</Label>
+            <Input
+              id="create-name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-surname">Last Name</Label>
+            <Input
+              id="create-surname"
+              value={formData.surname}
+              onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+            />
+          </div>
+        </div>
+
         <div>
-          <Label htmlFor="create-name">First Name</Label>
+          <Label htmlFor="create-email">Email *</Label>
           <Input
-            id="create-name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            id="create-email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
         </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-phoneNumber">Phone Number</Label>
+            <Input
+              id="create-phoneNumber"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-sex">Gender</Label>
+            <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-nationality">Nationality</Label>
+            <Input
+              id="create-nationality"
+              value={formData.nationality}
+              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-birthDate">Birth Date</Label>
+            <Input
+              id="create-birthDate"
+              type="date"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Work Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Work Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-jobTitle">Job Title</Label>
+            <Input
+              id="create-jobTitle"
+              value={formData.jobTitle}
+              onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-department">Department</Label>
+            <Input
+              id="create-department"
+              value={formData.department}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-location">Location</Label>
+            <Input
+              id="create-location"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-managerEmail">Manager Email</Label>
+            <Input
+              id="create-managerEmail"
+              type="email"
+              value={formData.managerEmail}
+              onChange={(e) => setFormData({ ...formData, managerEmail: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="create-hireDate">Hire Date</Label>
+            <Input
+              id="create-hireDate"
+              type="date"
+              value={formData.hireDate}
+              onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="create-status">Status</Label>
+            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="terminated">Terminated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Security */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Security</h3>
+        
         <div>
-          <Label htmlFor="create-surname">Last Name</Label>
+          <Label htmlFor="create-password">Initial Password</Label>
           <Input
-            id="create-surname"
-            value={formData.surname}
-            onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+            id="create-password"
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            placeholder="Employee will be asked to change on first login"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Default: changeme123 (employee will be required to change on first login)
+          </p>
+        </div>
+      </div>
+
+      {/* Admin Settings */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Admin Settings</h3>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="create-isAdmin"
+            checked={formData.isAdmin}
+            onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
+          />
+          <Label htmlFor="create-isAdmin">Admin User</Label>
+        </div>
+
+        {formData.isAdmin && (
+          <div>
+            <Label htmlFor="create-adminScope">Admin Scope</Label>
+            <Select value={formData.adminScope} onValueChange={(value) => setFormData({ ...formData, adminScope: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select admin scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="super">Super Admin</SelectItem>
+                <SelectItem value="department">Department Admin</SelectItem>
+                <SelectItem value="site">Site Admin</SelectItem>
+                <SelectItem value="limited">Limited Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      {/* Profile Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Profile</h3>
+        
+        <div>
+          <Label htmlFor="create-avatarUrl">Avatar URL</Label>
+          <Input
+            id="create-avatarUrl"
+            value={formData.avatarUrl}
+            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+            placeholder="https://example.com/avatar.jpg"
           />
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="create-email">Email</Label>
-        <Input
-          id="create-email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="create-jobTitle">Job Title</Label>
-          <Input
-            id="create-jobTitle"
-            value={formData.jobTitle}
-            onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="create-department">Department</Label>
-          <Input
-            id="create-department"
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <DialogFooter>
+      <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
@@ -1390,7 +1694,7 @@ function EmployeeDirectory() {
 
       {/* Edit Employee Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Employee</DialogTitle>
             <DialogDescription>
@@ -1419,7 +1723,7 @@ function EmployeeDirectory() {
 
       {/* Create Employee Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Add New Employee</DialogTitle>
             <DialogDescription>
