@@ -1642,24 +1642,26 @@ function EmployeeDirectory() {
   const filteredEmployees = Array.isArray(employees) ? employees.filter((employee: Employee) => {
     if (!employee) return false;
     
-    // If no search term, show all employees (filtered only by department/location)
+    // Apply department and location filters first
+    const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
+    const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
+    
+    // If no search term, just apply department/location filters
     if (!searchTerm.trim()) {
-      const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
-      const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
       return matchesDepartment && matchesLocation;
     }
     
+    // Apply search filter
     const searchLower = searchTerm.toLowerCase().trim();
-    const matchesSearch = (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
-                         (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
-                         (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
-                         (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
-                         (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
-                         (employee.phoneNumber && employee.phoneNumber.toLowerCase().includes(searchLower)) ||
-                         (employee.username && employee.username.toLowerCase().includes(searchLower));
-
-    const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
-    const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
+    const matchesSearch = (
+      (employee.name && employee.name.toLowerCase().includes(searchLower)) ||
+      (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
+      (employee.email && employee.email.toLowerCase().includes(searchLower)) ||
+      (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
+      (employee.department && employee.department.toLowerCase().includes(searchLower)) ||
+      (employee.phoneNumber && employee.phoneNumber.toLowerCase().includes(searchLower)) ||
+      (employee.username && employee.username.toLowerCase().includes(searchLower))
+    );
 
     return matchesSearch && matchesDepartment && matchesLocation;
   }) : [];
@@ -1705,7 +1707,7 @@ function EmployeeDirectory() {
           {searchTerm && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <span className="text-xs text-gray-500">
-                {filteredEmployees.length} results
+                {filteredEmployees.length} result{filteredEmployees.length !== 1 ? 's' : ''}
               </span>
             </div>
           )}
