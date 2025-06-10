@@ -1597,10 +1597,7 @@ function EmployeeDirectory() {
           <Input
             placeholder="Search employees..."
             value={searchTerm}
-            onChange={(e) => {
-              console.log('Search input changed:', e.target.value);
-              setSearchTerm(e.target.value);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
             data-testid="employee-search-input"
           />
@@ -1638,14 +1635,7 @@ function EmployeeDirectory() {
         </Select>
       </div>
 
-      {/* Debug Info - Remove after testing */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-100 p-2 rounded text-xs">
-          <strong>Debug:</strong> Search term: "{searchTerm}" | 
-          Total employees: {employees?.length || 0} | 
-          Filtered: {filteredEmployees.length}
-        </div>
-      )}
+
 
       {/* Employee Table */}
       <Card>

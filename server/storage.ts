@@ -41,6 +41,8 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByName(name: string, surname: string): Promise<User | undefined>;
+  checkDuplicateUser(email: string, name?: string, surname?: string): Promise<{ emailExists: boolean; nameExists: boolean }>;
   createUser(user: InsertUser): Promise<User>;
   getUserWithBalance(id: number): Promise<UserWithBalance | undefined>;
   getAllUsersWithBalance(): Promise<UserWithBalance[]>;
@@ -156,6 +158,28 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
+  }
+
+  async getUserByName(name: string, surname: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      and(eq(users.name, name), eq(users.surname, surname))
+    );
+    return user;
+  }
+
+  async checkDuplicateUser(email: string, name?: string, surname?: string): Promise<{ emailExists: boolean; nameExists: boolean }> {
+    // Check for email duplicates
+    const emailUser = await this.getUserByEmail(email);
+    const emailExists = !!emailUser;
+
+    // Check for name duplicates if both name and surname are provided
+    let nameExists = false;
+    if (name && surname) {
+      const nameUser = await this.getUserByName(name, surname);
+      nameExists = !!nameUser;
+    }
+
+    return { emailExists, nameExists };
   }
 
   async createUser(userData: InsertUser): Promise<User> {
