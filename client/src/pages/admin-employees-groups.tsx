@@ -1597,9 +1597,20 @@ function EmployeeDirectory() {
           <Input
             placeholder="Search employees..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              console.log('Search input changed:', e.target.value);
+              setSearchTerm(e.target.value);
+            }}
             className="pl-10"
+            data-testid="employee-search-input"
           />
+          {searchTerm && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <span className="text-xs text-gray-500">
+                {filteredEmployees.length} results
+              </span>
+            </div>
+          )}
         </div>
 
         <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
@@ -1626,6 +1637,15 @@ function EmployeeDirectory() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Debug Info - Remove after testing */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-100 p-2 rounded text-xs">
+          <strong>Debug:</strong> Search term: "{searchTerm}" | 
+          Total employees: {employees?.length || 0} | 
+          Filtered: {filteredEmployees.length}
+        </div>
+      )}
 
       {/* Employee Table */}
       <Card>
