@@ -531,7 +531,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Departments</Label>
             <div className="grid grid-cols-2 gap-2 mt-2 max-h-32 overflow-y-auto">
-              {departments?.map((dept: string) => (
+              {Array.isArray(departments) && departments.map((dept: string) => (
                 <div key={dept} className="flex items-center space-x-2">
                   <Checkbox
                     id={`dept-${dept}`}
@@ -545,7 +545,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
                       } else {
                         setFormData(prev => ({
                           ...prev,
-                          allowedDepartments: prev.allowedDepartments.filter(d => d !== dept)
+                          allowedDepartments: prev.allowedDepartments.filter((d: string) => d !== dept)
                         }));
                       }
                     }}
@@ -561,7 +561,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Sites/Locations</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {locations?.map((location: string) => (
+              {Array.isArray(locations) && locations.map((location: string) => (
                 <div key={location} className="flex items-center space-x-2">
                   <Checkbox
                     id={`site-${location}`}
@@ -873,7 +873,340 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
   );
 }
 
-// Employee Directory Component (imported from existing admin-employees.tsx)
+// Employee Form Components
+interface EditEmployeeFormProps {
+  employee: Employee;
+  onClose: () => void;
+  onUpdate: () => void;
+}
+
+function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps) {
+  const [formData, setFormData] = useState<EmployeeFormData>({
+    password: "",
+    name: employee.name || "",
+    surname: employee.surname || "",
+    email: employee.email || "",
+    phoneNumber: employee.phoneNumber || "",
+    jobTitle: employee.jobTitle || "",
+    department: employee.department || "",
+    location: employee.location || "",
+    managerEmail: employee.managerEmail || "",
+    sex: employee.sex || "",
+    nationality: employee.nationality || "",
+    birthDate: employee.birthDate || "",
+    hireDate: employee.hireDate || "",
+    isAdmin: employee.isAdmin || false,
+    status: employee.status || "active",
+    avatarUrl: employee.avatarUrl || "",
+    adminScope: employee.adminScope || "none",
+    allowedSites: employee.allowedSites || [],
+    allowedDepartments: employee.allowedDepartments || []
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/users/${employee.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update employee');
+      }
+
+      onUpdate();
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update employee",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="name">First Name</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="surname">Last Name</Label>
+          <Input
+            id="surname"
+            value={formData.surname}
+            onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="jobTitle">Job Title</Label>
+          <Input
+            id="jobTitle"
+            value={formData.jobTitle}
+            onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label htmlFor="department">Department</Label>
+          <Input
+            id="department"
+            value={formData.department}
+            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="isAdmin"
+          checked={formData.isAdmin}
+          onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
+        />
+        <Label htmlFor="isAdmin">Admin User</Label>
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Update Employee
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+interface CreateEmployeeFormProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
+  const [formData, setFormData] = useState<EmployeeFormData>({
+    password: "changeme123",
+    name: "",
+    surname: "",
+    email: "",
+    phoneNumber: "",
+    jobTitle: "",
+    department: "",
+    location: "",
+    managerEmail: "",
+    sex: "",
+    nationality: "",
+    birthDate: "",
+    hireDate: "",
+    isAdmin: false,
+    status: "active",
+    avatarUrl: "",
+    adminScope: "none",
+    allowedSites: [],
+    allowedDepartments: []
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create employee');
+      }
+
+      onSuccess();
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create employee",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="create-name">First Name</Label>
+          <Input
+            id="create-name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="create-surname">Last Name</Label>
+          <Input
+            id="create-surname"
+            value={formData.surname}
+            onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="create-email">Email</Label>
+        <Input
+          id="create-email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="create-jobTitle">Job Title</Label>
+          <Input
+            id="create-jobTitle"
+            value={formData.jobTitle}
+            onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label htmlFor="create-department">Department</Label>
+          <Input
+            id="create-department"
+            value={formData.department}
+            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Create Employee
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+interface BulkUploadFormProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function BulkUploadForm({ onClose, onSuccess }: BulkUploadFormProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/users/bulk-upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      onSuccess();
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload employees",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="file">Choose File</Label>
+        <Input
+          id="file"
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          required
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          Supported formats: CSV, Excel (.xlsx, .xls)
+        </p>
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isLoading || !file}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Upload
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// Employee Directory Component
 function EmployeeDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
@@ -887,30 +1220,32 @@ function EmployeeDirectory() {
   const queryClient = useQueryClient();
 
   // Fetch employees
-  const { data: employees, isLoading: employeesLoading } = useQuery({
+  const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
     queryKey: ['/api/users'],
   });
 
   // Fetch departments
-  const { data: departments } = useQuery({
+  const { data: departments = [] } = useQuery<string[]>({
     queryKey: ['/api/users/departments'],
   });
 
   // Fetch locations
-  const { data: locations } = useQuery({
+  const { data: locations = [] } = useQuery<string[]>({
     queryKey: ['/api/users/locations'],
   });
 
-  const filteredEmployees = employees?.filter((employee: Employee) => {
-    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredEmployees = Array.isArray(employees) ? employees.filter((employee: Employee) => {
+    if (!employee) return false;
+    
+    const matchesSearch = (employee.name && employee.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesDepartment = selectedDepartment === "all" || employee.department === selectedDepartment;
     const matchesLocation = selectedLocation === "all" || employee.location === selectedLocation;
 
     return matchesSearch && matchesDepartment && matchesLocation;
-  }) || [];
+  }) : [];
 
   return (
     <div className="space-y-6">
@@ -1052,6 +1387,81 @@ function EmployeeDirectory() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit Employee Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Employee</DialogTitle>
+            <DialogDescription>
+              Update employee information and settings
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEmployee && (
+            <EditEmployeeForm 
+              employee={selectedEmployee}
+              onClose={() => {
+                setIsDialogOpen(false);
+                setSelectedEmployee(null);
+              }}
+              onUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+                toast({
+                  title: "Success",
+                  description: "Employee updated successfully",
+                });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Employee Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Employee</DialogTitle>
+            <DialogDescription>
+              Create a new employee account
+            </DialogDescription>
+          </DialogHeader>
+          
+          <CreateEmployeeForm 
+            onClose={() => setIsCreateDialogOpen(false)}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+              toast({
+                title: "Success",
+                description: "Employee created successfully",
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Upload Dialog */}
+      <Dialog open={isBulkUploadDialogOpen} onOpenChange={setIsBulkUploadDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk Upload Employees</DialogTitle>
+            <DialogDescription>
+              Upload a CSV or Excel file with employee data
+            </DialogDescription>
+          </DialogHeader>
+          
+          <BulkUploadForm 
+            onClose={() => setIsBulkUploadDialogOpen(false)}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+              toast({
+                title: "Success", 
+                description: "Employees uploaded successfully",
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
