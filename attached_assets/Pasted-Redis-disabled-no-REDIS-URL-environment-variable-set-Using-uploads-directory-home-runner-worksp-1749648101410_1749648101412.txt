@@ -1,0 +1,197 @@
+Redis disabled - no REDIS_URL environment variable set
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Failed to connect to MongoDB: MongoServerSelectionError: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+
+    at Topology.selectServer (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:628:30)
+    at async Topology._connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:468:22)
+    at async Topology.connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:405:7)
+    at async topologyConnect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:620:9)
+    at async MongoClient._connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:632:7)
+    at async MongoClient.connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:544:7)
+    at async connectToMongoDB (/home/runner/workspace/server/mongodb/connection.ts:26:5)
+    at async initializeMongoDB (/home/runner/workspace/server/mongodb/integration.ts:9:16)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:64:28) {
+  errorLabelSet: Set(0) {},
+  reason: TopologyDescription {
+    type: 'ReplicaSetNoPrimary',
+    servers: Map(3) {
+      'ac-xasswr7-shard-00-01.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-00.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-02.7yjnylf.mongodb.net:27017' => [ServerDescription]
+    },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: 'atlas-feqa1d-shard-0',
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined,
+  [cause]: MongoNetworkError: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+  
+      at TLSSocket.<anonymous> (/home/runner/workspace/node_modules/mongodb/src/cmap/connect.ts:394:16)
+      at Object.onceWrapper (node:events:633:26)
+      at TLSSocket.emit (node:events:518:28)
+      at emitErrorNT (node:internal/streams/destroy:169:8)
+      at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+    errorLabelSet: Set(1) { 'ResetPool' },
+    beforeHandshake: false,
+    [cause]: [Error: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+    ] {
+      library: 'SSL routines',
+      reason: 'tlsv1 alert internal error',
+      code: 'ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR'
+    }
+  }
+}
+Social features will use PostgreSQL fallback
+MongoDB not available, continuing with PostgreSQL for social features
+1:17:07 PM [express] serving on port 5000
+Redis disabled - no REDIS_URL environment variable set
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Failed to connect to MongoDB: MongoServerSelectionError: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+
+    at Topology.selectServer (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:628:30)
+    at async Topology._connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:468:22)
+    at async Topology.connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:405:7)
+    at async topologyConnect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:620:9)
+    at async MongoClient._connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:632:7)
+    at async MongoClient.connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:544:7)
+    at async connectToMongoDB (/home/runner/workspace/server/mongodb/connection.ts:26:5)
+    at async initializeMongoDB (/home/runner/workspace/server/mongodb/integration.ts:9:16)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:64:28) {
+  errorLabelSet: Set(0) {},
+  reason: TopologyDescription {
+    type: 'ReplicaSetNoPrimary',
+    servers: Map(3) {
+      'ac-xasswr7-shard-00-01.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-00.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-02.7yjnylf.mongodb.net:27017' => [ServerDescription]
+    },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: 'atlas-feqa1d-shard-0',
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined,
+  [cause]: MongoNetworkError: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+  
+      at TLSSocket.<anonymous> (/home/runner/workspace/node_modules/mongodb/src/cmap/connect.ts:394:16)
+      at Object.onceWrapper (node:events:633:26)
+      at TLSSocket.emit (node:events:518:28)
+      at emitErrorNT (node:internal/streams/destroy:169:8)
+      at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+    errorLabelSet: Set(1) { 'ResetPool' },
+    beforeHandshake: false,
+    [cause]: [Error: 405296988F7F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+    ] {
+      library: 'SSL routines',
+      reason: 'tlsv1 alert internal error',
+      code: 'ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR'
+    }
+  }
+}
+Social features will use PostgreSQL fallback
+MongoDB not available, continuing with PostgreSQL for social features
+1:17:07 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+LOGIN ATTEMPT - Raw body: { email: 'shams.aranib@canva.com', password: 'password123' }
+Looking up user with email: shams.aranib@canva.com
+User found in main database: shams.aranib@canva.com
+User found: shams.aranib, verifying password
+Stored password hash: $2b$10$ZklR9R5.0ToxezloE3IOpO9BIgydzB1XpUpcJvZUZBwwOVHcTVJUu
+Provided password: password123
+Verifying password...
+Plain password: password123
+Stored hashed password: $2b$10$ZklR9R5.0ToxezloE3IOpO9BIgydzB1XpUpcJvZUZBwwOVHcTVJUu
+Password verification result: true
+Password verification result: true
+Password verified, generating token
+Updated last seen for user 1680
+Login successful for: {
+  id: 1680,
+  username: 'shams.aranib',
+  name: 'shams',
+  surname: 'aranib',
+  email: 'shams.aranib@canva.com',
+  phoneNumber: '1-473-576-8357',
+  jobTitle: 'admin HR',
+  department: 'Human resources',
+  sex: 'male',
+  nationality: 'American',
+  birthDate: '1999-06-05',
+  roleType: null,
+  isAdmin: true,
+  status: 'active',
+  avatarUrl: 'https://ui-avatars.com/api/?name=shams&background=1abc9c&color=ffffff&size=150&rounded=true&seed=1680',
+  hireDate: '2023-06-04',
+  firebaseUid: 'KR2AGLBLoeWbKkrc3RwC1uCP2yC3',
+  organizationId: 1,
+  permissions: null,
+  title: null,
+  location: 'New York',
+  responsibilities: 'Responsible of all admin HR aspect on New york site.\n' +
+    "Don't hesitate to contact me also for all your queries regarding the social platform ",
+  aboutMe: 'Hardworker I believe in consistency and planning ',
+  coverPhotoUrl: 'data:image/jpeg;base64,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'... 230255 more characters,
+  lastSeenAt: 2025-06-10T08:37:19.849Z,
+  managerId: null,
+  managerEmail: 'campbell.emma@canva.com',
+  adminScope: 'site',
+  allowedSites: [ 'New York' ],
+  allowedDepartments: [],
+  createdAt: 2025-06-04T09:53:30.028Z,
+  createdBy: 869
+}
+Generated token: eyJhbGciOiJIUzI1NiIs...
+1:20:06 PM [express] POST /api/auth/login 200 in 1337ms :: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp…
+1:20:13 PM [express] GET /api/channels/suggestions 400 in 361ms :: {"message":"Invalid channel ID"}
+1:20:13 PM [express] GET /api/channels/my-channels 400 in 595ms :: {"message":"Invalid channel ID"}
+Cache MISS for key: departments:org:1
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+1:20:13 PM [express] GET /api/users/departments 304 in 677ms :: ["Administration","Executive","Finan…
+Cache MISS for key: locations:org:1
+1:20:13 PM [express] GET /api/channels/trending 200 in 740ms :: [{"id":3,"interestId":null,"name":"M…
+1:20:14 PM [express] GET /api/users/locations 304 in 309ms :: ["Dubai","New York","Tokyo"]
+Final user object isAdmin: true
+1:20:14 PM [express] GET /api/users/me 200 in 1113ms :: {"id":1680,"username":"shams.aranib","passwo…
+Returning 804 users for company 1
+1:20:22 PM [express] GET /api/users 200 in 9387ms :: [{"id":1330,"username":"justin.turner","name":"…
+1:20:22 PM [express] GET /api/points/balance 304 in 8504ms :: {"balance":0,"userId":1680}
+Birthday users found: 0
+Anniversary users found: 0
+Total celebrations returning: 0
+1:20:22 PM [express] GET /api/celebrations/today 304 in 8669ms :: []
+1:20:22 PM [express] GET /api/channels/suggestions 400 in 8557ms :: {"message":"Invalid channel ID"}
+1:20:22 PM [express] GET /api/social/stats 200 in 7ms
+1:20:22 PM [express] GET /api/channels/my-channels 400 in 7543ms :: {"message":"Invalid channel ID"}
+1:20:23 PM [express] GET /api/social/posts 200 in 4ms
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+1:20:23 PM [express] GET /api/users/me 200 in 656ms :: {"id":1680,"username":"shams.aranib","passwor…
+1:20:23 PM [express] GET /api/celebrations/upcoming 304 in 9336ms :: []
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+1:20:23 PM [express] GET /api/social/stats 200 in 4ms
+Final user object isAdmin: true
+1:20:24 PM [express] GET /api/users/me 200 in 381ms :: {"id":1680,"username":"shams.aranib","passwor…
+1:20:24 PM [express] GET /api/channels/suggestions 400 in 79ms :: {"message":"Invalid channel ID"}
+1:20:24 PM [express] GET /api/social/posts 200 in 5ms
