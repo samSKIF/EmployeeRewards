@@ -15,6 +15,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@shared/logger";
 
 interface Space {
   id: number;
@@ -102,14 +103,14 @@ export default function ChannelDetail() {
   });
 
   // Debug space data
-  console.log('=== SPACE DEBUG ===');
-  console.log('Space ID:', channelId);
-  console.log('Query Key:', `/api/channels/${channelId}`);
-  console.log('Space data:', space);
-  console.log('Space loading:', spaceLoading);
-  console.log('Space error:', spaceError);
-  console.log('Space name from data:', space?.name);
-  console.log('=== END DEBUG ===');
+  logger.debug('=== SPACE DEBUG ===');
+  logger.debug('Space ID:', channelId);
+  logger.debug('Query Key:', `/api/channels/${channelId}`);
+  logger.debug('Space data:', space);
+  logger.debug('Space loading:', spaceLoading);
+  logger.debug('Space error:', spaceError);
+  logger.debug('Space name from data:', space?.name);
+  logger.debug('=== END DEBUG ===');
 
   // Fetch space posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<SpacePost[]>({
@@ -143,13 +144,13 @@ export default function ChannelDetail() {
   });
   
   // Debug membership
-  console.log('=== MEMBERSHIP DEBUG ===');
-  console.log('Current user:', user);
-  console.log('Members array:', members);
-  console.log('Is member:', isMember);
-  console.log('User ID:', user?.id);
-  console.log('Member IDs:', Array.isArray(members) ? members.map(m => m.id) : 'Not an array');
-  console.log('=== END MEMBERSHIP DEBUG ===');
+  logger.debug('=== MEMBERSHIP DEBUG ===');
+  logger.debug('Current user:', user);
+  logger.debug('Members array:', members);
+  logger.debug('Is member:', isMember);
+  logger.debug('User ID:', user?.id);
+  logger.debug('Member IDs:', Array.isArray(members) ? members.map(m => m.id) : 'Not an array');
+  logger.debug('=== END MEMBERSHIP DEBUG ===');
 
   // Join channel mutation
   const joinChannelMutation = useMutation({

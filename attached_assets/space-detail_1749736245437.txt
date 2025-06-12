@@ -1,0 +1,167 @@
+diff --git a/client/src/pages/space-detail.tsx b/client/src/pages/space-detail.tsx
+index 7e24376851df4ee8a5e5e12a17b29e90b129d932..bd4881abde4ba118c13aea5a2106c82490b2cf5f 100644
+--- a/client/src/pages/space-detail.tsx
++++ b/client/src/pages/space-detail.tsx
+@@ -1,42 +1,43 @@
+ import { useState } from "react";
+ import { useParams, useLocation } from "wouter";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { Badge } from "@/components/ui/badge";
+ import { Card, CardContent } from "@/components/ui/card";
+ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ import { 
+   ArrowLeft, Users, MessageCircle, Heart, Share2, MoreHorizontal, 
+   Building, MapPin, Briefcase, Coffee, Lock, Globe, UserCheck,
+   Image, Video, FileText, Calendar, Settings, Bell, Search, UserPlus, UserMinus,
+   ThumbsUp, MessageSquare, Send
+ } from "lucide-react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { apiRequest } from "@/lib/queryClient";
+ import { useToast } from "@/hooks/use-toast";
++import { logger } from "@shared/logger";
+ 
+ interface Space {
+   id: number;
+   name: string;
+   description: string;
+   channelType: string;
+   accessLevel: string;
+   memberCount: number;
+   isActive: boolean;
+   allowedDepartments?: string[];
+   allowedSites?: string[];
+   createdBy: number;
+   organizationId: number;
+   createdAt: string;
+   coverImage?: string;
+ }
+ 
+ interface SpacePost {
+   id: number;
+   content: string;
+   userId: number;
+   userName: string;
+   userAvatar?: string;
+   createdAt: string;
+   likeCount: number;
+diff --git a/client/src/pages/space-detail.tsx b/client/src/pages/space-detail.tsx
+index 7e24376851df4ee8a5e5e12a17b29e90b129d932..bd4881abde4ba118c13aea5a2106c82490b2cf5f 100644
+--- a/client/src/pages/space-detail.tsx
++++ b/client/src/pages/space-detail.tsx
+@@ -80,98 +81,98 @@ const getChannelIcon = (type: string) => {
+ const getAccessLevel = (accessLevel: string) => {
+   switch (accessLevel) {
+     case 'approval_required': return 'Private group';
+     case 'department_only': return 'Visible';
+     case 'site_only': return 'Visible';
+     default: return 'Public';
+   }
+ };
+ 
+ export default function ChannelDetail() {
+   const params = useParams();
+   const [, setLocation] = useLocation();
+   const [newPost, setNewPost] = useState("");
+   const { toast } = useToast();
+   const queryClient = useQueryClient();
+ 
+   const channelId = params.id;
+ 
+   // Fetch space details
+   const { data: space, isLoading: spaceLoading, error: spaceError } = useQuery<Space>({
+     queryKey: [`/api/channels/${channelId}`],
+     enabled: !!channelId
+   });
+ 
+   // Debug space data
+-  console.log('=== SPACE DEBUG ===');
+-  console.log('Space ID:', channelId);
+-  console.log('Query Key:', `/api/channels/${channelId}`);
+-  console.log('Space data:', space);
+-  console.log('Space loading:', spaceLoading);
+-  console.log('Space error:', spaceError);
+-  console.log('Space name from data:', space?.name);
+-  console.log('=== END DEBUG ===');
++  logger.debug('=== SPACE DEBUG ===');
++  logger.debug('Space ID:', channelId);
++  logger.debug('Query Key:', `/api/channels/${channelId}`);
++  logger.debug('Space data:', space);
++  logger.debug('Space loading:', spaceLoading);
++  logger.debug('Space error:', spaceError);
++  logger.debug('Space name from data:', space?.name);
++  logger.debug('=== END DEBUG ===');
+ 
+   // Fetch space posts
+   const { data: posts = [], isLoading: postsLoading } = useQuery<SpacePost[]>({
+     queryKey: [`/api/channels/${channelId}/posts`],
+     enabled: !!channelId
+   });
+ 
+   // Fetch space members
+   const { data: members = [], isLoading: membersLoading } = useQuery<SpaceMember[]>({
+     queryKey: [`/api/channels/${channelId}/members`],
+     enabled: !!channelId
+   });
+ 
+   // Fetch space admins
+   const { data: admins = [], isLoading: adminsLoading } = useQuery<SpaceMember[]>({
+     queryKey: [`/api/channels/${channelId}/admins`],
+     enabled: !!channelId
+   });
+ 
+   // Check if current user is a member
+   const { data: user } = useQuery({ queryKey: ['/api/users/me'] });
+   const isMember = Array.isArray(members) && members.some((member: any) => member.id === user?.id);
+   
+   // Check if user is admin
+   const isAdmin = user && Array.isArray(admins) && (admins.some((admin: any) => admin.id === user.id) || space?.createdBy === user.id);
+ 
+   // Fetch join requests (for admins only)
+   const { data: joinRequests = [], isLoading: joinRequestsLoading } = useQuery<any[]>({
+     queryKey: [`/api/channels/${channelId}/join-requests`],
+     enabled: !!channelId && !!isAdmin
+   });
+   
+   // Debug membership
+-  console.log('=== MEMBERSHIP DEBUG ===');
+-  console.log('Current user:', user);
+-  console.log('Members array:', members);
+-  console.log('Is member:', isMember);
+-  console.log('User ID:', user?.id);
+-  console.log('Member IDs:', Array.isArray(members) ? members.map(m => m.id) : 'Not an array');
+-  console.log('=== END MEMBERSHIP DEBUG ===');
++  logger.debug('=== MEMBERSHIP DEBUG ===');
++  logger.debug('Current user:', user);
++  logger.debug('Members array:', members);
++  logger.debug('Is member:', isMember);
++  logger.debug('User ID:', user?.id);
++  logger.debug('Member IDs:', Array.isArray(members) ? members.map(m => m.id) : 'Not an array');
++  logger.debug('=== END MEMBERSHIP DEBUG ===');
+ 
+   // Join channel mutation
+   const joinChannelMutation = useMutation({
+     mutationFn: () => apiRequest('POST', `/api/channels/${channelId}/join`),
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/members`] });
+       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
+       toast({ title: "Successfully joined channel!" });
+     },
+     onError: () => {
+       toast({ title: "Failed to join channel", variant: "destructive" });
+     }
+   });
+ 
+   // Leave channel mutation
+   const leaveChannelMutation = useMutation({
+     mutationFn: () => apiRequest('DELETE', `/api/channels/${channelId}/leave`),
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/members`] });
+       queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}`] });
+       toast({ title: "Successfully left channel!" });
+     },
+     onError: () => {
+       toast({ title: "Failed to leave channel", variant: "destructive" });
+     }
+
