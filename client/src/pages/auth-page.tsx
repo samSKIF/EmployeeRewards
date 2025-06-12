@@ -17,8 +17,8 @@ export default function AuthPage() {
   const [showAdminSetup, setShowAdminSetup] = useState(false);
   
   // Admin account setup form fields
-  const [adminEmail, setAdminEmail] = useState("admin@demo.io");
-  const [adminPassword, setAdminPassword] = useState("admin123");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [adminCompanyName, setAdminCompanyName] = useState("");
   const [adminCountry, setAdminCountry] = useState("");
   const [adminAddress, setAdminAddress] = useState("");

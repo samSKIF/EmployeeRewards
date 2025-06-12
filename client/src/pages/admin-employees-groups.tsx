@@ -1651,9 +1651,7 @@ function EmployeeDirectory() {
       arr.findIndex(e => e.id === employee.id) === index
     );
     
-    if (uniqueEmployees.length !== employees.length) {
-      console.warn(`Removed ${employees.length - uniqueEmployees.length} duplicate employees`);
-    }
+
 
     let result = [...uniqueEmployees];
 
@@ -1687,16 +1685,7 @@ function EmployeeDirectory() {
       result = result.filter((employee: Employee) => employee.location === selectedLocation);
     }
 
-    // Debug logging
-    console.log('Employee Search Debug:', {
-      searchTerm: searchTerm,
-      selectedDepartment,
-      selectedLocation,
-      totalEmployees: employees.length,
-      filteredCount: result.length,
-      firstThreeResults: result.slice(0, 3).map(e => `${e.name} ${e.surname} (${e.email})`),
-      allFilteredIds: result.map(e => e.id)
-    });
+
 
     return result;
   }, [employees, searchTerm, selectedDepartment, selectedLocation]);

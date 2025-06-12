@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Award } from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("admin@demo.io");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login, isLoading } = useAuth();
   const [, setLocation] = useLocation();
