@@ -1646,7 +1646,16 @@ function EmployeeDirectory() {
       return [];
     }
 
-    let result = [...employees];
+    // Remove duplicates by ID first
+    const uniqueEmployees = employees.filter((employee, index, arr) => 
+      arr.findIndex(e => e.id === employee.id) === index
+    );
+    
+    if (uniqueEmployees.length !== employees.length) {
+      console.warn(`Removed ${employees.length - uniqueEmployees.length} duplicate employees`);
+    }
+
+    let result = [...uniqueEmployees];
 
     // Apply search filter
     if (searchTerm && searchTerm.trim()) {
@@ -1685,7 +1694,8 @@ function EmployeeDirectory() {
       selectedLocation,
       totalEmployees: employees.length,
       filteredCount: result.length,
-      firstThreeResults: result.slice(0, 3).map(e => `${e.name} ${e.surname} (${e.email})`)
+      firstThreeResults: result.slice(0, 3).map(e => `${e.name} ${e.surname} (${e.email})`),
+      allFilteredIds: result.map(e => e.id)
     });
 
     return result;
