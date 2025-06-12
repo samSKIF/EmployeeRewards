@@ -54,7 +54,7 @@ export function MyActiveSpacesWidget() {
     );
   }
 
-  const activeSpaces = mySpaces.slice(0, 6);
+  const activeSpaces = mySpaces?.slice(0, 6) || [];
 
   return (
     <Card>

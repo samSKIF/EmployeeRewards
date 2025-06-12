@@ -103,7 +103,7 @@ export function SpacesDiscoveryWidget() {
             </div>
           ) : suggestedError ? (
             <p className="text-sm text-red-500">Failed to load suggested spaces</p>
-          ) : suggestedSpaces.length > 0 ? (
+          ) : suggestedSpaces?.length > 0 ? (
             suggestedSpaces.slice(0, 3).map((space: Space) => (
               <div key={space.id} className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
