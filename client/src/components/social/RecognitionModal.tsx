@@ -147,7 +147,7 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
               <SelectValue placeholder="Select teammate" />
             </SelectTrigger>
             <SelectContent>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <SelectItem key={user.id} value={user.id.toString()}>
                   {user.name}
                 </SelectItem>
