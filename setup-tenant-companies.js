@@ -69,13 +69,14 @@ async function setupTenantCompanies() {
     console.log('✅ Updated admin@demo.io to belong to Fripl Technologies');
 
     // Update all employees created by this admin to have the correct organization link
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@demo.io';
     const employeeUpdateResult = await pool.query(`
       UPDATE employees 
-      SET created_by_id = (SELECT id FROM users WHERE email = 'admin@demo.io')
+      SET created_by_id = (SELECT id FROM users WHERE email = $1)
       WHERE email LIKE '%@fripl.com'
-    `);
+    `, [adminEmail]);
 
-    console.log(`✅ Updated ${employeeUpdateResult.rowCount} employees to be linked to admin@demo.io`);
+    console.log(`✅ Updated ${employeeUpdateResult.rowCount} employees to be linked to ${adminEmail}`);
 
     // Create a demo company for testing multi-tenant functionality
     const demoCompanyResult = await pool.query(`

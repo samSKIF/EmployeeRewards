@@ -78,7 +78,8 @@ async function createSampleData() {
     `);
 
     // Create ThrivioHR management admin user
-    const hashedPassword = await bcrypt.hash('ThrivioAdmin2024!', 10);
+    const adminPassword = process.env.THRIVIO_ADMIN_PASSWORD || 'please_set_environment_variable';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
     await pool.query(`
       INSERT INTO admin_users (username, email, password, name, role, permissions)
       VALUES ($1, $2, $3, $4, $5, $6)
@@ -177,7 +178,7 @@ async function createSampleData() {
         admin_username: 'canva_admin',
         admin_email: 'admin@canva.com',
         admin_name: 'Canva Administrator',
-        admin_password: 'Canva2024Admin!'
+        admin_password: process.env.CANVA_ADMIN_PASSWORD || 'please_set_environment_variable'
       },
       {
         name: 'Monday',
@@ -190,7 +191,7 @@ async function createSampleData() {
         admin_username: 'monday_admin',
         admin_email: 'admin@monday.com',
         admin_name: 'Monday Administrator',
-        admin_password: 'Monday2024Admin!'
+        admin_password: process.env.MONDAY_ADMIN_PASSWORD || 'please_set_environment_variable'
       },
       {
         name: 'Loylogic',
@@ -203,7 +204,7 @@ async function createSampleData() {
         admin_username: 'loylogic_admin',
         admin_email: 'admin@loylogic.com',
         admin_name: 'Loylogic Administrator',
-        admin_password: 'Loylogic2024Admin!'
+        admin_password: process.env.LOYLOGIC_ADMIN_PASSWORD || 'please_set_environment_variable'
       }
     ];
 

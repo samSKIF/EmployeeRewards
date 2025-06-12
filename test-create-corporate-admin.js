@@ -7,10 +7,10 @@ async function createCorporateAdmin() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      email: 'corporate.admin@thriviohr.com',
-      password: 'SecurePassword123!',
-      name: 'Corporate Admin',
-      username: 'corporate_admin'
+      email: process.env.CORP_ADMIN_EMAIL || 'corporate.admin@thriviohr.com',
+      password: process.env.CORP_ADMIN_PASSWORD || 'please_set_environment_variable',
+      name: process.env.CORP_ADMIN_NAME || 'Corporate Admin',
+      username: process.env.CORP_ADMIN_USERNAME || 'corporate_admin'
     }),
   });
 

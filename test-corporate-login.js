@@ -11,8 +11,8 @@ async function testCorporateLogin() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: 'corp_admin',
-        password: 'SecurePassword123!'
+        username: process.env.CORP_ADMIN_USERNAME || 'corp_admin',
+        password: process.env.CORP_ADMIN_PASSWORD || 'please_set_environment_variable'
       }),
     });
     
