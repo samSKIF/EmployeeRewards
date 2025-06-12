@@ -27,7 +27,7 @@ async function testDuplicateValidation() {
         name: 'Test',
         surname: 'User',
         username: 'testuser',
-        password: 'password123',
+        password: process.env.TEST_USER_PASSWORD || 'please_set_environment_variable',
         department: 'Test',
         location: 'Test Location'
       });
@@ -44,7 +44,7 @@ async function testDuplicateValidation() {
         name: 'Justin',
         surname: 'Turner',
         username: 'newjustin',
-        password: 'password123',
+        password: process.env.TEST_USER_PASSWORD || 'please_set_environment_variable',
         department: 'Test',
         location: 'Test Location'
       });
@@ -61,7 +61,7 @@ async function testDuplicateValidation() {
         name: 'Unique',
         surname: 'User',
         username: 'uniqueuser',
-        password: 'password123',
+        password: process.env.TEST_USER_PASSWORD || 'please_set_environment_variable',
         department: 'Test',
         location: 'Test Location'
       });

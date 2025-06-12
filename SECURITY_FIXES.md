@@ -20,7 +20,8 @@ Critical security vulnerabilities have been resolved by removing hardcoded crede
 
 ### Setup Scripts
 - `setup-tenant-companies.js`: Replaced hardcoded admin@demo.io references with environment variables
-- `create-saas-sample-data.js`: Replaced hardcoded ThrivioAdmin2024! with environment variables
+- `create-saas-sample-data.js`: Replaced hardcoded ThrivioAdmin2024!, Canva2024Admin!, Monday2024Admin!, Loylogic2024Admin! with environment variables
+- `test-duplicate-validation.js`: Replaced hardcoded password123 credentials with environment variables
 
 ## Environment Variables Required
 
@@ -36,6 +37,14 @@ CORP_ADMIN_NAME=your_corp_admin_name
 # System Admin Credentials
 ADMIN_EMAIL=your_admin_email
 THRIVIO_ADMIN_PASSWORD=your_thrivio_admin_password
+
+# Company-Specific Admin Passwords
+CANVA_ADMIN_PASSWORD=your_canva_admin_password
+MONDAY_ADMIN_PASSWORD=your_monday_admin_password
+LOYLOGIC_ADMIN_PASSWORD=your_loylogic_admin_password
+
+# Test Environment Credentials
+TEST_USER_PASSWORD=your_test_user_password
 ```
 
 ## Security Improvements
