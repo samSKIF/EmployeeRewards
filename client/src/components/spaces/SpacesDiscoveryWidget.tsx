@@ -52,7 +52,7 @@ export function SpacesDiscoveryWidget() {
             </div>
           ) : trendingError ? (
             <p className="text-sm text-red-500">Failed to load trending spaces</p>
-          ) : trendingSpaces.length > 0 ? (
+          ) : trendingSpaces?.length > 0 ? (
             trendingSpaces.slice(0, 3).map((space: Space) => (
               <div key={space.id} className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
