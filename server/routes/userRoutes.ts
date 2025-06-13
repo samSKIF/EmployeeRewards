@@ -53,53 +53,6 @@ router.get("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get specific user by ID
-router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const userId = parseInt(req.params.id);
-    if (isNaN(userId)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
-
-    // Fetch user data from database
-    const [targetUser] = await db.select().from(users).where(eq(users.id, userId));
-
-    if (!targetUser) {
-      return res.status(404).json({ message: "Employee not found" });
-    }
-
-    // Only return public profile information
-    const publicProfile = {
-      id: targetUser.id,
-      name: targetUser.name,
-      surname: targetUser.surname,
-      email: targetUser.email,
-      jobTitle: targetUser.jobTitle,
-      department: targetUser.department,
-      location: targetUser.location,
-      avatarUrl: targetUser.avatarUrl,
-      responsibilities: targetUser.responsibilities,
-      aboutMe: targetUser.aboutMe,
-      birthDate: targetUser.birthDate,
-      hireDate: targetUser.hireDate,
-      phoneNumber: targetUser.phoneNumber,
-      nationality: targetUser.nationality,
-      sex: targetUser.sex,
-      coverPhotoUrl: targetUser.coverPhotoUrl
-    };
-
-    logger.debug(`Returning public profile for user ${userId} (${targetUser.name})`);
-    res.json(publicProfile);
-  } catch (error: any) {
-    logger.error("Error getting user by ID:", error);
-    res.status(500).json({ message: error.message || "Failed to get user" });
-  }
-});
-
 // Update user profile
 router.patch("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
@@ -288,6 +241,53 @@ router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => 
   } catch (error: any) {
     logger.error("Error fetching locations:", error);
     res.status(500).json({ message: error.message || "Failed to fetch locations" });
+  }
+});
+
+// Get specific user by ID (must be last to avoid conflicts with other routes)
+router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Fetch user data from database
+    const [targetUser] = await db.select().from(users).where(eq(users.id, userId));
+
+    if (!targetUser) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Only return public profile information
+    const publicProfile = {
+      id: targetUser.id,
+      name: targetUser.name,
+      surname: targetUser.surname,
+      email: targetUser.email,
+      jobTitle: targetUser.jobTitle,
+      department: targetUser.department,
+      location: targetUser.location,
+      avatarUrl: targetUser.avatarUrl,
+      responsibilities: targetUser.responsibilities,
+      aboutMe: targetUser.aboutMe,
+      birthDate: targetUser.birthDate,
+      hireDate: targetUser.hireDate,
+      phoneNumber: targetUser.phoneNumber,
+      nationality: targetUser.nationality,
+      sex: targetUser.sex,
+      coverPhotoUrl: targetUser.coverPhotoUrl
+    };
+
+    logger.debug(`Returning public profile for user ${userId} (${targetUser.name})`);
+    res.json(publicProfile);
+  } catch (error: any) {
+    logger.error("Error getting user by ID:", error);
+    res.status(500).json({ message: error.message || "Failed to get user" });
   }
 });
 
