@@ -74,20 +74,39 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   const addInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
       if (!user?.id) throw new Error('User not authenticated');
+      
+      // Get current interests first
+      const currentInterestsResponse = await fetch(`/api/employees/${user.id}/interests`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      let currentInterestIds: number[] = [];
+      if (currentInterestsResponse.ok) {
+        const currentInterests = await currentInterestsResponse.json();
+        currentInterestIds = currentInterests.map((interest: any) => interest.id);
+      }
+      
+      // Check if interest already exists
+      if (currentInterestIds.includes(interestId)) {
+        return { message: 'Interest already in your profile' };
+      }
+      
+      // Add the new interest to the existing ones
+      const updatedInterestIds = [...currentInterestIds, interestId];
+      
       const response = await fetch(`/api/employees/${user.id}/interests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ interestId })
+        body: JSON.stringify({ interestIds: updatedInterestIds })
       });
+      
       if (!response.ok) {
         const errorData = await response.json();
-        if (response.status === 400 && errorData.message === 'Interest already added') {
-          // Interest already exists, this is okay - just return success
-          return { message: 'Interest already in your profile' };
-        }
         throw new Error(errorData.message || 'Failed to add interest');
       }
       return response.json();
