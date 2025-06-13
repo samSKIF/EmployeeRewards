@@ -19,6 +19,21 @@ import {
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
 
+// Define Interest type for compatibility
+type Interest = {
+  id: number;
+  label: string;
+  category: string;
+  icon?: string;
+  customLabel?: string;
+  isPrimary: boolean;
+  visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE';
+  memberCount?: number;
+};
+
+// Lazy load InterestsSection component
+const InterestsSection = React.lazy(() => import("@/components/profile/InterestsSection"));
+
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
   title?: string;
@@ -70,12 +85,7 @@ const ProfilePage = () => {
     }
   }, [user]);
 
-  // Fetch user interests from API
-  const { data: userInterests } = useQuery({
-    queryKey: [`/api/employees/${isOwnProfile ? user?.id : employeeId}/interests`],
-    enabled: !!user?.id || !!employeeId,
-    retry: false
-  });
+
 
   // Mock data for profile sections
   const personalityType = {
@@ -581,24 +591,10 @@ const ProfilePage = () => {
                   </div>
                   
                   {/* Interests */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3">Interests</h3>
-                    {userInterests && userInterests.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {userInterests.map((interest: any) => (
-                          <Badge key={interest.id} variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
-                            <span className="text-sm mr-1.5">{interest.icon || '📌'}</span>
-                            {interest.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm">No interests added yet</p>
-                    )}
-                    <Button variant="link" className="text-blue-500 mt-3 px-0">
-                      See company-wide interests
-                    </Button>
-                  </div>
+                  <InterestsSection 
+                    userId={isOwnProfile ? user?.id : employeeId} 
+                    isCurrentUser={isOwnProfile}
+                  />
                   
                   {/* Strengths */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
