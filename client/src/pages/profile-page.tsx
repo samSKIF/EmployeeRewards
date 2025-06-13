@@ -70,19 +70,18 @@ const ProfilePage = () => {
     }
   }, [user]);
 
+  // Fetch user interests from API
+  const { data: userInterests } = useQuery({
+    queryKey: [`/api/employees/${isOwnProfile ? user?.id : employeeId}/interests`],
+    enabled: !!user?.id || !!employeeId,
+    retry: false
+  });
+
   // Mock data for profile sections
   const personalityType = {
     title: "The Champion",
     description: "Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs."
   };
-
-  const interests = [
-    { id: 1, name: "Camping", count: 5 },
-    { id: 2, name: "Parties", count: 9 },
-    { id: 3, name: "Photography", count: 3 },
-    { id: 4, name: "Politics", count: 1 },
-    { id: 5, name: "Sci-fi", count: 5 }
-  ];
 
   const strengths = [
     { id: 1, name: "Belief", count: 6 },
@@ -584,16 +583,18 @@ const ProfilePage = () => {
                   {/* Interests */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-3">Interests</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {interests.map(interest => (
-                        <Badge key={interest.id} variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
-                          <span className="bg-blue-200 text-blue-700 rounded-full h-5 w-5 inline-flex items-center justify-center mr-1.5 text-xs">
-                            {interest.count}
-                          </span>
-                          {interest.name}
-                        </Badge>
-                      ))}
-                    </div>
+                    {userInterests && userInterests.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {userInterests.map((interest: any) => (
+                          <Badge key={interest.id} variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
+                            <span className="text-sm mr-1.5">{interest.icon || '📌'}</span>
+                            {interest.label}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm">No interests added yet</p>
+                    )}
                     <Button variant="link" className="text-blue-500 mt-3 px-0">
                       See company-wide interests
                     </Button>
