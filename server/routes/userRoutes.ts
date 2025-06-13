@@ -213,15 +213,14 @@ router.get("/departments", verifyToken, async (req: AuthenticatedRequest, res) =
 
     logger.debug(`Cache MISS for key: ${cacheKey}`);
 
-    const departments = await db
-      .selectDistinct({ department: users.department })
-      .from(users)
-      .where(eq(users.organizationId, req.user.organizationId || 1))
-      .then(rows => rows
-        .map(row => row.department)
-        .filter(dept => dept && dept.trim() !== '')
-        .sort()
-      );
+    // Query the departments table instead of extracting from users
+    const departmentRows = await db.execute(sql`
+      SELECT name FROM departments 
+      WHERE organization_id = ${req.user.organizationId || 1} 
+      ORDER BY name
+    `);
+
+    const departments = departmentRows.rows.map((row: any) => row.name);
 
     CacheService.set(cacheKey, departments, 300); // Cache for 5 minutes
     res.json(departments);
@@ -248,15 +247,14 @@ router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => 
 
     logger.debug(`Cache MISS for key: ${cacheKey}`);
 
-    const locations = await db
-      .selectDistinct({ location: users.location })
-      .from(users)
-      .where(eq(users.organizationId, req.user.organizationId || 1))
-      .then(rows => rows
-        .map(row => row.location)
-        .filter(loc => loc && loc.trim() !== '')
-        .sort()
-      );
+    // Query the locations table instead of extracting from users
+    const locationRows = await db.execute(sql`
+      SELECT name FROM locations 
+      WHERE organization_id = ${req.user.organizationId || 1} 
+      ORDER BY name
+    `);
+
+    const locations = locationRows.rows.map((row: any) => row.name);
 
     CacheService.set(cacheKey, locations, 300); // Cache for 5 minutes
     res.json(locations);
