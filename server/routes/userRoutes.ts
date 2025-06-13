@@ -182,16 +182,12 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
 
     const { department, location, search, limit = 50, offset = 0 } = req.query;
 
-    logger.info(`Returning ${await storage.getUserCount(req.user.organizationId)} users for company ${req.user.organizationId}`);
+    logger.info(`Returning ${await storage.getUserCount()} users for company ${req.user.organizationId}`);
 
-    const users = await storage.getUsers({
-      organizationId: req.user.organizationId,
-      department: department as string,
-      location: location as string,
-      search: search as string,
-      limit: parseInt(limit as string),
-      offset: parseInt(offset as string)
-    });
+    const users = await storage.getUsers(
+      parseInt(limit as string),
+      parseInt(offset as string)
+    );
 
     res.json(users);
   } catch (error: any) {

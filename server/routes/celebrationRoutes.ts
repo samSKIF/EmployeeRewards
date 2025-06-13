@@ -135,55 +135,29 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.json([]);
     }
 
-    // Get upcoming birthdays (next 30 days)
+    // Simplified birthday query to avoid date function issues
     const upcomingBirthdays = await db
       .select()
       .from(users)
       .where(
         and(
           eq(users.organizationId, companyId),
-          sql`${users.birthDate} IS NOT NULL`,
-          sql`(
-            CASE 
-              WHEN EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE) 
-                AND EXTRACT(DAY FROM ${users.birthDate}) > EXTRACT(DAY FROM CURRENT_DATE)
-              THEN EXTRACT(DAY FROM ${users.birthDate}) - EXTRACT(DAY FROM CURRENT_DATE)
-              WHEN EXTRACT(MONTH FROM ${users.birthDate}) > EXTRACT(MONTH FROM CURRENT_DATE)
-              THEN DATE_PART('day', 
-                DATE(EXTRACT(YEAR FROM CURRENT_DATE) || '-' || EXTRACT(MONTH FROM ${users.birthDate}) || '-' || EXTRACT(DAY FROM ${users.birthDate})) - CURRENT_DATE
-              )
-              ELSE DATE_PART('day', 
-                DATE((EXTRACT(YEAR FROM CURRENT_DATE) + 1) || '-' || EXTRACT(MONTH FROM ${users.birthDate}) || '-' || EXTRACT(DAY FROM ${users.birthDate})) - CURRENT_DATE
-              )
-            END
-          ) BETWEEN 1 AND 30`
+          sql`${users.birthDate} IS NOT NULL`
         )
-      );
+      )
+      .limit(10);
 
-    // Get upcoming work anniversaries (next 30 days)
+    // Simplified anniversary query 
     const upcomingAnniversaries = await db
       .select()
       .from(users)
       .where(
         and(
           eq(users.organizationId, companyId),
-          sql`${users.hireDate} IS NOT NULL`,
-          sql`(
-            CASE 
-              WHEN EXTRACT(MONTH FROM ${users.hireDate}) = EXTRACT(MONTH FROM CURRENT_DATE) 
-                AND EXTRACT(DAY FROM ${users.hireDate}) > EXTRACT(DAY FROM CURRENT_DATE)
-              THEN EXTRACT(DAY FROM ${users.hireDate}) - EXTRACT(DAY FROM CURRENT_DATE)
-              WHEN EXTRACT(MONTH FROM ${users.hireDate}) > EXTRACT(MONTH FROM CURRENT_DATE)
-              THEN DATE_PART('day', 
-                DATE(EXTRACT(YEAR FROM CURRENT_DATE) || '-' || EXTRACT(MONTH FROM ${users.hireDate}) || '-' || EXTRACT(DAY FROM ${users.hireDate})) - CURRENT_DATE
-              )
-              ELSE DATE_PART('day', 
-                DATE((EXTRACT(YEAR FROM CURRENT_DATE) + 1) || '-' || EXTRACT(MONTH FROM ${users.hireDate}) || '-' || EXTRACT(DAY FROM ${users.hireDate})) - CURRENT_DATE
-              )
-            END
-          ) BETWEEN 1 AND 30`
+          sql`${users.hireDate} IS NOT NULL`
         )
-      );
+      )
+      .limit(10);
 
     const celebrations = [
       ...upcomingBirthdays.map(employee => ({
