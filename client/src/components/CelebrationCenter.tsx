@@ -233,7 +233,7 @@ export default function CelebrationCenter() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Departments</SelectItem>
-                      {departments?.map((dept) => (
+                      {departments && Object.keys(departments).map((dept) => (
                         <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                       ))}
                     </SelectContent>
@@ -247,7 +247,7 @@ export default function CelebrationCenter() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Locations</SelectItem>
-                      {locations?.map((location) => (
+                      {locations && Object.keys(locations).map((location) => (
                         <SelectItem key={location} value={location}>{location}</SelectItem>
                       ))}
                     </SelectContent>
