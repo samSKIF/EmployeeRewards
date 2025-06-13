@@ -340,11 +340,11 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
           )}
 
           {/* Location Selection */}
-          {Array.isArray(locations) && locations.length > 0 && (
+          {locations && Object.keys(locations).length > 0 && (
             <div className="space-y-3">
               <Label className="text-base font-medium">Select Locations (Optional)</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-md p-3">
-                {locations.map((location: string) => (
+                {locations && Object.keys(locations).map((location: string) => (
                   <div key={location} className="flex items-center space-x-2">
                     <Checkbox
                       id={`loc-${location}`}

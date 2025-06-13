@@ -799,7 +799,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
         <div className="space-y-4">
           <Label className="text-base font-semibold">Select Departments (Optional)</Label>
           <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-            {Array.isArray(departments) && departments.map((dept: string) => (
+            {departments && Object.keys(departments).map((dept: string) => (
               <div key={dept} className="flex items-center space-x-2">
                 <Checkbox
                   id={`edit-dept-${dept}`}
@@ -828,7 +828,7 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
         <div className="space-y-4">
           <Label className="text-base font-semibold">Select Locations (Optional)</Label>
           <div className="grid grid-cols-2 gap-2">
-            {Array.isArray(locations) && locations.map((location: string) => (
+            {locations && Object.keys(locations).map((location: string) => (
               <div key={location} className="flex items-center space-x-2">
                 <Checkbox
                   id={`edit-loc-${location}`}
