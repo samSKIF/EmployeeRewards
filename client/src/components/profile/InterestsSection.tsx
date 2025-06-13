@@ -466,29 +466,6 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             </DialogTitle>
           </DialogHeader>
 
-          {/* Your Current Interests Section */}
-          {interests.length > 0 && (
-            <div className="my-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <span>{t('interests.yourCurrentInterests', 'Your Current Interests')}</span>
-                <span className="text-xs text-gray-500">({interests.length})</span>
-              </h4>
-              <div className="space-y-2">
-                {interests.map((interest) => (
-                  <InterestTag
-                    key={interest.id}
-                    interest={interest}
-                    isPrimary={interest.isPrimary}
-                    onRemove={() => handleRemoveInterest(interest.id)}
-                    onTogglePrimary={() => handleTogglePrimary(interest.id)}
-                    onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
-                  />
-                ))}
-              </div>
-              <div className="border-t mt-4 pt-4"></div>
-            </div>
-          )}
-
           {/* Search input */}
           <div className="space-y-4 my-4">
             <div className="relative">
@@ -613,6 +590,35 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 </div>
               )}
             </div>
+
+            {/* Your Current Interests - Minimalistic section */}
+            {interests.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <h4 className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
+                  <span>{t('interests.yourCurrentInterests', 'Your Current Interests')}</span>
+                  <span className="text-gray-400">({interests.length})</span>
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {interests.map((interest) => (
+                    <div
+                      key={interest.id}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+                    >
+                      {interest.icon && <span className="text-xs">{interest.icon}</span>}
+                      <span>{interest.customLabel || interest.label}</span>
+                      <button
+                        onClick={() => handleRemoveInterest(interest.id)}
+                        className="ml-1 hover:bg-red-100 rounded-full p-0.5 transition-colors"
+                        title="Remove interest"
+                      >
+                        <X className="h-3 w-3 text-gray-500 hover:text-red-500" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="text-xs text-gray-500 mt-3 bg-yellow-50 p-2 rounded-md border border-yellow-100 flex items-start gap-2">
               <Sparkles className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
               <p>{t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}</p>
