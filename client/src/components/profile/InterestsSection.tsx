@@ -473,15 +473,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                 <span>{t('interests.yourCurrentInterests', 'Your Current Interests')}</span>
                 <span className="text-xs text-gray-500">({interests.length})</span>
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
                 {interests.map((interest) => (
-                  <SelectedInterestBadge
+                  <InterestTag
                     key={interest.id}
-                    icon={interest.icon}
-                    label={interest.customLabel || interest.label}
-                    category={interest.category}
+                    interest={interest}
                     isPrimary={interest.isPrimary}
-                    visibility={interest.visibility}
                     onRemove={() => handleRemoveInterest(interest.id)}
                     onTogglePrimary={() => handleTogglePrimary(interest.id)}
                     onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
