@@ -285,6 +285,11 @@ function App() {
                   <UpdatedProfilePage />
                 </SocialLayout>
               </Route>
+              <Route path="/profile">
+                <SocialLayout>
+                  <ProfilePage />
+                </SocialLayout>
+              </Route>
 
               <Route path="/recognition">
                 <SocialLayout>
