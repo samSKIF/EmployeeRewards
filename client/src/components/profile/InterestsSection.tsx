@@ -336,21 +336,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       }
 
       // Format the interests to match what the server expects
-      // Server expects an array of interests with interestId field
-      const formattedData = editableInterests.map(interest => {
-        // For custom interests (negative IDs), handle differently
-        const isCustom = interest.id < 0;
+      // Server expects { interestIds: number[] } format
+      const interestIds = editableInterests
+        .filter(interest => interest.id > 0) // Only include non-custom interests for now
+        .map(interest => interest.id);
 
-        return {
-          // Server expects interestId, not id
-          interestId: isCustom ? undefined : interest.id,
-          // For custom interests, use the label as customLabel
-          customLabel: isCustom ? interest.label : interest.customLabel,
-          // Make sure these are properly formatted
-          isPrimary: Boolean(interest.isPrimary),
-          visibility: interest.visibility || 'EVERYONE'
-        };
-      });
+      const formattedData = { interestIds };
 
       console.log('Saving interests:', formattedData);
 

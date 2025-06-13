@@ -1,0 +1,127 @@
+
+> rest-express@1.0.0 dev
+Using uploads directory: /home/runner/workspace/server/uploads
+Initializing MongoDB for social features...
+Initializing MongoDB for social features...
+Failed to connect to MongoDB: MongoServerSelectionError: 4092922C507F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+
+    at Topology.selectServer (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:628:30)
+    at async Topology._connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:468:22)
+    at async Topology.connect (/home/runner/workspace/node_modules/mongodb/src/sdam/topology.ts:405:7)
+    at async topologyConnect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:620:9)
+    at async MongoClient._connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:632:7)
+    at async MongoClient.connect (/home/runner/workspace/node_modules/mongodb/src/mongo_client.ts:544:7)
+    at async connectToMongoDB (/home/runner/workspace/server/mongodb/connection.ts:26:5)
+    at async initializeMongoDB (/home/runner/workspace/server/mongodb/integration.ts:9:16)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:64:28) {
+  errorLabelSet: Set(0) {},
+  reason: TopologyDescription {
+    type: 'ReplicaSetNoPrimary',
+    servers: Map(3) {
+      'ac-xasswr7-shard-00-02.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-01.7yjnylf.mongodb.net:27017' => [ServerDescription],
+      'ac-xasswr7-shard-00-00.7yjnylf.mongodb.net:27017' => [ServerDescription]
+    },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: 'atlas-feqa1d-shard-0',
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined,
+  [cause]: MongoNetworkError: 4092922C507F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+  
+      at TLSSocket.<anonymous> (/home/runner/workspace/node_modules/mongodb/src/cmap/connect.ts:394:16)
+      at Object.onceWrapper (node:events:633:26)
+      at TLSSocket.emit (node:events:518:28)
+      at emitErrorNT (node:internal/streams/destroy:169:8)
+      at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+    errorLabelSet: Set(1) { 'ResetPool' },
+    beforeHandshake: false,
+    [cause]: [Error: 4092922C507F0000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:ssl/record/rec_layer_s3.c:907:SSL alert number 80
+    ] {
+      library: 'SSL routines',
+      reason: 'tlsv1 alert internal error',
+      code: 'ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR'
+    }
+  }
+}
+Social features will use PostgreSQL fallback
+MongoDB not available, continuing with PostgreSQL for social features
+Registering modular routes...
+All modular routes registered successfully
+10:43:48 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Returning 405 users for company 1
+10:44:08 AM [express] GET /api/channels/trending 304 in 800ms :: [{"id":3,"interestId":null,"name":"M…
+Final user object isAdmin: true
+10:44:08 AM [express] GET /api/users/me 200 in 858ms :: {"id":1680,"username":"shams.aranib","passwor…
+10:44:08 AM [express] GET /api/channels/suggestions 304 in 864ms :: [{"id":9,"interestId":null,"name"…
+10:44:08 AM [express] GET /api/users 304 in 908ms :: [{"id":1568,"username":"alexander.perez","passwo…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+=== DIRECT ROUTE: GET employee interests ===
+10:44:08 AM [express] GET /api/interests 200 in 155ms :: [{"id":242,"label":"Running & Jogging","cate…
+Final user object isAdmin: true
+10:44:09 AM [express] GET /api/users/me 200 in 383ms :: {"id":1680,"username":"shams.aranib","passwor…
+Found interests: 3
+10:44:09 AM [express] GET /api/employees/1680/interests 200 in 261ms :: [{"id":242,"label":"Running &…
+10:44:09 AM [express] GET /api/interests 304 in 166ms :: [{"id":242,"label":"Running & Jogging","cate…
+=== DIRECT ROUTE: GET employee interests ===
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Found interests: 3
+10:44:09 AM [express] GET /api/employees/1680/interests 304 in 159ms :: [{"id":242,"label":"Running &…
+Final user object isAdmin: true
+10:44:09 AM [express] GET /api/users/me 200 in 314ms :: {"id":1680,"username":"shams.aranib","passwor…
+10:44:49 AM [express] GET /api/channels/trending 304 in 668ms :: [{"id":3,"interestId":null,"name":"M…
+Returning 405 users for company 1
+10:44:49 AM [express] GET /api/channels/my-channels 304 in 726ms :: [{"id":1,"interestId":null,"name"…
+10:44:49 AM [express] GET /api/users 304 in 763ms :: [{"id":1568,"username":"alexander.perez","passwo…
+10:44:49 AM [express] GET /api/channels/suggestions 304 in 773ms :: [{"id":9,"interestId":null,"name"…
+Birthday users found: 0
+Anniversary users found: 0
+Total celebrations returning: 0
+10:44:49 AM [express] GET /api/celebrations/today 304 in 828ms :: []
+10:44:49 AM [express] GET /api/points/balance 304 in 908ms :: {"balance":0,"userId":1680}
+Returning 8 departments for org 1: [
+  'Administration',
+  'Executive',
+  'Finance',
+  'Human resources',
+  'Information technology',
+  'Marketing',
+  'Officer',
+  'Sales'
+]
+10:44:50 AM [express] GET /api/users/departments 304 in 181ms :: ["Administration","Executive","Finan…
+Returning 3 locations for org 1: [ 'Dubai', 'New York', 'Tokyo' ]
+10:44:50 AM [express] GET /api/users/locations 304 in 234ms :: ["Dubai","New York","Tokyo"]
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+10:44:50 AM [express] GET /api/celebrations/upcoming 304 in 389ms :: [{"id":"birthday-1330","user":{"…
+Final user object isAdmin: true
+10:44:50 AM [express] GET /api/users/me 200 in 472ms :: {"id":1680,"username":"shams.aranib","passwor…
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+10:44:51 AM [express] GET /api/users/me 200 in 302ms :: {"id":1680,"username":"shams.aranib","passwor…
+10:44:51 AM [express] GET /api/social/stats 200 in 5ms
+10:44:51 AM [express] GET /api/social/posts 200 in 6ms
+/api/users/me: Returning data for user 1680 (shams, shams.aranib@canva.com)
+User isAdmin value: true
+Final user object isAdmin: true
+10:44:51 AM [express] GET /api/users/me 200 in 303ms :: {"id":1680,"username":"shams.aranib","passwor…
+10:44:51 AM [express] GET /api/social/stats 200 in 4ms
+10:44:51 AM [express] GET /api/social/posts 200 in 6ms
+=== DIRECT ROUTE: POST employee interests ===
+10:57:30 AM [express] POST /api/employees/1680/interests 400 in 1126ms :: {"message":"interestIds mus…
