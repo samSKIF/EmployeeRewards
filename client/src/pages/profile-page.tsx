@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -15,24 +15,10 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Edit, Camera, Mail, Phone, MapPin, Calendar, Award, 
   History, User, Home, ShoppingBag, Trophy, FileText, 
-  Zap, Heart, Camera as CameraIcon
+  Zap, Heart, Camera as CameraIcon, Loader2
 } from "lucide-react";
 import { User as BaseUserType } from "@shared/types";
-
-// Define Interest type for compatibility
-type Interest = {
-  id: number;
-  label: string;
-  category: string;
-  icon?: string;
-  customLabel?: string;
-  isPrimary: boolean;
-  visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE';
-  memberCount?: number;
-};
-
-// Lazy load InterestsSection component
-const InterestsSection = React.lazy(() => import("@/components/profile/InterestsSection"));
+import InterestsSection from "@/components/profile/InterestsSection";
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
@@ -591,10 +577,12 @@ const ProfilePage = () => {
                   </div>
                   
                   {/* Interests */}
-                  <InterestsSection 
-                    userId={isOwnProfile ? user?.id : employeeId} 
-                    isCurrentUser={isOwnProfile}
-                  />
+                  {(user?.id || employeeId) && (
+                    <InterestsSection 
+                      userId={isOwnProfile && user ? user.id : (employeeId ? parseInt(employeeId as string) : 0)} 
+                      isCurrentUser={isOwnProfile}
+                    />
+                  )}
                   
                   {/* Strengths */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
