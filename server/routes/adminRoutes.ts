@@ -208,4 +208,130 @@ router.post("/organizations", verifyToken, async (req: AuthenticatedRequest, res
   }
 });
 
+// Update employee admin status and permissions
+router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    const employeeId = parseInt(req.params.id);
+    const updateData = req.body;
+    
+    logger.info("Admin updating employee:", { employeeId, updateData });
+
+    // Build update object with proper field mapping
+    const dbUpdateData: any = {};
+    
+    // Map frontend field names to database field names
+    if (updateData.name !== undefined) dbUpdateData.name = updateData.name;
+    if (updateData.surname !== undefined) dbUpdateData.surname = updateData.surname;
+    if (updateData.email !== undefined) dbUpdateData.email = updateData.email;
+    if (updateData.phoneNumber !== undefined) dbUpdateData.phoneNumber = updateData.phoneNumber;
+    if (updateData.jobTitle !== undefined) dbUpdateData.jobTitle = updateData.jobTitle;
+    if (updateData.department !== undefined) dbUpdateData.department = updateData.department;
+    if (updateData.location !== undefined) dbUpdateData.location = updateData.location;
+    if (updateData.sex !== undefined) dbUpdateData.sex = updateData.sex;
+    if (updateData.nationality !== undefined) dbUpdateData.nationality = updateData.nationality;
+    if (updateData.birthDate !== undefined) dbUpdateData.birthDate = updateData.birthDate;
+    if (updateData.hireDate !== undefined) dbUpdateData.hireDate = updateData.hireDate;
+    if (updateData.status !== undefined) dbUpdateData.status = updateData.status;
+    if (updateData.avatarUrl !== undefined) dbUpdateData.avatarUrl = updateData.avatarUrl;
+    
+    // Handle admin-specific fields
+    if (updateData.isAdmin !== undefined) {
+      dbUpdateData.is_admin = updateData.isAdmin;
+      logger.info("Setting is_admin to:", updateData.isAdmin);
+    }
+    
+    if (updateData.adminScope !== undefined) {
+      dbUpdateData.admin_scope = updateData.adminScope;
+    }
+    
+    if (updateData.allowedSites !== undefined) {
+      dbUpdateData.allowed_sites = JSON.stringify(updateData.allowedSites);
+    }
+    
+    if (updateData.allowedDepartments !== undefined) {
+      dbUpdateData.allowed_departments = JSON.stringify(updateData.allowedDepartments);
+    }
+
+    // Update using raw SQL to ensure proper field mapping
+    const setClause = Object.keys(dbUpdateData)
+      .map((key, index) => `"${key}" = $${index + 2}`)
+      .join(', ');
+    
+    const values = [employeeId, ...Object.values(dbUpdateData)];
+    
+    const updateQuery = `
+      UPDATE users 
+      SET ${setClause}
+      WHERE id = $1 AND organization_id = $${values.length + 1}
+      RETURNING *
+    `;
+    
+    values.push(req.user.organizationId);
+    
+    logger.debug("Executing SQL:", { updateQuery, values });
+    
+    const result = await pool.query(updateQuery, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Employee not found or access denied" });
+    }
+
+    const updatedEmployee = result.rows[0];
+    logger.info("Employee updated successfully:", {
+      id: updatedEmployee.id,
+      name: updatedEmployee.name,
+      is_admin: updatedEmployee.is_admin
+    });
+
+    res.json(updatedEmployee);
+  } catch (error: any) {
+    logger.error("Error updating employee:", error);
+    res.status(500).json({ message: error.message || "Error updating employee" });
+  }
+});
+
+// Update admin permissions (for existing admins)
+router.patch("/permissions/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    const employeeId = parseInt(req.params.id);
+    const { adminScope, allowedSites, allowedDepartments } = req.body;
+    
+    logger.info("Updating admin permissions:", { employeeId, adminScope });
+
+    // Update admin permissions
+    const result = await pool.query(`
+      UPDATE users 
+      SET 
+        is_admin = true,
+        admin_scope = $2,
+        allowed_sites = $3,
+        allowed_departments = $4
+      WHERE id = $1 AND organization_id = $5
+      RETURNING *
+    `, [
+      employeeId, 
+      adminScope, 
+      JSON.stringify(allowedSites || []), 
+      JSON.stringify(allowedDepartments || []),
+      req.user.organizationId
+    ]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Employee not found or access denied" });
+    }
+
+    const updatedEmployee = result.rows[0];
+    logger.info("Admin permissions updated successfully:", {
+      id: updatedEmployee.id,
+      name: updatedEmployee.name,
+      admin_scope: updatedEmployee.admin_scope
+    });
+
+    res.json(updatedEmployee);
+  } catch (error: any) {
+    logger.error("Error updating admin permissions:", error);
+    res.status(500).json({ message: error.message || "Error updating admin permissions" });
+  }
+});
+
 export default router;
