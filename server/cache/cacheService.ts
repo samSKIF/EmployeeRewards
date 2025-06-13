@@ -83,4 +83,22 @@ export class CacheService {
   static isReady(): boolean {
     return redisCache.isReady();
   }
+
+  // Direct cache get/set methods for backward compatibility
+  static async get(key: string): Promise<any> {
+    try {
+      return await redisCache.get(key);
+    } catch (error) {
+      console.log(`Cache get error for key ${key}:`, error);
+      return null;
+    }
+  }
+
+  static async set(key: string, value: any, expirationSeconds: number = 300): Promise<void> {
+    try {
+      await redisCache.set(key, value, expirationSeconds);
+    } catch (error) {
+      console.log(`Cache set error for key ${key}:`, error);
+    }
+  }
 }

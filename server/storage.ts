@@ -146,6 +146,20 @@ export interface IStorage {
   getUserSocialStats(userId: number): Promise<SocialStats>;
   getShopConfig(): Promise<ShopConfig>;
   updateShopConfig(config: ShopConfig): Promise<ShopConfig>;
+
+  // Channel methods
+  getTrendingChannels(): Promise<any[]>;
+  getUserChannels(userId: number): Promise<any[]>;
+  getChannelSuggestions(userId: number): Promise<any[]>;
+  getChannel(channelId: number): Promise<any>;
+  getChannelPosts(channelId: number): Promise<any[]>;
+  getChannelMembers(channelId: number): Promise<any[]>;
+  joinChannel(userId: number, channelId: number): Promise<void>;
+  leaveChannel(userId: number, channelId: number): Promise<void>;
+
+  // User count and retrieval methods
+  getUserCount(): Promise<number>;
+  getUsers(limit?: number, offset?: number): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1932,6 +1946,247 @@ async getUserSocialStats(userId: number): Promise<SocialStats> {
       .values(answerData)
       .returning();
     return answer;
+  }
+
+  // Channel methods implementation
+  async getTrendingChannels(): Promise<any[]> {
+    const { interestChannels, interestChannelMembers, users, interests } = await import("@shared/schema");
+    const { eq, desc, sql } = await import("drizzle-orm");
+
+    const channels = await db
+      .select({
+        channel: interestChannels,
+        interest: interests,
+        memberCount: sql<number>`COALESCE(${interestChannels.memberCount}, 0)`,
+      })
+      .from(interestChannels)
+      .leftJoin(interests, eq(interestChannels.interestId, interests.id))
+      .where(eq(interestChannels.isActive, true))
+      .orderBy(desc(sql`COALESCE(${interestChannels.memberCount}, 0)`))
+      .limit(10);
+
+    return channels.map(c => ({
+      ...c.channel,
+      interest: c.interest,
+      memberCount: c.memberCount,
+    }));
+  }
+
+  async getUserChannels(userId: number): Promise<any[]> {
+    const { interestChannels, interestChannelMembers, interests } = await import("@shared/schema");
+    const { eq, and } = await import("drizzle-orm");
+
+    const userChannels = await db
+      .select({
+        channel: interestChannels,
+        interest: interests,
+        member: interestChannelMembers,
+      })
+      .from(interestChannelMembers)
+      .innerJoin(interestChannels, eq(interestChannelMembers.channelId, interestChannels.id))
+      .leftJoin(interests, eq(interestChannels.interestId, interests.id))
+      .where(and(
+        eq(interestChannelMembers.userId, userId),
+        eq(interestChannels.isActive, true)
+      ));
+
+    return userChannels.map(uc => ({
+      ...uc.channel,
+      interest: uc.interest,
+      memberRole: uc.member.role,
+      joinedAt: uc.member.joinedAt,
+    }));
+  }
+
+  async getChannelSuggestions(userId: number): Promise<any[]> {
+    const { interestChannels, interestChannelMembers, interests } = await import("@shared/schema");
+    const { eq, and, notInArray, sql } = await import("drizzle-orm");
+
+    // Get channels user is not a member of
+    const userChannelIds = await db
+      .select({ channelId: interestChannelMembers.channelId })
+      .from(interestChannelMembers)
+      .where(eq(interestChannelMembers.userId, userId));
+
+    const userChannelIdsList = userChannelIds.map(uc => uc.channelId);
+
+    let whereClause = and(
+      eq(interestChannels.isActive, true),
+      eq(interestChannels.accessLevel, "open")
+    );
+
+    if (userChannelIdsList.length > 0) {
+      whereClause = and(
+        whereClause,
+        notInArray(interestChannels.id, userChannelIdsList)
+      );
+    }
+
+    const suggestions = await db
+      .select({
+        channel: interestChannels,
+        interest: interests,
+        memberCount: sql<number>`COALESCE(${interestChannels.memberCount}, 0)`,
+      })
+      .from(interestChannels)
+      .leftJoin(interests, eq(interestChannels.interestId, interests.id))
+      .where(whereClause)
+      .orderBy(desc(sql`COALESCE(${interestChannels.memberCount}, 0)`))
+      .limit(5);
+
+    return suggestions.map(s => ({
+      ...s.channel,
+      interest: s.interest,
+      memberCount: s.memberCount,
+    }));
+  }
+
+  async getChannel(channelId: number): Promise<any> {
+    const { interestChannels, interests, users } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+
+    const [channelData] = await db
+      .select({
+        channel: interestChannels,
+        interest: interests,
+        creator: users,
+      })
+      .from(interestChannels)
+      .leftJoin(interests, eq(interestChannels.interestId, interests.id))
+      .leftJoin(users, eq(interestChannels.createdBy, users.id))
+      .where(eq(interestChannels.id, channelId));
+
+    if (!channelData) {
+      return null;
+    }
+
+    const { password, ...creatorWithoutPassword } = channelData.creator || {};
+
+    return {
+      ...channelData.channel,
+      interest: channelData.interest,
+      creator: channelData.creator ? creatorWithoutPassword : null,
+    };
+  }
+
+  async getChannelPosts(channelId: number): Promise<any[]> {
+    const { interestChannelPosts, users } = await import("@shared/schema");
+    const { eq, desc } = await import("drizzle-orm");
+
+    const posts = await db
+      .select({
+        post: interestChannelPosts,
+        author: users,
+      })
+      .from(interestChannelPosts)
+      .leftJoin(users, eq(interestChannelPosts.authorId, users.id))
+      .where(eq(interestChannelPosts.channelId, channelId))
+      .orderBy(desc(interestChannelPosts.createdAt));
+
+    return posts.map(p => {
+      const { password, ...authorWithoutPassword } = p.author || {};
+      return {
+        ...p.post,
+        author: p.author ? authorWithoutPassword : null,
+      };
+    });
+  }
+
+  async getChannelMembers(channelId: number): Promise<any[]> {
+    const { interestChannelMembers, users } = await import("@shared/schema");
+    const { eq, asc } = await import("drizzle-orm");
+
+    const members = await db
+      .select({
+        member: interestChannelMembers,
+        user: users,
+      })
+      .from(interestChannelMembers)
+      .leftJoin(users, eq(interestChannelMembers.userId, users.id))
+      .where(eq(interestChannelMembers.channelId, channelId))
+      .orderBy(asc(interestChannelMembers.joinedAt));
+
+    return members.map(m => {
+      const { password, ...userWithoutPassword } = m.user || {};
+      return {
+        ...m.member,
+        user: m.user ? userWithoutPassword : null,
+      };
+    });
+  }
+
+  async joinChannel(userId: number, channelId: number): Promise<void> {
+    const { interestChannelMembers, interestChannels } = await import("@shared/schema");
+    const { eq, sql } = await import("drizzle-orm");
+
+    // Check if user is already a member
+    const [existingMembership] = await db
+      .select()
+      .from(interestChannelMembers)
+      .where(and(
+        eq(interestChannelMembers.userId, userId),
+        eq(interestChannelMembers.channelId, channelId)
+      ));
+
+    if (existingMembership) {
+      throw new Error("User is already a member of this channel");
+    }
+
+    // Add user to channel
+    await db.insert(interestChannelMembers).values({
+      userId,
+      channelId,
+      role: "member",
+    });
+
+    // Increment member count
+    await db
+      .update(interestChannels)
+      .set({ 
+        memberCount: sql`COALESCE(${interestChannels.memberCount}, 0) + 1`
+      })
+      .where(eq(interestChannels.id, channelId));
+  }
+
+  async leaveChannel(userId: number, channelId: number): Promise<void> {
+    const { interestChannelMembers, interestChannels } = await import("@shared/schema");
+    const { eq, and, sql } = await import("drizzle-orm");
+
+    // Remove user from channel
+    const result = await db
+      .delete(interestChannelMembers)
+      .where(and(
+        eq(interestChannelMembers.userId, userId),
+        eq(interestChannelMembers.channelId, channelId)
+      ));
+
+    // Decrement member count if user was removed
+    await db
+      .update(interestChannels)
+      .set({ 
+        memberCount: sql`GREATEST(0, COALESCE(${interestChannels.memberCount}, 0) - 1)`
+      })
+      .where(eq(interestChannels.id, channelId));
+  }
+
+  // User count and retrieval methods
+  async getUserCount(): Promise<number> {
+    const [result] = await db.select({
+      count: count(users.id),
+    }).from(users);
+
+    return Number(result.count);
+  }
+
+  async getUsers(limit: number = 50, offset: number = 0): Promise<User[]> {
+    const usersData = await db
+      .select()
+      .from(users)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(asc(users.name));
+
+    return usersData;
   }
 }
 
