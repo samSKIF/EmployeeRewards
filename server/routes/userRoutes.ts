@@ -196,24 +196,14 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get user departments (cached)
+// Get user departments (from database tables)
 router.get("/departments", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const cacheKey = `departments:org:${req.user.organizationId}`;
-    const cached = CacheService.get(cacheKey);
-
-    if (cached) {
-      logger.debug(`Cache HIT for key: ${cacheKey}`);
-      return res.json(cached);
-    }
-
-    logger.debug(`Cache MISS for key: ${cacheKey}`);
-
-    // Query the departments table instead of extracting from users
+    // Query the departments table directly (no caching for now)
     const departmentRows = await db.execute(sql`
       SELECT name FROM departments 
       WHERE organization_id = ${req.user.organizationId || 1} 
@@ -221,8 +211,8 @@ router.get("/departments", verifyToken, async (req: AuthenticatedRequest, res) =
     `);
 
     const departments = departmentRows.rows.map((row: any) => row.name);
-
-    CacheService.set(cacheKey, departments, 300); // Cache for 5 minutes
+    
+    logger.info(`Returning ${departments.length} departments for org ${req.user.organizationId}:`, departments);
     res.json(departments);
   } catch (error: any) {
     logger.error("Error fetching departments:", error);
@@ -230,24 +220,14 @@ router.get("/departments", verifyToken, async (req: AuthenticatedRequest, res) =
   }
 });
 
-// Get user locations (cached)
+// Get user locations (from database tables)
 router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const cacheKey = `locations:org:${req.user.organizationId}`;
-    const cached = CacheService.get(cacheKey);
-
-    if (cached) {
-      logger.debug(`Cache HIT for key: ${cacheKey}`);
-      return res.json(cached);
-    }
-
-    logger.debug(`Cache MISS for key: ${cacheKey}`);
-
-    // Query the locations table instead of extracting from users
+    // Query the locations table directly (no caching for now)
     const locationRows = await db.execute(sql`
       SELECT name FROM locations 
       WHERE organization_id = ${req.user.organizationId || 1} 
@@ -255,8 +235,8 @@ router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => 
     `);
 
     const locations = locationRows.rows.map((row: any) => row.name);
-
-    CacheService.set(cacheKey, locations, 300); // Cache for 5 minutes
+    
+    logger.info(`Returning ${locations.length} locations for org ${req.user.organizationId}:`, locations);
     res.json(locations);
   } catch (error: any) {
     logger.error("Error fetching locations:", error);
