@@ -45,7 +45,7 @@ const ProfilePage = () => {
 
   // Fetch user data - either current user or specific employee
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: isOwnProfile ? ["/api/users/me"] : ["/api/users", employeeId],
+    queryKey: isOwnProfile ? ["/api/users/me"] : [`/api/users/${employeeId}`],
     retry: false
   });
 
@@ -108,8 +108,8 @@ const ProfilePage = () => {
     location: user?.location || "", 
     department: user?.department || "",
     responsibilities: user?.responsibilities || "",
-    hireDate: formatDate((user as any)?.hireDate || (user as any)?.hire_date),
-    birthday: formatDate((user as any)?.birthDate || (user as any)?.birth_date),
+    hireDate: formatDate(user?.hireDate),
+    birthday: formatDate(user?.birthDate),
     profileStatus: 89 // This can remain as a calculated value
   };
 
