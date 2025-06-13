@@ -230,6 +230,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
   // Add interest
   const handleAddInterest = (interest: Interest) => {
+    console.log('Adding interest:', interest);
+    console.log('Current editableInterests:', editableInterests);
+    
     // Check if interest already exists
     const exists = editableInterests.some(item => 
       (item.id === interest.id) || 
@@ -245,11 +248,14 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     }
 
     // Add the interest to editable list
-    setEditableInterests([...editableInterests, { 
+    const newEditableInterests = [...editableInterests, { 
       ...interest, 
       isPrimary: false, 
       visibility: 'EVERYONE' 
-    }]);
+    }];
+    
+    console.log('New editableInterests:', newEditableInterests);
+    setEditableInterests(newEditableInterests);
 
     toast({
       title: t('interests.addedSuccess', 'Interest added'),
