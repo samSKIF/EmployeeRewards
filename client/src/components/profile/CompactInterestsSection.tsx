@@ -106,8 +106,15 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add interest');
+        let errorMessage = 'Failed to add interest';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       return response.json();
     },
