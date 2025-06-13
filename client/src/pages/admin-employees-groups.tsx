@@ -532,7 +532,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Departments</Label>
             <div className="grid grid-cols-2 gap-2 mt-2 max-h-32 overflow-y-auto">
-              {Array.isArray(departments) && departments.map((dept: string) => (
+              {departments && Object.keys(departments).map((dept: string) => (
                 <div key={dept} className="flex items-center space-x-2">
                   <Checkbox
                     id={`dept-${dept}`}
@@ -562,7 +562,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Sites/Locations</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {Array.isArray(locations) && locations.map((location: string) => (
+              {locations && Object.keys(locations).map((location: string) => (
                 <div key={location} className="flex items-center space-x-2">
                   <Checkbox
                     id={`site-${location}`}
@@ -1743,7 +1743,7 @@ function EmployeeDirectory() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Departments</SelectItem>
-            {departments?.map((dept: string) => (
+            {departments && Object.keys(departments).map((dept: string) => (
               <SelectItem key={dept} value={dept}>{dept}</SelectItem>
             ))}
           </SelectContent>
@@ -1755,7 +1755,7 @@ function EmployeeDirectory() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Locations</SelectItem>
-            {locations?.map((location: string) => (
+            {locations && Object.keys(locations).map((location: string) => (
               <SelectItem key={location} value={location}>{location}</SelectItem>
             ))}
           </SelectContent>
