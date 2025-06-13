@@ -328,6 +328,12 @@ function App() {
                 </SocialLayout>
               </Route>
 
+              <Route path="/employee/:id">
+                <SocialLayout>
+                  <ProfilePage />
+                </SocialLayout>
+              </Route>
+
               <Route path="/">
                 <div className="flex items-center justify-center min-h-screen">
                   <svg className="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

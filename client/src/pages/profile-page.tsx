@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useParams } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,6 +29,8 @@ interface UserType extends BaseUserType {
 const ProfilePage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const params = useParams();
+  const employeeId = params.id;
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -37,9 +40,12 @@ const ProfilePage = () => {
     responsibilities: ''
   });
 
-  // Fetch user data
+  // Check if viewing own profile or another employee's profile
+  const isOwnProfile = !employeeId;
+
+  // Fetch user data - either current user or specific employee
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: ["/api/users/me"],
+    queryKey: isOwnProfile ? ["/api/users/me"] : ["/api/users", employeeId],
     retry: false
   });
 
