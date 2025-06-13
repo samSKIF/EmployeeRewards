@@ -64,7 +64,8 @@ const ProfilePage = () => {
         title: user.jobTitle || '',
         department: user.department || '',
         location: user.location || '',
-        responsibilities: user.responsibilities || ''
+        responsibilities: user.responsibilities || '',
+        aboutMe: user.aboutMe || ''
       });
     }
   }, [user]);
@@ -548,7 +549,7 @@ const ProfilePage = () => {
                   
                   {/* History Section */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-4">My History</h3>
+                    <h3 className="text-lg font-semibold mb-4">History</h3>
                     <div className="text-gray-500 text-center py-8">
                       <History className="h-10 w-10 mx-auto mb-3 text-gray-400" />
                       <p>No history records to display</p>
