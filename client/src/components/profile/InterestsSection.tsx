@@ -466,6 +466,32 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             </DialogTitle>
           </DialogHeader>
 
+          {/* Your Current Interests Section */}
+          {interests.length > 0 && (
+            <div className="my-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <span>{t('interests.yourCurrentInterests', 'Your Current Interests')}</span>
+                <span className="text-xs text-gray-500">({interests.length})</span>
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <SelectedInterestBadge
+                    key={interest.id}
+                    icon={interest.icon}
+                    label={interest.customLabel || interest.label}
+                    category={interest.category}
+                    isPrimary={interest.isPrimary}
+                    visibility={interest.visibility}
+                    onRemove={() => handleRemoveInterest(interest.id)}
+                    onTogglePrimary={() => handleTogglePrimary(interest.id)}
+                    onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
+                  />
+                ))}
+              </div>
+              <div className="border-t mt-4 pt-4"></div>
+            </div>
+          )}
+
           {/* Search input */}
           <div className="space-y-4 my-4">
             <div className="relative">
