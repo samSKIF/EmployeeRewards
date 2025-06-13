@@ -24,6 +24,11 @@ interface UserType extends BaseUserType {
   title?: string;
   location?: string;
   responsibilities?: string;
+  hireDate?: string;
+  birthDate?: string;
+  aboutMe?: string;
+  surname?: string;
+  jobTitle?: string;
 }
 
 const ProfilePage = () => {
@@ -37,7 +42,8 @@ const ProfilePage = () => {
     title: '',
     department: '',
     location: '',
-    responsibilities: ''
+    responsibilities: '',
+    aboutMe: ''
   });
 
   // Check if viewing own profile or another employee's profile
@@ -362,7 +368,7 @@ const ProfilePage = () => {
         <div className="pt-14 px-8 pb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold">{user?.name || "User"}</h1>
+              <h1 className="text-2xl font-bold">{user?.name} {user?.surname}</h1>
               <p className="text-gray-600">{userDetails.title}</p>
             </div>
             <div className="text-right">
@@ -463,46 +469,40 @@ const ProfilePage = () => {
                       <div className="flex justify-between">
                         <div className="space-y-1">
                           <Label htmlFor="title" className="text-sm text-gray-500">Title:</Label>
-                          {isEditing ? (
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2 text-gray-500" />
-                              <Input
-                                id="title"
-                                name="title"
-                                value={formValues.title}
-                                onChange={handleInputChange}
-                                className="h-8 text-sm"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{userDetails.title}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-gray-500" />
+                            <span>{userDetails.title}</span>
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label htmlFor="department" className="text-sm text-gray-500">Department:</Label>
-                          {isEditing ? (
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                              <Input
-                                id="department"
-                                name="department"
-                                value={formValues.department}
-                                onChange={handleInputChange}
-                                className="h-8 text-sm"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{userDetails.department}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                            <span>{userDetails.department}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* About Me */}
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h3 className="text-lg font-semibold mb-4">About Me</h3>
+                    {isEditing ? (
+                      <div>
+                        <Label htmlFor="aboutMe" className="sr-only">About Me</Label>
+                        <textarea
+                          id="aboutMe"
+                          name="aboutMe"
+                          value={formValues.aboutMe || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-200 rounded-md text-sm min-h-24"
+                          placeholder="Tell us about yourself"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-gray-700">{user?.aboutMe || 'No information provided'}</p>
+                    )}
                   </div>
                   
                   {/* Responsibilities */}
