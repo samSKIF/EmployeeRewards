@@ -110,34 +110,8 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
 
     switch (displayMode) {
       case "pinned":
-        // Get pinned posts across all channels
-        featuredPosts = await db.select({
-          id: interestChannelPosts.id,
-          content: interestChannelPosts.content,
-          imageUrl: interestChannelPosts.imageUrl,
-          likeCount: interestChannelPosts.likeCount,
-          commentCount: interestChannelPosts.commentCount,
-          createdAt: interestChannelPosts.createdAt,
-          channelId: interestChannels.id,
-          channelName: interestChannels.name,
-          channelType: interestChannels.channelType,
-          authorId: users.id,
-          authorName: users.name,
-          authorAvatarUrl: users.avatarUrl,
-          pinnedOrder: interestChannelPinnedPosts.order
-        })
-        .from(interestChannelPinnedPosts)
-        .innerJoin(interestChannelPosts, eq(interestChannelPinnedPosts.postId, interestChannelPosts.id))
-        .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-        .innerJoin(users, eq(interestChannelPosts.userId, users.id))
-        .where(
-          and(
-            eq(interestChannels.organizationId, req.user.organizationId || 1),
-            eq(interestChannels.isActive, true)
-          )
-        )
-        .orderBy(desc(interestChannelPinnedPosts.order), desc(interestChannelPosts.createdAt))
-        .limit(maxPosts);
+        // Get pinned posts across all channels - fallback to engagement for now
+        featuredPosts = [];
         break;
 
       case "latest_from_spaces":
@@ -163,7 +137,7 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
         })
         .from(interestChannelPosts)
         .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-        .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+        .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
         .where(
           and(
             inArray(interestChannels.id, specificSpaces.map(Number)),

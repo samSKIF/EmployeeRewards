@@ -1310,9 +1310,12 @@ export const interestChannelMembers = pgTable("interest_channel_members", {
 export const interestChannelPosts = pgTable("interest_channel_posts", {
   id: serial("id").primaryKey(),
   channelId: integer("channel_id").references(() => interestChannels.id, { onDelete: 'cascade' }).notNull(),
-  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
+  type: text("type"),
+  tags: text("tags").array(),
+  isPinned: boolean("is_pinned").default(false),
   likeCount: integer("like_count").default(0).notNull(),
   commentCount: integer("comment_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -1390,14 +1393,14 @@ export const interestChannelMembersRelations = relations(interestChannelMembers,
 
 export const interestChannelPostsRelations = relations(interestChannelPosts, ({ one, many }) => ({
   channel: one(interestChannels, { fields: [interestChannelPosts.channelId], references: [interestChannels.id] }),
-  author: one(users, { fields: [interestChannelPosts.authorId], references: [users.id] }),
+  author: one(users, { fields: [interestChannelPosts.userId], references: [users.id] }),
   comments: many(interestChannelPostComments),
   likes: many(interestChannelPostLikes),
 }));
 
 export const interestChannelPostCommentsRelations = relations(interestChannelPostComments, ({ one }) => ({
   post: one(interestChannelPosts, { fields: [interestChannelPostComments.postId], references: [interestChannelPosts.id] }),
-  author: one(users, { fields: [interestChannelPostComments.authorId], references: [users.id] }),
+  author: one(users, { fields: [interestChannelPostComments.userId], references: [users.id] }),
 }));
 
 export const interestChannelPostLikesRelations = relations(interestChannelPostLikes, ({ one }) => ({
