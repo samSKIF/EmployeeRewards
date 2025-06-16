@@ -47,6 +47,54 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// Get individual channel details
+router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    // Get channel details
+    const channel = await db.select({
+      id: interestChannels.id,
+      name: interestChannels.name,
+      description: interestChannels.description,
+      channelType: interestChannels.channelType,
+      accessLevel: interestChannels.accessLevel,
+      memberCount: interestChannels.memberCount,
+      isActive: interestChannels.isActive,
+      allowedDepartments: interestChannels.allowedDepartments,
+      allowedSites: interestChannels.allowedSites,
+      createdAt: interestChannels.createdAt,
+      createdBy: interestChannels.createdBy,
+      organizationId: interestChannels.organizationId
+    })
+    .from(interestChannels)
+    .where(
+      and(
+        eq(interestChannels.id, channelId),
+        eq(interestChannels.organizationId, req.user.organizationId || 1)
+      )
+    )
+    .limit(1);
+
+    if (channel.length === 0) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    res.json(channel[0]);
+  } catch (error: any) {
+    logger.error("Error fetching channel details:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channel details" });
+  }
+});
+
 // Get recent posts for admin management
 router.get("/recent-posts", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
@@ -223,6 +271,141 @@ router.delete("/:id/leave", verifyToken, async (req: AuthenticatedRequest, res) 
   } catch (error: any) {
     logger.error("Error leaving channel:", error);
     res.status(500).json({ message: error.message || "Failed to leave channel" });
+  }
+});
+
+// Get channel posts
+router.get("/:id/posts", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    const posts = await db.select({
+      id: interestChannelPosts.id,
+      content: interestChannelPosts.content,
+      userId: interestChannelPosts.userId,
+      userName: users.name,
+      userAvatar: users.avatarUrl,
+      createdAt: interestChannelPosts.createdAt,
+      likeCount: interestChannelPosts.likeCount,
+      commentCount: interestChannelPosts.commentCount,
+      imageUrl: interestChannelPosts.imageUrl,
+      type: sql`'post'`.as('type')
+    })
+    .from(interestChannelPosts)
+    .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+    .where(eq(interestChannelPosts.channelId, channelId))
+    .orderBy(desc(interestChannelPosts.createdAt));
+
+    res.json(posts);
+  } catch (error: any) {
+    logger.error("Error fetching channel posts:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channel posts" });
+  }
+});
+
+// Get channel members
+router.get("/:id/members", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    const members = await db.select({
+      id: users.id,
+      name: users.name,
+      username: users.username,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      department: users.department,
+      joinedAt: interestChannelMembers.joinedAt
+    })
+    .from(interestChannelMembers)
+    .innerJoin(users, eq(interestChannelMembers.userId, users.id))
+    .where(eq(interestChannelMembers.channelId, channelId))
+    .orderBy(desc(interestChannelMembers.joinedAt));
+
+    res.json(members);
+  } catch (error: any) {
+    logger.error("Error fetching channel members:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channel members" });
+  }
+});
+
+// Get channel admins
+router.get("/:id/admins", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    // Get channel creator as admin
+    const channel = await db.select({
+      createdBy: interestChannels.createdBy
+    })
+    .from(interestChannels)
+    .where(eq(interestChannels.id, channelId))
+    .limit(1);
+
+    if (channel.length === 0) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    const admin = await db.select({
+      id: users.id,
+      name: users.name,
+      username: users.username,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      department: users.department
+    })
+    .from(users)
+    .where(eq(users.id, channel[0].createdBy));
+
+    res.json(admin);
+  } catch (error: any) {
+    logger.error("Error fetching channel admins:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channel admins" });
+  }
+});
+
+// Get channel join requests (placeholder for future implementation)
+router.get("/:id/join-requests", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    // Return empty array for now - join requests functionality not implemented yet
+    res.json([]);
+  } catch (error: any) {
+    logger.error("Error fetching join requests:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch join requests" });
   }
 });
 
