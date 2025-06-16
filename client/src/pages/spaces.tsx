@@ -152,14 +152,14 @@ export default function ChannelsPage() {
   const featuredSpaces = (spaces as Space[]).slice(0, 4);
 
   // Mock membership check - would be replaced with real data
-  const isUserMember = (channelId: number) => {
-    return channelId % 3 === 0; // Mock: every 3rd channel user is a member
+  const isUserMember = (spaceId: number) => {
+    return spaceId % 3 === 0; // Mock: every 3rd space user is a member
   };
 
-  // Join channel mutation
-  const joinChannelMutation = useMutation({
-    mutationFn: (channelId: number) => 
-      fetch(`/api/channels/${channelId}/join`, {
+  // Join space mutation
+  const joinSpaceMutation = useMutation({
+    mutationFn: (spaceId: number) => 
+      fetch(`/api/channels/${spaceId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,10 +175,10 @@ export default function ChannelsPage() {
     }
   });
 
-  // Leave channel mutation
-  const leaveChannelMutation = useMutation({
-    mutationFn: (channelId: number) => 
-      fetch(`/api/channels/${channelId}/leave`, {
+  // Leave space mutation
+  const leaveSpaceMutation = useMutation({
+    mutationFn: (spaceId: number) => 
+      fetch(`/api/channels/${spaceId}/leave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -359,48 +359,48 @@ export default function ChannelsPage() {
 
       {/* Visual Channel Feed - News Style */}
       <div className="space-y-8">
-        {filteredChannels.map((channel: Channel) => (
-          <div key={channel.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+        {filteredSpaces.map((space: Space) => (
+          <div key={space.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
             {/* Channel Header */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-white rounded-xl shadow-sm">
-                    {getChannelIcon(channel.channelType)}
+                    {getChannelIcon(space.channelType)}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">{channel.name}</h2>
-                    <p className="text-gray-600 mt-1">{channel.description}</p>
+                    <h2 className="text-xl font-bold text-gray-900">{space.name}</h2>
+                    <p className="text-gray-600 mt-1">{space.description}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      {getAccessLevelBadge(channel.accessLevel)}
+                      {getAccessLevelBadge(space.accessLevel)}
                       <Badge variant="outline" className="text-xs">
-                        {channel.channelType}
+                        {space.channelType}
                       </Badge>
                       <div className="flex items-center gap-1 text-sm text-gray-500">
                         <Users className="h-4 w-4" />
-                        <span>{channel.memberCount} members</span>
+                        <span>{space.memberCount} members</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex flex-col gap-2">
-                  {isUserMember(channel.id) ? (
+                  {isUserMember(space.id) ? (
                     <>
                       <Button 
                         variant="default" 
                         size="sm" 
                         className="min-w-24"
-                        onClick={() => setLocation(`/channels/${channel.id}`)}
+                        onClick={() => setLocation(`/channels/${space.id}`)}
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        View Channel
+                        View Space
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => leaveChannelMutation.mutate(channel.id)}
-                        disabled={leaveChannelMutation.isPending}
+                        onClick={() => leaveSpaceMutation.mutate(space.id)}
+                        disabled={leaveSpaceMutation.isPending}
                       >
                         Leave
                       </Button>
@@ -409,10 +409,10 @@ export default function ChannelsPage() {
                     <Button 
                       size="sm" 
                       className="min-w-24"
-                      onClick={() => joinChannelMutation.mutate(channel.id)}
-                      disabled={joinChannelMutation.isPending}
+                      onClick={() => joinSpaceMutation.mutate(space.id)}
+                      disabled={joinSpaceMutation.isPending}
                     >
-                      {channel.accessLevel === 'approval_required' ? 'Request to Join' : 'Join Channel'}
+                      {space.accessLevel === 'approval_required' ? 'Request to Join' : 'Join Space'}
                     </Button>
                   )}
                 </div>
@@ -431,7 +431,7 @@ export default function ChannelsPage() {
                 {[
                   {
                     id: 1,
-                    content: getSamplePost(channel.channelType, channel.name),
+                    content: getSamplePost(space.channelType, space.name),
                     user: { name: "Sarah Johnson", avatarUrl: null },
                     createdAt: "2 hours ago",
                     likeCount: Math.floor(Math.random() * 15) + 3,
@@ -439,7 +439,7 @@ export default function ChannelsPage() {
                   },
                   {
                     id: 2,
-                    content: getSamplePost(channel.channelType, channel.name, true),
+                    content: getSamplePost(space.channelType, space.name, true),
                     user: { name: "Mike Chen", avatarUrl: null },
                     createdAt: "5 hours ago",
                     likeCount: Math.floor(Math.random() * 12) + 2,
