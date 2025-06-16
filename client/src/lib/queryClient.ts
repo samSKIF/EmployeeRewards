@@ -24,7 +24,12 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
   
-  const res = await fetch(url, {
+  // Ensure API calls go to the correct server port
+  const fullUrl = url.startsWith('/api') 
+    ? `http://localhost:5000${url}` 
+    : url;
+  
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -52,7 +57,12 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
     
-    const res = await fetch(queryKey[0] as string, {
+    // Ensure API calls go to the correct server port
+    const url = (queryKey[0] as string).startsWith('/api') 
+      ? `http://localhost:5000${queryKey[0]}` 
+      : queryKey[0] as string;
+    
+    const res = await fetch(url, {
       credentials: "include",
       headers
     });
