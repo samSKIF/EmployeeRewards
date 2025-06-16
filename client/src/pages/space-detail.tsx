@@ -235,7 +235,33 @@ export default function ChannelDetail() {
     );
   }
 
-  if (spaceError || !space) {
+  if (spaceError) {
+    // Check if it's an authentication error
+    const errorMessage = spaceError?.message || '';
+    const isAuthError = errorMessage.includes('Unauthorized') || errorMessage.includes('401');
+    
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          {isAuthError ? 'Authentication Required' : 'Space not found'}
+        </h1>
+        <p className="text-gray-600 mb-4">
+          {isAuthError 
+            ? 'Please log in to access this space' 
+            : 'The space you are looking for does not exist or has been removed'}
+        </p>
+        <Button 
+          onClick={() => setLocation(isAuthError ? '/auth' : '/spaces')}
+          className="bg-teal-600 hover:bg-teal-700"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {isAuthError ? 'Go to Login' : 'Back to Spaces'}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!space) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Space not found</h1>
