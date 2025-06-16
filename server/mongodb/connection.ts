@@ -21,7 +21,7 @@ export async function connectToMongoDB(): Promise<Db | null> {
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
     });
-    
+
     // Connect with timeout
     await Promise.race([
       client.connect(),
@@ -29,14 +29,14 @@ export async function connectToMongoDB(): Promise<Db | null> {
         setTimeout(() => reject(new Error('Connection timeout')), 8000)
       )
     ]);
-    
+
     db = client.db(dbName);
-    
+
     console.log('Connected to MongoDB successfully');
-    
+
     // Create indexes for better performance
     await createIndexes();
-    
+
     return db;
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
@@ -54,7 +54,7 @@ async function createIndexes() {
       isPinned: -1, 
       createdAt: -1 
     });
-    
+
     // Additional social posts indexes
     await db.collection('social_posts').createIndex({ authorId: 1, createdAt: -1 });
     await db.collection('social_posts').createIndex({ type: 1, organizationId: 1, createdAt: -1 });
