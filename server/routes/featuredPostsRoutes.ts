@@ -20,9 +20,7 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
       organizationId: req.user.organizationId 
     });
 
-    // Get most engaging posts from last 48 hours
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
-    
+    // Get most engaging posts from all time
     const featuredPosts = await db.select({
       id: interestChannelPosts.id,
       content: interestChannelPosts.content,
@@ -43,8 +41,7 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
     .where(
       and(
         eq(interestChannels.organizationId, req.user.organizationId || 1),
-        eq(interestChannels.isActive, true),
-        gte(interestChannelPosts.createdAt, twoDaysAgo)
+        eq(interestChannels.isActive, true)
       )
     )
     .orderBy(desc(sql`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`), desc(interestChannelPosts.createdAt))
