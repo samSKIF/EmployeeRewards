@@ -47,54 +47,6 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get individual channel details
-router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const channelId = parseInt(req.params.id);
-    
-    if (isNaN(channelId)) {
-      return res.status(400).json({ message: "Invalid channel ID" });
-    }
-
-    // Get channel details
-    const channel = await db.select({
-      id: interestChannels.id,
-      name: interestChannels.name,
-      description: interestChannels.description,
-      channelType: interestChannels.channelType,
-      accessLevel: interestChannels.accessLevel,
-      memberCount: interestChannels.memberCount,
-      isActive: interestChannels.isActive,
-      allowedDepartments: interestChannels.allowedDepartments,
-      allowedSites: interestChannels.allowedSites,
-      createdAt: interestChannels.createdAt,
-      createdBy: interestChannels.createdBy,
-      organizationId: interestChannels.organizationId
-    })
-    .from(interestChannels)
-    .where(
-      and(
-        eq(interestChannels.id, channelId),
-        eq(interestChannels.organizationId, req.user.organizationId || 1)
-      )
-    )
-    .limit(1);
-
-    if (channel.length === 0) {
-      return res.status(404).json({ message: "Channel not found" });
-    }
-
-    res.json(channel[0]);
-  } catch (error: any) {
-    logger.error("Error fetching channel details:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch channel details" });
-  }
-});
-
 // Get recent posts for admin management
 router.get("/recent-posts", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
@@ -406,6 +358,54 @@ router.get("/:id/join-requests", verifyToken, async (req: AuthenticatedRequest, 
   } catch (error: any) {
     logger.error("Error fetching join requests:", error);
     res.status(500).json({ message: error.message || "Failed to fetch join requests" });
+  }
+});
+
+// Get individual channel details (placed last to avoid conflicts with specific routes)
+router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const channelId = parseInt(req.params.id);
+    
+    if (isNaN(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    // Get channel details
+    const channel = await db.select({
+      id: interestChannels.id,
+      name: interestChannels.name,
+      description: interestChannels.description,
+      channelType: interestChannels.channelType,
+      accessLevel: interestChannels.accessLevel,
+      memberCount: interestChannels.memberCount,
+      isActive: interestChannels.isActive,
+      allowedDepartments: interestChannels.allowedDepartments,
+      allowedSites: interestChannels.allowedSites,
+      createdAt: interestChannels.createdAt,
+      createdBy: interestChannels.createdBy,
+      organizationId: interestChannels.organizationId
+    })
+    .from(interestChannels)
+    .where(
+      and(
+        eq(interestChannels.id, channelId),
+        eq(interestChannels.organizationId, req.user.organizationId || 1)
+      )
+    )
+    .limit(1);
+
+    if (channel.length === 0) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    res.json(channel[0]);
+  } catch (error: any) {
+    logger.error("Error fetching channel details:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channel details" });
   }
 });
 
