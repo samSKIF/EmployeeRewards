@@ -2,7 +2,7 @@ import { Router } from "express";
 import { verifyToken, AuthenticatedRequest } from "../middleware/auth";
 import { storage } from "../storage";
 import { db } from "../db";
-import { interestChannels, interestChannelMembers, interestChannelPosts } from "@shared/schema";
+import { interestChannels, interestChannelMembers, interestChannelPosts, users } from "@shared/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { logger } from "@shared/logger";
 
@@ -44,6 +44,46 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
   } catch (error: any) {
     logger.error("Error fetching channels:", error);
     res.status(500).json({ message: error.message || "Failed to fetch channels" });
+  }
+});
+
+// Get recent posts for admin management
+router.get("/recent-posts", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const recentPosts = await db.select({
+      id: interestChannelPosts.id,
+      content: interestChannelPosts.content,
+      imageUrl: interestChannelPosts.imageUrl,
+      likeCount: interestChannelPosts.likeCount,
+      commentCount: interestChannelPosts.commentCount,
+      createdAt: interestChannelPosts.createdAt,
+      channelId: interestChannels.id,
+      channelName: interestChannels.name,
+      channelType: interestChannels.channelType,
+      authorId: users.id,
+      authorName: users.name,
+      authorAvatarUrl: users.avatarUrl
+    })
+    .from(interestChannelPosts)
+    .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
+    .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
+    .where(
+      and(
+        eq(interestChannels.organizationId, req.user.organizationId || 1),
+        eq(interestChannels.isActive, true)
+      )
+    )
+    .orderBy(desc(interestChannelPosts.createdAt))
+    .limit(50);
+
+    res.json(recentPosts);
+  } catch (error: any) {
+    logger.error("Error fetching recent posts:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch recent posts" });
   }
 });
 

@@ -44,17 +44,14 @@ export default function SpacesPage() {
     queryKey: ['/api/channels'],
   });
 
+  // Fetch featured posts for dynamic layout
+  const { data: featuredPosts = [] } = useQuery<any[]>({
+    queryKey: ['/api/featured-posts'],
+  });
+
   // Debug logging
   console.log('Spaces query - Loading:', isLoading, 'Spaces count:', spaces?.length, 'Error:', error);
-
-  // Get featured spaces (top 4)
-  const featuredSpaces = (spaces as Space[]).slice(0, 4);
-
-  // Fetch latest posts for each space to display real content
-  const { data: spacePosts = {} } = useQuery<Record<number, any>>({
-    queryKey: ['/api/channels/featured-posts'],
-    enabled: featuredSpaces.length > 0,
-  });
+  console.log('Featured posts:', featuredPosts?.length);
 
   // Generate feed highlights from real space posts
   const feedHighlights = featuredSpaces.map((space, index) => {

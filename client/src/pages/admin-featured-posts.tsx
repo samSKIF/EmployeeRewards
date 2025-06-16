@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Pin, Unpin, Heart, MessageCircle, Calendar, User, Hash } from "lucide-react";
+import { Pin, PinOff, Heart, MessageCircle, Calendar, User, Hash } from "lucide-react";
 
 interface FeaturedPost {
   id: number;
@@ -304,7 +304,7 @@ export default function AdminFeaturedPosts() {
                         onClick={() => handleUnpinPost(post.id)}
                         disabled={unpinPostMutation.isPending}
                       >
-                        <Unpin className="h-4 w-4 mr-1" />
+                        <PinOff className="h-4 w-4 mr-1" />
                         Unpin
                       </Button>
                     )}
