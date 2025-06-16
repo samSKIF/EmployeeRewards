@@ -1430,6 +1430,10 @@ export type InterestChannelPost = typeof interestChannelPosts.$inferSelect;
 export const insertInterestChannelPostSchema = createInsertSchema(interestChannelPosts).omit({ id: true, likeCount: true, commentCount: true, createdAt: true, updatedAt: true });
 export type InsertInterestChannelPost = z.infer<typeof insertInterestChannelPostSchema>;
 
+export type FeaturedPostsConfig = typeof featuredPostsConfig.$inferSelect;
+export const insertFeaturedPostsConfigSchema = createInsertSchema(featuredPostsConfig).omit({ id: true, updatedAt: true });
+export type InsertFeaturedPostsConfig = z.infer<typeof insertFeaturedPostsConfigSchema>;
+
 export type InterestChannelPostComment = typeof interestChannelPostComments.$inferSelect;
 export const insertInterestChannelPostCommentSchema = createInsertSchema(interestChannelPostComments).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertInterestChannelPostComment = z.infer<typeof insertInterestChannelPostCommentSchema>;
@@ -1442,9 +1446,7 @@ export type InterestChannelJoinRequest = typeof interestChannelJoinRequests.$inf
 export const insertInterestChannelJoinRequestSchema = createInsertSchema(interestChannelJoinRequests).omit({ id: true, createdAt: true, reviewedAt: true });
 export type InsertInterestChannelJoinRequest = z.infer<typeof insertInterestChannelJoinRequestSchema>;
 
-export type InterestChannelPinnedPost = typeof interestChannelPinnedPosts.$inferSelect;
-export const insertInterestChannelPinnedPostSchema = createInsertSchema(interestChannelPinnedPosts).omit({ id: true, pinnedAt: true });
-export type InsertInterestChannelPinnedPost = z.infer<typeof insertInterestChannelPinnedPostSchema>;
+
 
 
 
