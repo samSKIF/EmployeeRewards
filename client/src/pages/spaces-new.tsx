@@ -241,66 +241,16 @@ export default function SpacesPage() {
         </div>
       </div>
 
-      {/* Feed Highlights Section */}
+      {/* Featured Posts Section with Dynamic Layout */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Feed Highlights</h2>
-          <button className="text-blue-600 hover:text-blue-700 font-medium">See all</button>
+          <h2 className="text-2xl font-bold text-gray-900">Featured Posts</h2>
+          <p className="text-sm text-muted-foreground">
+            {featuredPosts.length > 0 ? `${featuredPosts.length} featured posts` : 'Most engaging content from the last 48 hours'}
+          </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {feedHighlights.map((highlight) => (
-            <div 
-              key={highlight.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setLocation(`/channels/${highlight.channelId}`)}
-            >
-              <div className="relative">
-                {highlight.imageUrl && (
-                  <img 
-                    src={highlight.imageUrl}
-                    alt=""
-                    className="w-full h-40 object-cover rounded-t-xl"
-                  />
-                )}
-                {!highlight.imageUrl && (
-                  <div className="w-full h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-xl flex items-center justify-center">
-                    <span className="text-4xl">{highlight.channelIcon}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{highlight.channelIcon}</span>
-                  <span className="text-sm font-medium text-blue-600">{highlight.channelName}</span>
-                </div>
-                
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm leading-snug">
-                  {highlight.title}
-                </h3>
-                
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-3 h-3" />
-                      <span>{highlight.likes}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="w-3 h-3" />
-                      <span>{highlight.comments}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Share2 className="w-3 h-3" />
-                      <span>{highlight.shares}</span>
-                    </div>
-                  </div>
-                  <span>{highlight.timestamp}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <FeaturedPostsGrid posts={featuredPosts} />
       </div>
 
       {/* Suggested Content Section */}
