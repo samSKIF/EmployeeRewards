@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Heart, MessageCircle, Share2, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { FeaturedPostsGrid } from "@/components/FeaturedPostsGrid";
 
 interface Space {
   id: number;
@@ -53,8 +54,33 @@ export default function SpacesPage() {
   console.log('Spaces query - Loading:', isLoading, 'Spaces count:', spaces?.length, 'Error:', error);
   console.log('Featured posts:', featuredPosts?.length);
 
-  // Generate feed highlights from real space posts
-  const feedHighlights = featuredSpaces.map((space, index) => {
+  // Use featured posts or fallback to regular spaces
+  const feedHighlights = featuredPosts.length > 0 ? featuredPosts.map((post: any, index: number) => {
+    const spaceIconMap: { [key: string]: string } = {
+      'department': '📈',
+      'site': '🏢', 
+      'interest': '☕',
+      'project': '📋',
+      'social': '🎉',
+      'company-wide': '🏢'
+    };
+    
+    return {
+      id: post.id,
+      channelId: post.channelId,
+      postId: post.id,
+      channelName: post.channelName,
+      channelIcon: spaceIconMap[post.channelType] || '📢',
+      title: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+      content: post.content,
+      imageUrl: post.imageUrl,
+      author: post.authorName || 'Team Member',
+      time: new Date(post.createdAt).toLocaleDateString(),
+      likes: post.likeCount || 0,
+      comments: post.commentCount || 0,
+      memberCount: 0
+    };
+  }) : spaces.slice(0, 4).map((space: any, index: number) => {
     const spaceIconMap: { [key: string]: string } = {
       'department': '📈',
       'site': '🏢', 
