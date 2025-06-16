@@ -480,9 +480,9 @@ export default function ChannelsPage() {
                   variant="ghost" 
                   size="sm" 
                   className="w-full text-blue-600 hover:text-blue-700"
-                  onClick={() => setLocation(`/channels/${channel.id}`)}
+                  onClick={() => setLocation(`/channels/${space.id}`)}
                 >
-                  {isUserMember(channel.id) ? `View all posts in ${channel.name}` : `Preview ${channel.name}`}
+                  {isUserMember(space.id) ? `View all posts in ${space.name}` : `Preview ${space.name}`}
                 </Button>
               </div>
             </div>
@@ -490,7 +490,7 @@ export default function ChannelsPage() {
         ))}
       </div>
 
-      {filteredChannels.length === 0 && (
+      {filteredSpaces.length === 0 && (
         <div className="text-center py-12">
           <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No spaces found</h3>
