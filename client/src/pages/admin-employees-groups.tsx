@@ -107,17 +107,17 @@ function GroupsManagement() {
     queryKey: ['/api/admin/spaces'],
   });
 
-  // Create channel mutation
-  const createChannelMutation = useMutation({
-    mutationFn: async (channelData: any) => {
-      return apiRequest('POST', '/api/channels', channelData);
+  // Create space mutation
+  const createSpaceMutation = useMutation({
+    mutationFn: async (spaceData: any) => {
+      return apiRequest('POST', '/api/channels', spaceData);
     },
     onSuccess: () => {
-      refetchChannels();
+      refetchSpaces();
       setShowCreateDialog(false);
       toast({
         title: "Success",
-        description: "Channel created successfully",
+        description: "Space created successfully",
       });
     },
     onError: (error: any) => {
@@ -163,7 +163,7 @@ function GroupsManagement() {
     }
   });
 
-  const filteredGroups = Array.isArray(channels) ? channels.filter((group: any) => {
+  const filteredGroups = Array.isArray(spaces) ? spaces.filter((group: any) => {
     const matchesSearch = group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -237,7 +237,7 @@ function GroupsManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {channelsLoading ? (
+              {spacesLoading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
@@ -246,7 +246,7 @@ function GroupsManagement() {
               ) : filteredGroups.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No channels found
+                    No spaces found
                   </TableCell>
                 </TableRow>
               ) : (

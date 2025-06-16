@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateSpaceDialog } from "@/components/spaces/CreateSpaceDialog";
 import { useLocation } from "wouter";
 
-interface Channel {
+interface Space {
   id: number;
   name: string;
   description: string;
@@ -89,7 +89,7 @@ const getSamplePost = (channelType: string, channelName: string, isSecondary = f
   return channelPosts[isSecondary ? 1 : 0] || `New update in ${channelName}!`;
 };
 
-interface ChannelPost {
+interface SpacePost {
   id: number;
   content: string;
   user: {
@@ -102,8 +102,8 @@ interface ChannelPost {
   commentCount: number;
 }
 
-interface ChannelWithPosts extends Channel {
-  recentPosts: ChannelPost[];
+interface SpaceWithPosts extends Space {
+  recentPosts: SpacePost[];
 }
 
 interface FeedHighlight {
@@ -131,25 +131,25 @@ export default function ChannelsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch channels data
-  const { data: channels = [], isLoading, error } = useQuery<Channel[]>({
+  // Fetch spaces data
+  const { data: spaces = [], isLoading, error } = useQuery<Space[]>({
     queryKey: ['/api/channels'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
 
-  // Filter channels based on search and tab
-  const filteredChannels = channels.filter((channel: Channel) => {
-    const matchesSearch = channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         channel.description.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter spaces based on search and tab
+  const filteredSpaces = spaces.filter((space: Space) => {
+    const matchesSearch = space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         space.description.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (selectedTab === "all") return matchesSearch;
-    if (selectedTab === "my-channels") return matchesSearch; // Would need user membership data
-    return matchesSearch && channel.channelType === selectedTab;
+    if (selectedTab === "my-spaces") return matchesSearch; // Would need user membership data
+    return matchesSearch && space.channelType === selectedTab;
   });
 
-  // Get featured channels (top 4)
-  const featuredChannels = (channels as Channel[]).slice(0, 4);
+  // Get featured spaces (top 4)
+  const featuredSpaces = (spaces as Space[]).slice(0, 4);
 
   // Mock membership check - would be replaced with real data
   const isUserMember = (channelId: number) => {
