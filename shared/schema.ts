@@ -1364,6 +1364,17 @@ export const interestChannelPinnedPosts = pgTable("interest_channel_pinned_posts
   unique: primaryKey({ columns: [table.channelId, table.postId] }),
 }));
 
+// Featured Posts Configuration - Global settings for Spaces discovery page
+export const featuredPostsConfig = pgTable("featured_posts_config", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: 'cascade' }).notNull(),
+  displayMode: text("display_mode").default("pinned").notNull(), // 'pinned', 'engagement', 'latest_from_spaces'
+  specificSpaces: text("specific_spaces").array(), // Channel IDs to feature posts from
+  maxPosts: integer("max_posts").default(4).notNull(), // Maximum posts to display (1-4)
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedBy: integer("updated_by").references(() => users.id).notNull(),
+});
+
 // Channels Relations
 export const interestChannelsRelations = relations(interestChannels, ({ one, many }) => ({
   interest: one(interests, { fields: [interestChannels.interestId], references: [interests.id] }),
