@@ -8,6 +8,45 @@ import { logger } from "@shared/logger";
 
 const router = Router();
 
+// Get all channels (main endpoint for spaces discovery)
+router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Get all active channels for the user's organization
+    const channels = await db.select({
+      id: interestChannels.id,
+      name: interestChannels.name,
+      description: interestChannels.description,
+      channelType: interestChannels.channelType,
+      accessLevel: interestChannels.accessLevel,
+      memberCount: interestChannels.memberCount,
+      isActive: interestChannels.isActive,
+      allowedDepartments: interestChannels.allowedDepartments,
+      allowedSites: interestChannels.allowedSites,
+      createdAt: interestChannels.createdAt,
+      createdBy: interestChannels.createdBy,
+      organizationId: interestChannels.organizationId
+    })
+    .from(interestChannels)
+    .where(
+      and(
+        eq(interestChannels.isActive, true),
+        eq(interestChannels.organizationId, req.user.organizationId || 1)
+      )
+    )
+    .orderBy(desc(interestChannels.createdAt));
+
+    logger.info(`Fetched ${channels.length} channels for user ${req.user.id}`);
+    res.json(channels);
+  } catch (error: any) {
+    logger.error("Error fetching channels:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch channels" });
+  }
+});
+
 // Get trending channels
 router.get("/trending", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
