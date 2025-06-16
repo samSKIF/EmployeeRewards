@@ -3,295 +3,124 @@ import { verifyToken, AuthenticatedRequest } from "../middleware/auth";
 import { db } from "../db";
 import { 
   featuredPostsConfig, 
-  interestChannelPinnedPosts, 
   interestChannelPosts, 
   interestChannels,
-  users,
-  interestChannelPostLikes 
+  users
 } from "@shared/schema";
-import { eq, desc, and, sql, inArray, gte } from "drizzle-orm";
+import { eq, desc, and, sql, gte } from "drizzle-orm";
 import { logger } from "@shared/logger";
 
 const router = Router();
 
-// Get featured posts configuration
+// GET /api/featured-posts - Get featured posts for Spaces discovery page
+router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    logger.info("Featured posts route accessed", { 
+      userId: req.user.id, 
+      organizationId: req.user.organizationId 
+    });
+
+    // Get most engaging posts from last 48 hours
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    
+    const featuredPosts = await db.select({
+      id: interestChannelPosts.id,
+      content: interestChannelPosts.content,
+      imageUrl: interestChannelPosts.imageUrl,
+      likeCount: interestChannelPosts.likeCount,
+      commentCount: interestChannelPosts.commentCount,
+      createdAt: interestChannelPosts.createdAt,
+      channelId: interestChannels.id,
+      channelName: interestChannels.name,
+      channelType: interestChannels.channelType,
+      authorId: users.id,
+      authorName: users.name,
+      authorAvatarUrl: users.avatarUrl
+    })
+    .from(interestChannelPosts)
+    .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
+    .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+    .where(
+      and(
+        eq(interestChannels.organizationId, req.user.organizationId || 1),
+        eq(interestChannels.isActive, true),
+        gte(interestChannelPosts.createdAt, twoDaysAgo)
+      )
+    )
+    .orderBy(desc(sql`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`), desc(interestChannelPosts.createdAt))
+    .limit(4);
+
+    res.json(featuredPosts);
+  } catch (error) {
+    logger.error("Error fetching featured posts:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET /api/featured-posts/config - Get featured posts configuration
 router.get("/config", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
     const config = await db.select()
       .from(featuredPostsConfig)
       .where(eq(featuredPostsConfig.organizationId, req.user.organizationId || 1))
       .limit(1);
 
     if (config.length === 0) {
-      // Create default configuration
-      const defaultConfig = await db.insert(featuredPostsConfig)
-        .values({
-          organizationId: req.user.organizationId || 1,
-          displayMode: "pinned",
-          maxPosts: 4,
-          updatedBy: req.user.id
-        })
-        .returning();
-
-      return res.json(defaultConfig[0]);
+      return res.json({
+        displayMode: "engagement",
+        maxPosts: 4,
+        specificSpaces: []
+      });
     }
 
     res.json(config[0]);
-  } catch (error: any) {
+  } catch (error) {
     logger.error("Error fetching featured posts config:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch configuration" });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Update featured posts configuration
-router.put("/config", verifyToken, async (req: AuthenticatedRequest, res) => {
+// POST /api/featured-posts/config - Update featured posts configuration
+router.post("/config", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user || !req.user.isAdmin) {
+    if (!req.user.isAdmin) {
       return res.status(403).json({ message: "Admin access required" });
     }
 
-    const { displayMode, specificSpaces, maxPosts } = req.body;
+    const { displayMode, maxPosts, specificSpaces } = req.body;
 
-    const updatedConfig = await db.update(featuredPostsConfig)
-      .set({
-        displayMode,
-        specificSpaces,
-        maxPosts,
-        updatedBy: req.user.id,
-        updatedAt: new Date()
-      })
-      .where(eq(featuredPostsConfig.organizationId, req.user.organizationId || 1))
-      .returning();
-
-    if (updatedConfig.length === 0) {
-      // Create if doesn't exist
-      const newConfig = await db.insert(featuredPostsConfig)
-        .values({
-          organizationId: req.user.organizationId || 1,
-          displayMode,
-          specificSpaces,
-          maxPosts,
-          updatedBy: req.user.id
-        })
-        .returning();
-
-      return res.json(newConfig[0]);
-    }
-
-    res.json(updatedConfig[0]);
-  } catch (error: any) {
-    logger.error("Error updating featured posts config:", error);
-    res.status(500).json({ message: error.message || "Failed to update configuration" });
-  }
-});
-
-// Get featured posts for Spaces discovery page
-router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    // Get configuration
-    const config = await db.select()
+    // Check if config exists
+    const existingConfig = await db.select()
       .from(featuredPostsConfig)
       .where(eq(featuredPostsConfig.organizationId, req.user.organizationId || 1))
       .limit(1);
 
-    const displayMode = config[0]?.displayMode || "pinned";
-    const maxPosts = config[0]?.maxPosts || 4;
-    const specificSpaces = config[0]?.specificSpaces || [];
-
-    let featuredPosts;
-
-    switch (displayMode) {
-      case "pinned":
-        // Get pinned posts across all channels - fallback to engagement for now
-        featuredPosts = [];
-        break;
-
-      case "latest_from_spaces":
-        // Get latest posts from specific spaces
-        if (specificSpaces.length === 0) {
-          return res.json([]);
-        }
-
-        featuredPosts = await db.select({
-          id: interestChannelPosts.id,
-          content: interestChannelPosts.content,
-          imageUrl: interestChannelPosts.imageUrl,
-          likeCount: interestChannelPosts.likeCount,
-          commentCount: interestChannelPosts.commentCount,
-          createdAt: interestChannelPosts.createdAt,
-          channelId: interestChannels.id,
-          channelName: interestChannels.name,
-          channelType: interestChannels.channelType,
-          authorId: users.id,
-          authorName: users.name,
-          authorAvatarUrl: users.avatarUrl,
-          pinnedOrder: sql<number>`0`
+    if (existingConfig.length === 0) {
+      // Create new config
+      await db.insert(featuredPostsConfig).values({
+        organizationId: req.user.organizationId || 1,
+        displayMode: displayMode || "engagement",
+        maxPosts: maxPosts || 4,
+        specificSpaces: specificSpaces || [],
+        updatedBy: req.user.id
+      });
+    } else {
+      // Update existing config
+      await db.update(featuredPostsConfig)
+        .set({
+          displayMode: displayMode || "engagement",
+          maxPosts: maxPosts || 4,
+          specificSpaces: specificSpaces || [],
+          updatedAt: new Date(),
+          updatedBy: req.user.id
         })
-        .from(interestChannelPosts)
-        .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-        .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
-        .where(
-          and(
-            inArray(interestChannels.id, specificSpaces.map(Number)),
-            eq(interestChannels.organizationId, req.user.organizationId || 1),
-            eq(interestChannels.isActive, true)
-          )
-        )
-        .orderBy(desc(interestChannelPosts.createdAt))
-        .limit(maxPosts);
-        break;
-
-      case "engagement":
-      default:
-        // Get most engaging posts from last 48 hours
-        const twoDaysAgo = new Date();
-        twoDaysAgo.setHours(twoDaysAgo.getHours() - 48);
-
-        featuredPosts = await db.select({
-          id: interestChannelPosts.id,
-          content: interestChannelPosts.content,
-          imageUrl: interestChannelPosts.imageUrl,
-          likeCount: interestChannelPosts.likeCount,
-          commentCount: interestChannelPosts.commentCount,
-          createdAt: interestChannelPosts.createdAt,
-          channelId: interestChannels.id,
-          channelName: interestChannels.name,
-          channelType: interestChannels.channelType,
-          authorId: users.id,
-          authorName: users.name,
-          authorAvatarUrl: users.avatarUrl,
-          pinnedOrder: sql<number>`0`,
-          engagementScore: sql<number>`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`
-        })
-        .from(interestChannelPosts)
-        .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-        .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
-        .where(
-          and(
-            eq(interestChannels.organizationId, req.user.organizationId || 1),
-            eq(interestChannels.isActive, true),
-            gte(interestChannelPosts.createdAt, twoDaysAgo)
-          )
-        )
-        .orderBy(desc(sql`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`), desc(interestChannelPosts.createdAt))
-        .limit(maxPosts);
-        break;
+        .where(eq(featuredPostsConfig.organizationId, req.user.organizationId || 1));
     }
 
-    // If no pinned posts found, fallback to engagement-based
-    if (displayMode === "pinned" && featuredPosts.length === 0) {
-      const twoDaysAgo = new Date();
-      twoDaysAgo.setHours(twoDaysAgo.getHours() - 48);
-
-      featuredPosts = await db.select({
-        id: interestChannelPosts.id,
-        content: interestChannelPosts.content,
-        imageUrl: interestChannelPosts.imageUrl,
-        likeCount: interestChannelPosts.likeCount,
-        commentCount: interestChannelPosts.commentCount,
-        createdAt: interestChannelPosts.createdAt,
-        channelId: interestChannels.id,
-        channelName: interestChannels.name,
-        channelType: interestChannels.channelType,
-        authorId: users.id,
-        authorName: users.name,
-        authorAvatarUrl: users.avatarUrl,
-        pinnedOrder: sql<number>`0`,
-        engagementScore: sql<number>`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`
-      })
-      .from(interestChannelPosts)
-      .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-      .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
-      .where(
-        and(
-          eq(interestChannels.organizationId, req.user.organizationId || 1),
-          eq(interestChannels.isActive, true),
-          gte(interestChannelPosts.createdAt, twoDaysAgo)
-        )
-      )
-      .orderBy(desc(sql`${interestChannelPosts.likeCount} + ${interestChannelPosts.commentCount}`), desc(interestChannelPosts.createdAt))
-      .limit(maxPosts);
-    }
-
-    logger.info(`Fetched ${featuredPosts.length} featured posts using ${displayMode} mode`);
-    res.json(featuredPosts);
-  } catch (error: any) {
-    logger.error("Error fetching featured posts:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch featured posts" });
-  }
-});
-
-// Pin a post to featured posts
-router.post("/pin/:postId", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user || !req.user.isAdmin) {
-      return res.status(403).json({ message: "Admin access required" });
-    }
-
-    const postId = parseInt(req.params.postId);
-    const { order = 0 } = req.body;
-
-    // Get the post to find its channel
-    const post = await db.select({
-      channelId: interestChannelPosts.channelId
-    })
-    .from(interestChannelPosts)
-    .where(eq(interestChannelPosts.id, postId))
-    .limit(1);
-
-    if (post.length === 0) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    // Pin the post
-    const pinnedPost = await db.insert(interestChannelPinnedPosts)
-      .values({
-        channelId: post[0].channelId,
-        postId,
-        pinnedBy: req.user.id,
-        order
-      })
-      .onConflictDoUpdate({
-        target: [interestChannelPinnedPosts.channelId, interestChannelPinnedPosts.postId],
-        set: {
-          order,
-          pinnedBy: req.user.id,
-          pinnedAt: new Date()
-        }
-      })
-      .returning();
-
-    res.json(pinnedPost[0]);
-  } catch (error: any) {
-    logger.error("Error pinning post:", error);
-    res.status(500).json({ message: error.message || "Failed to pin post" });
-  }
-});
-
-// Unpin a post
-router.delete("/pin/:postId", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user || !req.user.isAdmin) {
-      return res.status(403).json({ message: "Admin access required" });
-    }
-
-    const postId = parseInt(req.params.postId);
-
-    await db.delete(interestChannelPinnedPosts)
-      .where(eq(interestChannelPinnedPosts.postId, postId));
-
-    res.json({ message: "Post unpinned successfully" });
-  } catch (error: any) {
-    logger.error("Error unpinning post:", error);
-    res.status(500).json({ message: error.message || "Failed to unpin post" });
+    res.json({ success: true });
+  } catch (error) {
+    logger.error("Error updating featured posts config:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 

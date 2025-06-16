@@ -1325,7 +1325,7 @@ export const interestChannelPosts = pgTable("interest_channel_posts", {
 export const interestChannelPostComments = pgTable("interest_channel_post_comments", {
   id: serial("id").primaryKey(),
   postId: integer("post_id").references(() => interestChannelPosts.id, { onDelete: 'cascade' }).notNull(),
-  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
