@@ -40,9 +40,12 @@ export default function SpacesPage() {
   const [, setLocation] = useLocation();
 
   // Fetch spaces data
-  const { data: spaces = [], isLoading } = useQuery<Space[]>({
+  const { data: spaces = [], isLoading, error } = useQuery<Space[]>({
     queryKey: ['/api/channels'],
   });
+
+  // Debug logging
+  console.log('Spaces query - Loading:', isLoading, 'Spaces count:', spaces?.length, 'Error:', error);
 
   // Get featured spaces (top 4)
   const featuredSpaces = (spaces as Space[]).slice(0, 4);
@@ -103,6 +106,28 @@ export default function SpacesPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Spaces</h2>
+          <p className="text-gray-600">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!spaces || spaces.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-600 mb-2">No Spaces Available</h2>
+          <p className="text-gray-500">No spaces have been created yet.</p>
+        </div>
       </div>
     );
   }
