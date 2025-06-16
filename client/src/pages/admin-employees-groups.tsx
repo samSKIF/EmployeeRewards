@@ -168,7 +168,7 @@ function GroupsManagement() {
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (selectedCategory === 'all') return matchesSearch;
-    return group.category === selectedCategory && matchesSearch;
+    return group.channelType === selectedCategory && matchesSearch;
   }) : [];
 
   return (
@@ -212,10 +212,11 @@ function GroupsManagement() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="Technology">Technology</SelectItem>
-            <SelectItem value="Sports">Sports</SelectItem>
-            <SelectItem value="Arts">Arts</SelectItem>
-            <SelectItem value="Business">Business</SelectItem>
+            <SelectItem value="department">Department</SelectItem>
+            <SelectItem value="interest">Interest</SelectItem>
+            <SelectItem value="project">Project</SelectItem>
+            <SelectItem value="social">Social</SelectItem>
+            <SelectItem value="site">Site</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -267,7 +268,7 @@ function GroupsManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{group.category || "General"}</Badge>
+                      <Badge variant="secondary">{group.channelType || "General"}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -277,7 +278,7 @@ function GroupsManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        {group.isPrivate ? (
+                        {group.accessLevel === 'approval_required' || group.accessLevel === 'private' ? (
                           <>
                             <Lock className="h-4 w-4 text-gray-400" />
                             <span className="text-sm">Private</span>
