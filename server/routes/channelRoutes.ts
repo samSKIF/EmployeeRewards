@@ -70,7 +70,7 @@ router.get("/recent-posts", verifyToken, async (req: AuthenticatedRequest, res) 
     })
     .from(interestChannelPosts)
     .innerJoin(interestChannels, eq(interestChannelPosts.channelId, interestChannels.id))
-    .innerJoin(users, eq(interestChannelPosts.authorId, users.id))
+    .innerJoin(users, eq(interestChannelPosts.userId, users.id))
     .where(
       and(
         eq(interestChannels.organizationId, req.user.organizationId || 1),
