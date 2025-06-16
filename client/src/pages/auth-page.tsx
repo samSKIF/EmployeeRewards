@@ -312,28 +312,7 @@ export default function AuthPage() {
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                   
-                  <div className="flex flex-col space-y-2">
-                    <div className="text-center text-sm text-gray-500">Demo Login</div>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      disabled={isLoading}
-                      onClick={async () => {
-                        setLoginEmail("admin@loylogic.com");
-                        setLoginPassword("admin123");
-                        
-                        // Create a synthetic form event
-                        const fakeEvent = {
-                          preventDefault: () => {},
-                        } as React.FormEvent;
-                        
-                        await handleLogin(fakeEvent);
-                      }}
-                    >
-                      Demo Admin Login
-                    </Button>
-                  </div>
+                  
 
                 </CardFooter>
               </form>

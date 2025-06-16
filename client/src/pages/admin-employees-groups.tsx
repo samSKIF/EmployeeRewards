@@ -102,9 +102,9 @@ function GroupsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch channels data from the API
-  const { data: channels = [], isLoading: channelsLoading, refetch: refetchChannels } = useQuery({
-    queryKey: ['/api/admin/channels'],
+  // Fetch spaces data from the API
+  const { data: spaces = [], isLoading: spacesLoading, refetch: refetchSpaces } = useQuery({
+    queryKey: ['/api/admin/spaces'],
   });
 
   // Create channel mutation

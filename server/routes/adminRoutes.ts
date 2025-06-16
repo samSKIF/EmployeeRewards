@@ -3,11 +3,44 @@ import { hash } from "bcrypt";
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from "../middleware/auth";
 import { storage } from "../storage";
 import { db, pool } from "../db";
-import { users, organizations } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { users, organizations, interestChannels } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 import { logger } from "@shared/logger";
 
 const router = Router();
+
+// Get all spaces for admin management
+router.get("/spaces", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Get all spaces for the admin's organization
+    const spaces = await db.select({
+      id: interestChannels.id,
+      name: interestChannels.name,
+      description: interestChannels.description,
+      channelType: interestChannels.channelType,
+      accessLevel: interestChannels.accessLevel,
+      memberCount: interestChannels.memberCount,
+      isActive: interestChannels.isActive,
+      allowedDepartments: interestChannels.allowedDepartments,
+      allowedSites: interestChannels.allowedSites,
+      createdAt: interestChannels.createdAt,
+      createdBy: interestChannels.createdBy
+    })
+    .from(interestChannels)
+    .where(eq(interestChannels.organizationId, req.user.organizationId || 1))
+    .orderBy(desc(interestChannels.createdAt));
+
+    logger.info(`Returning ${spaces.length} spaces for org ${req.user.organizationId}`);
+    res.json(spaces);
+  } catch (error) {
+    logger.error("Error fetching admin spaces:", error);
+    res.status(500).json({ message: "Failed to fetch spaces" });
+  }
+});
 
 // Create corporate admin account
 router.post("/corporate-account", async (req, res) => {
@@ -331,6 +364,50 @@ router.patch("/permissions/:id", verifyToken, verifyAdmin, async (req: Authentic
   } catch (error: any) {
     logger.error("Error updating admin permissions:", error);
     res.status(500).json({ message: error.message || "Error updating admin permissions" });
+  }
+});
+
+// Get all channels for admin interface
+router.get("/channels", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Get all channels for the organization
+    const result = await pool.query(`
+      SELECT 
+        c.*,
+        COUNT(cm.user_id) as member_count,
+        COUNT(CASE WHEN cm.user_id = $2 THEN 1 END) > 0 as is_member
+      FROM channels c
+      LEFT JOIN channel_members cm ON c.id = cm.channel_id
+      WHERE c.organization_id = $1
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `, [req.user.organizationId, req.user.id]);
+
+    const channels = result.rows.map(channel => ({
+      id: channel.id,
+      name: channel.name,
+      description: channel.description,
+      type: channel.type,
+      isPrivate: channel.is_private,
+      memberCount: parseInt(channel.member_count) || 0,
+      isMember: channel.is_member,
+      createdAt: channel.created_at,
+      updatedAt: channel.updated_at
+    }));
+
+    logger.info("Retrieved channels for admin:", { 
+      organizationId: req.user.organizationId, 
+      channelCount: channels.length 
+    });
+
+    res.json(channels);
+  } catch (error: any) {
+    logger.error("Error getting channels for admin:", error);
+    res.status(500).json({ message: error.message || "Error retrieving channels" });
   }
 });
 
