@@ -57,7 +57,7 @@ export default function SpacesPage() {
   console.log('Featured posts:', featuredPosts?.length);
 
   // Generate feed highlights from spaces when no featured posts
-  const feedHighlights = spaces.slice(0, 4).map((space: any, index: number) => {
+  const feedHighlights = (spaces || []).slice(0, 4).map((space: any, index: number) => {
     const spaceIconMap: { [key: string]: string } = {
       'department': '📈',
       'site': '🏢', 
