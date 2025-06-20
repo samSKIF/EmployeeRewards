@@ -45,6 +45,8 @@ export default function SpacesPage() {
   // Fetch spaces data
   const { data: spaces = [], isLoading, error } = useQuery<Space[]>({
     queryKey: ['/api/channels'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Fetch featured posts data
@@ -66,7 +68,7 @@ export default function SpacesPage() {
       'social': '🎉',
       'company-wide': '🏢'
     };
-    
+
     return {
       id: space.id,
       channelId: space.id,
@@ -85,18 +87,20 @@ export default function SpacesPage() {
   });
 
   // Generate suggested content from remaining spaces
-  const suggestedContent = (spaces as Space[]).slice(4, 7).map((space, index) => {
-    return {
-      id: space.id,
-      channelId: space.id,
-      postId: space.id,
-      channelName: space.name,
-      title: space.name,
-      content: space.description || `A ${space.channelType} space for ${space.name}`,
-      imageUrl: `https://picsum.photos/seed/${space.id}/150/100`,
-      members: space.memberCount || Math.floor(Math.random() * 100) + 10
-    };
-  });
+  const suggestedContent = spaces && spaces.length > 0 
+    ? spaces.slice(4, 7).map((space, index) => {
+        return {
+          id: space.id,
+          channelId: space.id,
+          postId: space.id,
+          channelName: space.name,
+          title: space.name,
+          content: space.description || `A ${space.channelType} space for ${space.name}`,
+          imageUrl: `https://picsum.photos/seed/${space.id}/150/100`,
+          members: space.memberCount || Math.floor(Math.random() * 100) + 10
+        };
+      })
+    : [];
 
   if (isLoading) {
     return (
@@ -141,7 +145,7 @@ export default function SpacesPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
+
         {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -178,9 +182,9 @@ export default function SpacesPage() {
             <h2 className="text-2xl font-bold text-gray-900">Trending Spaces</h2>
             <button className="text-blue-600 hover:text-blue-700 font-medium">See all</button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {spaces.slice(0, 8).map((space) => (
+            {spaces?.slice(0, 8).map((space) => (
               <div 
                 key={space.id}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
@@ -194,13 +198,13 @@ export default function SpacesPage() {
                      space.channelType === 'project' ? '📋' : '📢'}
                   </span>
                 </div>
-                
+
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">{space.name}</h3>
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                     {space.description || `A ${space.channelType} space for collaboration`}
                   </p>
-                  
+
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
@@ -224,7 +228,7 @@ export default function SpacesPage() {
               {featuredPosts.length > 0 ? `${featuredPosts.length} featured posts` : 'Most engaging content from the last 48 hours'}
             </p>
           </div>
-          
+
           <FeaturedPostsGrid posts={featuredPosts} />
         </div>
 
@@ -233,7 +237,7 @@ export default function SpacesPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Suggested for You</h2>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {suggestedContent.map((content) => (
               <div 
@@ -252,11 +256,11 @@ export default function SpacesPage() {
                       <span className="text-sm font-medium text-blue-600">{content.channelName}</span>
                       <span className="text-xs text-gray-500">• {content.members} members</span>
                     </div>
-                    
+
                     <h3 className="font-semibold text-gray-900 mb-2 text-sm leading-snug">
                       {content.title}
                     </h3>
-                    
+
                     <p className="text-xs text-gray-600 line-clamp-2">
                       {content.content}
                     </p>

@@ -149,7 +149,7 @@ export default function ChannelsPage() {
   });
 
   // Get featured spaces (top 4)
-  const featuredSpaces = (spaces as Space[]).slice(0, 4);
+  const featuredSpaces = spaces && spaces.length > 0 ? spaces.slice(0, 4) : [];
 
   // Mock membership check - would be replaced with real data
   const isUserMember = (spaceId: number) => {
