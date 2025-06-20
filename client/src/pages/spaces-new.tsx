@@ -225,8 +225,7 @@ export default function SpacesPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Featured Posts</h2>
             <p className="text-sm text-muted-foreground">
-              {featuredPosts.length > 0 ? `${featuredPosts.length} featured posts` : 'Most engaging content from the last 48 hours'}
-            </p>
+              {featuredPosts && featuredPosts.length > 0 ? `${featuredPosts.length} featured posts` : "No featured posts yet"}</p>
           </div>
 
           <FeaturedPostsGrid posts={featuredPosts} />
