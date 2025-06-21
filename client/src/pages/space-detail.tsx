@@ -100,20 +100,7 @@ export default function ChannelDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const targetPostId = urlParams.get('postId');
   
-  // Scroll to specific post when loaded
-  useEffect(() => {
-    if (targetPostId && posts.length > 0) {
-      const postElement = document.getElementById(`post-${targetPostId}`);
-      if (postElement) {
-        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Add a brief highlight effect
-        postElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
-        setTimeout(() => {
-          postElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
-        }, 3000);
-      }
-    }
-  }, [targetPostId, posts]);
+
 
   // Fetch space details
   const { data: space, isLoading: spaceLoading, error: spaceError } = useQuery<Space>({
@@ -136,6 +123,21 @@ export default function ChannelDetail() {
     queryKey: [`/api/channels/${channelId}/posts`],
     enabled: !!channelId
   });
+
+  // Scroll to specific post when loaded
+  useEffect(() => {
+    if (targetPostId && posts && posts.length > 0) {
+      const postElement = document.getElementById(`post-${targetPostId}`);
+      if (postElement) {
+        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add a brief highlight effect
+        postElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+        setTimeout(() => {
+          postElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+        }, 3000);
+      }
+    }
+  }, [targetPostId, posts]);
 
   // Fetch space members
   const { data: members = [], isLoading: membersLoading } = useQuery<SpaceMember[]>({
