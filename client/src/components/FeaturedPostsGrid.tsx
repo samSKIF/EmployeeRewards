@@ -1,6 +1,7 @@
 import { Heart, MessageCircle, Calendar, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLocation } from "wouter";
 
 interface FeaturedPost {
   id: number;
@@ -22,6 +23,13 @@ interface FeaturedPostsGridProps {
 }
 
 export function FeaturedPostsGrid({ posts }: FeaturedPostsGridProps) {
+  const [, setLocation] = useLocation();
+
+  const handlePostClick = (post: FeaturedPost) => {
+    // Navigate to the specific post within its space
+    setLocation(`/channels/${post.channelId}?postId=${post.id}`);
+  };
+
   if (!posts || posts.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -102,6 +110,7 @@ export function FeaturedPostsGrid({ posts }: FeaturedPostsGridProps) {
         <Card 
           key={post.id} 
           className={`${getCardClasses(posts.length, index)} overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group`}
+          onClick={() => handlePostClick(post)}
         >
           <CardContent className="p-0 h-full flex flex-col">
             {/* Channel Header */}
