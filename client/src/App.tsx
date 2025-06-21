@@ -327,6 +327,13 @@ function App() {
                 </SocialLayout>
               </Route>
 
+              {/* Alias route for backward compatibility */}
+              <Route path="/channels/:id">
+                <SocialLayout>
+                  <SpaceDetailPage />
+                </SocialLayout>
+              </Route>
+
               <Route path="/spaces">
                 <SocialLayout>
                   <SpacesPage />

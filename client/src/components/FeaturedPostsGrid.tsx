@@ -27,7 +27,7 @@ export function FeaturedPostsGrid({ posts }: FeaturedPostsGridProps) {
 
   const handlePostClick = (post: FeaturedPost) => {
     // Navigate to the specific post within its space
-    setLocation(`/channels/${post.channelId}?postId=${post.id}`);
+    setLocation(`/spaces/${post.channelId}?postId=${post.id}`);
   };
 
   if (!posts || posts.length === 0) {
