@@ -22,7 +22,7 @@ interface FeaturedPostsGridProps {
 }
 
 export function FeaturedPostsGrid({ posts }: FeaturedPostsGridProps) {
-  if (posts.length === 0) {
+  if (!posts || posts.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <div className="text-lg font-medium mb-2">No featured posts available</div>
