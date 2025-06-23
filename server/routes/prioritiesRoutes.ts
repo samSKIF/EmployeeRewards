@@ -16,7 +16,7 @@ interface Priority {
 }
 
 // GET /api/priorities - Get user priorities
-router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/", async (req, res) => {
   try {
     // For now, return mock data - replace with actual DB query
     const mockPriorities = [

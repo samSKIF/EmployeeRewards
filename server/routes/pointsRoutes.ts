@@ -68,7 +68,7 @@ router.post("/redeem", verifyToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // Get current user's points balance
-router.get("/balance", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/balance", async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });

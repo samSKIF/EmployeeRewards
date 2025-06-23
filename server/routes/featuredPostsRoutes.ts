@@ -13,7 +13,7 @@ import { logger } from "@shared/logger";
 const router = Router();
 
 // GET /api/featured-posts - Get featured posts for Spaces discovery page
-router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/", async (req, res) => {
   try {
     logger.info("Featured posts route accessed", { 
       userId: req.user.id, 

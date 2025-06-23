@@ -189,7 +189,7 @@ export default function SpacesPageNewDesign() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">Priorities</h3>
                 <div className="space-y-3">
-                  {priorities.map((priority) => (
+                  {(priorities || []).map((priority) => (
                     <div key={priority.id} className="flex items-start space-x-3">
                       <CheckSquare className="h-4 w-4 text-gray-400 mt-0.5" />
                       <span className="text-sm text-gray-600">{priority.text}</span>
@@ -228,7 +228,7 @@ export default function SpacesPageNewDesign() {
 
                   {/* Side Featured Posts */}
                   <div className="space-y-4">
-                    {sideFeaturedPosts.map((post) => (
+                    {(sideFeaturedPosts || []).map((post) => (
                       <Card 
                         key={post.id}
                         className="h-36 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
@@ -253,7 +253,7 @@ export default function SpacesPageNewDesign() {
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-6">TRENDING IN YOUR SPACES</h2>
               <div className="grid grid-cols-5 gap-4">
-                {trendingSpaces.map((space) => (
+                {(trendingSpaces || []).map((space) => (
                   <Card 
                     key={space.id}
                     className="aspect-square cursor-pointer hover:shadow-lg transition-shadow"
@@ -280,7 +280,7 @@ export default function SpacesPageNewDesign() {
 
             {/* Recent Posts Feed */}
             <div className="space-y-6">
-              {recentPosts.map((post) => (
+              {(recentPosts || []).map((post) => (
                 <Card key={post.id}>
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
@@ -325,7 +325,7 @@ export default function SpacesPageNewDesign() {
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-6">SUGGESTED SPACES</h2>
               <div className="space-y-4">
-                {suggestedSpaces.map((space) => (
+                {(suggestedSpaces || []).map((space) => (
                   <Card key={space.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-4">
