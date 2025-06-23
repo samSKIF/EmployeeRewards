@@ -85,14 +85,4 @@ router.get("/balance", async (req, res) => {
   }
 });
 
-    res.json({
-      balance,
-      userId: req.user.id
-    });
-  } catch (error: any) {
-    logger.error("Error getting points balance:", error);
-    res.status(500).json({ message: error.message || "Failed to get balance" });
-  }
-});
-
 export default router;
