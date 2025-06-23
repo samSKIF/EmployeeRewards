@@ -15,10 +15,7 @@ const router = Router();
 // GET /api/featured-posts - Get featured posts for Spaces discovery page
 router.get("/", async (req, res) => {
   try {
-    logger.info("Featured posts route accessed", { 
-      userId: req.user.id, 
-      organizationId: req.user.organizationId 
-    });
+    logger.info("Featured posts route accessed");
 
     // Get most engaging posts from all time
     const featuredPosts = await db.select({

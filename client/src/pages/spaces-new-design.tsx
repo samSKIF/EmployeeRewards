@@ -164,7 +164,7 @@ export default function SpacesPageNewDesign() {
                       <span className="text-teal-600 text-sm">🎁</span>
                     </div>
                     <div>
-                      <div className="font-medium text-2xl">{userPoints.balance || userPoints.total || 0}</div>
+                      <div className="font-medium text-2xl">{userPoints?.balance || userPoints?.total || 0}</div>
                       <div className="text-xs text-gray-500">You Have Earned</div>
                     </div>
                   </div>
@@ -173,7 +173,7 @@ export default function SpacesPageNewDesign() {
                       <span className="text-teal-600 text-sm">💎</span>
                     </div>
                     <div>
-                      <div className="font-medium text-2xl">{userPoints.weeklyPoints || userPoints.week || 0}</div>
+                      <div className="font-medium text-2xl">{userPoints?.weeklyPoints || userPoints?.week || 0}</div>
                       <div className="text-xs text-gray-500">This Week</div>
                     </div>
                   </div>
