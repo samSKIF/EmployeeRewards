@@ -8,14 +8,14 @@ router.get("/", async (req, res) => {
   try {
     logger.info("Featured posts route accessed");
 
-    // Return mock featured posts data for testing
+    // Return featured posts with images
     const mockFeaturedPosts = [
       {
         id: 1,
-        content: "Celebrating our biggest milestone yet with Project Phoenix launch!",
-        imageUrl: null,
-        likeCount: 15,
-        commentCount: 8,
+        content: "Celebrating our biggest milestone yet with Project Phoenix launch! 🚀 Our team has worked incredibly hard to bring this vision to life.",
+        imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop&crop=center",
+        likeCount: 45,
+        commentCount: 18,
         createdAt: new Date().toISOString(),
         channelId: 1,
         channelName: "Company Updates",
@@ -26,10 +26,10 @@ router.get("/", async (req, res) => {
       },
       {
         id: 21,
-        content: "Join us for our annual company anniversary celebration!",
-        imageUrl: null,
-        likeCount: 12,
-        commentCount: 5,
+        content: "Join us for our annual company anniversary celebration! Great food, music, and team bonding activities planned.",
+        imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop&crop=center",
+        likeCount: 32,
+        commentCount: 12,
         createdAt: new Date().toISOString(),
         channelId: 21,
         channelName: "Friday Social Club",
@@ -40,10 +40,10 @@ router.get("/", async (req, res) => {
       },
       {
         id: 3,
-        content: "Community Day was a huge success! Thanks to everyone who participated.",
-        imageUrl: null,
-        likeCount: 18,
-        commentCount: 6,
+        content: "Community Day was a huge success! Thanks to everyone who participated in our volunteer activities at the local shelter.",
+        imageUrl: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=600&fit=crop&crop=center",
+        likeCount: 28,
+        commentCount: 9,
         createdAt: new Date().toISOString(),
         channelId: 3,
         channelName: "Community Events",

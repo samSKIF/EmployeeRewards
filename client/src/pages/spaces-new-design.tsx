@@ -207,40 +207,97 @@ export default function SpacesPageNewDesign() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">FEATURED POSTS</h2>
               
               {featuredPosts.length > 0 && (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-6 h-[400px]">
                   {/* Main Featured Post */}
                   {mainFeaturedPost && (
-                    <div className="col-span-2">
+                    <div className="col-span-2 h-full">
                       <Card 
-                        className="h-80 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
+                        className="h-full cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
                         onClick={() => handlePostClick(mainFeaturedPost)}
                       >
-                        <div className="relative h-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                          <div className="absolute inset-0 bg-black/20"></div>
-                          <div className="relative p-6 h-full flex flex-col justify-end">
-                            <h3 className="text-xl font-bold mb-2">Project Phoenix Launch Success</h3>
-                            <p className="text-white/90 text-sm">Celebrating our biggest milestone yet!</p>
-                          </div>
+                        <div className="relative h-full">
+                          {mainFeaturedPost.imageUrl ? (
+                            <div className="relative h-full">
+                              <img 
+                                src={mainFeaturedPost.imageUrl} 
+                                alt="Featured post"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                <div className="flex items-center space-x-2 mb-3">
+                                  <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                                    {mainFeaturedPost.channelName}
+                                  </Badge>
+                                </div>
+                                <h3 className="text-xl font-bold mb-2 leading-tight">{mainFeaturedPost.content.substring(0, 80)}...</h3>
+                                <div className="flex items-center space-x-4 text-sm text-white/80">
+                                  <div className="flex items-center space-x-1">
+                                    <Heart className="h-4 w-4" />
+                                    <span>{mainFeaturedPost.likeCount}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <MessageCircle className="h-4 w-4" />
+                                    <span>{mainFeaturedPost.commentCount}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative h-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-end p-6">
+                              <div>
+                                <h3 className="text-xl font-bold mb-2">{mainFeaturedPost.content}</h3>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     </div>
                   )}
 
                   {/* Side Featured Posts */}
-                  <div className="space-y-4">
-                    {(sideFeaturedPosts || []).map((post) => (
+                  <div className="flex flex-col space-y-4 h-full">
+                    {(sideFeaturedPosts || []).map((post, index) => (
                       <Card 
                         key={post.id}
-                        className="h-36 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
+                        className="flex-1 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
                         onClick={() => handlePostClick(post)}
                       >
-                        <div className="relative h-full bg-gradient-to-br from-orange-400 to-red-500 text-white">
-                          <div className="absolute inset-0 bg-black/20"></div>
-                          <div className="relative p-4 h-full flex flex-col justify-end">
-                            <h4 className="font-semibold text-sm mb-1">
-                              {post.channelName === 'Friday Social Club' && post.id === 21 ? 'Company Anniversary' : 'Community Day'}
-                            </h4>
-                          </div>
+                        <div className="relative h-full">
+                          {post.imageUrl ? (
+                            <div className="relative h-full">
+                              <img 
+                                src={post.imageUrl} 
+                                alt="Featured post"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                                <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs mb-2">
+                                  {post.channelName}
+                                </Badge>
+                                <h4 className="font-semibold text-sm leading-tight mb-1">
+                                  {post.content.substring(0, 50)}...
+                                </h4>
+                                <div className="flex items-center space-x-3 text-xs text-white/80">
+                                  <div className="flex items-center space-x-1">
+                                    <Heart className="h-3 w-3" />
+                                    <span>{post.likeCount}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <MessageCircle className="h-3 w-3" />
+                                    <span>{post.commentCount}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative h-full bg-gradient-to-br from-orange-400 to-red-500 text-white flex items-end p-4">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">{post.channelName}</h4>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     ))}
