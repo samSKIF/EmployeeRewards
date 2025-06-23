@@ -37,7 +37,7 @@ import StatusDemo from "@/pages/status-demo";
 import OrgChart from "@/pages/org-chart";
 import GroupsPage from "@/pages/groups";
 import GroupsPageFacebook from "@/pages/groups-facebook";
-import SpacesPage from "@/pages/spaces-new";
+import SpacesPage from "@/pages/spaces-new-design";
 import SpaceDetailPage from "@/pages/space-detail";
 
 import { BrandingProvider } from "@/context/BrandingContext";
