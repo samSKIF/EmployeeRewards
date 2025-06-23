@@ -104,7 +104,7 @@ export default function ChannelDetail() {
 
   // Fetch space details
   const { data: space, isLoading: spaceLoading, error: spaceError } = useQuery<Space>({
-    queryKey: [`/api/channels/${channelId}`],
+    queryKey: [`/api/spaces/${channelId}`],
     enabled: !!channelId
   });
 

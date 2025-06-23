@@ -5,6 +5,7 @@ import adminRoutes from "./adminRoutes";
 import celebrationRoutes from "./celebrationRoutes";
 import pointsRoutes from "./pointsRoutes";
 import channelRoutes from "./channelRoutes";
+import spacesRoutes from "./spacesRoutes";
 import featuredPostsRoutes from "./featuredPostsRoutes";
 import prioritiesRoutes from "./prioritiesRoutes";
 import { logger } from "@shared/logger";
