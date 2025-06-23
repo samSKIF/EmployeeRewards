@@ -6,6 +6,7 @@ import celebrationRoutes from "./celebrationRoutes";
 import pointsRoutes from "./pointsRoutes";
 import channelRoutes from "./channelRoutes";
 import featuredPostsRoutes from "./featuredPostsRoutes";
+import prioritiesRoutes from "./prioritiesRoutes";
 import { logger } from "@shared/logger";
 
 export function registerRoutes(app: Express) {
@@ -31,6 +32,9 @@ export function registerRoutes(app: Express) {
   
   // Featured posts management routes
   app.use("/api/featured-posts", featuredPostsRoutes);
+  
+  // Priorities management routes
+  app.use("/api/priorities", prioritiesRoutes);
   
   logger.info("All modular routes registered successfully");
 }

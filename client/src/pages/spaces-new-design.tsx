@@ -75,7 +75,7 @@ export default function SpacesPageNewDesign() {
   });
 
   // Generate trending spaces from actual spaces
-  const trendingSpaces = spaces.slice(0, 5).map(space => ({
+  const trendingSpaces = (spaces || []).slice(0, 5).map(space => ({
     id: space.id,
     name: space.name,
     hashtag: space.name.toLowerCase().replace(/\s+/g, '-'),
@@ -84,7 +84,7 @@ export default function SpacesPageNewDesign() {
   }));
 
   // Generate suggested spaces
-  const suggestedSpaces = spaces.slice(5, 8).map(space => ({
+  const suggestedSpaces = (spaces || []).slice(5, 8).map(space => ({
     id: space.id,
     name: space.name,
     description: space.description,
