@@ -129,7 +129,7 @@ router.get("/suggestions", verifyToken, async (req: AuthenticatedRequest, res) =
 });
 
 // Get specific channel details
-router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const channelId = parseInt(req.params.id);
     
@@ -137,13 +137,30 @@ router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(400).json({ message: "Invalid channel ID" });
     }
 
-    const channel = await storage.getChannel(channelId);
-    
-    if (!channel) {
+    // Get channel details from database
+    const channel = await db.select({
+      id: interestChannels.id,
+      name: interestChannels.name,
+      description: interestChannels.description,
+      channelType: interestChannels.channelType,
+      accessLevel: interestChannels.accessLevel,
+      memberCount: interestChannels.memberCount,
+      isActive: interestChannels.isActive,
+      allowedDepartments: interestChannels.allowedDepartments,
+      allowedSites: interestChannels.allowedSites,
+      createdAt: interestChannels.createdAt,
+      createdBy: interestChannels.createdBy,
+      organizationId: interestChannels.organizationId
+    })
+    .from(interestChannels)
+    .where(eq(interestChannels.id, channelId))
+    .limit(1);
+
+    if (channel.length === 0) {
       return res.status(404).json({ message: "Channel not found" });
     }
 
-    res.json(channel);
+    res.json(channel[0]);
   } catch (error: any) {
     logger.error("Error fetching channel:", error);
     res.status(500).json({ message: error.message || "Failed to fetch channel" });
