@@ -111,7 +111,7 @@ export default function ChannelDetail() {
   // Debug space data
   logger.debug('=== SPACE DEBUG ===');
   logger.debug('Space ID:', channelId);
-  logger.debug('Query Key:', `/api/channels/${channelId}`);
+  logger.debug('Query Key:', `/api/spaces/${channelId}`);
   logger.debug('Space data:', space);
   logger.debug('Space loading:', spaceLoading);
   logger.debug('Space error:', spaceError);
@@ -120,7 +120,7 @@ export default function ChannelDetail() {
 
   // Fetch space posts
   const { data: posts = [], isLoading: postsLoading } = useQuery<SpacePost[]>({
-    queryKey: [`/api/channels/${channelId}/posts`],
+    queryKey: [`/api/spaces/${channelId}/posts`],
     enabled: !!channelId
   });
 
