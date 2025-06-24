@@ -145,8 +145,8 @@ export default function SpacesPageNewDesign() {
     setLocation(`/spaces/${post.channelId}?postId=${post.id}`);
   };
 
-  const mainFeaturedPost = featuredPosts[0];
-  const sideFeaturedPosts = featuredPosts.slice(1, 3);
+  const mainFeaturedPost = (featuredPosts || [])[0];
+  const sideFeaturedPosts = (featuredPosts || []).slice(1, 3);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -206,7 +206,7 @@ export default function SpacesPageNewDesign() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">FEATURED POSTS</h2>
               
-              {featuredPosts.length > 0 && (
+              {(featuredPosts || []).length > 0 && (
                 <div className="grid grid-cols-3 gap-6 h-[400px]">
                   {/* Main Featured Post */}
                   {mainFeaturedPost && (
