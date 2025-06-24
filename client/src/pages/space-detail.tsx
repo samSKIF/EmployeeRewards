@@ -737,14 +737,14 @@ export default function ChannelDetail() {
                   </div>
                   
                   {/* Join Requests for Admins */}
-                  {user && Array.isArray(admins) && (admins.some(admin => admin.id === user.id) || space?.createdBy === user.id) && Array.isArray(joinRequests) && joinRequests.length > 0 && (
+                  {user && Array.isArray(admins) && (admins.some(admin => admin.id === user.id) || space?.createdBy === user.id) && Array.isArray(joinRequests) && (joinRequests || []).length > 0 && (
                     <div className="mt-4 pt-3 border-t">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-medium">Pending Join Requests</h4>
-                        <Badge variant="outline">{joinRequests.length}</Badge>
+                        <Badge variant="outline">{(joinRequests || []).length}</Badge>
                       </div>
                       <div className="space-y-2">
-                        {joinRequests.slice(0, 3).map((request) => (
+                        {(joinRequests || []).slice(0, 3).map((request) => (
                           <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <Avatar className="h-6 w-6">
@@ -776,9 +776,9 @@ export default function ChannelDetail() {
                           </div>
                         ))}
                       </div>
-                      {joinRequests.length > 3 && (
+                      {(joinRequests || []).length > 3 && (
                         <Button variant="link" className="w-full mt-2 text-blue-600 text-sm">
-                          View all requests ({joinRequests.length})
+                          View all requests ({(joinRequests || []).length})
                         </Button>
                       )}
                     </div>
@@ -835,7 +835,7 @@ export default function ChannelDetail() {
                       ))}
                     </div>
                   ) : (
-                    members.slice(0, 6).map((member) => (
+                    (members || []).slice(0, 6).map((member) => (
                       <div key={member.id} className="flex items-center space-x-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={member.avatar} />
@@ -856,7 +856,7 @@ export default function ChannelDetail() {
                   )}
                 </div>
                 
-                {members.length > 6 && (
+                {(members || []).length > 6 && (
                   <Button variant="link" className="w-full mt-3 text-blue-600">
                     See all members
                   </Button>
