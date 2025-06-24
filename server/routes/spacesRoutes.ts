@@ -15,20 +15,7 @@ router.get("/:id", async (req, res) => {
       return res.status(400).json({ message: "Invalid space ID" });
     }
 
-    const space = await db.select({
-      id: interestChannels.id,
-      name: interestChannels.name,
-      description: interestChannels.description,
-      channelType: interestChannels.channelType,
-      accessLevel: interestChannels.accessLevel,
-      memberCount: interestChannels.memberCount,
-      isActive: interestChannels.isActive,
-      allowedDepartments: interestChannels.allowedDepartments,
-      allowedSites: interestChannels.allowedSites,
-      createdAt: interestChannels.createdAt,
-      createdBy: interestChannels.createdBy,
-      organizationId: interestChannels.organizationId
-    })
+    const space = await db.select()
     .from(interestChannels)
     .where(eq(interestChannels.id, spaceId))
     .limit(1);
@@ -37,8 +24,25 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Space not found" });
     }
 
+    // Transform the data to match expected interface
+    const transformedSpace = {
+      id: space[0].id,
+      name: space[0].name,
+      description: space[0].description,
+      channelType: space[0].channelType,
+      accessLevel: space[0].accessLevel,
+      memberCount: space[0].memberCount || 0,
+      isActive: space[0].isActive,
+      allowedDepartments: space[0].allowedDepartments,
+      allowedSites: space[0].allowedSites,
+      createdBy: space[0].createdBy,
+      organizationId: space[0].organizationId,
+      createdAt: space[0].createdAt,
+      coverImage: space[0].coverImage
+    };
+
     logger.info(`Fetched space details for ID: ${spaceId}`);
-    res.json(space[0]);
+    res.json(transformedSpace);
   } catch (error: any) {
     logger.error("Error fetching space:", error);
     res.status(500).json({ message: error.message || "Failed to fetch space" });

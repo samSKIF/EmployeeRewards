@@ -30,6 +30,7 @@ export function registerRoutes(app: Express) {
   
   // Channel/Space routes
   app.use("/api/channels", channelRoutes);
+  app.use("/api/spaces", spacesRoutes);
   
   // Featured posts management routes
   app.use("/api/featured-posts", featuredPostsRoutes);
