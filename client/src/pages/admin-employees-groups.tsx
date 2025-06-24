@@ -260,7 +260,7 @@ function GroupsManagement() {
                           </span>
                         </div>
                         <div>
-                          <Link to={`/space/${group.id}`}>
+                          <Link to={`/spaces/${group.id}`}>
                             <p className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline">
                               {group.name}
                             </p>
