@@ -91,6 +91,7 @@ export default function ChannelDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const [newPost, setNewPost] = useState("");
+  const [expandedComments, setExpandedComments] = useState<Record<number, boolean>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -235,7 +236,7 @@ export default function ChannelDetail() {
   const createPostMutation = useMutation({
     mutationFn: (content: string) => apiRequest('POST', `/api/channels/${channelId}/posts`, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/channels/${channelId}/posts`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/spaces/${channelId}/posts`] });
       setNewPost("");
       toast({ title: "Post created successfully!" });
     },
@@ -245,6 +246,33 @@ export default function ChannelDetail() {
         description: error.message || "You must be a member of this space to create posts",
         variant: "destructive" 
       });
+    }
+  });
+
+  // Like post mutation
+  const likePostMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      return apiRequest('POST', `/api/posts/${postId}/like`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/spaces/${channelId}/posts`] });
+    },
+    onError: () => {
+      toast({ title: "Failed to like post", variant: "destructive" });
+    }
+  });
+
+  // Comment on post mutation  
+  const createCommentMutation = useMutation({
+    mutationFn: async ({ postId, content }: { postId: number; content: string }) => {
+      return apiRequest('POST', `/api/posts/${postId}/comments`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/spaces/${channelId}/posts`] });
+      toast({ title: "Comment added successfully!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to add comment", variant: "destructive" });
     }
   });
 
@@ -584,15 +612,34 @@ export default function ChannelDetail() {
                           )}
                           
                           <div className="flex items-center space-x-4 text-gray-500">
-                            <button className="flex items-center space-x-1 hover:text-blue-600">
+                            <button 
+                              className="flex items-center space-x-1 hover:text-blue-600 transition-colors"
+                              onClick={() => likePostMutation.mutate(post.id)}
+                              disabled={likePostMutation.isPending}
+                            >
                               <ThumbsUp className="h-4 w-4" />
-                              <span className="text-sm">{post.likeCount}</span>
+                              <span className="text-sm">{post.likeCount || 0}</span>
                             </button>
-                            <button className="flex items-center space-x-1 hover:text-blue-600">
+                            <button 
+                              className="flex items-center space-x-1 hover:text-blue-600 transition-colors"
+                              onClick={() => {
+                                const content = prompt('Enter your comment:');
+                                if (content && content.trim()) {
+                                  createCommentMutation.mutate({ postId: post.id, content: content.trim() });
+                                }
+                              }}
+                              disabled={createCommentMutation.isPending}
+                            >
                               <MessageSquare className="h-4 w-4" />
-                              <span className="text-sm">{post.commentCount}</span>
+                              <span className="text-sm">{post.commentCount || 0}</span>
                             </button>
-                            <button className="flex items-center space-x-1 hover:text-blue-600">
+                            <button 
+                              className="flex items-center space-x-1 hover:text-blue-600 transition-colors"
+                              onClick={() => {
+                                navigator.clipboard.writeText(window.location.href);
+                                toast({ title: "Link copied to clipboard!" });
+                              }}
+                            >
                               <Share2 className="h-4 w-4" />
                               <span className="text-sm">Share</span>
                             </button>
