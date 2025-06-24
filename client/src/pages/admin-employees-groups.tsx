@@ -260,7 +260,11 @@ function GroupsManagement() {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{group.name}</p>
+                          <Link to={`/space/${group.id}`}>
+                            <p className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline">
+                              {group.name}
+                            </p>
+                          </Link>
                           <p className="text-sm text-gray-500 truncate max-w-xs">
                             {group.description || "No description"}
                           </p>
