@@ -97,9 +97,11 @@ export default function SpacesPageNewDesign() {
   const recentPosts = [
     {
       id: 1,
+      authorId: 1001,
       authorName: "Elena Rodriguez",
       authorAvatar: "https://api.dicebear.com/7.x/personas/png?seed=Elena",
       spaceName: "#design-team",
+      spaceType: "department",
       content: "The new branding guidelines are ready for review! ⭐ Please find the attached PDF and share your feedback by EOD Friday. Excited to hear your thoughts!",
       likes: 0,
       comments: 0,
@@ -109,9 +111,11 @@ export default function SpacesPageNewDesign() {
     },
     {
       id: 2,
+      authorId: 1002,
       authorName: "Mark Chen",
       authorAvatar: "https://api.dicebear.com/7.x/personas/png?seed=Mark",
       spaceName: "#engineering",
+      spaceType: "department",
       content: "Quick update: We've successfully deployed the latest security patch to production servers. No downtime was recorded. Great job, team!",
       likes: 12,
       comments: 3,
