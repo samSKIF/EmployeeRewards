@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -590,13 +590,17 @@ export default function ChannelDetail() {
                   <Card key={post.id} id={`post-${post.id}`} className="transition-all duration-300">
                     <CardContent className="p-4">
                       <div className="flex space-x-3">
-                        <Avatar>
-                          <AvatarImage src={post.userAvatar} />
-                          <AvatarFallback>{post.userName?.charAt(0) || 'U'}</AvatarFallback>
-                        </Avatar>
+                        <Link href={`/user/${post.userId}`}>
+                          <Avatar className="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                            <AvatarImage src={post.userAvatar} />
+                            <AvatarFallback>{post.userName?.charAt(0) || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </Link>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="font-semibold text-sm">{post.userName}</h4>
+                            <Link href={`/user/${post.userId}`}>
+                              <h4 className="font-semibold text-sm hover:text-blue-600 cursor-pointer transition-colors">{post.userName}</h4>
+                            </Link>
                             <span className="text-xs text-gray-500">
                               {new Date(post.createdAt).toLocaleDateString()}
                             </span>
@@ -710,15 +714,19 @@ export default function ChannelDetail() {
                     ) : admins.length > 0 ? (
                       admins.map((admin) => (
                         <div key={admin.id} className="flex items-center space-x-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={admin.avatar} />
-                            <AvatarFallback>{admin.name?.charAt(0) || 'A'}</AvatarFallback>
-                          </Avatar>
+                          <Link href={`/user/${admin.id}`}>
+                            <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                              <AvatarImage src={admin.avatar} />
+                              <AvatarFallback>{admin.name?.charAt(0) || 'A'}</AvatarFallback>
+                            </Avatar>
+                          </Link>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {admin.name}
-                              </p>
+                              <Link href={`/user/${admin.id}`}>
+                                <p className="text-sm font-medium text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors">
+                                  {admin.name}
+                                </p>
+                              </Link>
                               <Badge variant="secondary" className="text-xs">
                                 Admin
                               </Badge>

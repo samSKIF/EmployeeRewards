@@ -285,6 +285,11 @@ function App() {
                   <UpdatedProfilePage />
                 </SocialLayout>
               </Route>
+              <Route path="/user/:id">
+                <SocialLayout>
+                  <UpdatedProfilePage />
+                </SocialLayout>
+              </Route>
               <Route path="/profile">
                 <SocialLayout>
                   <ProfilePage />
