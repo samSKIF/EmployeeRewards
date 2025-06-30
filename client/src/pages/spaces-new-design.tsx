@@ -93,35 +93,22 @@ export default function SpacesPageNewDesign() {
     image: getSpaceImage(space.channelType)
   }));
 
-  // Recent posts from spaces using real employees
-  const recentPosts = [
-    {
-      id: 1,
-      authorId: 1349,
-      authorName: "Laura Rodriguez",
-      authorAvatar: "https://ui-avatars.com/api/?name=Laura&background=1abc9c&color=ffffff&size=150&rounded=true&seed=1349",
-      spaceName: "#marketing-team",
-      spaceType: "department",
-      content: "The new branding guidelines are ready for review! Please find the attached PDF and share your feedback by EOD Friday. Excited to hear your thoughts!",
-      likes: 8,
-      comments: 2,
-      timestamp: "2h ago",
-      attachmentUrl: "ThrivioHR_Branding_V2.pdf",
-      attachmentType: "pdf"
-    },
-    {
-      id: 2,
-      authorId: 1280,
-      authorName: "Mark Ward",
-      authorAvatar: "https://ui-avatars.com/api/?name=Mark&background=1abc9c&color=ffffff&size=150&rounded=true&seed=1280",
-      spaceName: "#it-updates",
-      spaceType: "department",
-      content: "Quick update: We've successfully deployed the latest security patch to production servers. No downtime was recorded. Great job, team!",
-      likes: 12,
-      comments: 3,
-      timestamp: "4h ago"
-    }
-  ];
+  // Fetch real recent posts from API
+  const { data: recentPostsData = [] } = useQuery({
+    queryKey: ['/api/featured-posts'],
+    select: (data) => data.slice(0, 2).map((post: any) => ({
+      id: post.id,
+      authorId: post.userId || post.authorId,
+      authorName: post.authorName || `${post.user?.name || ''} ${post.user?.surname || ''}`.trim(),
+      authorAvatar: post.user?.avatarUrl || post.authorAvatar,
+      spaceName: post.spaceName || '#general',
+      spaceType: post.spaceType || 'department',
+      content: post.content,
+      likes: post.likeCount || post.likes || 0,
+      comments: post.commentCount || post.comments || 0,
+      timestamp: post.timestamp || 'recently'
+    }))
+  });
 
   function getSpaceColor(type: string) {
     const colors = {
