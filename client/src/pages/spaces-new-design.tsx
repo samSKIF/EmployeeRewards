@@ -93,28 +93,28 @@ export default function SpacesPageNewDesign() {
     image: getSpaceImage(space.channelType)
   }));
 
-  // Mock recent posts from spaces
+  // Recent posts from spaces using real employees
   const recentPosts = [
     {
       id: 1,
-      authorId: 1001,
-      authorName: "Elena Rodriguez",
-      authorAvatar: "https://api.dicebear.com/7.x/personas/png?seed=Elena",
-      spaceName: "#design-team",
+      authorId: 1349,
+      authorName: "Laura Rodriguez",
+      authorAvatar: "https://ui-avatars.com/api/?name=Laura&background=1abc9c&color=ffffff&size=150&rounded=true&seed=1349",
+      spaceName: "#marketing-team",
       spaceType: "department",
-      content: "The new branding guidelines are ready for review! ⭐ Please find the attached PDF and share your feedback by EOD Friday. Excited to hear your thoughts!",
-      likes: 0,
-      comments: 0,
+      content: "The new branding guidelines are ready for review! Please find the attached PDF and share your feedback by EOD Friday. Excited to hear your thoughts!",
+      likes: 8,
+      comments: 2,
       timestamp: "2h ago",
       attachmentUrl: "ThrivioHR_Branding_V2.pdf",
       attachmentType: "pdf"
     },
     {
       id: 2,
-      authorId: 1002,
-      authorName: "Mark Chen",
-      authorAvatar: "https://api.dicebear.com/7.x/personas/png?seed=Mark",
-      spaceName: "#engineering",
+      authorId: 1280,
+      authorName: "Mark Ward",
+      authorAvatar: "https://ui-avatars.com/api/?name=Mark&background=1abc9c&color=ffffff&size=150&rounded=true&seed=1280",
+      spaceName: "#it-updates",
       spaceType: "department",
       content: "Quick update: We've successfully deployed the latest security patch to production servers. No downtime was recorded. Great job, team!",
       likes: 12,
