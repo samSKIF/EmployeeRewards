@@ -291,4 +291,43 @@ router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// Get user profile by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Fetch user data from database
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get the user's balance if available
+    let balance = 0;
+    try {
+      const balanceData = await storage.getUserBalance(userId);
+      balance = balanceData?.balance || 0;
+    } catch (error) {
+      logger.warn("Failed to get user balance:", error);
+    }
+
+    // Return user profile data
+    const userProfile = {
+      ...user,
+      balance
+    };
+
+    logger.info(`Profile fetched for user ${userId} (${user.name})`);
+    res.json(userProfile);
+  } catch (error: any) {
+    logger.error("Error getting user profile:", error);
+    res.status(500).json({ message: error.message || "Failed to get user profile" });
+  }
+});
+
 export default router;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Heart, MessageCircle, Share2, Users, Plus, CheckSquare, FileText, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -341,13 +341,17 @@ export default function SpacesPageNewDesign() {
                 <Card key={post.id}>
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={post.authorAvatar} />
-                        <AvatarFallback>{post.authorName[0]}</AvatarFallback>
-                      </Avatar>
+                      <Link href={`/user/${post.authorId}`}>
+                        <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                          <AvatarImage src={post.authorAvatar} />
+                          <AvatarFallback>{post.authorName[0]}</AvatarFallback>
+                        </Avatar>
+                      </Link>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-semibold text-gray-900">{post.authorName}</span>
+                          <Link href={`/user/${post.authorId}`}>
+                            <span className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">{post.authorName}</span>
+                          </Link>
                           <span className="text-blue-600 font-medium">in {post.spaceName}</span>
                         </div>
                         <p className="text-gray-800 mb-4">{post.content}</p>

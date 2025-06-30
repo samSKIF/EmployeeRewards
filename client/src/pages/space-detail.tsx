@@ -845,14 +845,18 @@ export default function ChannelDetail() {
                   ) : (
                     (members || []).slice(0, 6).map((member) => (
                       <div key={member.id} className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={member.avatar} />
-                          <AvatarFallback>{member.name?.charAt(0) || 'M'}</AvatarFallback>
-                        </Avatar>
+                        <Link href={`/user/${member.user?.id || member.userId}`}>
+                          <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                            <AvatarImage src={member.avatar} />
+                            <AvatarFallback>{member.name?.charAt(0) || 'M'}</AvatarFallback>
+                          </Avatar>
+                        </Link>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {member.name}
-                          </p>
+                          <Link href={`/user/${member.user?.id || member.userId}`}>
+                            <p className="text-sm font-medium text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors">
+                              {member.name}
+                            </p>
+                          </Link>
                           {member.department && (
                             <p className="text-xs text-gray-500 truncate">
                               {member.department}
