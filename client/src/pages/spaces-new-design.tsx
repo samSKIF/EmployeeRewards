@@ -96,7 +96,7 @@ export default function SpacesPageNewDesign() {
   // Fetch real recent posts from API
   const { data: recentPostsData = [] } = useQuery({
     queryKey: ['/api/featured-posts'],
-    select: (data) => data.slice(0, 2).map((post: any) => ({
+    select: (data: any) => (data || []).slice(0, 2).map((post: any) => ({
       id: post.id,
       authorId: post.userId || post.authorId,
       authorName: post.authorName || `${post.user?.name || ''} ${post.user?.surname || ''}`.trim(),
@@ -329,7 +329,7 @@ export default function SpacesPageNewDesign() {
 
             {/* Recent Posts Feed */}
             <div className="space-y-6">
-              {(recentPosts || []).map((post) => (
+              {(recentPostsData || []).map((post: any) => (
                 <Card key={post.id}>
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
