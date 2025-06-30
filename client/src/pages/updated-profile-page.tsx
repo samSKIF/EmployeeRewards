@@ -4,6 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useParams } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,6 +37,8 @@ const UpdatedProfilePage = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { refreshUser } = useAuth();
+  const params = useParams();
+  const userId = params.id;
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -46,9 +49,12 @@ const UpdatedProfilePage = () => {
     aboutMe: ''
   });
 
-  // Fetch user data
+  // Check if viewing own profile or another user's profile
+  const isOwnProfile = !userId;
+
+  // Fetch user data - either current user or specific user by ID
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: ["/api/users/me"],
+    queryKey: isOwnProfile ? ["/api/users/me"] : [`/api/users/${userId}`],
     retry: false
   });
 
@@ -443,19 +449,20 @@ const UpdatedProfilePage = () => {
                 backgroundPosition: "center"
               }}
             >
-              {/* Edit Button */}
-              <div className="absolute top-4 right-4 flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/80 hover:bg-white"
-                  onClick={() => document.getElementById('cover-photo-upload')?.click()}
-                >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  {t("profile.uploadCover")}
-                  <input 
-                    type="file"
-                    id="cover-photo-upload"
+              {/* Edit Button - only show for own profile */}
+              {isOwnProfile && (
+                <div className="absolute top-4 right-4 flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/80 hover:bg-white"
+                    onClick={() => document.getElementById('cover-photo-upload')?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    {t("profile.uploadCover")}
+                    <input 
+                      type="file"
+                      id="cover-photo-upload"
                     className="hidden"
                     accept="image/*"
                     onChange={handleCoverPhotoUpload}
@@ -471,13 +478,14 @@ const UpdatedProfilePage = () => {
                   {isEditing ? t("common.cancel") : t("profile.editProfile")}
                 </Button>
               </div>
+              )}
               
               {/* Profile Image */}
               <div className="absolute -bottom-12 left-8">
                 <div className="relative">
                   <Avatar className="h-24 w-24 border-4 border-white">
                     <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
-                      {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
+                      {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'AU'}
                     </AvatarFallback>
                     <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
                   </Avatar>
@@ -486,21 +494,23 @@ const UpdatedProfilePage = () => {
                       Admin
                     </Badge>
                   )}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-white shadow-sm"
-                    onClick={() => document.getElementById('avatar-upload')?.click()}
-                  >
-                    <Camera className="h-4 w-4" />
-                    <input 
-                      type="file"
-                      id="avatar-upload"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                    />
-                  </Button>
+                  {isOwnProfile && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-white shadow-sm"
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                    >
+                      <Camera className="h-4 w-4" />
+                      <input 
+                        type="file"
+                        id="avatar-upload"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                      />
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

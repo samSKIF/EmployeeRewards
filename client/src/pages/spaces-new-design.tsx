@@ -39,6 +39,7 @@ interface FeaturedPost {
 
 interface SpacePost {
   id: number;
+  authorId: number;
   content: string;
   authorName: string;
   authorAvatar?: string;

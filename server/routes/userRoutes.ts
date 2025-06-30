@@ -311,7 +311,7 @@ router.get("/:id", async (req, res) => {
     let balance = 0;
     try {
       const balanceData = await storage.getUserBalance(userId);
-      balance = balanceData?.balance || 0;
+      balance = balanceData || 0;
     } catch (error) {
       logger.warn("Failed to get user balance:", error);
     }

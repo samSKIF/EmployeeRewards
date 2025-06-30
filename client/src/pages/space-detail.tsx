@@ -48,11 +48,15 @@ interface SpacePost {
 
 interface SpaceMember {
   id: number;
+  userId?: number;
   name: string;
   role: string;
   department?: string;
   location?: string;
   avatar?: string;
+  user?: {
+    id: number;
+  };
 }
 
 const getCoverImage = (channelType: string) => {
