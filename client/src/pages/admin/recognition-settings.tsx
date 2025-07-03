@@ -32,15 +32,15 @@ export default function RecognitionSettingsPage() {
   // Create states for the form
   const [costPerPoint, setCostPerPoint] = useState<number>(0.10);
   
-  // Peer-to-peer recognition settings
-  const [peerEnabled, setPeerEnabled] = useState<boolean>(true);
-  const [peerRequiresApproval, setPeerRequiresApproval] = useState<boolean>(true);
-  const [peerPointsPerRecognition, setPeerPointsPerRecognition] = useState<number>(10);
-  const [peerMaxRecognitionsPerMonth, setPeerMaxRecognitionsPerMonth] = useState<number>(5);
+  // Peer-to-peer recognition settings (start with undefined to force loading from DB)
+  const [peerEnabled, setPeerEnabled] = useState<boolean | undefined>(undefined);
+  const [peerRequiresApproval, setPeerRequiresApproval] = useState<boolean | undefined>(undefined);
+  const [peerPointsPerRecognition, setPeerPointsPerRecognition] = useState<number | undefined>(undefined);
+  const [peerMaxRecognitionsPerMonth, setPeerMaxRecognitionsPerMonth] = useState<number | undefined>(undefined);
   
-  // Manager recognition settings
-  const [managerEnabled, setManagerEnabled] = useState<boolean>(true);
-  const [managerRequiresApproval, setManagerRequiresApproval] = useState<boolean>(false);
+  // Manager recognition settings (start with undefined to force loading from DB)
+  const [managerEnabled, setManagerEnabled] = useState<boolean | undefined>(undefined);
+  const [managerRequiresApproval, setManagerRequiresApproval] = useState<boolean | undefined>(undefined);
   const [managerApprovalEmail, setManagerApprovalEmail] = useState<string>("");
   
   // Fetch existing settings with no cache to ensure fresh data
@@ -135,8 +135,8 @@ export default function RecognitionSettingsPage() {
       costPerPoint: parseFloat(costPerPoint.toString()),
       peerEnabled,
       peerRequiresApproval,
-      peerPointsPerRecognition: parseInt(peerPointsPerRecognition.toString()),
-      peerMaxRecognitionsPerMonth: parseInt(peerMaxRecognitionsPerMonth.toString()),
+      peerPointsPerRecognition: peerPointsPerRecognition || 100,
+      peerMaxRecognitionsPerMonth: peerMaxRecognitionsPerMonth || 5,
       managerEnabled,
       managerRequiresApproval,
       managerApprovalEmail: managerApprovalEmail || null,
@@ -262,7 +262,7 @@ export default function RecognitionSettingsPage() {
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="peerEnabled"
-                      checked={peerEnabled}
+                      checked={peerEnabled ?? false}
                       onCheckedChange={setPeerEnabled}
                     />
                     <Label htmlFor="peerEnabled">Enable Peer-to-Peer Recognition</Label>
@@ -273,7 +273,7 @@ export default function RecognitionSettingsPage() {
                       <div className="flex items-center space-x-2">
                         <Switch
                           id="peerRequiresApproval"
-                          checked={peerRequiresApproval}
+                          checked={peerRequiresApproval ?? false}
                           onCheckedChange={setPeerRequiresApproval}
                         />
                         <Label htmlFor="peerRequiresApproval">Require Approval for Peer Recognition</Label>
@@ -286,9 +286,10 @@ export default function RecognitionSettingsPage() {
                           type="number"
                           min="1"
                           max="1000"
-                          value={peerPointsPerRecognition}
-                          onChange={(e) => setPeerPointsPerRecognition(parseInt(e.target.value))}
+                          value={peerPointsPerRecognition ?? ""}
+                          onChange={(e) => setPeerPointsPerRecognition(parseInt(e.target.value) || 0)}
                           className="mt-1"
+                          placeholder={isLoadingSettings ? "Loading..." : "Points per recognition"}
                         />
                         <p className="text-sm text-gray-500 mt-1">
                           The number of points awarded for each peer recognition.
@@ -302,9 +303,10 @@ export default function RecognitionSettingsPage() {
                           type="number"
                           min="1"
                           max="100"
-                          value={peerMaxRecognitionsPerMonth}
-                          onChange={(e) => setPeerMaxRecognitionsPerMonth(parseInt(e.target.value))}
+                          value={peerMaxRecognitionsPerMonth ?? ""}
+                          onChange={(e) => setPeerMaxRecognitionsPerMonth(parseInt(e.target.value) || 0)}
                           className="mt-1"
+                          placeholder={isLoadingSettings ? "Loading..." : "Max recognitions per month"}
                         />
                         <p className="text-sm text-gray-500 mt-1">
                           The maximum number of recognitions an employee can give per month.
