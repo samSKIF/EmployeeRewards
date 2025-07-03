@@ -91,11 +91,12 @@ export default function RecognitionSettingsPage() {
       return await response.json();
     },
     onSuccess: () => {
+      // Invalidate and refetch the settings query to get fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/recognition/settings"] });
       toast({
         title: "Success",
         description: "Recognition settings saved successfully"
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/recognition/settings"] });
     },
     onError: (error) => {
       toast({
