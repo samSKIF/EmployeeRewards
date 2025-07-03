@@ -67,10 +67,7 @@ A comprehensive, modular employee engagement platform built with React, TypeScri
 2. **Database Setup**
    ```bash
    # Run database migrations
-   npm run migrate
-   
-   # Seed sample data (optional)
-   node create-saas-sample-data.js
+   npm run db:push
    ```
 
 3. **Environment Configuration**
@@ -123,22 +120,15 @@ The platform uses a hybrid monolithic + microservices architecture:
 - `npm run preview` - Preview production build
 
 ### Database
-- `npm run migrate` - Run database migrations
+- `npm run db:push` - Push database schema changes
 - `npm run db:studio` - Open Drizzle studio for database management
-
-### Utilities
-- `node create-saas-sample-data.js` - Generate sample data
-- `node setup-tenant-companies.js` - Set up multi-tenant data
 
 ## 🔧 Configuration
 
-### Workflows
-The project includes several predefined workflows accessible via the Run button:
+### Development Workflow
+The project includes a single optimized workflow:
 
-- **Hybrid System** (Default) - Runs main server + client
-- **Current System** - Legacy monolithic setup
-- **All Microservices** - Full microservices architecture
-- **Microservices** - Core microservices only
+- **Start application** - Runs the full-stack application with hot reload
 
 ### Database Schema
 The platform uses:
