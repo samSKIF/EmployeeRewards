@@ -43,45 +43,37 @@ export default function RecognitionSettingsPage() {
   const [managerRequiresApproval, setManagerRequiresApproval] = useState<boolean>(false);
   const [managerApprovalEmail, setManagerApprovalEmail] = useState<string>("");
   
-  // Fetch existing settings
+  // Fetch existing settings with no cache to ensure fresh data
   const { data: settings, isLoading: isLoadingSettings } = useQuery<RecognitionSetting>({
     queryKey: ["/api/recognition/settings"],
-    onSuccess: (data) => {
-      // Update form values with fetched settings
-      if (data) {
-        setCostPerPoint(Number(data.costPerPoint));
-        setPeerEnabled(data.peerEnabled);
-        setPeerRequiresApproval(data.peerRequiresApproval);
-        setPeerPointsPerRecognition(data.peerPointsPerRecognition);
-        setPeerMaxRecognitionsPerMonth(data.peerMaxRecognitionsPerMonth);
-        setManagerEnabled(data.managerEnabled);
-        setManagerRequiresApproval(data.managerRequiresApproval);
-        setManagerApprovalEmail(data.managerApprovalEmail || "");
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to load recognition settings: ${error.message}`,
-        variant: "destructive"
-      });
-    }
+    staleTime: 0, // Always consider data stale
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
+
+  // Update form values when settings data changes
+  useEffect(() => {
+    if (settings) {
+      console.log("Settings loaded, updating form values:", settings);
+      setCostPerPoint(Number(settings.costPerPoint));
+      setPeerEnabled(settings.peerEnabled);
+      setPeerRequiresApproval(settings.peerRequiresApproval);
+      setPeerPointsPerRecognition(settings.peerPointsPerRecognition);
+      setPeerMaxRecognitionsPerMonth(settings.peerMaxRecognitionsPerMonth);
+      setManagerEnabled(settings.managerEnabled);
+      setManagerRequiresApproval(settings.managerRequiresApproval);
+      setManagerApprovalEmail(settings.managerApprovalEmail || "");
+    }
+  }, [settings]);
   
   // Manager budget states (for table display only)
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   
   // Fetch manager budgets
-  const { data: managers, isLoading: isLoadingManagers } = useQuery({
+  const { data: managers = [], isLoading: isLoadingManagers } = useQuery({
     queryKey: ["/api/recognition/manager-budgets", { month: selectedMonth, year: selectedYear }],
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to load manager budgets: ${error.message}`,
-        variant: "destructive"
-      });
-    }
+    staleTime: 0, // Always consider budget data stale
   });
   
   // Save settings mutation
@@ -90,8 +82,11 @@ export default function RecognitionSettingsPage() {
       const response = await apiRequest("PUT", "/api/recognition/settings", settings);
       return await response.json();
     },
-    onSuccess: () => {
-      // Invalidate and refetch the settings query to get fresh data
+    onSuccess: (data) => {
+      console.log("Settings saved successfully, updating cache...", data);
+      // Update the cache directly with the new data
+      queryClient.setQueryData(["/api/recognition/settings"], data);
+      // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["/api/recognition/settings"] });
       toast({
         title: "Success",
