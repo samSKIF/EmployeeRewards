@@ -11,6 +11,7 @@ import { db, pool } from "./db";
 import { compare, hash } from "bcrypt";
 import { upload, documentUpload, getPublicUrl } from './file-upload';
 import recognitionAIRoutes from './api/recognition-ai';
+import recognitionRoutes from './microservices/recognition';
 import { CacheService } from './cache/cacheService';
 import { 
   users, insertUserSchema, 
@@ -43,6 +44,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register specialized analytics routes
   app.use('/api/analytics', recognitionAIRoutes);
+  
+  // Register recognition microservice routes
+  app.use('/api/recognition', recognitionRoutes);
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res) => {
