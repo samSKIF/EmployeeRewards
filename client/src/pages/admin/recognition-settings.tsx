@@ -16,6 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { RecognitionSetting, User } from "@shared/schema";
@@ -69,11 +77,23 @@ export default function RecognitionSettingsPage() {
   // Manager budget states (for table display only)
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [showAddBudgetModal, setShowAddBudgetModal] = useState<boolean>(false);
+  const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
+  const [budgetAmount, setBudgetAmount] = useState<string>("");
   
   // Fetch manager budgets
   const { data: managers = [], isLoading: isLoadingManagers } = useQuery({
     queryKey: ["/api/recognition/manager-budgets", { month: selectedMonth, year: selectedYear }],
     staleTime: 0, // Always consider budget data stale
+  });
+
+  // Fetch all managers for the organization to show in add budget modal
+  const { data: allManagers = [] } = useQuery({
+    queryKey: ["/api/users"],
+    staleTime: 0,
+    select: (data: User[]) => data.filter(user => 
+      user.roleType && user.roleType.toLowerCase().includes('manager')
+    ),
   });
   
   // Save settings mutation
@@ -455,6 +475,13 @@ export default function RecognitionSettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                    
+                    <Button 
+                      onClick={() => setShowAddBudgetModal(true)}
+                      className="mb-0"
+                    >
+                      Add Manager Budget
+                    </Button>
                   </div>
                   
                   {isLoadingManagers ? (
@@ -532,6 +559,87 @@ export default function RecognitionSettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Manager Budget Modal */}
+      <Dialog open={showAddBudgetModal} onOpenChange={setShowAddBudgetModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Manager Budget</DialogTitle>
+            <DialogDescription>
+              Allocate a monthly budget for a manager to give recognition points.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="managerSelect">Select Manager</Label>
+              <Select
+                value={selectedManagerId?.toString() || ""}
+                onValueChange={(value) => setSelectedManagerId(parseInt(value))}
+              >
+                <SelectTrigger id="managerSelect">
+                  <SelectValue placeholder="Choose a manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allManagers.map((manager: User) => (
+                    <SelectItem key={manager.id} value={manager.id.toString()}>
+                      {manager.name} {manager.surname} - {manager.department || "No Department"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="budgetAmount">Budget Points</Label>
+              <Input
+                id="budgetAmount"
+                type="number"
+                min="0"
+                step="1"
+                value={budgetAmount}
+                onChange={(e) => setBudgetAmount(e.target.value)}
+                placeholder="Enter budget amount"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Monthly budget points for {new Date(0, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowAddBudgetModal(false);
+                  setSelectedManagerId(null);
+                  setBudgetAmount("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedManagerId && budgetAmount) {
+                    handleAddBudget(selectedManagerId, parseInt(budgetAmount));
+                    setShowAddBudgetModal(false);
+                    setSelectedManagerId(null);
+                    setBudgetAmount("");
+                  }
+                }}
+                disabled={!selectedManagerId || !budgetAmount || addBudgetMutation.isPending}
+              >
+                {addBudgetMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add Budget"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
