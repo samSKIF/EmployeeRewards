@@ -114,7 +114,7 @@ router.get('/auth/me', verifyCorporateAdmin, (req: AuthenticatedManagementReques
 // ========== COMPANY MANAGEMENT ==========
 
 // Get all organizations (companies) with pagination and filters
-router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'), async (req, res) => {
+router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -132,18 +132,25 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
       query = query.where(eq(organizations.isActive, false));
     }
 
-    const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
+    const organizationList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
 
-    res.json({
-      companies: companyList,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: companyList.length
-      }
-    });
+    // Transform to match expected format
+    const transformedList = organizationList.map(org => ({
+      id: org.id,
+      name: org.name,
+      type: org.type || 'client',
+      status: org.isActive ? 'active' : 'inactive',
+      description: org.description,
+      isActive: org.isActive,
+      createdAt: org.createdAt,
+      userCount: 0, // TODO: Get actual user count
+      maxUsers: org.maxUsers
+    }));
+
+    res.json(transformedList);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch companies' });
+    console.error('Failed to fetch organizations:', error);
+    res.status(500).json({ error: 'Failed to fetch organizations' });
   }
 });
 

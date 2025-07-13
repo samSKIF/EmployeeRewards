@@ -281,7 +281,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const { data: fullOrganization, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organization.id}`],
     enabled: !!organization.id,
-    queryFn: () => managementApi(`/organizations/${organization.id}`).then(res => res.json())
+    queryFn: () => managementApi(`/organizations/${organization.id}`)
   });
   
   console.log('Query state:', { isLoading, fullOrganization });
@@ -310,7 +310,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   // Update form when data loads
   useEffect(() => {
     if (fullOrganization) {
-      console.log('Populating form with data:', fullOrganization);
+      console.log('Raw API response:', fullOrganization);
+      console.log('Organization ID being fetched:', organization.id);
+      
       const formData = {
         name: fullOrganization.name || '',
         type: fullOrganization.type || 'client',
@@ -329,8 +331,20 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           country: fullOrganization.country || fullOrganization.address?.country || ''
         }
       };
-      console.log('Form data to populate:', formData);
-      form.reset(formData);
+      console.log('Processed form data:', formData);
+      
+      // Force form update
+      Object.keys(formData).forEach(key => {
+        if (key === 'address') {
+          Object.keys(formData.address).forEach(addressKey => {
+            form.setValue(`address.${addressKey}` as any, formData.address[addressKey as keyof typeof formData.address]);
+          });
+        } else {
+          form.setValue(key as any, formData[key as keyof typeof formData]);
+        }
+      });
+      
+      console.log('Form values after setting:', form.getValues());
     }
   }, [fullOrganization, organization, form]);
 
