@@ -7,8 +7,22 @@ import { relations, type InferSelectModel } from "drizzle-orm";
 export const organizations: any = pgTable("organizations", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  slug: text("slug").unique(), // URL-friendly organization identifier
   type: text("type").notNull(), // 'corporate', 'client', 'seller'
   status: text("status").default("active").notNull(), // 'active', 'inactive', 'pending'
+  
+  // Contact Information
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  superuserEmail: text("superuser_email"),
+  
+  // Organization Details
+  industry: text("industry"),
+  maxUsers: integer("max_users").default(50),
+  address: jsonb("address"), // {street, city, state, country, zip}
+  
+  // Legacy and System Fields
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
@@ -1078,6 +1092,26 @@ export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, c
 export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
 export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, startedAt: true });
 export const insertSurveyAnswerSchema = createInsertSchema(surveyAnswers).omit({ id: true, createdAt: true });
+
+// Extended organization schema for form validation
+export const createOrganizationSchema = z.object({
+  name: z.string().min(2, "Organization name must be at least 2 characters"),
+  contactName: z.string().min(2, "Contact name is required"),
+  contactEmail: z.string().email("Valid contact email is required"),
+  contactPhone: z.string().optional(),
+  superuserEmail: z.string().email("Valid superuser email is required"),
+  maxUsers: z.number().min(1, "Must allow at least 1 user").max(10000, "Maximum 10,000 users allowed"),
+  industry: z.string().min(1, "Industry selection is required"),
+  address: z.object({
+    street: z.string().min(5, "Street address is required"),
+    city: z.string().min(2, "City is required"),
+    state: z.string().min(2, "State/Province is required"),
+    country: z.string().min(2, "Country is required"),
+    zip: z.string().min(3, "ZIP/Postal code is required")
+  })
+});
+
+export type CreateOrganizationData = z.infer<typeof createOrganizationSchema>;
 
 // Export types
 // Organization types

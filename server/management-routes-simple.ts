@@ -180,6 +180,86 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
   }
 });
 
+// Create new organization
+router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const {
+      name,
+      slug,
+      type = 'client',
+      status = 'active',
+      contactName,
+      contactEmail,
+      contactPhone,
+      superuserEmail,
+      maxUsers = 50,
+      industry,
+      address
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !contactName || !contactEmail || !superuserEmail || !industry || !address) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Generate slug if not provided
+    const organizationSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    // Check if slug already exists
+    const existingOrg = await db.select().from(organizations).where(eq(organizations.slug, organizationSlug));
+    if (existingOrg.length > 0) {
+      return res.status(400).json({ error: 'Organization slug already exists' });
+    }
+
+    // Create organization
+    const [newOrganization] = await db.insert(organizations).values({
+      name,
+      slug: organizationSlug,
+      type,
+      status,
+      contactName,
+      contactEmail,
+      contactPhone,
+      superuserEmail,
+      maxUsers,
+      industry,
+      address,
+      createdBy: req.corporateAdmin!.id
+    }).returning();
+
+    // Create superuser account for the organization
+    const bcrypt = await import('bcrypt');
+    const defaultPassword = 'ChangeMe123!'; // Organization will need to change this
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const [superuser] = await db.insert(users).values({
+      username: superuserEmail.split('@')[0], // Use email prefix as username
+      password: hashedPassword,
+      name: contactName,
+      email: superuserEmail,
+      roleType: 'client_admin',
+      isAdmin: true,
+      status: 'active',
+      organization_id: newOrganization.id,
+      createdBy: req.corporateAdmin!.id
+    }).returning();
+
+    res.status(201).json({
+      organization: newOrganization,
+      superuser: {
+        id: superuser.id,
+        email: superuser.email,
+        name: superuser.name,
+        defaultPassword // Return the default password so it can be shared with the client
+      },
+      message: 'Organization and superuser created successfully'
+    });
+  } catch (error) {
+    console.error('Failed to create organization:', error);
+    res.status(500).json({ error: 'Failed to create organization' });
+  }
+});
+
 // Credit organization (simple implementation for now)
 router.post('/organizations/:id/credit', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {

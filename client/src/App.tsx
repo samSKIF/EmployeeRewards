@@ -27,6 +27,7 @@ import AdminDashboard from "@/pages/admin/admin-dashboard";
 import BrandingPage from "@/pages/admin/branding";
 import ShopConfigPage from "@/pages/admin/shop-config";
 import ManagementDashboard from "@/pages/management-dashboard";
+import CreateOrganization from "@/pages/CreateOrganization";
 import OnboardingPage from "@/pages/admin/onboarding";
 import AdminLeaveManagement from "@/pages/admin/leave-management";
 import RecognitionSettingsPage from "@/pages/admin/recognition-settings";
@@ -116,6 +117,9 @@ function App() {
               {/* Management Dashboard - Separate from social platform */}
               <Route path="/management">
                 <ManagementDashboard />
+              </Route>
+              <Route path="/management/organizations/new">
+                <CreateOrganization />
               </Route>
 
               {/* Main dashboard routes */}
