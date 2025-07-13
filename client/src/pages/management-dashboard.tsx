@@ -333,16 +333,21 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       };
       console.log('Processed form data:', formData);
       
-      // Force form update
-      Object.keys(formData).forEach(key => {
-        if (key === 'address') {
-          Object.keys(formData.address).forEach(addressKey => {
-            form.setValue(`address.${addressKey}` as any, formData.address[addressKey as keyof typeof formData.address]);
-          });
-        } else {
-          form.setValue(key as any, formData[key as keyof typeof formData]);
-        }
-      });
+      // Force form update with explicit field setting
+      form.setValue('name', formData.name);
+      form.setValue('type', formData.type);
+      form.setValue('status', formData.status);
+      form.setValue('maxUsers', formData.maxUsers);
+      form.setValue('contactName', formData.contactName);
+      form.setValue('contactEmail', formData.contactEmail);
+      form.setValue('contactPhone', formData.contactPhone);
+      form.setValue('superuserEmail', formData.superuserEmail);
+      form.setValue('industry', formData.industry);
+      form.setValue('address.street', formData.address.street);
+      form.setValue('address.city', formData.address.city);
+      form.setValue('address.state', formData.address.state);
+      form.setValue('address.zipCode', formData.address.zipCode);
+      form.setValue('address.country', formData.address.country);
       
       console.log('Form values after setting:', form.getValues());
     }
