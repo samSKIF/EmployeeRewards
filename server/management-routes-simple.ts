@@ -121,8 +121,8 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
     let query = db.select({
       id: organizations.id,
       name: organizations.name,
-      description: organizations.description,
-      isActive: organizations.isActive,
+      type: organizations.type,
+      status: organizations.status,
       createdAt: organizations.createdAt,
       userCount: sql<number>`(SELECT COUNT(*) FROM ${users} WHERE ${users.organizationId} = ${organizations.id})`,
     }).from(organizations);
@@ -132,9 +132,9 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
     }
     
     if (status === 'active') {
-      query = query.where(eq(organizations.isActive, true));
+      query = query.where(eq(organizations.status, 'active'));
     } else if (status === 'inactive') {
-      query = query.where(eq(organizations.isActive, false));
+      query = query.where(eq(organizations.status, 'inactive'));
     }
     
     const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
@@ -151,6 +151,7 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
       }
     });
   } catch (error) {
+    console.error('Failed to fetch companies:', error);
     res.status(500).json({ error: 'Failed to fetch companies' });
   }
 });
@@ -350,6 +351,56 @@ router.get('/analytics', verifyCorporateAdmin, checkPermission('manageAnalytics'
       period
     });
   } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
+// Get all organizations (simple list for frontend)
+router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
+  try {
+    const companyList = await db.select({
+      id: organizations.id,
+      name: organizations.name,
+      type: organizations.type,
+      status: organizations.status,
+      createdAt: organizations.createdAt,
+      updatedAt: organizations.updatedAt,
+      userCount: sql<number>`(SELECT COUNT(*) FROM ${users} WHERE ${users.organizationId} = ${organizations.id})`,
+    }).from(organizations).orderBy(desc(organizations.createdAt));
+    
+    res.json(companyList);
+  } catch (error) {
+    console.error('Failed to fetch organizations:', error);
+    res.status(500).json({ error: 'Failed to fetch organizations' });
+  }
+});
+
+// Get analytics data for the dashboard
+router.get('/analytics', verifyCorporateAdmin, async (req, res) => {
+  try {
+    // Get counts from all tables
+    const [organizationCount] = await db.select({ count: count() }).from(organizations);
+    const [userCount] = await db.select({ count: count() }).from(users);
+    const [productCount] = await db.select({ count: count() }).from(products);
+    const [orderCount] = await db.select({ count: count() }).from(orders);
+    
+    // Calculate total revenue from orders
+    const [revenueResult] = await db.select({ 
+      total: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)` 
+    }).from(orders);
+    
+    res.json({
+      totals: {
+        organizations: organizationCount.count,
+        users: userCount.count,
+        products: productCount.count,
+        orders: orderCount.count,
+        revenue: revenueResult.total || 0
+      },
+      period: 'All Time'
+    });
+  } catch (error) {
+    console.error('Failed to fetch analytics:', error);
     res.status(500).json({ error: 'Failed to fetch analytics' });
   }
 });
