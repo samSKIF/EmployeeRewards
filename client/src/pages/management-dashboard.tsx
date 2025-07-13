@@ -34,10 +34,13 @@ import { useLocation } from 'wouter';
 interface Organization {
   id: number;
   name: string;
+  type: string;
+  status: string;
   description?: string;
   isActive: boolean;
   createdAt: string;
   userCount: number;
+  maxUsers?: number;
 }
 
 interface OrganizationWithStats extends Organization {
@@ -347,7 +350,7 @@ const OrganizationsManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Max Employees</p>
-                  <p className="text-lg font-semibold">N/A</p>
+                  <p className="text-lg font-semibold">{organization.maxUsers || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Features</p>
