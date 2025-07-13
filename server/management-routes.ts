@@ -138,7 +138,6 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
     const transformedList = organizationList.map(org => ({
       id: org.id,
       name: org.name,
-      type: org.type || 'client',
       status: org.isActive ? 'active' : 'inactive',
       description: org.description,
       isActive: org.isActive,
@@ -253,7 +252,6 @@ router.get("/organizations/:id", async (req, res) => {
     const completeOrganization = {
       id: organization.id,
       name: organization.name || '',
-      type: organization.type || 'client',
       status: organization.isActive ? 'active' : 'inactive',
       maxUsers: organization.maxUsers || null,
       contactName: organization.contactName || '',

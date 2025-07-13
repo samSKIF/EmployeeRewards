@@ -35,7 +35,6 @@ import { useLocation } from 'wouter';
 interface Organization {
   id: number;
   name: string;
-  type: string;
   status: string;
   description?: string;
   isActive: boolean;
@@ -108,7 +107,6 @@ interface PlatformStats {
 // Form schemas
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
-  type: z.enum(['client', 'enterprise', 'startup']).default('client'),
   status: z.enum(['active', 'inactive', 'suspended']).default('active')
 });
 
@@ -140,9 +138,9 @@ const useManagementAuth = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    
+
     if (!response.ok) throw new Error('Login failed');
-    
+
     const data = await response.json();
     localStorage.setItem('managementToken', data.token);
     setToken(data.token);
@@ -185,7 +183,7 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       await onLogin(username, password);
       toast({ title: 'Login successful', description: 'Welcome to the management dashboard' });
@@ -276,20 +274,19 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
-  
+
   // First fetch the full organization details
   const { data: fullOrganization, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organization.id}`],
     enabled: !!organization.id,
     queryFn: () => managementApi(`/organizations/${organization.id}`)
   });
-  
+
   console.log('Query state:', { isLoading, fullOrganization });
-  
+
   const form = useForm({
     defaultValues: {
       name: organization.name,
-      type: organization.type,
       status: organization.status,
       maxUsers: organization.maxUsers || 50,
       contactName: '',
@@ -312,10 +309,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
     if (fullOrganization) {
       console.log('Raw API response:', fullOrganization);
       console.log('Organization ID being fetched:', organization.id);
-      
+
       const formData = {
         name: fullOrganization.name || '',
-        type: fullOrganization.type || 'client',
         status: fullOrganization.status || 'active',
         maxUsers: fullOrganization.maxUsers || 50,
         contactName: fullOrganization.contactName || '',
@@ -332,10 +328,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         }
       };
       console.log('Processed form data:', formData);
-      
+
       // Force form update with explicit field setting
       form.setValue('name', formData.name);
-      form.setValue('type', formData.type);
       form.setValue('status', formData.status);
       form.setValue('maxUsers', formData.maxUsers);
       form.setValue('contactName', formData.contactName);
@@ -348,7 +343,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       form.setValue('address.state', formData.address.state);
       form.setValue('address.zipCode', formData.address.zipCode);
       form.setValue('address.country', formData.address.country);
-      
+
       console.log('Form values after setting:', form.getValues());
     }
   }, [fullOrganization, organization, form]);
@@ -394,31 +389,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           />
           <FormField
             control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="client">Client</SelectItem>
-                    <SelectItem value="corporate">Corporate</SelectItem>
-                    <SelectItem value="seller">Seller</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
             name="status"
             render={({ field }) => (
               <FormItem>
@@ -439,6 +409,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="maxUsers"
@@ -613,7 +586,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
 const OrganizationsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const { data: organizations } = useQuery<Organization[]>({
     queryKey: ['/api/management/organizations'],
     queryFn: () => managementApi('/organizations')
@@ -623,7 +596,6 @@ const OrganizationsManagement = () => {
     resolver: zodResolver(organizationSchema),
     defaultValues: {
       name: '',
-      type: 'client',
       status: 'active'
     }
   });
@@ -693,7 +665,7 @@ const OrganizationsManagement = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle>{organization.name}</CardTitle>
-                  <CardDescription>Type: {organization.type}</CardDescription>
+                  <CardDescription>Status: {organization.status}</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={organization.status === 'active' ? 'default' : 'secondary'}>
@@ -824,29 +796,29 @@ export default function ManagementDashboard() {
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="overview" className="space-y-4">
             <DashboardStats />
           </TabsContent>
-          
+
           <TabsContent value="companies">
             <OrganizationsManagement />
           </TabsContent>
-          
+
           <TabsContent value="merchants">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Merchants</h2>
               <p className="text-muted-foreground">Manage marketplace merchants and their products</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="products">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Products</h2>
               <p className="text-muted-foreground">Manage marketplace product catalog</p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="orders">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Orders</h2>
