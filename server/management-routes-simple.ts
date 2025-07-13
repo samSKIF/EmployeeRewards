@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations } from '../shared/schema';
+import { users, organizations, transactions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count, sql } from 'drizzle-orm';
 
 const router = express.Router();
@@ -124,7 +124,7 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       type: organizations.type,
       status: organizations.status,
       createdAt: organizations.createdAt,
-      userCount: sql<number>`(SELECT COUNT(*) FROM ${users} WHERE ${users.organizationId} = ${organizations.id})`,
+      userCount: sql<number>`(SELECT COUNT(*) FROM ${users} WHERE ${users.organization_id} = ${organizations.id})`,
     }).from(organizations);
     
     if (search) {
@@ -160,12 +160,12 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
     }
     
     // Get organization statistics
-    const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
+    const userCount = await db.select({ count: count() }).from(users).where(eq(users.organization_id, Number(id)));
     // Order count not implemented yet
     const orderCount = [{ count: 0 }];
     const totalSpent = await db.select({ total: sum(transactions.amount) }).from(transactions)
       .innerJoin(users, eq(transactions.fromAccountId, users.id))
-      .where(eq(users.organizationId, Number(id)));
+      .where(eq(users.organization_id, Number(id)));
     
     res.json({
       ...organization,
@@ -221,19 +221,19 @@ router.get('/users', verifyCorporateAdmin, checkPermission('manageUsers'), async
       roleType: users.roleType,
       isAdmin: users.isAdmin,
       status: users.status,
-      organizationId: users.organizationId,
+      organizationId: users.organization_id,
       organizationName: organizations.name,
       balance: users.balance,
       createdAt: users.createdAt,
       lastSeenAt: users.lastSeenAt
-    }).from(users).leftJoin(organizations, eq(users.organizationId, organizations.id));
+    }).from(users).leftJoin(organizations, eq(users.organization_id, organizations.id));
     
     if (search) {
       query = query.where(sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`})`);
     }
     
     if (organizationId) {
-      query = query.where(eq(users.organizationId, Number(organizationId)));
+      query = query.where(eq(users.organization_id, Number(organizationId)));
     }
     
     const userList = await query.limit(Number(limit)).offset(offset).orderBy(desc(users.createdAt));
