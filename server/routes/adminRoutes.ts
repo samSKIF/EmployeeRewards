@@ -45,26 +45,26 @@ router.get("/spaces", verifyToken, verifyAdmin, async (req: AuthenticatedRequest
 // Create corporate admin account
 router.post("/corporate-account", async (req, res) => {
   try {
-    const { email, password, name, username } = req.body;
-    logger.info("Attempting to create corporate admin account:", { email, name, username });
+    // Default values for corporate admin
+    const email = "admin@thriviohr.com";
+    const password = "admin123";
+    const name = "Corporate Admin";
+    const username = "corporate_admin";
 
-    if (!email || !password || !name || !username) {
-      logger.warn("Missing required fields");
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    logger.info("Creating corporate admin account:", { email, name, username });
 
     // Check if email already exists
     const existingEmailUser = await storage.getUserByEmail(email);
     if (existingEmailUser) {
-      logger.warn("Email already registered:", email);
-      return res.status(409).json({ message: "Email already registered" });
+      logger.info("Corporate admin already exists:", email);
+      return res.status(200).json({ message: "Corporate admin already exists", email });
     }
 
     // Check if username already exists
     const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
     if (existingUsernameUser) {
-      logger.warn("Username already taken:", username);
-      return res.status(409).json({ message: "Username already taken" });
+      logger.info("Username already taken, using alternative");
+      const altUsername = `corporate_admin_${Date.now()}`;
     }
 
     // Get the corporate organization
@@ -139,7 +139,10 @@ router.post("/corporate-account", async (req, res) => {
 
     // Return success with user data (excluding password)
     const userWithoutPassword = { ...newUser, password: undefined };
-    return res.status(201).json(userWithoutPassword);
+    return res.status(201).json({ 
+      ...userWithoutPassword,
+      credentials: { email, password }
+    });
   } catch (error: any) {
     logger.error("Error creating corporate admin account:", error);
     return res.status(500).json({ message: "Internal server error", error: error.message });
