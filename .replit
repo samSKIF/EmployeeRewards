@@ -54,7 +54,11 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NODE_ENV=development tsx server/main.ts"
+args = "# This workflow is no longer needed - microservices integrated into main server"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"NestJS microservices have been consolidated into main server\""
 
 [[workflows.workflow]]
 name = "Start Microservices"

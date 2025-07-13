@@ -6,6 +6,7 @@ import { db, pool } from '../../db';
 import express, { Request, Response } from 'express';
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from '../../middleware/auth';
 import { storage } from '../../storage';
+import { Server } from 'socket.io';
 import { 
   recognitionSettings, recognitions, managerBudgets, users, organizations,
   insertRecognitionSettingsSchema, insertRecognitionSchema, insertManagerBudgetSchema,
@@ -33,6 +34,27 @@ interface RecognitionAuthRequest extends Omit<AuthenticatedRequest, 'user'> {
 }
 
 const router = express.Router();
+
+// WebSocket instance for real-time notifications
+let io: Server | null = null;
+
+// Function to set WebSocket instance from main server
+export function setWebSocketInstance(socketInstance: Server) {
+  io = socketInstance;
+}
+
+// Function to emit recognition notifications
+function notifyNewRecognition(recognition: any) {
+  if (io) {
+    io.emit('newRecognition', recognition);
+  }
+}
+
+function notifyPointsUpdate(userId: number, points: number) {
+  if (io) {
+    io.to(`user_${userId}`).emit('pointsUpdate', { points });
+  }
+}
 
 /**
  * Recognition Settings API endpoints
@@ -333,6 +355,10 @@ router.post("/peer", verifyToken, async (req: RecognitionAuthRequest, res) => {
           message
         }
       );
+      
+      // Notify via WebSocket
+      notifyNewRecognition({ ...recognition, post: post.post });
+      notifyPointsUpdate(recipientId, (recipient as any).points + recognition.points);
       
       return res.status(201).json({
         recognition,

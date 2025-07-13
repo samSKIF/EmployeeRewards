@@ -5,22 +5,15 @@ import { setupVite, serveStatic, log } from "./vite";
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from "./file-upload";
 import path from "path";
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-// import { hybridDb } from './hybrid-db'; // Temporarily disabled for MongoDB migration
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { setWebSocketInstance } from './microservices/recognition';
 import { users, organizations } from '@shared/mysql-schema';
 import { initializeMongoDB, setupMongoDBSocialRoutes, migrateSocialDataToMongoDB } from './mongodb/integration';
 // Firebase admin removed - using custom JWT authentication only
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-
-const socialClient = ClientProxyFactory.create({
-  transport: Transport.TCP,
-  options: {
-    host: '0.0.0.0',
-    port: 3002,
-  },
-});
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Set up static file serving for uploaded files
@@ -69,6 +62,35 @@ app.use((req, res, next) => {
   }
 
   const server = await registerRoutes(app);
+  
+  // Create HTTP server for WebSocket support
+  const httpServer = createServer(app);
+  
+  // Initialize Socket.IO
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+  
+  // Pass WebSocket instance to microservices
+  setWebSocketInstance(io);
+  
+  // Socket.IO connection handling
+  io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+    
+    // Join user-specific room for targeted notifications
+    socket.on('join', (userId) => {
+      socket.join(`user_${userId}`);
+      console.log(`User ${userId} joined room`);
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+    });
+  });
 
   // Add management routes for SaaS backend
   app.use('/management', managementRoutes);
@@ -115,11 +137,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  httpServer.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();
