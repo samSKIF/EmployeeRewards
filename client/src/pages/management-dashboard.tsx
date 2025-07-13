@@ -420,17 +420,15 @@ const OrganizationsManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Max Employees</p>
-                  <p className="text-lg font-semibold">{company.maxEmployees}</p>
+                  <p className="text-lg font-semibold">N/A</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Features</p>
-                  <p className="text-sm">
-                    {Object.values(company.features).filter(Boolean).length} / {Object.keys(company.features).length}
-                  </p>
+                  <p className="text-sm">N/A</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-sm">{new Date(company.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm">{new Date(organization.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
               
@@ -444,16 +442,16 @@ const OrganizationsManagement = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Credit Company Wallet</DialogTitle>
+                      <DialogTitle>Credit Organization Wallet</DialogTitle>
                       <DialogDescription>
-                        Add funds to {company.name}'s wallet
+                        Add funds to {organization.name}'s wallet
                       </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={(e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
                       creditWalletMutation.mutate({
-                        companyId: company.id,
+                        organizationId: organization.id,
                         amount: Number(formData.get('amount')),
                         description: formData.get('description') as string
                       });

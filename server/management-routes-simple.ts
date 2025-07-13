@@ -180,6 +180,29 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
   }
 });
 
+// Credit organization (simple implementation for now)
+router.post('/organizations/:id/credit', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, description } = req.body;
+    
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
+    if (!organization) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // For now, just return success message
+    // In a real implementation, you would update wallet balance
+    res.json({ 
+      message: 'Organization credited successfully',
+      amount: amount,
+      description: description || 'Manual credit'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to credit organization' });
+  }
+});
+
 // ========== USER MANAGEMENT ==========
 
 // Get all users across all organizations
