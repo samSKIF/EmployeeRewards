@@ -323,7 +323,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           street: addressData.street || '',
           city: addressData.city || '',
           state: addressData.state || '',
-          zipCode: addressData.zipCode || '',
+          zipCode: addressData.zip || addressData.zipCode || '',
           country: addressData.country || ''
         }
       });
