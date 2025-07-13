@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,17 +33,70 @@ const INDUSTRY_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
-const USER_LIMIT_OPTIONS = [
-  { value: 10, label: '10 users' },
-  { value: 25, label: '25 users' },
-  { value: 50, label: '50 users' },
-  { value: 100, label: '100 users' },
-  { value: 250, label: '250 users' },
-  { value: 500, label: '500 users' },
-  { value: 1000, label: '1,000 users' },
-  { value: 2500, label: '2,500 users' },
-  { value: 5000, label: '5,000 users' }
+const COUNTRIES = [
+  { value: 'US', label: 'United States', states: [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
+    'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
+    'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
+    'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
+    'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+  ]},
+  { value: 'CA', label: 'Canada', states: [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories',
+    'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'
+  ]},
+  { value: 'GB', label: 'United Kingdom', states: [
+    'England', 'Scotland', 'Wales', 'Northern Ireland'
+  ]},
+  { value: 'AU', label: 'Australia', states: [
+    'New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia', 'Tasmania', 'Northern Territory', 'Australian Capital Territory'
+  ]},
+  { value: 'DE', label: 'Germany', states: [
+    'Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hesse', 'Lower Saxony',
+    'Mecklenburg-Vorpommern', 'North Rhine-Westphalia', 'Rhineland-Palatinate', 'Saarland', 'Saxony', 'Saxony-Anhalt', 'Schleswig-Holstein', 'Thuringia'
+  ]},
+  { value: 'FR', label: 'France', states: [
+    'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Brittany', 'Centre-Val de Loire', 'Corsica', 'Grand Est',
+    'Hauts-de-France', 'Île-de-France', 'Normandy', 'Nouvelle-Aquitaine', 'Occitania', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'
+  ]},
+  { value: 'IN', label: 'India', states: [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
+    'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+    'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+  ]},
+  { value: 'JP', label: 'Japan', states: [
+    'Hokkaido', 'Aomori', 'Iwate', 'Miyagi', 'Akita', 'Yamagata', 'Fukushima', 'Ibaraki', 'Tochigi', 'Gunma', 'Saitama',
+    'Chiba', 'Tokyo', 'Kanagawa', 'Niigata', 'Toyama', 'Ishikawa', 'Fukui', 'Yamanashi', 'Nagano', 'Gifu', 'Shizuoka',
+    'Aichi', 'Mie', 'Shiga', 'Kyoto', 'Osaka', 'Hyogo', 'Nara', 'Wakayama', 'Tottori', 'Shimane', 'Okayama', 'Hiroshima',
+    'Yamaguchi', 'Tokushima', 'Kagawa', 'Ehime', 'Kochi', 'Fukuoka', 'Saga', 'Nagasaki', 'Kumamoto', 'Oita', 'Miyazaki', 'Kagoshima', 'Okinawa'
+  ]},
+  { value: 'BR', label: 'Brazil', states: [
+    'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal', 'Espírito Santo', 'Goiás', 'Maranhão',
+    'Mato Grosso', 'Mato Grosso do Sul', 'Minas Gerais', 'Pará', 'Paraíba', 'Paraná', 'Pernambuco', 'Piauí', 'Rio de Janeiro',
+    'Rio Grande do Norte', 'Rio Grande do Sul', 'Rondônia', 'Roraima', 'Santa Catarina', 'São Paulo', 'Sergipe', 'Tocantins'
+  ]},
+  { value: 'MX', label: 'Mexico', states: [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Coahuila', 'Colima',
+    'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León',
+    'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
+    'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+  ]},
+  { value: 'OTHER', label: 'Other', states: [] }
 ];
+
+const MAJOR_CITIES = {
+  'US': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'],
+  'CA': ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
+  'GB': ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Leeds', 'Sheffield', 'Edinburgh', 'Bristol', 'Cardiff'],
+  'AU': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Newcastle', 'Canberra', 'Sunshine Coast', 'Wollongong'],
+  'DE': ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig'],
+  'FR': ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille'],
+  'IN': ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat'],
+  'JP': ['Tokyo', 'Yokohama', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kyoto', 'Kawasaki', 'Saitama'],
+  'BR': ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Salvador', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Porto Alegre'],
+  'MX': ['Mexico City', 'Guadalajara', 'Monterrey', 'Puebla', 'Tijuana', 'León', 'Juárez', 'Torreón', 'Querétaro', 'San Luis Potosí'],
+  'OTHER': []
+};
 
 function generateSlug(name: string): string {
   return name
@@ -56,6 +109,21 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+
+  // Update available states and cities when country changes
+  useEffect(() => {
+    const country = COUNTRIES.find(c => c.value === selectedCountry);
+    if (country) {
+      setAvailableStates(country.states);
+      setAvailableCities(MAJOR_CITIES[selectedCountry as keyof typeof MAJOR_CITIES] || []);
+    } else {
+      setAvailableStates([]);
+      setAvailableCities([]);
+    }
+  }, [selectedCountry]);
 
   const form = useForm<CreateOrganizationData>({
     resolver: zodResolver(createOrganizationSchema),
@@ -95,10 +163,21 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
         address: data.address
       };
 
-      return await apiRequest('/api/management/organizations', {
+      const response = await fetch('/api/management/organizations', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('managementToken')}`
+        },
         body: JSON.stringify(organizationData)
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create organization');
+      }
+
+      return await response.json();
     },
     onSuccess: (response) => {
       toast({
@@ -217,24 +296,20 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maximum Users *</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))} 
-                        defaultValue={field.value?.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full md:w-1/2">
-                            <SelectValue placeholder="Select user limit" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {USER_LIMIT_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value.toString()}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          min="1"
+                          placeholder="Enter maximum number of users"
+                          className="w-full md:w-1/2"
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
                       <FormMessage />
+                      <p className="text-sm text-gray-500">
+                        Specify the maximum number of users allowed for this organization
+                      </p>
                     </FormItem>
                   )}
                 />
@@ -364,16 +439,33 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <FormField
                     control={form.control}
-                    name="address.city"
+                    name="address.country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>City *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="San Francisco" 
-                            {...field}
-                          />
-                        </FormControl>
+                        <FormLabel>Country *</FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedCountry(value);
+                            // Reset state and city when country changes
+                            form.setValue('address.state', '');
+                            form.setValue('address.city', '');
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {COUNTRIES.map((country) => (
+                              <SelectItem key={country.value} value={country.value}>
+                                {country.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -385,12 +477,34 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>State/Province *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="CA" 
-                            {...field}
-                          />
-                        </FormControl>
+                        {availableStates.length > 0 ? (
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={!selectedCountry}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select state/province" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {availableStates.map((state) => (
+                                <SelectItem key={state} value={state}>
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter state/province" 
+                              {...field}
+                              disabled={!selectedCountry}
+                            />
+                          </FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -398,16 +512,39 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
 
                   <FormField
                     control={form.control}
-                    name="address.country"
+                    name="address.city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="United States" 
-                            {...field}
-                          />
-                        </FormControl>
+                        <FormLabel>City *</FormLabel>
+                        {availableCities.length > 0 ? (
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={!selectedCountry}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select city" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {availableCities.map((city) => (
+                                <SelectItem key={city} value={city}>
+                                  {city}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter city" 
+                              {...field}
+                              disabled={!selectedCountry}
+                            />
+                          </FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
