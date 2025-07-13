@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 
 // Types for the unified management system
-interface Company {
+interface Organization {
   id: number;
   name: string;
   description?: string;
@@ -39,7 +39,7 @@ interface Company {
   userCount: number;
 }
 
-interface CompanyWithStats extends Company {
+interface OrganizationWithStats extends Organization {
   stats: {
     userCount: number;
     orderCount: number;
@@ -86,13 +86,13 @@ interface Order {
   totalAmount: string;
   status: string;
   productName?: string;
-  companyName?: string;
+  organizationName?: string;
   merchantName?: string;
   createdAt: string;
 }
 
 interface PlatformStats {
-  companies: number;
+  organizations: number;
   merchants: number;
   products: number;
   orders: number;
@@ -101,8 +101,8 @@ interface PlatformStats {
 }
 
 // Form schemas
-const companySchema = z.object({
-  name: z.string().min(1, 'Company name is required'),
+const organizationSchema = z.object({
+  name: z.string().min(1, 'Organization name is required'),
   email: z.string().email('Valid email is required'),
   domain: z.string().optional(),
   subscriptionTier: z.enum(['basic', 'premium', 'enterprise']),
@@ -268,45 +268,45 @@ const DashboardStats = () => {
   );
 };
 
-// Companies Management
-const CompaniesManagement = () => {
+// Organizations Management
+const OrganizationsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: companies } = useQuery<Company[]>({
+  const { data: organizations } = useQuery<Organization[]>({
     queryKey: ['/api/management/organizations'],
     queryFn: () => managementApi('/organizations')
   });
 
-  const form = useForm<z.infer<typeof companySchema>>({
-    resolver: zodResolver(companySchema),
+  const form = useForm<z.infer<typeof organizationSchema>>({
+    resolver: zodResolver(organizationSchema),
     defaultValues: {
       subscriptionTier: 'basic',
       maxEmployees: 50
     }
   });
 
-  const createCompanyMutation = useMutation({
-    mutationFn: (data: z.infer<typeof companySchema>) => 
-      managementApi('/companies', { method: 'POST', body: JSON.stringify(data) }),
+  const createOrganizationMutation = useMutation({
+    mutationFn: (data: z.infer<typeof organizationSchema>) => 
+      managementApi('/organizations', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/management/companies'] });
-      toast({ title: 'Company created successfully' });
+      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      toast({ title: 'Organization created successfully' });
       form.reset();
     },
     onError: () => {
-      toast({ title: 'Failed to create company', variant: 'destructive' });
+      toast({ title: 'Failed to create organization', variant: 'destructive' });
     }
   });
 
   const creditWalletMutation = useMutation({
-    mutationFn: ({ companyId, amount, description }: { companyId: number; amount: number; description: string }) =>
-      managementApi(`/companies/${companyId}/credit`, { 
+    mutationFn: ({ organizationId, amount, description }: { organizationId: number; amount: number; description: string }) =>
+      managementApi(`/organizations/${organizationId}/credit`, { 
         method: 'POST', 
         body: JSON.stringify({ amount, description }) 
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/management/companies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
       toast({ title: 'Wallet credited successfully' });
     }
   });
@@ -314,29 +314,29 @@ const CompaniesManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Companies</h2>
+        <h2 className="text-3xl font-bold">Organizations</h2>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Add Company
+              Add Organization
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Create New Company</DialogTitle>
+              <DialogTitle>Create New Organization</DialogTitle>
               <DialogDescription>
-                Add a new company to your SaaS platform
+                Add a new organization to your SaaS platform
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => createCompanyMutation.mutate(data))} className="space-y-4">
+              <form onSubmit={form.handleSubmit((data) => createOrganizationMutation.mutate(data))} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Name</FormLabel>
+                      <FormLabel>Organization Name</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -392,8 +392,8 @@ const CompaniesManagement = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={createCompanyMutation.isPending}>
-                  {createCompanyMutation.isPending ? 'Creating...' : 'Create Company'}
+                <Button type="submit" className="w-full" disabled={createOrganizationMutation.isPending}>
+                  {createOrganizationMutation.isPending ? 'Creating...' : 'Create Organization'}
                 </Button>
               </form>
             </Form>
@@ -402,27 +402,26 @@ const CompaniesManagement = () => {
       </div>
 
       <div className="grid gap-6">
-        {companies?.companies?.map((company) => (
-          <Card key={company.id}>
+        {organizations?.map((organization) => (
+          <Card key={organization.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle>{company.name}</CardTitle>
-                  <CardDescription>{company.email}</CardDescription>
+                  <CardTitle>{organization.name}</CardTitle>
+                  <CardDescription>Type: {organization.type}</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant={company.isActive ? 'default' : 'secondary'}>
-                    {company.isActive ? 'Active' : 'Inactive'}
+                  <Badge variant={organization.status === 'active' ? 'default' : 'secondary'}>
+                    {organization.status}
                   </Badge>
-                  <Badge variant="outline">{company.subscriptionTier}</Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Wallet Balance</p>
-                  <p className="text-lg font-semibold">${company.walletBalance}</p>
+                  <p className="text-sm text-muted-foreground">User Count</p>
+                  <p className="text-lg font-semibold">{organization.userCount}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Max Employees</p>
@@ -520,7 +519,7 @@ export default function ManagementDashboard() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="companies">Companies</TabsTrigger>
+            <TabsTrigger value="companies">Organizations</TabsTrigger>
             <TabsTrigger value="merchants">Merchants</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -531,7 +530,7 @@ export default function ManagementDashboard() {
           </TabsContent>
           
           <TabsContent value="companies">
-            <CompaniesManagement />
+            <OrganizationsManagement />
           </TabsContent>
           
           <TabsContent value="merchants">

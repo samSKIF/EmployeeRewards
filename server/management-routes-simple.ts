@@ -78,7 +78,7 @@ router.post('/auth/login', async (req, res) => {
         name: corporateAdmin.name,
         role: 'corporate_admin',
         permissions: corporateAdmin.permissions || { 
-          manageCompanies: true, 
+          manageOrganizations: true, 
           manageProducts: true, 
           manageOrders: true,
           manageUsers: true,
@@ -101,7 +101,7 @@ router.get('/auth/me', verifyCorporateAdmin, (req: AuthenticatedManagementReques
     name: userWithoutPassword.name,
     role: 'corporate_admin',
     permissions: userWithoutPassword.permissions || { 
-      manageCompanies: true, 
+      manageOrganizations: true, 
       manageProducts: true, 
       manageOrders: true,
       manageUsers: true,
@@ -110,10 +110,10 @@ router.get('/auth/me', verifyCorporateAdmin, (req: AuthenticatedManagementReques
   });
 });
 
-// ========== COMPANY MANAGEMENT ==========
+// ========== ORGANIZATION MANAGEMENT ==========
 
-// Get all organizations (companies) with pagination and filters
-router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'), async (req, res) => {
+// Get all organizations with pagination and filters
+router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -137,37 +137,29 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
       query = query.where(eq(organizations.status, 'inactive'));
     }
     
-    const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
+    const organizationList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
     
     const totalCount = await db.select({ count: count() }).from(organizations);
     
-    res.json({
-      companies: companyList,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount[0].count,
-        totalPages: Math.ceil(totalCount[0].count / Number(limit))
-      }
-    });
+    res.json(organizationList);
   } catch (error) {
-    console.error('Failed to fetch companies:', error);
-    res.status(500).json({ error: 'Failed to fetch companies' });
+    console.error('Failed to fetch organizations:', error);
+    res.status(500).json({ error: 'Failed to fetch organizations' });
   }
 });
 
-// Get company details
-router.get('/companies/:id', verifyCorporateAdmin, checkPermission('manageCompanies'), async (req, res) => {
+// Get organization details
+router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
     
-    const [company] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
     
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
+    if (!organization) {
+      return res.status(404).json({ error: 'Organization not found' });
     }
     
-    // Get company statistics
+    // Get organization statistics
     const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
     // Order count not implemented yet
     const orderCount = [{ count: 0 }];
@@ -176,7 +168,7 @@ router.get('/companies/:id', verifyCorporateAdmin, checkPermission('manageCompan
       .where(eq(users.organizationId, Number(id)));
     
     res.json({
-      ...company,
+      ...organization,
       stats: {
         userCount: userCount[0].count,
         orderCount: orderCount[0].count,
@@ -184,54 +176,7 @@ router.get('/companies/:id', verifyCorporateAdmin, checkPermission('manageCompan
       }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch company details' });
-  }
-});
-
-// Alternative organizations endpoint for compatibility
-router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
-  try {
-    const { page = 1, limit = 50, search, type } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
-    
-    // Build query with only existing columns
-    let orgQuery = db.select({
-      id: organizations.id,
-      name: organizations.name,
-      type: organizations.type,
-      status: organizations.status,
-      createdAt: organizations.createdAt,
-      updatedAt: organizations.updatedAt
-    }).from(organizations);
-    
-    if (search) {
-      orgQuery = orgQuery.where(sql`${organizations.name} ILIKE ${`%${search}%`}`);
-    }
-    
-    if (type) {
-      orgQuery = orgQuery.where(eq(organizations.type, type as string));
-    }
-    
-    const orgList = await orgQuery.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
-    
-    // Get user counts for each organization
-    const organizationList = await Promise.all(
-      orgList.map(async (org) => {
-        const userCountResult = await db.select({ count: sql<number>`count(*)` })
-          .from(users)
-          .where(eq(users.organizationId, org.id));
-        
-        return {
-          ...org,
-          userCount: userCountResult[0]?.count || 0
-        };
-      })
-    );
-    
-    res.json(organizationList);
-  } catch (error) {
-    console.error('Error fetching organizations:', error);
-    res.status(500).json({ error: 'Failed to fetch organizations' });
+    res.status(500).json({ error: 'Failed to fetch organization details' });
   }
 });
 
@@ -291,26 +236,6 @@ router.get('/orders', verifyCorporateAdmin, async (req, res) => {
 });
 
 // ========== ANALYTICS ==========
-
-// Get all organizations (simple list for frontend)
-router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
-  try {
-    const companyList = await db.select({
-      id: organizations.id,
-      name: organizations.name,
-      type: organizations.type,
-      status: organizations.status,
-      createdAt: organizations.createdAt,
-      updatedAt: organizations.updatedAt,
-      userCount: sql<number>`(SELECT COUNT(*) FROM ${users} WHERE ${users.organizationId} = ${organizations.id})`,
-    }).from(organizations).orderBy(desc(organizations.createdAt));
-    
-    res.json(companyList);
-  } catch (error) {
-    console.error('Failed to fetch organizations:', error);
-    res.status(500).json({ error: 'Failed to fetch organizations' });
-  }
-});
 
 // Test endpoint to check if database is accessible
 router.get('/test', verifyCorporateAdmin, async (req, res) => {
