@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations, products, orders, transactions } from '../shared/schema';
+import { users, organizations } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count, sql } from 'drizzle-orm';
 
 const router = express.Router();
@@ -169,7 +169,8 @@ router.get('/companies/:id', verifyCorporateAdmin, checkPermission('manageCompan
     
     // Get company statistics
     const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
-    const orderCount = await db.select({ count: count() }).from(orders).where(eq(orders.organizationId, Number(id)));
+    // Order count not implemented yet
+    const orderCount = [{ count: 0 }];
     const totalSpent = await db.select({ total: sum(transactions.amount) }).from(transactions)
       .innerJoin(users, eq(transactions.fromAccountId, users.id))
       .where(eq(users.organizationId, Number(id)));
@@ -230,130 +231,19 @@ router.get('/users', verifyCorporateAdmin, checkPermission('manageUsers'), async
 
 // ========== PRODUCT MANAGEMENT ==========
 
-// Get all products across all organizations
-router.get('/products', verifyCorporateAdmin, checkPermission('manageProducts'), async (req, res) => {
-  try {
-    const { page = 1, limit = 50, search, category } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
-    
-    let query = db.select().from(products);
-    
-    if (search) {
-      query = query.where(sql`${products.name} ILIKE ${`%${search}%`}`);
-    }
-    
-    if (category) {
-      query = query.where(eq(products.category, category as string));
-    }
-    
-    const productList = await query.limit(Number(limit)).offset(offset).orderBy(desc(products.createdAt));
-    
-    res.json(productList);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
+// Products endpoint - feature not yet implemented
+router.get('/products', verifyCorporateAdmin, async (req, res) => {
+  res.json({ message: 'Products feature not yet implemented', data: [] });
 });
 
 // ========== ORDER MANAGEMENT ==========
 
-// Get all orders across all organizations
-router.get('/orders', verifyCorporateAdmin, checkPermission('manageOrders'), async (req, res) => {
-  try {
-    const { page = 1, limit = 50, status, organizationId } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
-    
-    let query = db.select({
-      id: orders.id,
-      userId: orders.userId,
-      productId: orders.productId,
-      organizationId: orders.organizationId,
-      orderType: orders.orderType,
-      status: orders.status,
-      totalAmount: orders.totalAmount,
-      pointsUsed: orders.pointsUsed,
-      createdAt: orders.createdAt,
-      userName: users.name,
-      userEmail: users.email,
-      productName: products.name,
-      organizationName: organizations.name
-    }).from(orders)
-      .leftJoin(users, eq(orders.userId, users.id))
-      .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(organizations, eq(orders.organizationId, organizations.id));
-    
-    if (status) {
-      query = query.where(eq(orders.status, status as string));
-    }
-    
-    if (organizationId) {
-      query = query.where(eq(orders.organizationId, Number(organizationId)));
-    }
-    
-    const orderList = await query.limit(Number(limit)).offset(offset).orderBy(desc(orders.createdAt));
-    
-    res.json(orderList);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch orders' });
-  }
+// Orders endpoint - feature not yet implemented
+router.get('/orders', verifyCorporateAdmin, async (req, res) => {
+  res.json({ message: 'Orders feature not yet implemented', data: [] });
 });
 
 // ========== ANALYTICS ==========
-
-// Get platform analytics
-router.get('/analytics', verifyCorporateAdmin, checkPermission('manageAnalytics'), async (req, res) => {
-  try {
-    const { period = '30d' } = req.query;
-    
-    let dateFilter;
-    const now = new Date();
-    
-    switch (period) {
-      case '7d':
-        dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case '30d':
-        dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      case '90d':
-        dateFilter = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    }
-    
-    // Total counts
-    const totalUsers = await db.select({ count: count() }).from(users);
-    const totalOrganizations = await db.select({ count: count() }).from(organizations);
-    const totalProducts = await db.select({ count: count() }).from(products);
-    const totalOrders = await db.select({ count: count() }).from(orders);
-    
-    // Recent activity (within period)
-    const recentUsers = await db.select({ count: count() }).from(users).where(gte(users.createdAt, dateFilter));
-    const recentOrders = await db.select({ count: count() }).from(orders).where(gte(orders.createdAt, dateFilter));
-    
-    // Revenue (total points spent)
-    const totalRevenue = await db.select({ total: sum(orders.pointsUsed) }).from(orders);
-    const recentRevenue = await db.select({ total: sum(orders.pointsUsed) }).from(orders).where(gte(orders.createdAt, dateFilter));
-    
-    res.json({
-      totals: {
-        users: totalUsers[0].count,
-        organizations: totalOrganizations[0].count,
-        products: totalProducts[0].count,
-        orders: totalOrders[0].count,
-        revenue: totalRevenue[0].total || 0
-      },
-      recent: {
-        users: recentUsers[0].count,
-        orders: recentOrders[0].count,
-        revenue: recentRevenue[0].total || 0
-      },
-      period
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch analytics' });
-  }
-});
 
 // Get all organizations (simple list for frontend)
 router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
@@ -375,33 +265,45 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
   }
 });
 
+// Test endpoint to check if database is accessible
+router.get('/test', verifyCorporateAdmin, async (req, res) => {
+  try {
+    res.json({ status: 'ok', message: 'Test endpoint working' });
+  } catch (error) {
+    res.status(500).json({ error: 'Test endpoint failed' });
+  }
+});
+
 // Get analytics data for the dashboard
 router.get('/analytics', verifyCorporateAdmin, async (req, res) => {
   try {
-    // Get counts from all tables
+    // Get counts from basic tables that exist
     const [organizationCount] = await db.select({ count: count() }).from(organizations);
     const [userCount] = await db.select({ count: count() }).from(users);
-    const [productCount] = await db.select({ count: count() }).from(products);
-    const [orderCount] = await db.select({ count: count() }).from(orders);
-    
-    // Calculate total revenue from orders
-    const [revenueResult] = await db.select({ 
-      total: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)` 
-    }).from(orders);
     
     res.json({
       totals: {
         organizations: organizationCount.count,
         users: userCount.count,
-        products: productCount.count,
-        orders: orderCount.count,
-        revenue: revenueResult.total || 0
+        products: 0, // Not implemented yet
+        orders: 0, // Not implemented yet
+        revenue: 0 // Not implemented yet
       },
       period: 'All Time'
     });
   } catch (error) {
-    console.error('Failed to fetch analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch analytics' });
+    console.error('Analytics endpoint error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({ 
+      error: 'Failed to fetch analytics', 
+      details: error.message,
+      errorName: error.name 
+    });
   }
 });
 
