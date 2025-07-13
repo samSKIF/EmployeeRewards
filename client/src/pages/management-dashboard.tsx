@@ -103,10 +103,8 @@ interface PlatformStats {
 // Form schemas
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
-  email: z.string().email('Valid email is required'),
-  domain: z.string().optional(),
-  subscriptionTier: z.enum(['basic', 'premium', 'enterprise']),
-  maxEmployees: z.number().min(1).max(10000)
+  type: z.enum(['client', 'enterprise', 'startup']).default('client'),
+  status: z.enum(['active', 'inactive', 'suspended']).default('active')
 });
 
 const merchantSchema = z.object({
@@ -281,8 +279,9 @@ const OrganizationsManagement = () => {
   const form = useForm<z.infer<typeof organizationSchema>>({
     resolver: zodResolver(organizationSchema),
     defaultValues: {
-      subscriptionTier: 'basic',
-      maxEmployees: 50
+      name: '',
+      type: 'client',
+      status: 'active'
     }
   });
 
@@ -346,23 +345,10 @@ const OrganizationsManagement = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="subscriptionTier"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Subscription Tier</FormLabel>
+                      <FormLabel>Organization Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -370,9 +356,9 @@ const OrganizationsManagement = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="basic">Basic</SelectItem>
-                          <SelectItem value="premium">Premium</SelectItem>
+                          <SelectItem value="client">Client</SelectItem>
                           <SelectItem value="enterprise">Enterprise</SelectItem>
+                          <SelectItem value="startup">Startup</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -381,13 +367,22 @@ const OrganizationsManagement = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="maxEmployees"
+                  name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Max Employees</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
-                      </FormControl>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="suspended">Suspended</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
