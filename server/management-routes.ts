@@ -22,7 +22,7 @@ const verifyCorporateAdmin = async (req: AuthenticatedManagementRequest, res: ex
 
     const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
     const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
-    
+
     if (!user || user.roleType !== 'corporate_admin') {
       return res.status(401).json({ message: 'Access denied. Corporate admin required.' });
     }
@@ -48,28 +48,28 @@ const checkPermission = (permission: string) => {
 router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     // Look for corporate admin by email or username
     const [corporateAdmin] = await db.select().from(users).where(
       username.includes('@') ? eq(users.email, username) : eq(users.username, username)
     );
-    
+
     if (!corporateAdmin || corporateAdmin.roleType !== 'corporate_admin') {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     const isValidPassword = await bcrypt.compare(password, corporateAdmin.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     // Update last seen
     await db.update(users)
       .set({ lastSeenAt: new Date() })
       .where(eq(users.id, corporateAdmin.id));
-    
+
     const token = jwt.sign({ id: corporateAdmin.id }, JWT_SECRET, { expiresIn: '8h' });
-    
+
     return res.json({
       token,
       user: {
@@ -118,22 +118,22 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    
+
     let query = db.select().from(organizations);
-    
+
     if (search) {
       query = query.where(eq(organizations.name, search as string));
     }
-    
+
     // Note: organizations table uses 'isActive' field
     if (status === 'active') {
       query = query.where(eq(organizations.isActive, true));
     } else if (status === 'inactive') {
       query = query.where(eq(organizations.isActive, false));
     }
-    
+
     const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
-    
+
     res.json({
       companies: companyList,
       pagination: {
@@ -151,18 +151,18 @@ router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'
 router.post('/companies', verifyManagementToken, checkPermission('manageCompanies'), async (req, res) => {
   try {
     const companyData = insertCompanySchema.parse(req.body);
-    
+
     // In a real implementation, you would:
     // 1. Create a new database for this company
     // 2. Set up their schema
     // 3. Generate database URL
     const newCompanyDbUrl = `postgresql://company_${Date.now()}@localhost/company_db`;
-    
+
     const [newCompany] = await managementDb.insert(companies).values({
       ...companyData,
       databaseUrl: newCompanyDbUrl
     }).returning();
-    
+
     res.status(201).json(newCompany);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create company' });
@@ -174,7 +174,7 @@ router.patch('/companies/:id', verifyManagementToken, checkPermission('manageCom
   try {
     const { id } = req.params;
     const updates = req.body;
-    
+
     const [updatedCompany] = await managementDb.update(companies)
       .set({
         ...updates,
@@ -182,7 +182,7 @@ router.patch('/companies/:id', verifyManagementToken, checkPermission('manageCom
       })
       .where(eq(companies.id, Number(id)))
       .returning();
-    
+
     res.json(updatedCompany);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update company' });
@@ -194,21 +194,21 @@ router.post('/companies/:id/credit', verifyManagementToken, checkPermission('man
   try {
     const { id } = req.params;
     const { amount, description } = req.body;
-    
+
     // Get current balance
     const [company] = await managementDb.select().from(companies).where(eq(companies.id, Number(id)));
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
-    
+
     const currentBalance = Number(company.walletBalance);
     const newBalance = currentBalance + Number(amount);
-    
+
     // Update company balance
     await managementDb.update(companies)
       .set({ walletBalance: newBalance.toString() })
       .where(eq(companies.id, Number(id)));
-    
+
     // Record transaction
     await managementDb.insert(walletTransactions).values({
       companyId: Number(id),
@@ -219,13 +219,62 @@ router.post('/companies/:id/credit', verifyManagementToken, checkPermission('man
       balanceAfter: newBalance.toString(),
       processedBy: req.managementUser!.id
     });
-    
+
     res.json({ 
       message: 'Company wallet credited successfully',
       newBalance: newBalance.toString()
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to credit wallet' });
+  }
+});
+
+// Get organization by ID
+router.get("/organizations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [organization] = await managementDb.select()
+      .from(organizations)
+      .where(eq(organizations.id, parseInt(id)));
+
+    if (!organization) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
+    // Get organization statistics
+    const stats = await getOrganizationStats(parseInt(id));
+
+    // Ensure all fields are present with proper defaults
+    const completeOrganization = {
+      id: organization.id,
+      name: organization.name || '',
+      type: organization.type || 'client',
+      status: organization.status || 'active',
+      maxUsers: organization.maxUsers || null,
+      contactName: organization.contactName || '',
+      contactEmail: organization.contactEmail || '',
+      contactPhone: organization.contactPhone || '',
+      adminEmail: organization.adminEmail || '',
+      industry: organization.industry || '',
+      streetAddress: organization.streetAddress || '',
+      city: organization.city || '',
+      state: organization.state || '',
+      zipCode: organization.zipCode || '',
+      country: organization.country || '',
+      website: organization.website || '',
+      description: organization.description || '',
+      logoUrl: organization.logoUrl || '',
+      createdAt: organization.createdAt,
+      updatedAt: organization.updatedAt,
+      stats
+    };
+
+    logger.info(`Returning complete organization data for ${id}:`, completeOrganization);
+    res.json(completeOrganization);
+  } catch (error: any) {
+    logger.error("Error fetching organization:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch organization" });
   }
 });
 
@@ -245,15 +294,15 @@ router.get('/merchants', verifyManagementToken, checkPermission('manageMerchants
 router.post('/merchants', verifyManagementToken, checkPermission('manageMerchants'), async (req, res) => {
   try {
     const merchantData = insertMerchantSchema.parse(req.body);
-    
+
     // Generate API key for merchant
     const apiKey = `merchant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const [newMerchant] = await managementDb.insert(merchants).values({
       ...merchantData,
       apiKey
     }).returning();
-    
+
     res.status(201).json(newMerchant);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create merchant' });
@@ -266,7 +315,7 @@ router.post('/merchants', verifyManagementToken, checkPermission('manageMerchant
 router.get('/products', verifyManagementToken, checkPermission('manageProducts'), async (req, res) => {
   try {
     const { category, merchantId } = req.query;
-    
+
     let query = managementDb.select({
       id: products.id,
       name: products.name,
@@ -281,15 +330,15 @@ router.get('/products', verifyManagementToken, checkPermission('manageProducts')
       merchantId: products.merchantId,
       createdAt: products.createdAt
     }).from(products).leftJoin(merchants, eq(products.merchantId, merchants.id));
-    
+
     if (category) {
       query = query.where(eq(products.category, category as string));
     }
-    
+
     if (merchantId) {
       query = query.where(eq(products.merchantId, Number(merchantId)));
     }
-    
+
     const productList = await query.orderBy(desc(products.createdAt));
     res.json(productList);
   } catch (error) {
@@ -301,9 +350,9 @@ router.get('/products', verifyManagementToken, checkPermission('manageProducts')
 router.post('/products', verifyManagementToken, checkPermission('manageProducts'), async (req, res) => {
   try {
     const productData = insertProductSchema.parse(req.body);
-    
+
     const [newProduct] = await managementDb.insert(products).values(productData).returning();
-    
+
     res.status(201).json(newProduct);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create product' });
@@ -317,7 +366,7 @@ router.get('/orders', verifyManagementToken, checkPermission('manageOrders'), as
   try {
     const { status, companyId, page = 1, limit = 50 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    
+
     let query = managementDb.select({
       id: orders.id,
       employeeName: orders.employeeName,
@@ -335,17 +384,17 @@ router.get('/orders', verifyManagementToken, checkPermission('manageOrders'), as
       .leftJoin(products, eq(orders.productId, products.id))
       .leftJoin(companies, eq(orders.companyId, companies.id))
       .leftJoin(merchants, eq(orders.merchantId, merchants.id));
-    
+
     if (status) {
       query = query.where(eq(orders.status, status as string));
     }
-    
+
     if (companyId) {
       query = query.where(eq(orders.companyId, Number(companyId)));
     }
-    
+
     const orderList = await query.limit(Number(limit)).offset(offset).orderBy(desc(orders.createdAt));
-    
+
     res.json({
       orders: orderList,
       pagination: {
@@ -363,17 +412,17 @@ router.patch('/orders/:id/status', verifyManagementToken, checkPermission('manag
   try {
     const { id } = req.params;
     const { status, trackingNumber } = req.body;
-    
+
     const updates: any = { status, updatedAt: new Date() };
     if (trackingNumber) {
       updates.trackingNumber = trackingNumber;
     }
-    
+
     const [updatedOrder] = await managementDb.update(orders)
       .set(updates)
       .where(eq(orders.id, id))
       .returning();
-    
+
     res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update order status' });
@@ -387,26 +436,26 @@ router.get('/analytics/companies/:id', verifyManagementToken, checkPermission('v
   try {
     const { id } = req.params;
     const { startDate, endDate } = req.query;
-    
+
     // Get recent analytics data
     let query = managementDb.select().from(companyAnalytics).where(eq(companyAnalytics.companyId, Number(id)));
-    
+
     if (startDate && endDate) {
       query = query.where(and(
         gte(companyAnalytics.date, new Date(startDate as string)),
         lte(companyAnalytics.date, new Date(endDate as string))
       ));
     }
-    
+
     const analytics = await query.orderBy(desc(companyAnalytics.date)).limit(30);
-    
+
     // Get summary stats
     const summary = await managementDb.select({
       totalOrders: sum(companyAnalytics.ordersPlaced),
       totalPointsSpent: sum(companyAnalytics.pointsSpent),
       avgEngagement: sum(companyAnalytics.engagementScore)
     }).from(companyAnalytics).where(eq(companyAnalytics.companyId, Number(id)));
-    
+
     res.json({
       analytics,
       summary: summary[0]
@@ -424,13 +473,13 @@ router.get('/analytics/platform', verifyManagementToken, checkPermission('viewAn
     const [merchantsCount] = await managementDb.select({ count: count() }).from(merchants);
     const [productsCount] = await managementDb.select({ count: count() }).from(products);
     const [ordersCount] = await managementDb.select({ count: count() }).from(orders);
-    
+
     // Get revenue and order stats
     const [revenueStats] = await managementDb.select({
       totalRevenue: sum(orders.totalAmount),
       totalPointsUsed: sum(orders.pointsUsed)
     }).from(orders);
-    
+
     res.json({
       companies: companiesCount.count,
       merchants: merchantsCount.count,
