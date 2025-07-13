@@ -162,18 +162,13 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
     
     // Get organization statistics
     const userCount = await db.select({ count: count() }).from(users).where(eq(users.organization_id, Number(id)));
-    // Order count not implemented yet
-    const orderCount = [{ count: 0 }];
-    const totalSpent = await db.select({ total: sum(transactions.amount) }).from(transactions)
-      .innerJoin(users, eq(transactions.fromAccountId, users.id))
-      .where(eq(users.organization_id, Number(id)));
     
     res.json({
       ...organization,
       stats: {
         userCount: userCount[0].count,
-        orderCount: orderCount[0].count,
-        totalSpent: totalSpent[0].total || 0
+        orderCount: 0,
+        totalSpent: 0
       }
     });
   } catch (error) {
