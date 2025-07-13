@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations, transactions } from '../shared/schema';
+import { users, organizations } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count, sql } from 'drizzle-orm';
 
 const router = express.Router();
@@ -161,7 +161,7 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
     }
     
     // Get organization statistics
-    const userCount = await db.select({ count: count() }).from(users).where(eq(users.organization_id, Number(id)));
+    const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
     
     res.json({
       ...organization,
