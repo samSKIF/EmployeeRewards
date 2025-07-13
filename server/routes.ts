@@ -37,6 +37,7 @@ import path from "path";
 // Import modular routes
 import { registerRoutes as registerModularRoutes } from "./routes/index";
 import { logger } from "@shared/logger";
+import managementRoutes from "./management-routes-simple";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register core modular routes (auth, users, admin, celebrations, points, channels)
@@ -47,6 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register recognition microservice routes
   app.use('/api/recognition', recognitionRoutes);
+  
+  // Register corporate management routes
+  app.use('/api/management', managementRoutes);
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get('/api/employees/:id/interests', verifyToken, async (req: AuthenticatedRequest, res) => {

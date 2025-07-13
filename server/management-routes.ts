@@ -1,209 +1,138 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { managementDb } from './management-db';
-import { 
-  companies, 
-  merchants, 
-  products, 
-  orders, 
-  invoices, 
-  walletTransactions, 
-  adminUsers, 
-  companyAnalytics,
-  insertCompanySchema,
-  insertMerchantSchema,
-  insertProductSchema,
-  insertAdminUserSchema,
-  type Company,
-  type Merchant,
-  type Product,
-  type Order,
-  type AdminUser
-} from '@shared/management-schema';
+import { db } from './db';
+import { users, organizations } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();
-const JWT_SECRET = process.env.MANAGEMENT_JWT_SECRET || 'management-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Management Authentication Middleware
+// Corporate Admin Authentication Middleware
 interface AuthenticatedManagementRequest extends express.Request {
-  managementUser?: AdminUser;
+  corporateAdmin?: any;
 }
 
-const verifyManagementToken = async (req: AuthenticatedManagementRequest, res: express.Response, next: express.NextFunction) => {
+const verifyCorporateAdmin = async (req: AuthenticatedManagementRequest, res: express.Response, next: express.NextFunction) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
-      return res.status(401).json({ message: 'No management token provided' });
+      return res.status(401).json({ message: 'No authentication token provided' });
     }
 
-    // First try main JWT secret (for corporate admins)
-    const MAIN_JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
+    const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
     
-    try {
-      const decoded = jwt.verify(token, MAIN_JWT_SECRET) as { id: number };
-      
-      // Check if user is corporate admin in main database
-      const { db } = await import('./db');
-      const { users } = await import('../shared/schema');
-      
-      const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
-      
-      if (user && user.roleType === 'corporate_admin') {
-        // Convert main user to management user format
-        req.managementUser = {
-          id: user.id,
-          username: user.username || user.email,
-          email: user.email,
-          name: user.name,
-          role: 'corporate_admin',
-          permissions: user.permissions || { manageCompanies: true, manageProducts: true, manageOrders: true },
-          isActive: true,
-          password: '', // Not needed for auth
-          createdAt: user.createdAt,
-          lastLogin: new Date()
-        } as AdminUser;
-        return next();
-      }
-    } catch (mainAuthError) {
-      // If main auth fails, try management auth
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-      const [adminUser] = await managementDb.select().from(adminUsers).where(eq(adminUsers.id, decoded.id));
-      
-      if (!adminUser || !adminUser.isActive) {
-        return res.status(401).json({ message: 'Invalid management token' });
-      }
-
-      req.managementUser = adminUser;
-      next();
+    if (!user || user.roleType !== 'corporate_admin') {
+      return res.status(401).json({ message: 'Access denied. Corporate admin required.' });
     }
+
+    req.corporateAdmin = user;
+    next();
   } catch (error) {
-    res.status(401).json({ message: 'Invalid management token' });
+    res.status(401).json({ message: 'Invalid authentication token' });
   }
 };
 
-// Permission check middleware
+// Corporate admins have all permissions by default
 const checkPermission = (permission: string) => {
   return (req: AuthenticatedManagementRequest, res: express.Response, next: express.NextFunction) => {
-    if (!req.managementUser?.permissions) {
-      return res.status(403).json({ message: 'No permissions defined' });
-    }
-    
     // Corporate admins have all permissions
-    if (req.managementUser.role === 'corporate_admin') {
-      return next();
-    }
-    
-    const permissions = req.managementUser.permissions as any;
-    if (!permissions[permission]) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
-    }
-    
     next();
   };
 };
 
 // ========== AUTHENTICATION ==========
 
-// Login to management system
+// Corporate admin login
 router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
-    // First try to find in management database
-    const [adminUser] = await managementDb.select()
-      .from(adminUsers)
-      .where(eq(adminUsers.username, username));
-    
-    if (adminUser && adminUser.isActive) {
-      const isValidPassword = await bcrypt.compare(password, adminUser.password);
-      if (isValidPassword) {
-        // Update last login
-        await managementDb.update(adminUsers)
-          .set({ lastLogin: new Date() })
-          .where(eq(adminUsers.id, adminUser.id));
-        
-        const token = jwt.sign({ id: adminUser.id }, JWT_SECRET, { expiresIn: '8h' });
-        
-        return res.json({
-          token,
-          user: {
-            id: adminUser.id,
-            username: adminUser.username,
-            email: adminUser.email,
-            name: adminUser.name,
-            role: adminUser.role,
-            permissions: adminUser.permissions
-          }
-        });
-      }
-    }
-    
-    // If not found in management DB, try main database for corporate admin
-    const { db } = await import('./db');
-    const { users } = await import('../shared/schema');
-    const bcrypt = await import('bcrypt');
     
     // Look for corporate admin by email or username
     const [corporateAdmin] = await db.select().from(users).where(
       username.includes('@') ? eq(users.email, username) : eq(users.username, username)
     );
     
-    if (corporateAdmin && corporateAdmin.roleType === 'corporate_admin') {
-      const isValidPassword = await bcrypt.compare(password, corporateAdmin.password);
-      if (isValidPassword) {
-        // Generate management token using main JWT secret
-        const MAIN_JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-        const token = jwt.sign({ id: corporateAdmin.id }, MAIN_JWT_SECRET, { expiresIn: '8h' });
-        
-        return res.json({
-          token,
-          user: {
-            id: corporateAdmin.id,
-            username: corporateAdmin.username || corporateAdmin.email,
-            email: corporateAdmin.email,
-            name: corporateAdmin.name,
-            role: 'corporate_admin',
-            permissions: corporateAdmin.permissions || { manageCompanies: true, manageProducts: true, manageOrders: true }
-          }
-        });
-      }
+    if (!corporateAdmin || corporateAdmin.roleType !== 'corporate_admin') {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
     
-    return res.status(401).json({ message: 'Invalid credentials' });
+    const isValidPassword = await bcrypt.compare(password, corporateAdmin.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // Update last seen
+    await db.update(users)
+      .set({ lastSeenAt: new Date() })
+      .where(eq(users.id, corporateAdmin.id));
+    
+    const token = jwt.sign({ id: corporateAdmin.id }, JWT_SECRET, { expiresIn: '8h' });
+    
+    return res.json({
+      token,
+      user: {
+        id: corporateAdmin.id,
+        username: corporateAdmin.username || corporateAdmin.email,
+        email: corporateAdmin.email,
+        name: corporateAdmin.name,
+        role: 'corporate_admin',
+        permissions: corporateAdmin.permissions || { 
+          manageCompanies: true, 
+          manageProducts: true, 
+          manageOrders: true,
+          manageUsers: true,
+          manageAnalytics: true
+        }
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
   }
 });
 
-// Get current management user
-router.get('/auth/me', verifyManagementToken, (req: AuthenticatedManagementRequest, res) => {
-  const { password, ...userWithoutPassword } = req.managementUser!;
-  res.json(userWithoutPassword);
+// Get current corporate admin user
+router.get('/auth/me', verifyCorporateAdmin, (req: AuthenticatedManagementRequest, res) => {
+  const { password, ...userWithoutPassword } = req.corporateAdmin!;
+  res.json({
+    id: userWithoutPassword.id,
+    username: userWithoutPassword.username || userWithoutPassword.email,
+    email: userWithoutPassword.email,
+    name: userWithoutPassword.name,
+    role: 'corporate_admin',
+    permissions: userWithoutPassword.permissions || { 
+      manageCompanies: true, 
+      manageProducts: true, 
+      manageOrders: true,
+      manageUsers: true,
+      manageAnalytics: true
+    }
+  });
 });
 
 // ========== COMPANY MANAGEMENT ==========
 
-// Get all companies with pagination and filters
-router.get('/companies', verifyManagementToken, checkPermission('manageCompanies'), async (req, res) => {
+// Get all organizations (companies) with pagination and filters
+router.get('/companies', verifyCorporateAdmin, checkPermission('manageCompanies'), async (req, res) => {
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     
-    let query = managementDb.select().from(companies);
+    let query = db.select().from(organizations);
     
     if (search) {
-      query = query.where(eq(companies.name, search as string));
+      query = query.where(eq(organizations.name, search as string));
     }
     
+    // Note: organizations table uses 'isActive' field
     if (status === 'active') {
-      query = query.where(eq(companies.isActive, true));
+      query = query.where(eq(organizations.isActive, true));
     } else if (status === 'inactive') {
-      query = query.where(eq(companies.isActive, false));
+      query = query.where(eq(organizations.isActive, false));
     }
     
-    const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(companies.createdAt));
+    const companyList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
     
     res.json({
       companies: companyList,

@@ -29,34 +29,39 @@ import {
   CreditCard
 } from 'lucide-react';
 
-// Types for the management system
+// Types for the unified management system
 interface Company {
   id: number;
   name: string;
-  email: string;
-  domain?: string;
-  subscriptionTier: string;
-  maxEmployees: number;
-  walletBalance: string;
+  description?: string;
   isActive: boolean;
-  features: {
-    leaveManagement: boolean;
-    recognitionModule: boolean;
-    socialFeed: boolean;
-    celebrations: boolean;
-    marketplace: boolean;
-  };
   createdAt: string;
+  userCount: number;
 }
 
-interface Merchant {
+interface CompanyWithStats extends Company {
+  stats: {
+    userCount: number;
+    orderCount: number;
+    totalSpent: number;
+  };
+}
+
+interface User {
   id: number;
+  username?: string;
   name: string;
   email: string;
-  phone?: string;
-  commissionRate: string;
-  isActive: boolean;
+  department?: string;
+  jobTitle?: string;
+  roleType?: string;
+  isAdmin?: boolean;
+  status?: string;
+  organizationId: number;
+  organizationName?: string;
+  balance: number;
   createdAt: string;
+  lastSeenAt?: string;
 }
 
 interface Product {
@@ -64,15 +69,16 @@ interface Product {
   name: string;
   description?: string;
   category: string;
-  price: string;
+  price: number;
   pointsPrice: number;
   stock?: number;
+  status: string;
   isActive: boolean;
-  merchantName?: string;
+  createdAt: string;
 }
 
 interface Order {
-  id: string;
+  id: number;
   employeeName: string;
   employeeEmail: string;
   quantity: number;
@@ -126,7 +132,7 @@ const useManagementAuth = () => {
   const [user, setUser] = useState(null);
 
   const login = async (username: string, password: string) => {
-    const response = await fetch('/management/auth/login', {
+    const response = await fetch('/api/management/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -153,7 +159,7 @@ const useManagementAuth = () => {
 // API Helper
 const managementApi = (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('managementToken');
-  return fetch(`/management${endpoint}`, {
+  return fetch(`/api/management${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -229,18 +235,18 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
 
 // Dashboard Stats Component
 const DashboardStats = () => {
-  const { data: stats } = useQuery<PlatformStats>({
-    queryKey: ['/management/analytics/platform'],
-    queryFn: () => managementApi('/analytics/platform')
+  const { data: stats } = useQuery<Analytics>({
+    queryKey: ['/api/management/analytics'],
+    queryFn: () => managementApi('/analytics')
   });
 
   const statCards = [
-    { title: 'Companies', value: stats?.companies || 0, icon: Building2, color: 'bg-blue-500' },
-    { title: 'Merchants', value: stats?.merchants || 0, icon: Store, color: 'bg-green-500' },
-    { title: 'Products', value: stats?.products || 0, icon: Package, color: 'bg-purple-500' },
-    { title: 'Orders', value: stats?.orders || 0, icon: ShoppingCart, color: 'bg-orange-500' },
-    { title: 'Revenue', value: `$${stats?.totalRevenue || '0'}`, icon: DollarSign, color: 'bg-red-500' },
-    { title: 'Points Used', value: stats?.totalPointsUsed || 0, icon: TrendingUp, color: 'bg-indigo-500' }
+    { title: 'Organizations', value: stats?.totals.organizations || 0, icon: Building2, color: 'bg-blue-500' },
+    { title: 'Users', value: stats?.totals.users || 0, icon: Users, color: 'bg-green-500' },
+    { title: 'Products', value: stats?.totals.products || 0, icon: Package, color: 'bg-purple-500' },
+    { title: 'Orders', value: stats?.totals.orders || 0, icon: ShoppingCart, color: 'bg-orange-500' },
+    { title: 'Revenue', value: `$${stats?.totals.revenue || '0'}`, icon: DollarSign, color: 'bg-red-500' },
+    { title: 'Period', value: stats?.period || 'All Time', icon: TrendingUp, color: 'bg-indigo-500' }
   ];
 
   return (
@@ -267,9 +273,9 @@ const CompaniesManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: companies } = useQuery<{ companies: Company[] }>({
-    queryKey: ['/management/companies'],
-    queryFn: () => managementApi('/companies')
+  const { data: companies } = useQuery<Company[]>({
+    queryKey: ['/api/management/organizations'],
+    queryFn: () => managementApi('/organizations')
   });
 
   const form = useForm<z.infer<typeof companySchema>>({
