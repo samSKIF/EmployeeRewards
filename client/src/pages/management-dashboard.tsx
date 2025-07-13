@@ -26,7 +26,8 @@ import {
   Plus,
   Eye,
   Edit,
-  CreditCard
+  CreditCard,
+  Key
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -270,6 +271,126 @@ const DashboardStats = () => {
   );
 };
 
+// Edit Organization Form Component
+const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organization; onSuccess: () => void }) => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm({
+    defaultValues: {
+      name: organization.name,
+      type: organization.type,
+      status: organization.status,
+      maxUsers: organization.maxUsers || 50
+    }
+  });
+
+  const handleSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/management/organizations/${organization.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('management_token')}`
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        toast({ title: 'Organization updated successfully' });
+        onSuccess();
+      } else {
+        toast({ title: 'Failed to update organization', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to update organization', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Organization Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="seller">Seller</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="maxUsers"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Maximum Users</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Updating...' : 'Update Organization'}
+        </Button>
+      </form>
+    </Form>
+  );
+};
+
 // Organizations Management
 const OrganizationsManagement = () => {
   const { toast } = useToast();
@@ -316,6 +437,30 @@ const OrganizationsManagement = () => {
 
   const [, setLocation] = useLocation();
 
+  const handleResetPassword = async (organizationId: number) => {
+    try {
+      const response = await fetch(`/api/management/organizations/${organizationId}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('management_token')}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({ 
+          title: 'Password Reset Successfully', 
+          description: `New password: ${result.newPassword}`,
+          duration: 10000
+        });
+      } else {
+        toast({ title: 'Failed to reset password', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to reset password', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -335,15 +480,76 @@ const OrganizationsManagement = () => {
                   <CardTitle>{organization.name}</CardTitle>
                   <CardDescription>Type: {organization.type}</CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <Badge variant={organization.status === 'active' ? 'default' : 'secondary'}>
                     {organization.status}
                   </Badge>
+                  <div className="flex gap-1">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <CreditCard className="h-4 w-4 mr-1" />
+                          Credit Wallet
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Credit Organization Wallet</DialogTitle>
+                          <DialogDescription>
+                            Add funds to {organization.name}'s wallet
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          creditWalletMutation.mutate({
+                            organizationId: organization.id,
+                            amount: Number(formData.get('amount')),
+                            description: formData.get('description') as string
+                          });
+                        }} className="space-y-4">
+                          <div>
+                            <Label htmlFor="amount">Amount ($)</Label>
+                            <Input name="amount" type="number" step="0.01" required />
+                          </div>
+                          <div>
+                            <Label htmlFor="description">Description</Label>
+                            <Input name="description" placeholder="e.g., Monthly credit" required />
+                          </div>
+                          <Button type="submit" className="w-full" disabled={creditWalletMutation.isPending}>
+                            {creditWalletMutation.isPending ? 'Processing...' : 'Credit Wallet'}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Edit Organization</DialogTitle>
+                          <DialogDescription>
+                            Update organization details for {organization.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <EditOrganizationForm organization={organization} onSuccess={() => {
+                          queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+                        }} />
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="outline" size="sm" onClick={() => handleResetPassword(organization.id)}>
+                      Reset Admin Password
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">User Count</p>
                   <p className="text-lg font-semibold">{organization.userCount}</p>
@@ -360,50 +566,6 @@ const OrganizationsManagement = () => {
                   <p className="text-sm text-muted-foreground">Created</p>
                   <p className="text-sm">{new Date(organization.createdAt).toLocaleDateString()}</p>
                 </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Credit Wallet
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Credit Organization Wallet</DialogTitle>
-                      <DialogDescription>
-                        Add funds to {organization.name}'s wallet
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={(e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-                      creditWalletMutation.mutate({
-                        organizationId: organization.id,
-                        amount: Number(formData.get('amount')),
-                        description: formData.get('description') as string
-                      });
-                    }} className="space-y-4">
-                      <div>
-                        <Label htmlFor="amount">Amount ($)</Label>
-                        <Input name="amount" type="number" step="0.01" required />
-                      </div>
-                      <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Input name="description" placeholder="e.g., Monthly credit" required />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={creditWalletMutation.isPending}>
-                        {creditWalletMutation.isPending ? 'Processing...' : 'Credit Wallet'}
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage Features
-                </Button>
               </div>
             </CardContent>
           </Card>

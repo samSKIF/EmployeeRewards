@@ -282,6 +282,74 @@ router.post('/organizations/:id/credit', verifyCorporateAdmin, checkPermission('
   }
 });
 
+// Update organization
+router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, status, maxUsers } = req.body;
+    
+    const [updatedOrganization] = await db.update(organizations)
+      .set({ 
+        name, 
+        type, 
+        status, 
+        maxUsers,
+        updatedAt: new Date()
+      })
+      .where(eq(organizations.id, Number(id)))
+      .returning();
+    
+    if (!updatedOrganization) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    res.json(updatedOrganization);
+  } catch (error) {
+    console.error('Failed to update organization:', error);
+    res.status(500).json({ error: 'Failed to update organization' });
+  }
+});
+
+// Reset organization admin password
+router.post('/organizations/:id/reset-password', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find the organization's admin user
+    const [admin] = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.organization_id, Number(id)),
+          eq(users.roleType, 'client_admin')
+        )
+      );
+    
+    if (!admin) {
+      return res.status(404).json({ error: 'Organization admin not found' });
+    }
+    
+    // Generate new password
+    const newPassword = Math.random().toString(36).slice(-12) + 'A1!';
+    const bcrypt = await import('bcrypt');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update admin password
+    await db.update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.id, admin.id));
+    
+    res.json({ 
+      success: true, 
+      newPassword,
+      adminEmail: admin.email 
+    });
+  } catch (error) {
+    console.error('Failed to reset password:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 // ========== USER MANAGEMENT ==========
 
 // Get all users across all organizations
