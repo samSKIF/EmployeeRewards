@@ -67,7 +67,7 @@ function App() {
 
     // Only handle routing for unauthenticated users
     if (!token) {
-      if (location !== "/auth") {
+      if (location !== "/auth" && location !== "/corporate-login") {
         console.log("No token found, redirecting to auth");
         setLocation("/auth");
       }
@@ -76,8 +76,15 @@ function App() {
 
     // Only redirect from root path, and only once
     if (location === "/" && token) {
-      console.log("User authenticated, routing to social by default");
-      setLocation("/social");
+      // Check if this is a corporate admin with management token
+      const managementToken = localStorage.getItem("managementToken");
+      if (managementToken) {
+        console.log("Corporate admin authenticated, routing to management dashboard");
+        setLocation("/management");
+      } else {
+        console.log("User authenticated, routing to social by default");
+        setLocation("/social");
+      }
     }
   }, []); // Remove location dependency to prevent constant re-routing
 
@@ -87,8 +94,13 @@ function App() {
 
     // Handle initial load routing
     if (token && location === "/") {
-      setLocation("/social");
-    } else if (!token && location !== "/auth") {
+      const managementToken = localStorage.getItem("managementToken");
+      if (managementToken) {
+        setLocation("/management");
+      } else {
+        setLocation("/social");
+      }
+    } else if (!token && location !== "/auth" && location !== "/corporate-login") {
       setLocation("/auth");
     }
   }, []);
