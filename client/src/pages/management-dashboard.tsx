@@ -35,9 +35,8 @@ import { useLocation } from 'wouter';
 interface Organization {
   id: number;
   name: string;
+  type: string;
   status: string;
-  description?: string;
-  isActive: boolean;
   createdAt: string;
   userCount: number;
   maxUsers?: number;
