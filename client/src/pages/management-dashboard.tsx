@@ -278,11 +278,13 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const [isOpen, setIsOpen] = useState(true);
   
   // First fetch the full organization details
-  const { data: fullOrganization } = useQuery({
+  const { data: fullOrganization, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organization.id}`],
     enabled: !!organization.id,
     queryFn: () => managementApi(`/organizations/${organization.id}`).then(res => res.json())
   });
+  
+  console.log('Query state:', { isLoading, fullOrganization });
   
   const form = useForm({
     defaultValues: {
@@ -308,12 +310,13 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   // Update form when data loads
   useEffect(() => {
     if (fullOrganization) {
+      console.log('Populating form with data:', fullOrganization);
       const addressData = fullOrganization.address || {};
-      form.reset({
-        name: organization.name,
-        type: organization.type,
-        status: organization.status,
-        maxUsers: organization.maxUsers || 50,
+      const formData = {
+        name: fullOrganization.name || organization.name,
+        type: fullOrganization.type || organization.type,
+        status: fullOrganization.status || organization.status,
+        maxUsers: fullOrganization.maxUsers || organization.maxUsers || 50,
         contactName: fullOrganization.contactName || '',
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
@@ -326,7 +329,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           zipCode: addressData.zip || addressData.zipCode || '',
           country: addressData.country || ''
         }
-      });
+      };
+      console.log('Form data to populate:', formData);
+      form.reset(formData);
     }
   }, [fullOrganization, organization, form]);
 
