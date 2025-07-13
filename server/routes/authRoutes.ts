@@ -7,6 +7,7 @@ import { db } from "../db";
 import { users, insertUserSchema } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { logger } from "@shared/logger";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
@@ -209,10 +210,24 @@ router.post("/login", async (req, res) => {
 
     logger.info("Login successful for:", userWithoutPassword);
 
-    res.status(200).json({
+    // For corporate admins, also generate a management token
+    let responseData: any = {
       token,
       user: userWithoutPassword
-    });
+    };
+
+    if (user.roleType === 'corporate_admin') {
+      // Generate management token using same user data
+      const MANAGEMENT_JWT_SECRET = process.env.MANAGEMENT_JWT_SECRET || 'management-secret-key';
+      const managementToken = jwt.sign({ id: user.id }, MANAGEMENT_JWT_SECRET, { expiresIn: '8h' });
+      
+      logger.info("Generated management token for corporate admin");
+      
+      // Use the main token as the management token since our backend now supports both
+      responseData.managementToken = token;
+    }
+
+    res.status(200).json(responseData);
   } catch (error: any) {
     logger.error("Login error:", error);
     res.status(500).json({ message: error.message || "An error occurred during login" });

@@ -81,6 +81,9 @@ export default function CorporateLoginPage() {
       
       // Check if user is corporate admin and redirect accordingly
       if (data.user.role_type === "corporate_admin") {
+        // Store management token and redirect to management dashboard
+        const managementToken = data.managementToken || data.token;
+        localStorage.setItem('managementToken', managementToken);
         window.location.href = "/management";
       } else {
         window.location.href = "/social";

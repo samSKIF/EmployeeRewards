@@ -120,35 +120,10 @@ const productSchema = z.object({
   stock: z.number().min(0).optional()
 });
 
-// Management Authentication Hook - Modified to use main auth system
+// Management Authentication Hook
 const useManagementAuth = () => {
-  const [token, setToken] = useState(localStorage.getItem('token')); // Use main token
+  const [token, setToken] = useState(localStorage.getItem('managementToken'));
   const [user, setUser] = useState(null);
-
-  // Check if user is corporate admin on load
-  useEffect(() => {
-    const checkCorporateAdmin = async () => {
-      const mainToken = localStorage.getItem('token');
-      if (mainToken) {
-        try {
-          const response = await fetch('/api/users/me', {
-            headers: { 'Authorization': `Bearer ${mainToken}` }
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            if (userData.roleType === 'corporate_admin') {
-              setToken(mainToken);
-              setUser(userData);
-            }
-          }
-        } catch (error) {
-          console.error('Failed to check corporate admin status:', error);
-        }
-      }
-    };
-    
-    checkCorporateAdmin();
-  }, []);
 
   const login = async (username: string, password: string) => {
     const response = await fetch('/management/auth/login', {
@@ -167,19 +142,17 @@ const useManagementAuth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('managementToken');
     setToken(null);
     setUser(null);
-    window.location.href = '/auth';
   };
 
-  return { token, user, login, logout, isAuthenticated: !!token && !!user };
+  return { token, user, login, logout, isAuthenticated: !!token };
 };
 
-// API Helper - Modified to use main auth system
+// API Helper
 const managementApi = (endpoint: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('token'); // Use main token
+  const token = localStorage.getItem('managementToken');
   return fetch(`/management${endpoint}`, {
     ...options,
     headers: {
