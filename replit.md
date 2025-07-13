@@ -124,6 +124,7 @@ The platform uses a hybrid database approach optimized for different data types:
 
 ## Changelog
 
+- July 13, 2025: Implemented direct corporate login routing. "Login as Corporate" button now redirects directly to `/management` dashboard instead of intermediate corporate-login page, providing streamlined access to corporate admin features including company management, platform analytics, merchant management, product management, wallet management, and financial overview.
 - July 3, 2025: Cleaned up codebase by removing all data creation scripts and unnecessary files. Removed attached_assets folder, all setup/migration scripts, and documentation files not needed for production. Application now contains only essential files for functionality.
 - June 30, 2025: Implemented comprehensive profile navigation system with clickable employee names/avatars throughout spaces interface. All test data now uses authentic employee information from database instead of mock data.
 - June 24, 2025: Initial setup
