@@ -234,7 +234,7 @@ router.get("/organizations/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [organization] = await managementDb.select()
+    const [organization] = await db.select()
       .from(organizations)
       .where(eq(organizations.id, parseInt(id)));
 
@@ -242,20 +242,18 @@ router.get("/organizations/:id", async (req, res) => {
       return res.status(404).json({ message: "Organization not found" });
     }
 
-    // Get organization statistics
-    const stats = await getOrganizationStats(parseInt(id));
-
     // Ensure all fields are present with proper defaults
     const completeOrganization = {
       id: organization.id,
       name: organization.name || '',
       type: organization.type || 'client',
-      status: organization.status || 'active',
+      status: organization.isActive ? 'active' : 'inactive',
       maxUsers: organization.maxUsers || null,
       contactName: organization.contactName || '',
       contactEmail: organization.contactEmail || '',
       contactPhone: organization.contactPhone || '',
       adminEmail: organization.adminEmail || '',
+      superuserEmail: organization.adminEmail || '',
       industry: organization.industry || '',
       streetAddress: organization.streetAddress || '',
       city: organization.city || '',
@@ -267,13 +265,18 @@ router.get("/organizations/:id", async (req, res) => {
       logoUrl: organization.logoUrl || '',
       createdAt: organization.createdAt,
       updatedAt: organization.updatedAt,
-      stats
+      address: {
+        street: organization.streetAddress || '',
+        city: organization.city || '',
+        state: organization.state || '',
+        zipCode: organization.zipCode || '',
+        country: organization.country || ''
+      }
     };
 
-    logger.info(`Returning complete organization data for ${id}:`, completeOrganization);
     res.json(completeOrganization);
   } catch (error: any) {
-    logger.error("Error fetching organization:", error);
+    console.error("Error fetching organization:", error);
     res.status(500).json({ message: error.message || "Failed to fetch organization" });
   }
 });

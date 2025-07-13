@@ -311,23 +311,22 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   useEffect(() => {
     if (fullOrganization) {
       console.log('Populating form with data:', fullOrganization);
-      const addressData = fullOrganization.address || {};
       const formData = {
-        name: fullOrganization.name || organization.name,
-        type: fullOrganization.type || organization.type,
-        status: fullOrganization.status || organization.status,
-        maxUsers: fullOrganization.maxUsers || organization.maxUsers || 50,
+        name: fullOrganization.name || '',
+        type: fullOrganization.type || 'client',
+        status: fullOrganization.status || 'active',
+        maxUsers: fullOrganization.maxUsers || 50,
         contactName: fullOrganization.contactName || '',
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
-        superuserEmail: fullOrganization.superuserEmail || '',
+        superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
         industry: fullOrganization.industry || '',
         address: {
-          street: addressData.street || '',
-          city: addressData.city || '',
-          state: addressData.state || '',
-          zipCode: addressData.zip || addressData.zipCode || '',
-          country: addressData.country || ''
+          street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
+          city: fullOrganization.city || fullOrganization.address?.city || '',
+          state: fullOrganization.state || fullOrganization.address?.state || '',
+          zipCode: fullOrganization.zipCode || fullOrganization.address?.zipCode || '',
+          country: fullOrganization.country || fullOrganization.address?.country || ''
         }
       };
       console.log('Form data to populate:', formData);
