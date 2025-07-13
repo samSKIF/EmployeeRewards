@@ -194,8 +194,15 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
     const { page = 1, limit = 50, search, type } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     
-    // First get all organizations
-    let orgQuery = db.select().from(organizations);
+    // Build query with only existing columns
+    let orgQuery = db.select({
+      id: organizations.id,
+      name: organizations.name,
+      type: organizations.type,
+      status: organizations.status,
+      createdAt: organizations.createdAt,
+      updatedAt: organizations.updatedAt
+    }).from(organizations);
     
     if (search) {
       orgQuery = orgQuery.where(sql`${organizations.name} ILIKE ${`%${search}%`}`);
