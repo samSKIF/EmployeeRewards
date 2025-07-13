@@ -223,8 +223,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       superuserEmail,
       maxUsers,
       industry,
-      address,
-      createdBy: req.corporateAdmin!.id
+      address
     }).returning();
 
     // Create superuser account for the organization
@@ -240,8 +239,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       roleType: 'client_admin',
       isAdmin: true,
       status: 'active',
-      organization_id: newOrganization.id,
-      createdBy: req.corporateAdmin!.id
+      organization_id: newOrganization.id
     }).returning();
 
     res.status(201).json({
