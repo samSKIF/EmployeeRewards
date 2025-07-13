@@ -312,7 +312,24 @@ export default function AuthPage() {
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                   
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-500">Or</span>
+                    </div>
+                  </div>
                   
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => setLocation("/corporate-login")}
+                    disabled={isLoading}
+                  >
+                    Login as Corporate
+                  </Button>
 
                 </CardFooter>
               </form>
