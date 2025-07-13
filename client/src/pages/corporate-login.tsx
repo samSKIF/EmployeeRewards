@@ -81,7 +81,7 @@ export default function CorporateLoginPage() {
       
       // Check if user is corporate admin and redirect accordingly
       if (data.user.role_type === "corporate_admin") {
-        window.location.href = "/admin/company-onboarding";
+        window.location.href = "/management";
       } else {
         window.location.href = "/social";
       }

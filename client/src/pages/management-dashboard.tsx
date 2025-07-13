@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -120,10 +120,35 @@ const productSchema = z.object({
   stock: z.number().min(0).optional()
 });
 
-// Management Authentication Hook
+// Management Authentication Hook - Modified to use main auth system
 const useManagementAuth = () => {
-  const [token, setToken] = useState(localStorage.getItem('managementToken'));
+  const [token, setToken] = useState(localStorage.getItem('token')); // Use main token
   const [user, setUser] = useState(null);
+
+  // Check if user is corporate admin on load
+  useEffect(() => {
+    const checkCorporateAdmin = async () => {
+      const mainToken = localStorage.getItem('token');
+      if (mainToken) {
+        try {
+          const response = await fetch('/api/users/me', {
+            headers: { 'Authorization': `Bearer ${mainToken}` }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            if (userData.roleType === 'corporate_admin') {
+              setToken(mainToken);
+              setUser(userData);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check corporate admin status:', error);
+        }
+      }
+    };
+    
+    checkCorporateAdmin();
+  }, []);
 
   const login = async (username: string, password: string) => {
     const response = await fetch('/management/auth/login', {
@@ -142,17 +167,19 @@ const useManagementAuth = () => {
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     localStorage.removeItem('managementToken');
     setToken(null);
     setUser(null);
+    window.location.href = '/auth';
   };
 
-  return { token, user, login, logout, isAuthenticated: !!token };
+  return { token, user, login, logout, isAuthenticated: !!token && !!user };
 };
 
-// API Helper
+// API Helper - Modified to use main auth system
 const managementApi = (endpoint: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('managementToken');
+  const token = localStorage.getItem('token'); // Use main token
   return fetch(`/management${endpoint}`, {
     ...options,
     headers: {

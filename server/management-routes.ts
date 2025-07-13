@@ -38,15 +38,46 @@ const verifyManagementToken = async (req: AuthenticatedManagementRequest, res: e
       return res.status(401).json({ message: 'No management token provided' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-    const [adminUser] = await managementDb.select().from(adminUsers).where(eq(adminUsers.id, decoded.id));
+    // First try main JWT secret (for corporate admins)
+    const MAIN_JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
     
-    if (!adminUser || !adminUser.isActive) {
-      return res.status(401).json({ message: 'Invalid management token' });
-    }
+    try {
+      const decoded = jwt.verify(token, MAIN_JWT_SECRET) as { id: number };
+      
+      // Check if user is corporate admin in main database
+      const { db } = await import('./db');
+      const { users } = await import('../shared/schema');
+      
+      const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
+      
+      if (user && user.roleType === 'corporate_admin') {
+        // Convert main user to management user format
+        req.managementUser = {
+          id: user.id,
+          username: user.username || user.email,
+          email: user.email,
+          name: user.name,
+          role: 'corporate_admin',
+          permissions: user.permissions || { manageCompanies: true, manageProducts: true, manageOrders: true },
+          isActive: true,
+          password: '', // Not needed for auth
+          createdAt: user.createdAt,
+          lastLogin: new Date()
+        } as AdminUser;
+        return next();
+      }
+    } catch (mainAuthError) {
+      // If main auth fails, try management auth
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
+      const [adminUser] = await managementDb.select().from(adminUsers).where(eq(adminUsers.id, decoded.id));
+      
+      if (!adminUser || !adminUser.isActive) {
+        return res.status(401).json({ message: 'Invalid management token' });
+      }
 
-    req.managementUser = adminUser;
-    next();
+      req.managementUser = adminUser;
+      next();
+    }
   } catch (error) {
     res.status(401).json({ message: 'Invalid management token' });
   }
@@ -57,6 +88,11 @@ const checkPermission = (permission: string) => {
   return (req: AuthenticatedManagementRequest, res: express.Response, next: express.NextFunction) => {
     if (!req.managementUser?.permissions) {
       return res.status(403).json({ message: 'No permissions defined' });
+    }
+    
+    // Corporate admins have all permissions
+    if (req.managementUser.role === 'corporate_admin') {
+      return next();
     }
     
     const permissions = req.managementUser.permissions as any;
