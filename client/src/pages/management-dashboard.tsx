@@ -165,11 +165,28 @@ const managementApi = (endpoint: string, options: RequestInit = {}) => {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'Cache-Control': 'no-cache',
       ...options.headers
     }
-  }).then(res => {
+  }).then(async res => {
+    console.log(`API Response for ${endpoint}:`, { status: res.status, statusText: res.statusText });
+    
     if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
-    return res.json();
+    
+    // For 304 responses, the cached data should be used by React Query
+    if (res.status === 304) {
+      console.log('304 response - using cached data');
+      throw new Error('NOT_MODIFIED'); // This will trigger React Query to use cached data
+    }
+    
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await res.json();
+      console.log(`API Data for ${endpoint}:`, data);
+      return data;
+    }
+    
+    return null;
   });
 };
 
@@ -587,10 +604,12 @@ const OrganizationsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: organizations } = useQuery<Organization[]>({
+  const { data: organizations, isLoading, error } = useQuery<Organization[]>({
     queryKey: ['/api/management/organizations'],
     queryFn: () => managementApi('/organizations')
   });
+
+  console.log('Organizations Query:', { isLoading, error, organizations });
 
   const form = useForm<z.infer<typeof organizationSchema>>({
     resolver: zodResolver(organizationSchema),
@@ -659,8 +678,15 @@ const OrganizationsManagement = () => {
       </div>
 
       <div className="grid gap-6">
-        {organizations?.map((organization) => (
-          <Card key={organization.id}>
+        {isLoading ? (
+          <div className="text-center py-8">Loading organizations...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">Error loading organizations: {error.message}</div>
+        ) : !organizations || organizations.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No organizations found</div>
+        ) : (
+          organizations.map((organization) => (
+            <Card key={organization.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
@@ -756,7 +782,8 @@ const OrganizationsManagement = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
