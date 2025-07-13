@@ -188,6 +188,46 @@ router.get('/companies/:id', verifyCorporateAdmin, checkPermission('manageCompan
   }
 });
 
+// Alternative organizations endpoint for compatibility
+router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search, type } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    
+    // First get all organizations
+    let orgQuery = db.select().from(organizations);
+    
+    if (search) {
+      orgQuery = orgQuery.where(sql`${organizations.name} ILIKE ${`%${search}%`}`);
+    }
+    
+    if (type) {
+      orgQuery = orgQuery.where(eq(organizations.type, type as string));
+    }
+    
+    const orgList = await orgQuery.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
+    
+    // Get user counts for each organization
+    const organizationList = await Promise.all(
+      orgList.map(async (org) => {
+        const userCountResult = await db.select({ count: sql<number>`count(*)` })
+          .from(users)
+          .where(eq(users.organizationId, org.id));
+        
+        return {
+          ...org,
+          userCount: userCountResult[0]?.count || 0
+        };
+      })
+    );
+    
+    res.json(organizationList);
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+    res.status(500).json({ error: 'Failed to fetch organizations' });
+  }
+});
+
 // ========== USER MANAGEMENT ==========
 
 // Get all users across all organizations
