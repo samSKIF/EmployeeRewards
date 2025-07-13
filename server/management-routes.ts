@@ -111,37 +111,67 @@ router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
+    // First try to find in management database
     const [adminUser] = await managementDb.select()
       .from(adminUsers)
       .where(eq(adminUsers.username, username));
     
-    if (!adminUser || !adminUser.isActive) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    
-    const isValidPassword = await bcrypt.compare(password, adminUser.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    
-    // Update last login
-    await managementDb.update(adminUsers)
-      .set({ lastLogin: new Date() })
-      .where(eq(adminUsers.id, adminUser.id));
-    
-    const token = jwt.sign({ id: adminUser.id }, JWT_SECRET, { expiresIn: '8h' });
-    
-    res.json({
-      token,
-      user: {
-        id: adminUser.id,
-        username: adminUser.username,
-        email: adminUser.email,
-        name: adminUser.name,
-        role: adminUser.role,
-        permissions: adminUser.permissions
+    if (adminUser && adminUser.isActive) {
+      const isValidPassword = await bcrypt.compare(password, adminUser.password);
+      if (isValidPassword) {
+        // Update last login
+        await managementDb.update(adminUsers)
+          .set({ lastLogin: new Date() })
+          .where(eq(adminUsers.id, adminUser.id));
+        
+        const token = jwt.sign({ id: adminUser.id }, JWT_SECRET, { expiresIn: '8h' });
+        
+        return res.json({
+          token,
+          user: {
+            id: adminUser.id,
+            username: adminUser.username,
+            email: adminUser.email,
+            name: adminUser.name,
+            role: adminUser.role,
+            permissions: adminUser.permissions
+          }
+        });
       }
-    });
+    }
+    
+    // If not found in management DB, try main database for corporate admin
+    const { db } = await import('./db');
+    const { users } = await import('../shared/schema');
+    const bcrypt = await import('bcrypt');
+    
+    // Look for corporate admin by email or username
+    const [corporateAdmin] = await db.select().from(users).where(
+      username.includes('@') ? eq(users.email, username) : eq(users.username, username)
+    );
+    
+    if (corporateAdmin && corporateAdmin.roleType === 'corporate_admin') {
+      const isValidPassword = await bcrypt.compare(password, corporateAdmin.password);
+      if (isValidPassword) {
+        // Generate management token using main JWT secret
+        const MAIN_JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+        const token = jwt.sign({ id: corporateAdmin.id }, MAIN_JWT_SECRET, { expiresIn: '8h' });
+        
+        return res.json({
+          token,
+          user: {
+            id: corporateAdmin.id,
+            username: corporateAdmin.username || corporateAdmin.email,
+            email: corporateAdmin.email,
+            name: corporateAdmin.name,
+            role: 'corporate_admin',
+            permissions: corporateAdmin.permissions || { manageCompanies: true, manageProducts: true, manageOrders: true }
+          }
+        });
+      }
+    }
+    
+    return res.status(401).json({ message: 'Invalid credentials' });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
   }
