@@ -325,7 +325,7 @@ export default function AuthPage() {
                     type="button"
                     variant="outline"
                     className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
-                    onClick={() => setLocation("/corporate-login")}
+                    onClick={() => setLocation("/management")}
                     disabled={isLoading}
                   >
                     Login as Corporate
