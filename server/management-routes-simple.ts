@@ -177,6 +177,7 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
       }
     });
   } catch (error) {
+    console.error('Failed to fetch organization details:', error);
     res.status(500).json({ error: 'Failed to fetch organization details' });
   }
 });
@@ -286,7 +287,18 @@ router.post('/organizations/:id/credit', verifyCorporateAdmin, checkPermission('
 router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, type, status, maxUsers } = req.body;
+    const { 
+      name, 
+      type, 
+      status, 
+      maxUsers, 
+      contactName, 
+      contactEmail, 
+      contactPhone, 
+      superuserEmail, 
+      industry, 
+      address 
+    } = req.body;
     
     const [updatedOrganization] = await db.update(organizations)
       .set({ 
@@ -294,6 +306,12 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
         type, 
         status, 
         maxUsers,
+        contactName,
+        contactEmail,
+        contactPhone,
+        superuserEmail,
+        industry,
+        address,
         updatedAt: new Date()
       })
       .where(eq(organizations.id, Number(id)))
@@ -301,6 +319,18 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
     
     if (!updatedOrganization) {
       return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // If superuserEmail changed, update the admin user's email
+    if (superuserEmail) {
+      await db.update(users)
+        .set({ email: superuserEmail })
+        .where(
+          and(
+            eq(users.organization_id, Number(id)),
+            eq(users.roleType, 'client_admin')
+          )
+        );
     }
     
     res.json(updatedOrganization);

@@ -275,15 +275,46 @@ const DashboardStats = () => {
 const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organization; onSuccess: () => void }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  
+  // First fetch the full organization details
+  const { data: fullOrganization } = useQuery({
+    queryKey: [`/api/management/organizations/${organization.id}`],
+    enabled: !!organization.id
+  });
   
   const form = useForm({
     defaultValues: {
       name: organization.name,
       type: organization.type,
       status: organization.status,
-      maxUsers: organization.maxUsers || 50
+      maxUsers: organization.maxUsers || 50,
+      contactName: fullOrganization?.contactName || '',
+      contactEmail: fullOrganization?.contactEmail || '',
+      contactPhone: fullOrganization?.contactPhone || '',
+      superuserEmail: fullOrganization?.superuserEmail || '',
+      industry: fullOrganization?.industry || '',
+      address: fullOrganization?.address || {}
     }
   });
+
+  // Update form when data loads
+  useEffect(() => {
+    if (fullOrganization) {
+      form.reset({
+        name: organization.name,
+        type: organization.type,
+        status: organization.status,
+        maxUsers: organization.maxUsers || 50,
+        contactName: fullOrganization.contactName || '',
+        contactEmail: fullOrganization.contactEmail || '',
+        contactPhone: fullOrganization.contactPhone || '',
+        superuserEmail: fullOrganization.superuserEmail || '',
+        industry: fullOrganization.industry || '',
+        address: fullOrganization.address || {}
+      });
+    }
+  }, [fullOrganization, organization, form]);
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -299,6 +330,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
 
       if (response.ok) {
         toast({ title: 'Organization updated successfully' });
+        setIsOpen(false);
         onSuccess();
       } else {
         toast({ title: 'Failed to update organization', variant: 'destructive' });
@@ -312,13 +344,149 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Organization Name *</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="client">Client</SelectItem>
+                    <SelectItem value="corporate">Corporate</SelectItem>
+                    <SelectItem value="seller">Seller</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="maxUsers"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Users</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Contact Information</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="contactName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Name *</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contactEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Email *</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="contactPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Phone</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="superuserEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Admin Email *</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
         <FormField
           control={form.control}
-          name="name"
+          name="industry"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Organization Name</FormLabel>
+              <FormLabel>Industry *</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -326,63 +494,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
-                  <SelectItem value="seller">Seller</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="maxUsers"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Maximum Users</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? 'Updating...' : 'Update Organization'}
         </Button>
@@ -529,7 +641,7 @@ const OrganizationsManagement = () => {
                           Edit
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-4xl">
                         <DialogHeader>
                           <DialogTitle>Edit Organization</DialogTitle>
                           <DialogDescription>
