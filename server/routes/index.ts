@@ -17,7 +17,7 @@ import socialMicroservice from "../microservices/social";
 import leaveMicroservice from "../microservices/leave";
 import interestsMicroservice from "../microservices/interests";
 import employeeStatusMicroservice from "../microservices/employee-status";
-import birthdayStatusMicroservice from "../microservices/birthday-status";
+import { setupBirthdayStatusRoutes } from "../microservices/birthday-status";
 
 export function registerRoutes(app: Express) {
   logger.info("Registering modular routes...");
@@ -56,7 +56,7 @@ export function registerRoutes(app: Express) {
   app.use('/api/leave', leaveMicroservice);
   app.use('/api/interests', interestsMicroservice);
   app.use('/api/employee-status', employeeStatusMicroservice);
-  app.use('/api/birthday-status', birthdayStatusMicroservice);
+  setupBirthdayStatusRoutes(app);
 
   logger.info("All modular routes registered successfully");
 }
