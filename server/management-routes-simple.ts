@@ -124,6 +124,7 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       type: organizations.type,
       status: organizations.status,
       createdAt: organizations.createdAt,
+      maxUsers: organizations.maxUsers,
       userCount: sql<number>`(SELECT COUNT(*) FROM users WHERE organization_id = organizations.id)`,
     }).from(organizations);
     
