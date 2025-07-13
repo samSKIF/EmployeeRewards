@@ -280,7 +280,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   // First fetch the full organization details
   const { data: fullOrganization } = useQuery({
     queryKey: [`/api/management/organizations/${organization.id}`],
-    enabled: !!organization.id
+    enabled: !!organization.id,
+    queryFn: () => managementApi(`/organizations/${organization.id}`).then(res => res.json())
   });
   
   const form = useForm({
@@ -289,18 +290,25 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       type: organization.type,
       status: organization.status,
       maxUsers: organization.maxUsers || 50,
-      contactName: fullOrganization?.contactName || '',
-      contactEmail: fullOrganization?.contactEmail || '',
-      contactPhone: fullOrganization?.contactPhone || '',
-      superuserEmail: fullOrganization?.superuserEmail || '',
-      industry: fullOrganization?.industry || '',
-      address: fullOrganization?.address || {}
+      contactName: '',
+      contactEmail: '',
+      contactPhone: '',
+      superuserEmail: '',
+      industry: '',
+      address: {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: ''
+      }
     }
   });
 
   // Update form when data loads
   useEffect(() => {
     if (fullOrganization) {
+      const addressData = fullOrganization.address || {};
       form.reset({
         name: organization.name,
         type: organization.type,
@@ -311,7 +319,13 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         contactPhone: fullOrganization.contactPhone || '',
         superuserEmail: fullOrganization.superuserEmail || '',
         industry: fullOrganization.industry || '',
-        address: fullOrganization.address || {}
+        address: {
+          street: addressData.street || '',
+          city: addressData.city || '',
+          state: addressData.state || '',
+          zipCode: addressData.zipCode || '',
+          country: addressData.country || ''
+        }
       });
     }
   }, [fullOrganization, organization, form]);
@@ -319,12 +333,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/management/organizations/${organization.id}`, {
+      const response = await managementApi(`/organizations/${organization.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('management_token')}`
-        },
         body: JSON.stringify(data)
       });
 
@@ -495,6 +505,79 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           )}
         />
 
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Address Information</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="address.street"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Street Address</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address.city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="address.state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State/Region</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address.zipCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ZIP/Postal Code</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="address.country"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? 'Updating...' : 'Update Organization'}
         </Button>
@@ -551,11 +634,8 @@ const OrganizationsManagement = () => {
 
   const handleResetPassword = async (organizationId: number) => {
     try {
-      const response = await fetch(`/api/management/organizations/${organizationId}/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('management_token')}`
-        }
+      const response = await managementApi(`/organizations/${organizationId}/reset-password`, {
+        method: 'POST'
       });
 
       if (response.ok) {
