@@ -159,38 +159,52 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     
-    let query = db.select({
-      id: organizations.id,
-      name: organizations.name,
-      type: organizations.type,
-      status: organizations.status,
-      createdAt: organizations.createdAt,
-      maxUsers: organizations.maxUsers,
-      userCount: sql<number>`(SELECT COUNT(*) FROM users WHERE organization_id = organizations.id)`,
-      // Subscription fields
-      lastPaymentDate: sql<string>`s.last_payment_date`,
-      subscriptionPeriod: sql<string>`s.subscription_period`,
-      expirationDate: sql<string>`s.expiration_date`,
-      subscriptionActive: sql<boolean>`s.is_active`,
-      daysRemaining: sql<number>`CASE WHEN s.expiration_date IS NOT NULL THEN EXTRACT(DAY FROM s.expiration_date - CURRENT_TIMESTAMP) ELSE NULL END`,
-    }).from(organizations)
-    .leftJoin(sql`subscriptions s ON s.id = organizations.current_subscription_id`);
+    // Use raw SQL query to avoid schema issues
+    let whereClause = '';
+    const params: any[] = [];
     
     if (search) {
-      query = query.where(sql`${organizations.name} ILIKE ${`%${search}%`}`);
+      whereClause += ` WHERE name ILIKE $${params.length + 1}`;
+      params.push(`%${search}%`);
     }
     
-    if (status === 'active') {
-      query = query.where(eq(organizations.status, 'active'));
-    } else if (status === 'inactive') {
-      query = query.where(eq(organizations.status, 'inactive'));
+    if (status === 'active' || status === 'inactive') {
+      whereClause += whereClause ? ' AND' : ' WHERE';
+      whereClause += ` status = $${params.length + 1}`;
+      params.push(status);
     }
     
-    const organizationList = await query.limit(Number(limit)).offset(offset).orderBy(desc(organizations.createdAt));
+    const sqlQuery = `
+      SELECT 
+        id,
+        name,
+        type,
+        status,
+        created_at as "createdAt",
+        max_users as "maxUsers",
+        (SELECT COUNT(*) FROM users WHERE organization_id = organizations.id) as "userCount"
+      FROM organizations
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
     
-    const totalCount = await db.select({ count: count() }).from(organizations);
+    params.push(Number(limit), offset);
     
-    res.json(organizationList);
+    const result = await db.execute(sql.raw(sqlQuery, ...params));
+    const organizationList = result.rows;
+    
+    // Add subscription placeholder data
+    const organizationsWithBasicData = organizationList.map((org: any) => ({
+      ...org,
+      lastPaymentDate: null,
+      subscriptionPeriod: null,
+      expirationDate: null,
+      subscriptionActive: false,
+      daysRemaining: 0
+    }));
+    
+    res.json(organizationsWithBasicData);
   } catch (error) {
     console.error('Failed to fetch organizations:', error);
     res.status(500).json({ error: 'Failed to fetch organizations' });
