@@ -1,7 +1,7 @@
 
-# Employee Engagement Platform
+# ThrivioHR Platform
 
-A comprehensive, modular employee engagement platform built with React, TypeScript, Express, and modern web technologies. This platform provides social features, recognition systems, leave management, spaces/groups, surveys, and administrative tools for modern workplaces.
+A comprehensive, modular HR and employee engagement platform built with React, TypeScript, Express, and modern web technologies. ThrivioHR provides social features, recognition systems, leave management, spaces/groups, surveys, and administrative tools for modern workplaces.
 
 ## 🚀 Features
 
@@ -225,4 +225,4 @@ For support and questions:
 
 ---
 
-**Built with ❤️ for modern workplace engagement**
+**ThrivioHR - Built with ❤️ for modern workplace engagement**

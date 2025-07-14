@@ -108,7 +108,7 @@ router.get("/employees/:id/interests", async (req: AuthenticatedRequest, res) =>
       .where(eq(users.id, employeeId));
       
     if (!employee) {
-      return res.status(404).json({ message: "Employee not found" });
+      return res.status(404).json({ message: "Team member not found" });
     }
     
     // Get the current user's ID from the request
@@ -173,7 +173,7 @@ router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchem
     
     const employeeId = parseInt(req.params.id);
     const currentUserId = req.user?.id;
-    console.log("Employee ID:", employeeId, "Current User ID:", currentUserId);
+    console.log("Team Member ID:", employeeId, "Current User ID:", currentUserId);
     
     // Check if the employee exists
     const [employee] = await db
@@ -182,12 +182,12 @@ router.post("/employees/:id/interests", validateRequestBody(updateInterestsSchem
       .where(eq(users.id, employeeId));
       
     if (!employee) {
-      return res.status(404).json({ message: "Employee not found" });
+      return res.status(404).json({ message: "Team member not found" });
     }
     
     // Check if the current user is authorized to update this employee's interests
     if (currentUserId !== employeeId) {
-      return res.status(403).json({ message: "Not authorized to update this employee's interests" });
+      return res.status(403).json({ message: "Not authorized to update this team member's interests" });
     }
     
     // Start a transaction to delete old interests and insert new ones

@@ -263,7 +263,7 @@ export default function AuthPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">{branding.organizationName}</h1>
-              <p className="text-sm text-gray-500">Employee Engagement Platform</p>
+              <p className="text-sm text-gray-500">ThrivioHR Platform</p>
             </div>
           </div>
           
@@ -345,7 +345,7 @@ export default function AuthPage() {
             <div className="inline-block p-4 bg-white rounded-2xl shadow-md mb-4">
               <img 
                 src="https://img.freepik.com/free-vector/people-celebrating-achievement-award-ceremony-winners-competition-company-managers-achievement-announcement-award-receiving-ceremony-concept-illustration_335657-2378.jpg?w=700" 
-                alt="Employee Recognition" 
+                alt="Team Recognition" 
                 className="h-64 w-auto rounded-xl"
               />
             </div>

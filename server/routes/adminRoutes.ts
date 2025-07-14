@@ -309,11 +309,11 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     const result = await pool.query(updateQuery, values);
     
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Employee not found or access denied" });
+      return res.status(404).json({ message: "Team member not found or access denied" });
     }
 
     const updatedEmployee = result.rows[0];
-    logger.info("Employee updated successfully:", {
+    logger.info("Team member updated successfully:", {
       id: updatedEmployee.id,
       name: updatedEmployee.name,
       is_admin: updatedEmployee.is_admin
@@ -321,8 +321,8 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
 
     res.json(updatedEmployee);
   } catch (error: any) {
-    logger.error("Error updating employee:", error);
-    res.status(500).json({ message: error.message || "Error updating employee" });
+    logger.error("Error updating team member:", error);
+    res.status(500).json({ message: error.message || "Error updating team member" });
   }
 });
 
@@ -353,7 +353,7 @@ router.patch("/permissions/:id", verifyToken, verifyAdmin, async (req: Authentic
     ]);
     
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Employee not found or access denied" });
+      return res.status(404).json({ message: "Team member not found or access denied" });
     }
 
     const updatedEmployee = result.rows[0];

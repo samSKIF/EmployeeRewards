@@ -240,7 +240,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                   {searchQuery.length > 0 && (
                     <>
                       {filteredEmployees && filteredEmployees.length > 0 ? (
-                        <CommandGroup heading="Employees">
+                        <CommandGroup heading="Team Members">
                           {filteredEmployees.map((employee: any) => (
                             <CommandItem
                               key={employee.id}

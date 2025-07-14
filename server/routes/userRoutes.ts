@@ -260,7 +260,7 @@ router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
     const [targetUser] = await db.select().from(users).where(eq(users.id, userId));
 
     if (!targetUser) {
-      return res.status(404).json({ message: "Employee not found" });
+      return res.status(404).json({ message: "Team member not found" });
     }
 
     // Only return public profile information

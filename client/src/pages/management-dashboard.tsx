@@ -274,7 +274,7 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Empulse Management</CardTitle>
+          <CardTitle className="text-2xl text-center">ThrivioHR Management</CardTitle>
           <CardDescription className="text-center">
             Sign in to your management dashboard
           </CardDescription>
@@ -1221,7 +1221,7 @@ export default function ManagementDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Empulse Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">ThrivioHR Management</h1>
               <p className="text-sm text-gray-500">SaaS Platform Administration</p>
             </div>
             <div className="flex items-center gap-4">

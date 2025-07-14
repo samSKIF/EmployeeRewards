@@ -109,7 +109,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     },
     { 
       icon: Users, 
-      label: "Employee Management", 
+      label: "Team Management", 
       onClick: () => navigateTo('/admin/employees'),
       isActive: location === '/admin/employees',
       className: "whitespace-nowrap",
@@ -123,7 +123,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     },
     { 
       icon: UserCheck, 
-      label: "Employee Promotion", 
+      label: "Team Promotion", 
       onClick: () => navigateTo('/admin/employee-promotion'),
       isActive: location === '/admin/employee-promotion',
       className: "whitespace-nowrap",
