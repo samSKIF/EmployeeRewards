@@ -29,6 +29,19 @@ export const organizations: any = pgTable("organizations", {
   logoUrl: text("logo_url"),
   settings: jsonb("settings"), // Store org-specific settings like enabled features
   parentOrgId: integer("parent_org_id").references(() => organizations.id), // For hierarchical relationships
+  currentSubscriptionId: integer("current_subscription_id"), // Will reference subscriptions table
+});
+
+// Subscription management table
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  lastPaymentDate: timestamp("last_payment_date").notNull(),
+  subscriptionPeriod: text("subscription_period").notNull(), // 'quarter', 'year', 'custom'
+  customDurationDays: integer("custom_duration_days"), // Only for 'custom' period
+  expirationDate: timestamp("expiration_date").notNull(), // Calculated server-side
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Organization features tracking
@@ -684,6 +697,13 @@ export const organizationsRelations = relations(organizations, ({ one, many }) =
   leavePolicies: many(leavePolicies),
   orders: many(orders),
   brandingSettings: many(brandingSettings),
+  subscriptions: many(subscriptions),
+  currentSubscription: one(subscriptions, { fields: [organizations.currentSubscriptionId], references: [subscriptions.id] }),
+}));
+
+// Subscription relations
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  organization: one(organizations, { fields: [subscriptions.organizationId], references: [organizations.id] }),
 }));
 
 export const organizationFeaturesRelations = relations(organizationFeatures, ({ one }) => ({
@@ -1092,6 +1112,7 @@ export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, c
 export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
 export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, startedAt: true });
 export const insertSurveyAnswerSchema = createInsertSchema(surveyAnswers).omit({ id: true, createdAt: true });
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 
 // Extended organization schema for form validation
 export const createOrganizationSchema = z.object({
@@ -1123,6 +1144,10 @@ export type InsertOrganizationFeature = z.infer<typeof insertOrganizationFeature
 
 export type Seller = typeof sellers.$inferSelect;
 export type InsertSeller = z.infer<typeof insertSellerSchema>;
+
+// Subscription types
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 export type ProductCategory = typeof productCategories.$inferSelect;
 export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;

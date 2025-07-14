@@ -27,7 +27,10 @@ import {
   Eye,
   Edit,
   CreditCard,
-  Key
+  Key,
+  Calendar,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import { countries } from '@/data/countries';
 import { useLocation } from 'wouter';
@@ -41,6 +44,12 @@ interface Organization {
   createdAt: string;
   userCount: number;
   maxUsers?: number;
+  // Subscription fields
+  lastPaymentDate?: string;
+  subscriptionPeriod?: string;
+  expirationDate?: string;
+  subscriptionActive?: boolean;
+  daysRemaining?: number;
 }
 
 interface OrganizationWithStats extends Organization {
@@ -336,6 +345,244 @@ const DashboardStats = () => {
   );
 };
 
+// Subscription Management Component
+const SubscriptionManagement = ({ organizationId }: { organizationId: number }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Get current subscription status
+  const { data: subscriptionData, isLoading } = useQuery({
+    queryKey: [`/api/management/organizations/${organizationId}/subscription`],
+    queryFn: () => managementApi(`/organizations/${organizationId}/subscription`)
+  });
+
+  const subscriptionForm = useForm({
+    defaultValues: {
+      lastPaymentDate: new Date().toISOString().split('T')[0],
+      subscriptionPeriod: 'quarter' as 'quarter' | 'year' | 'custom',
+      customDurationDays: 90
+    }
+  });
+
+  const createSubscription = useMutation({
+    mutationFn: (data: { lastPaymentDate: string; subscriptionPeriod: string; customDurationDays?: number }) =>
+      managementApi(`/organizations/${organizationId}/subscription`, { 
+        method: 'POST', 
+        body: JSON.stringify(data)
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      toast({ title: 'Subscription created successfully' });
+      setIsCreating(false);
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to create subscription', description: error.message, variant: 'destructive' });
+    }
+  });
+
+  const renewSubscription = useMutation({
+    mutationFn: (data: { lastPaymentDate: string; subscriptionPeriod: string; customDurationDays?: number }) =>
+      managementApi(`/organizations/${organizationId}/subscription/renew`, { 
+        method: 'POST', 
+        body: JSON.stringify(data)
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      toast({ title: 'Subscription renewed successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to renew subscription', description: error.message, variant: 'destructive' });
+    }
+  });
+
+  const deactivateSubscription = useMutation({
+    mutationFn: () =>
+      managementApi(`/organizations/${organizationId}/subscription/deactivate`, { 
+        method: 'POST'
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      toast({ title: 'Subscription deactivated successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to deactivate subscription', description: error.message, variant: 'destructive' });
+    }
+  });
+
+  const onSubmit = (data: any) => {
+    if (subscriptionData?.subscriptionId) {
+      renewSubscription.mutate(data);
+    } else {
+      createSubscription.mutate(data);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="text-center py-4">Loading subscription details...</div>;
+  }
+
+  const hasSubscription = subscriptionData?.subscriptionId;
+  const isActive = subscriptionData?.isActive;
+
+  return (
+    <div className="space-y-6">
+      {/* Current Subscription Status */}
+      {hasSubscription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Current Subscription</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm text-muted-foreground">Status</Label>
+                <Badge variant={isActive ? "default" : "secondary"}>
+                  {isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Period</Label>
+                <p className="text-sm font-medium">{subscriptionData.subscriptionPeriod}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Last Payment</Label>
+                <p className="text-sm">
+                  {subscriptionData.lastPaymentDate ? 
+                    new Date(subscriptionData.lastPaymentDate).toLocaleDateString() : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Expiration</Label>
+                <p className="text-sm">
+                  {subscriptionData.expirationDate ? 
+                    new Date(subscriptionData.expirationDate).toLocaleDateString() : 'N/A'}
+                </p>
+              </div>
+            </div>
+            {subscriptionData.calculatedStatus && (
+              <div className="p-3 rounded-lg bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full bg-${subscriptionData.calculatedStatus.color}-500`}></div>
+                  <span className="text-sm font-medium capitalize">{subscriptionData.calculatedStatus.status}</span>
+                  {subscriptionData.calculatedStatus.daysRemaining > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      - {subscriptionData.calculatedStatus.daysRemaining} days remaining
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create/Renew Subscription Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">
+            {hasSubscription ? 'Renew Subscription' : 'Create Subscription'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...subscriptionForm}>
+            <form onSubmit={subscriptionForm.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={subscriptionForm.control}
+                name="lastPaymentDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={subscriptionForm.control}
+                name="subscriptionPeriod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subscription Period</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="quarter">Quarter (90 days)</SelectItem>
+                          <SelectItem value="year">Year (365 days)</SelectItem>
+                          <SelectItem value="custom">Custom Duration</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {subscriptionForm.watch('subscriptionPeriod') === 'custom' && (
+                <FormField
+                  control={subscriptionForm.control}
+                  name="customDurationDays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Custom Duration (Days)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={createSubscription.isPending || renewSubscription.isPending}
+              >
+                {createSubscription.isPending || renewSubscription.isPending ? 
+                  'Processing...' : 
+                  hasSubscription ? 'Renew Subscription' : 'Create Subscription'
+                }
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      {hasSubscription && isActive && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg text-red-600">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="destructive" 
+              onClick={() => deactivateSubscription.mutate()}
+              disabled={deactivateSubscription.isPending}
+            >
+              {deactivateSubscription.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
 // Edit Organization Form Component
 const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organization; onSuccess: () => void }) => {
   const { toast } = useToast();
@@ -362,7 +609,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       contactEmail: '',
       contactPhone: '',
       superuserEmail: '',
-      industry: '',
       activity: '',
       address: {
         street: '',
@@ -388,8 +634,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
         superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
-        industry: fullOrganization.industry || '',
-        activity: fullOrganization.activity || '',
+        activity: fullOrganization.activity || fullOrganization.industry || '',
         address: {
           street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
@@ -408,7 +653,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       form.setValue('contactEmail', formData.contactEmail);
       form.setValue('contactPhone', formData.contactPhone);
       form.setValue('superuserEmail', formData.superuserEmail);
-      form.setValue('industry', formData.industry);
       form.setValue('activity', formData.activity);
       form.setValue('address.street', formData.address.street);
       form.setValue('address.city', formData.address.city);
@@ -567,45 +811,30 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="industry"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Industry *</FormLabel>
+        <FormField
+          control={form.control}
+          name="activity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Business Activity *</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <Input {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select business activity" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="activity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Business Activity *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select business activity" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-h-60">
-                    {ACTIVITIES.map((activity) => (
-                      <SelectItem key={activity} value={activity}>
-                        {activity}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent className="max-h-60">
+                  {ACTIVITIES.map((activity) => (
+                    <SelectItem key={activity} value={activity}>
+                      {activity}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Address Information</h3>
@@ -893,12 +1122,29 @@ const OrganizationsManagement = () => {
                     <Button variant="outline" size="sm" onClick={() => handleResetPassword(organization.id)}>
                       Reset Admin Password
                     </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Manage Subscription
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Subscription Management</DialogTitle>
+                          <DialogDescription>
+                            Manage subscription for {organization.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <SubscriptionManagement organizationId={organization.id} />
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">User Count</p>
                   <p className="text-lg font-semibold">{organization.userCount}</p>
@@ -908,12 +1154,48 @@ const OrganizationsManagement = () => {
                   <p className="text-lg font-semibold">{organization.maxUsers || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Features</p>
-                  <p className="text-sm">N/A</p>
-                </div>
-                <div>
                   <p className="text-sm text-muted-foreground">Created</p>
                   <p className="text-sm">{new Date(organization.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Subscription</p>
+                  <div className="flex items-center gap-2">
+                    {organization.subscriptionActive ? (
+                      <>
+                        <Badge variant="default" className="text-xs">
+                          {organization.subscriptionPeriod || 'Active'}
+                        </Badge>
+                        {organization.daysRemaining !== undefined && (
+                          <span className={`text-xs ${
+                            organization.daysRemaining <= 30 ? 'text-orange-600' : 
+                            organization.daysRemaining <= 7 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {organization.daysRemaining}d left
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">No subscription</Badge>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Last Payment</p>
+                  <p className="text-sm">
+                    {organization.lastPaymentDate ? 
+                      new Date(organization.lastPaymentDate).toLocaleDateString() : 
+                      'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Expiration</p>
+                  <p className="text-sm">
+                    {organization.expirationDate ? 
+                      new Date(organization.expirationDate).toLocaleDateString() : 
+                      'N/A'
+                    }
+                  </p>
                 </div>
               </div>
             </CardContent>

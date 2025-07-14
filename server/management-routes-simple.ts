@@ -2,11 +2,52 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations } from '../shared/schema';
+import { users, organizations, subscriptions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count, sql } from 'drizzle-orm';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Subscription utility functions
+function calculateExpirationDate(lastPaymentDate: Date, period: string, customDays?: number): Date {
+  const expiration = new Date(lastPaymentDate);
+  switch (period) {
+    case 'quarter':
+      expiration.setDate(expiration.getDate() + 90);
+      break;
+    case 'year':
+      expiration.setDate(expiration.getDate() + 365);
+      break;
+    case 'custom':
+      if (customDays) {
+        expiration.setDate(expiration.getDate() + customDays);
+      }
+      break;
+  }
+  return expiration;
+}
+
+function calculateSubscriptionStatus(expirationDate: Date | null, isActive: boolean, period?: string, customDays?: number) {
+  if (!expirationDate || !isActive) {
+    return { status: 'inactive', daysRemaining: 0, color: 'red' };
+  }
+  
+  const now = new Date();
+  const daysRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (daysRemaining <= 0) {
+    return { status: 'expired', daysRemaining: 0, color: 'red' };
+  }
+  
+  const totalDays = period === 'quarter' ? 90 : period === 'year' ? 365 : customDays || 90;
+  const percentageRemaining = (daysRemaining / totalDays) * 100;
+  
+  if (percentageRemaining > 30) {
+    return { status: 'active', daysRemaining, color: 'green' };
+  } else {
+    return { status: 'expiring', daysRemaining, color: 'orange' };
+  }
+}
 
 // Corporate Admin Authentication Middleware
 interface AuthenticatedManagementRequest extends express.Request {
@@ -126,7 +167,14 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       createdAt: organizations.createdAt,
       maxUsers: organizations.maxUsers,
       userCount: sql<number>`(SELECT COUNT(*) FROM users WHERE organization_id = organizations.id)`,
-    }).from(organizations);
+      // Subscription fields
+      lastPaymentDate: sql<string>`s.last_payment_date`,
+      subscriptionPeriod: sql<string>`s.subscription_period`,
+      expirationDate: sql<string>`s.expiration_date`,
+      subscriptionActive: sql<boolean>`s.is_active`,
+      daysRemaining: sql<number>`CASE WHEN s.expiration_date IS NOT NULL THEN EXTRACT(DAY FROM s.expiration_date - CURRENT_TIMESTAMP) ELSE NULL END`,
+    }).from(organizations)
+    .leftJoin(sql`subscriptions s ON s.id = organizations.current_subscription_id`);
     
     if (search) {
       query = query.where(sql`${organizations.name} ILIKE ${`%${search}%`}`);
@@ -212,7 +260,11 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       superuserEmail,
       maxUsers = 50,
       industry,
-      address
+      address,
+      // Subscription fields
+      lastPaymentDate,
+      subscriptionPeriod,
+      customDurationDays
     } = req.body;
 
     // Validate required fields
@@ -229,12 +281,12 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       return res.status(400).json({ error: 'Organization slug already exists' });
     }
 
-    // Create organization
+    // Create organization (initially without subscription)
     const [newOrganization] = await db.insert(organizations).values({
       name,
       slug: organizationSlug,
       type,
-      status,
+      status: lastPaymentDate ? 'active' : 'inactive', // Only active if subscription provided
       contactName,
       contactEmail,
       contactPhone,
@@ -243,6 +295,30 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       industry,
       address
     }).returning();
+
+    // Create subscription if payment information provided
+    let newSubscription = null;
+    if (lastPaymentDate && subscriptionPeriod) {
+      const paymentDate = new Date(lastPaymentDate);
+      const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
+      
+      [newSubscription] = await db.insert(subscriptions).values({
+        organizationId: newOrganization.id,
+        lastPaymentDate: paymentDate,
+        subscriptionPeriod,
+        customDurationDays,
+        expirationDate,
+        isActive: true
+      }).returning();
+
+      // Update organization with subscription reference
+      await db.update(organizations)
+        .set({ 
+          currentSubscriptionId: newSubscription.id,
+          status: 'active'
+        })
+        .where(eq(organizations.id, newOrganization.id));
+    }
 
     // Create superuser account for the organization
     const bcrypt = await import('bcrypt');
@@ -262,6 +338,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
 
     res.status(201).json({
       organization: newOrganization,
+      subscription: newSubscription,
       superuser: {
         id: superuser.id,
         email: superuser.email,
@@ -492,6 +569,252 @@ router.get('/analytics', verifyCorporateAdmin, async (req, res) => {
       details: error.message,
       errorName: error.name 
     });
+  }
+});
+
+// ========== SUBSCRIPTION MANAGEMENT ==========
+
+// Create subscription for organization
+router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
+    
+    // Check if organization exists
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
+    if (!organization) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // Check if organization already has an active subscription
+    const [existingSubscription] = await db.select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.organizationId, Number(id)),
+          eq(subscriptions.isActive, true)
+        )
+      );
+    
+    if (existingSubscription) {
+      return res.status(400).json({ error: 'Organization already has an active subscription' });
+    }
+    
+    // Create new subscription
+    const paymentDate = new Date(lastPaymentDate);
+    const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
+    
+    const [newSubscription] = await db.insert(subscriptions).values({
+      organizationId: Number(id),
+      lastPaymentDate: paymentDate,
+      subscriptionPeriod,
+      customDurationDays,
+      expirationDate,
+      isActive: true
+    }).returning();
+    
+    // Update organization with subscription reference and activate
+    await db.update(organizations)
+      .set({ 
+        currentSubscriptionId: newSubscription.id,
+        status: 'active'
+      })
+      .where(eq(organizations.id, Number(id)));
+    
+    res.status(201).json({
+      subscription: newSubscription,
+      message: 'Subscription created successfully'
+    });
+  } catch (error) {
+    console.error('Failed to create subscription:', error);
+    res.status(500).json({ error: 'Failed to create subscription' });
+  }
+});
+
+// Renew subscription
+router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
+    
+    // Get current subscription
+    const [currentSubscription] = await db.select()
+      .from(subscriptions)
+      .where(eq(subscriptions.organizationId, Number(id)))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+    
+    if (!currentSubscription) {
+      return res.status(404).json({ error: 'No subscription found for organization' });
+    }
+    
+    // Deactivate current subscription
+    await db.update(subscriptions)
+      .set({ isActive: false })
+      .where(eq(subscriptions.id, currentSubscription.id));
+    
+    // Create new subscription
+    const paymentDate = new Date(lastPaymentDate);
+    const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
+    
+    const [newSubscription] = await db.insert(subscriptions).values({
+      organizationId: Number(id),
+      lastPaymentDate: paymentDate,
+      subscriptionPeriod,
+      customDurationDays,
+      expirationDate,
+      isActive: true
+    }).returning();
+    
+    // Update organization with new subscription reference
+    await db.update(organizations)
+      .set({ 
+        currentSubscriptionId: newSubscription.id,
+        status: 'active'
+      })
+      .where(eq(organizations.id, Number(id)));
+    
+    res.json({
+      subscription: newSubscription,
+      message: 'Subscription renewed successfully'
+    });
+  } catch (error) {
+    console.error('Failed to renew subscription:', error);
+    res.status(500).json({ error: 'Failed to renew subscription' });
+  }
+});
+
+// Get organization subscription status
+router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const [subscriptionData] = await db.select({
+      // Organization info
+      organizationId: organizations.id,
+      organizationName: organizations.name,
+      organizationStatus: organizations.status,
+      // Subscription info
+      subscriptionId: subscriptions.id,
+      lastPaymentDate: subscriptions.lastPaymentDate,
+      subscriptionPeriod: subscriptions.subscriptionPeriod,
+      customDurationDays: subscriptions.customDurationDays,
+      expirationDate: subscriptions.expirationDate,
+      isActive: subscriptions.isActive,
+      subscriptionCreatedAt: subscriptions.createdAt
+    })
+    .from(organizations)
+    .leftJoin(subscriptions, eq(subscriptions.id, organizations.currentSubscriptionId))
+    .where(eq(organizations.id, Number(id)));
+    
+    if (!subscriptionData) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // Calculate subscription status
+    let status = null;
+    if (subscriptionData.subscriptionId) {
+      status = calculateSubscriptionStatus(
+        subscriptionData.expirationDate, 
+        subscriptionData.isActive,
+        subscriptionData.subscriptionPeriod,
+        subscriptionData.customDurationDays
+      );
+    }
+    
+    res.json({
+      ...subscriptionData,
+      calculatedStatus: status
+    });
+  } catch (error) {
+    console.error('Failed to get subscription status:', error);
+    res.status(500).json({ error: 'Failed to get subscription status' });
+  }
+});
+
+// Monitor all subscriptions (for dashboard view)
+router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
+  try {
+    const { status: statusFilter, expiringSoon } = req.query;
+    
+    let query = db.select({
+      subscriptionId: subscriptions.id,
+      organizationId: organizations.id,
+      organizationName: organizations.name,
+      contactEmail: organizations.contactEmail,
+      subscriptionPeriod: subscriptions.subscriptionPeriod,
+      lastPaymentDate: subscriptions.lastPaymentDate,
+      expirationDate: subscriptions.expirationDate,
+      isActive: subscriptions.isActive,
+      daysRemaining: sql<number>`EXTRACT(DAY FROM subscriptions.expiration_date - CURRENT_TIMESTAMP)`,
+    })
+    .from(subscriptions)
+    .innerJoin(organizations, eq(organizations.currentSubscriptionId, subscriptions.id));
+    
+    // Filter by expiring soon (next 30 days)
+    if (expiringSoon === 'true') {
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      query = query.where(
+        and(
+          eq(subscriptions.isActive, true),
+          lte(subscriptions.expirationDate, thirtyDaysFromNow)
+        )
+      );
+    }
+    
+    const subscriptionsList = await query.orderBy(subscriptions.expirationDate);
+    
+    // Add calculated status to each subscription
+    const enrichedSubscriptions = subscriptionsList.map(sub => ({
+      ...sub,
+      calculatedStatus: calculateSubscriptionStatus(
+        sub.expirationDate,
+        sub.isActive,
+        sub.subscriptionPeriod
+      )
+    }));
+    
+    res.json(enrichedSubscriptions);
+  } catch (error) {
+    console.error('Failed to monitor subscriptions:', error);
+    res.status(500).json({ error: 'Failed to monitor subscriptions' });
+  }
+});
+
+// Deactivate subscription
+router.post('/organizations/:id/subscription/deactivate', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find current subscription
+    const [organization] = await db.select()
+      .from(organizations)
+      .where(eq(organizations.id, Number(id)));
+    
+    if (!organization || !organization.currentSubscriptionId) {
+      return res.status(404).json({ error: 'No active subscription found' });
+    }
+    
+    // Deactivate subscription
+    await db.update(subscriptions)
+      .set({ isActive: false })
+      .where(eq(subscriptions.id, organization.currentSubscriptionId));
+    
+    // Update organization status
+    await db.update(organizations)
+      .set({ 
+        status: 'inactive',
+        currentSubscriptionId: null
+      })
+      .where(eq(organizations.id, Number(id)));
+    
+    res.json({ 
+      message: 'Subscription deactivated successfully' 
+    });
+  } catch (error) {
+    console.error('Failed to deactivate subscription:', error);
+    res.status(500).json({ error: 'Failed to deactivate subscription' });
   }
 });
 
