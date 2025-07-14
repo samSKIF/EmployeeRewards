@@ -40,6 +40,7 @@ export const subscriptions = pgTable("subscriptions", {
   subscriptionPeriod: text("subscription_period").notNull(), // 'quarter', 'year', 'custom'
   customDurationDays: integer("custom_duration_days"), // Only for 'custom' period
   expirationDate: timestamp("expiration_date").notNull(), // Calculated server-side
+  maxUsers: integer("max_users").notNull().default(50), // Maximum number of users allowed
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

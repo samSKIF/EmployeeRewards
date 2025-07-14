@@ -5,11 +5,74 @@ import { storage } from "../storage";
 import { generateToken, verifyToken, AuthenticatedRequest } from "../middleware/auth";
 import { db } from "../db";
 import { users, organizations, subscriptions, insertUserSchema } from "@shared/schema";
-import { eq, sql, and, desc } from "drizzle-orm";
+import { eq, sql, and, desc, count } from "drizzle-orm";
 import { logger } from "@shared/logger";
 import jwt from "jsonwebtoken";
 
 const router = Router();
+
+// Helper function to check user count limits for organization
+async function checkUserCountLimit(organizationId: number): Promise<{ allowed: boolean; message?: string; currentCount?: number; maxUsers?: number }> {
+  try {
+    // Get organization's current subscription
+    const [organization] = await db.select({
+      id: organizations.id,
+      currentSubscriptionId: organizations.currentSubscriptionId,
+      maxUsers: organizations.maxUsers
+    }).from(organizations).where(eq(organizations.id, organizationId));
+
+    if (!organization) {
+      return { allowed: false, message: "Organization not found" };
+    }
+
+    // Get current user count
+    const [userCountResult] = await db.select({ count: count() })
+      .from(users)
+      .where(eq(users.organizationId, organizationId));
+    
+    const currentUserCount = userCountResult.count;
+
+    // Get subscription max users limit if there's an active subscription
+    let maxUsersLimit = organization.maxUsers || 50; // Default fallback
+
+    if (organization.currentSubscriptionId) {
+      const [subscription] = await db.select({
+        maxUsers: subscriptions.maxUsers,
+        isActive: subscriptions.isActive,
+        expirationDate: subscriptions.expirationDate
+      }).from(subscriptions).where(eq(subscriptions.id, organization.currentSubscriptionId));
+
+      if (subscription && subscription.isActive) {
+        // Check if subscription is still valid
+        const now = new Date();
+        const isExpired = new Date(subscription.expirationDate) <= now;
+        
+        if (!isExpired && subscription.maxUsers) {
+          maxUsersLimit = subscription.maxUsers;
+        }
+      }
+    }
+
+    // Check if adding a new user would exceed the limit
+    if (currentUserCount >= maxUsersLimit) {
+      return { 
+        allowed: false, 
+        message: `Organization has reached its user limit of ${maxUsersLimit} users. Current count: ${currentUserCount}`,
+        currentCount: currentUserCount,
+        maxUsers: maxUsersLimit
+      };
+    }
+
+    return { 
+      allowed: true,
+      currentCount: currentUserCount,
+      maxUsers: maxUsersLimit
+    };
+  } catch (error) {
+    logger.error("Error checking user count limit:", error);
+    return { allowed: false, message: "Error checking user limits" };
+  }
+}
 
 // User registration endpoint
 router.post("/register", async (req, res) => {
@@ -37,6 +100,19 @@ router.post("/register", async (req, res) => {
       const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
       if (existingUsernameUser) {
         return res.status(409).json({ message: "Username already taken" });
+      }
+
+      // Check user count limits for the organization
+      if (userData.organizationId) {
+        const userLimitCheck = await checkUserCountLimit(userData.organizationId);
+        if (!userLimitCheck.allowed) {
+          return res.status(403).json({ 
+            message: userLimitCheck.message,
+            error: "USER_LIMIT_EXCEEDED",
+            currentCount: userLimitCheck.currentCount,
+            maxUsers: userLimitCheck.maxUsers
+          });
+        }
       }
 
       // Create user with data from Firebase and form
@@ -76,6 +152,19 @@ router.post("/register", async (req, res) => {
       const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, validatedUserData.username));
       if (existingUsernameUser) {
         return res.status(409).json({ message: "Username already taken" });
+      }
+
+      // Check user count limits for the organization
+      if (validatedUserData.organizationId) {
+        const userLimitCheck = await checkUserCountLimit(validatedUserData.organizationId);
+        if (!userLimitCheck.allowed) {
+          return res.status(403).json({ 
+            message: userLimitCheck.message,
+            error: "USER_LIMIT_EXCEEDED",
+            currentCount: userLimitCheck.currentCount,
+            maxUsers: userLimitCheck.maxUsers
+          });
+        }
       }
 
       // PostgreSQL authentication only - no Firebase dependency

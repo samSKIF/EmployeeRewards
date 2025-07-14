@@ -463,6 +463,51 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                 </p>
               </div>
             </div>
+            
+            {/* User Count Limit Display */}
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-3">User Limits</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">Current Users</Label>
+                  <p className="text-lg font-semibold">{subscriptionData.currentUserCount || 0}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">Max Users</Label>
+                  <p className="text-lg font-semibold">{subscriptionData.maxUsers || 'N/A'}</p>
+                </div>
+              </div>
+              {subscriptionData.maxUsers && (
+                <div className="mt-3">
+                  <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                    <span>Usage</span>
+                    <span>
+                      {subscriptionData.currentUserCount || 0} / {subscriptionData.maxUsers}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all ${
+                        ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.9 
+                          ? 'bg-red-500' 
+                          : ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.8 
+                          ? 'bg-orange-500' 
+                          : 'bg-green-500'
+                      }`}
+                      style={{ 
+                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) * 100)}%` 
+                      }}
+                    />
+                  </div>
+                  {((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.9 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ⚠️ Approaching user limit - new registrations may be blocked
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+            
             {subscriptionData.calculatedStatus && (
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="flex items-center gap-2">

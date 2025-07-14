@@ -346,6 +346,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
         subscriptionPeriod,
         customDurationDays,
         expirationDate,
+        maxUsers: newOrganization.maxUsers || 50, // Use organization's max users setting
         isActive: true
       }).returning();
 
@@ -648,6 +649,7 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
       subscriptionPeriod,
       customDurationDays,
       expirationDate,
+      maxUsers: organization.maxUsers || 50, // Use organization's max users setting
       isActive: true
     }).returning();
 
@@ -691,6 +693,9 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
       .set({ isActive: false })
       .where(eq(subscriptions.id, currentSubscription.id));
 
+    // Get organization for max users setting
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
+
     // Create new subscription
     const paymentDate = new Date(lastPaymentDate);
     const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
@@ -701,6 +706,7 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
       subscriptionPeriod,
       customDurationDays,
       expirationDate,
+      maxUsers: organization?.maxUsers || 50, // Use organization's max users setting
       isActive: true
     }).returning();
 
@@ -738,6 +744,7 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
       subscriptionPeriod: subscriptions.subscriptionPeriod,
       customDurationDays: subscriptions.customDurationDays,
       expirationDate: subscriptions.expirationDate,
+      maxUsers: subscriptions.maxUsers,
       isActive: subscriptions.isActive,
       subscriptionCreatedAt: subscriptions.createdAt
     })
@@ -748,6 +755,13 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
     if (!subscriptionData) {
       return res.status(404).json({ error: 'Organization not found' });
     }
+
+    // Get current user count for this organization
+    const [userCountResult] = await db.select({ count: count() })
+      .from(users)
+      .where(eq(users.organizationId, Number(id)));
+    
+    const currentUserCount = userCountResult.count;
 
     // Calculate subscription status
     let status = null;
@@ -762,6 +776,7 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
 
     res.json({
       ...subscriptionData,
+      currentUserCount,
       calculatedStatus: status
     });
   } catch (error) {
@@ -783,6 +798,7 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
       subscriptionPeriod: subscriptions.subscriptionPeriod,
       lastPaymentDate: subscriptions.lastPaymentDate,
       expirationDate: subscriptions.expirationDate,
+      maxUsers: subscriptions.maxUsers,
       isActive: subscriptions.isActive,
       daysRemaining: sql<number>`EXTRACT(DAY FROM subscriptions.expiration_date - CURRENT_TIMESTAMP)`,
     })
@@ -803,14 +819,24 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
 
     const subscriptionsList = await query.orderBy(subscriptions.expirationDate);
 
-    // Add calculated status to each subscription
-    const enrichedSubscriptions = subscriptionsList.map(sub => ({
-      ...sub,
-      calculatedStatus: calculateSubscriptionStatus(
-        sub.expirationDate,
-        sub.isActive,
-        sub.subscriptionPeriod
-      )
+    // Add calculated status and user count to each subscription
+    const enrichedSubscriptions = await Promise.all(subscriptionsList.map(async (sub) => {
+      // Get current user count for this organization
+      const [userCountResult] = await db.select({ count: count() })
+        .from(users)
+        .where(eq(users.organizationId, sub.organizationId));
+      
+      const currentUserCount = userCountResult.count;
+
+      return {
+        ...sub,
+        currentUserCount,
+        calculatedStatus: calculateSubscriptionStatus(
+          sub.expirationDate,
+          sub.isActive,
+          sub.subscriptionPeriod
+        )
+      };
     }));
 
     res.json(enrichedSubscriptions);
