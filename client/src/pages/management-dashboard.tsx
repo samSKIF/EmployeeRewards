@@ -339,8 +339,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
           state: fullOrganization.state || fullOrganization.address?.state || '',
-          zipCode: (fullOrganization.zipCode && fullOrganization.zipCode !== '0000') ? fullOrganization.zipCode : 
-                   (fullOrganization.address?.zipCode && fullOrganization.address?.zipCode !== '0000') ? fullOrganization.address?.zipCode : '',
+          zipCode: fullOrganization.zipCode || fullOrganization.address?.zipCode || '',
           country: fullOrganization.country || fullOrganization.address?.country || ''
         }
       };
