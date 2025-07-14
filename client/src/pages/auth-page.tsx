@@ -15,6 +15,9 @@ export default function AuthPage() {
   const { branding } = useBranding();
   const [isLoading, setIsLoading] = useState(false);
   const [showAdminSetup, setShowAdminSetup] = useState(false);
+  const [showSubscriptionWarning, setShowSubscriptionWarning] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState("");
+  const [adminContactEmail, setAdminContactEmail] = useState("");
   
   // Admin account setup form fields
   const [adminEmail, setAdminEmail] = useState("");
@@ -122,6 +125,16 @@ export default function AuthPage() {
       });
       
       if (!response.ok) {
+        if (response.status === 403) {
+          // Handle subscription-related login failures
+          const errorData = await response.json();
+          if (errorData.showPopup) {
+            setSubscriptionMessage(errorData.message);
+            setAdminContactEmail(errorData.contactEmail);
+            setShowSubscriptionWarning(true);
+            return; // Don't show toast error, show popup instead
+          }
+        }
         const errorData = await response.text();
         throw new Error(errorData || "Login failed");
       }
@@ -251,6 +264,52 @@ export default function AuthPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Warning Dialog */}
+      <Dialog open={showSubscriptionWarning} onOpenChange={setShowSubscriptionWarning}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              System Inactive
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Your organization's subscription is currently inactive.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-red-800 font-medium mb-2">Access Restricted</p>
+              <p className="text-red-700 text-sm">
+                {subscriptionMessage}
+              </p>
+            </div>
+            
+            {adminContactEmail && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-800 font-medium mb-2">Contact Information</p>
+                <p className="text-blue-700 text-sm">
+                  Organization Admin: <span className="font-mono font-semibold">{adminContactEmail}</span>
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              onClick={() => setShowSubscriptionWarning(false)}
+              className="w-full"
+            >
+              OK
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       

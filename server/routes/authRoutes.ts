@@ -206,13 +206,14 @@ router.post("/login", async (req, res) => {
           if (!hasActiveSubscription) {
             logger.warn(`Login denied for user ${user.username} - organization ${organization.name} has no active subscription`);
             
-            // Get super user email for contact info
-            const superUserEmail = organization.superuserEmail || 'admin@thriviohr.com';
+            // Get organization admin email for contact info (prefer contactEmail over superuserEmail)
+            const adminEmail = organization.contactEmail || organization.superuserEmail || 'admin@thriviohr.com';
             
             return res.status(403).json({ 
-              message: `The system is inactive please contact the admin: ${superUserEmail}`,
+              message: `The system is inactive please contact the admin: ${adminEmail}`,
               organizationStatus: 'inactive',
-              contactEmail: superUserEmail
+              contactEmail: adminEmail,
+              showPopup: true // Flag to trigger popup on frontend
             });
           }
 
