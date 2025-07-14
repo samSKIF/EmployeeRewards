@@ -178,17 +178,57 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       userCount: 0 // Simplified for now
     }));
 
-    // Add subscription placeholder data
-    const organizationsWithBasicData = organizationsWithCounts.map((org: any) => ({
-      ...org,
-      lastPaymentDate: null,
-      subscriptionPeriod: null,
-      expirationDate: null,
-      subscriptionActive: false,
-      daysRemaining: 0
-    }));
+    // Check subscription status for each organization
+    const organizationsWithSubscriptionData = await Promise.all(
+      organizationsWithCounts.map(async (org: any) => {
+        // Get active subscription for this organization
+        const [activeSubscription] = await db.select()
+          .from(subscriptions)
+          .where(
+            and(
+              eq(subscriptions.organizationId, org.id),
+              eq(subscriptions.isActive, true)
+            )
+          )
+          .orderBy(desc(subscriptions.createdAt))
+          .limit(1);
 
-    res.json(organizationsWithBasicData);
+        let subscriptionActive = false;
+        let daysRemaining = 0;
+        let calculatedStatus = org.status;
+
+        if (activeSubscription) {
+          const now = new Date();
+          const expirationDate = new Date(activeSubscription.expirationDate);
+          subscriptionActive = expirationDate > now;
+          
+          if (subscriptionActive) {
+            daysRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          }
+        }
+
+        // If no active subscription, mark organization as inactive
+        if (!subscriptionActive) {
+          calculatedStatus = 'inactive';
+          // Update organization status in database
+          await db.update(organizations)
+            .set({ status: 'inactive' })
+            .where(eq(organizations.id, org.id));
+        }
+
+        return {
+          ...org,
+          status: calculatedStatus,
+          lastPaymentDate: activeSubscription?.lastPaymentDate || null,
+          subscriptionPeriod: activeSubscription?.subscriptionPeriod || null,
+          expirationDate: activeSubscription?.expirationDate || null,
+          subscriptionActive,
+          daysRemaining
+        };
+      })
+    );
+
+    res.json(organizationsWithSubscriptionData);
   } catch (error) {
     console.error('Failed to fetch organizations:', error);
     res.status(500).json({ error: 'Failed to fetch organizations' });

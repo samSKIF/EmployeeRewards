@@ -4,8 +4,8 @@ import { hash, compare } from "bcrypt";
 import { storage } from "../storage";
 import { generateToken, verifyToken, AuthenticatedRequest } from "../middleware/auth";
 import { db } from "../db";
-import { users, insertUserSchema } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { users, organizations, subscriptions, insertUserSchema } from "@shared/schema";
+import { eq, sql, and, desc } from "drizzle-orm";
 import { logger } from "@shared/logger";
 import jwt from "jsonwebtoken";
 
@@ -173,7 +173,56 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    logger.debug("Password verified, generating token");
+    logger.debug("Password verified, checking organization subscription status");
+
+    // Check if user's organization has an active subscription (skip for corporate admins)
+    if (user.roleType !== 'corporate_admin' && user.organizationId) {
+      try {
+        // Get organization details
+        const [organization] = await db.select().from(organizations).where(eq(organizations.id, user.organizationId));
+        
+        if (organization) {
+          // Check for active subscription
+          const [activeSubscription] = await db.select()
+            .from(subscriptions)
+            .where(
+              and(
+                eq(subscriptions.organizationId, organization.id),
+                eq(subscriptions.isActive, true)
+              )
+            )
+            .orderBy(desc(subscriptions.createdAt))
+            .limit(1);
+
+          let hasActiveSubscription = false;
+          
+          if (activeSubscription) {
+            const now = new Date();
+            const expirationDate = new Date(activeSubscription.expirationDate);
+            hasActiveSubscription = expirationDate > now;
+          }
+
+          // If no active subscription, deny login with message
+          if (!hasActiveSubscription) {
+            logger.warn(`Login denied for user ${user.username} - organization ${organization.name} has no active subscription`);
+            
+            // Get super user email for contact info
+            const superUserEmail = organization.superuserEmail || 'admin@thriviohr.com';
+            
+            return res.status(403).json({ 
+              message: `The system is inactive please contact the admin: ${superUserEmail}`,
+              organizationStatus: 'inactive',
+              contactEmail: superUserEmail
+            });
+          }
+
+          logger.debug(`Organization ${organization.name} has active subscription, allowing login`);
+        }
+      } catch (error) {
+        logger.error("Error checking subscription status:", error);
+        // Allow login on error to avoid blocking users due to system issues
+      }
+    }
 
     // Update last seen timestamp on successful authentication
     try {
