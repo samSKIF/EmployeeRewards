@@ -29,6 +29,7 @@ import {
   CreditCard,
   Key
 } from 'lucide-react';
+import { countries } from '@/data/countries';
 import { useLocation } from 'wouter';
 
 // Types for the unified management system
@@ -102,6 +103,56 @@ interface PlatformStats {
   totalRevenue: string;
   totalPointsUsed: number;
 }
+
+// Activities list for organizations
+const ACTIVITIES = [
+  'Technology & Software',
+  'Healthcare & Medical',
+  'Financial Services',
+  'Education & Training',
+  'Manufacturing',
+  'Retail & E-commerce',
+  'Consulting Services',
+  'Real Estate',
+  'Construction',
+  'Transportation & Logistics',
+  'Food & Beverage',
+  'Media & Entertainment',
+  'Telecommunications',
+  'Energy & Utilities',
+  'Government & Public Sector',
+  'Non-Profit Organizations',
+  'Aerospace & Defense',
+  'Automotive',
+  'Pharmaceuticals',
+  'Agriculture',
+  'Tourism & Hospitality',
+  'Legal Services',
+  'Marketing & Advertising',
+  'Insurance',
+  'Banking',
+  'Architecture & Design',
+  'Research & Development',
+  'Human Resources',
+  'Facility Management',
+  'Security Services'
+];
+
+// Country-City mapping (simplified version)
+const COUNTRY_CITIES: Record<string, string[]> = {
+  'AE': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'],
+  'US': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'],
+  'GB': ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Newcastle', 'Sheffield', 'Bristol', 'Leicester', 'Edinburgh'],
+  'CA': ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
+  'AU': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Newcastle', 'Canberra', 'Sunshine Coast', 'Wollongong'],
+  'DE': ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Leipzig', 'Dortmund', 'Essen'],
+  'FR': ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Montpellier', 'Strasbourg', 'Bordeaux', 'Lille'],
+  'IN': ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat'],
+  'CN': ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Hangzhou', 'Wuhan', 'Xi\'an', 'Suzhou', 'Zhengzhou'],
+  'JP': ['Tokyo', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kyoto', 'Kawasaki', 'Saitama', 'Hiroshima'],
+  'BR': ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Salvador', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Goiânia'],
+  'global': ['Other/Not Listed']
+};
 
 // Form schemas
 const organizationSchema = z.object({
@@ -290,6 +341,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   // First fetch the full organization details
   const { data: fullOrganization, isLoading } = useQuery({
@@ -310,6 +363,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       contactPhone: '',
       superuserEmail: '',
       industry: '',
+      activity: '',
       address: {
         street: '',
         city: '',
@@ -335,6 +389,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         contactPhone: fullOrganization.contactPhone || '',
         superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
         industry: fullOrganization.industry || '',
+        activity: fullOrganization.activity || '',
         address: {
           street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
@@ -354,11 +409,18 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       form.setValue('contactPhone', formData.contactPhone);
       form.setValue('superuserEmail', formData.superuserEmail);
       form.setValue('industry', formData.industry);
+      form.setValue('activity', formData.activity);
       form.setValue('address.street', formData.address.street);
       form.setValue('address.city', formData.address.city);
       form.setValue('address.state', formData.address.state);
       form.setValue('address.zipCode', formData.address.zipCode);
       form.setValue('address.country', formData.address.country);
+
+      // Set selected country and update cities
+      if (formData.address.country) {
+        setSelectedCountry(formData.address.country);
+        setAvailableCities(COUNTRY_CITIES[formData.address.country] || []);
+      }
 
       console.log('Form values after setting:', form.getValues());
     }
@@ -505,32 +567,92 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="industry"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Industry *</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="industry"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Industry *</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="activity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business Activity *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business activity" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-60">
+                    {ACTIVITIES.map((activity) => (
+                      <SelectItem key={activity} value={activity}>
+                        {activity}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Address Information</h3>
+          <FormField
+            control={form.control}
+            name="address.street"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Street Address</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="address.street"
+              name="address.country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Street Address</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <FormLabel>Country *</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setSelectedCountry(value);
+                      setAvailableCities(COUNTRY_CITIES[value] || []);
+                      // Reset city when country changes
+                      form.setValue('address.city', '');
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-60">
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -541,9 +663,35 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  {availableCities.length > 0 ? (
+                    <Select 
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={!selectedCountry}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-60">
+                        {availableCities.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <FormControl>
+                      <Input 
+                        {...field}
+                        placeholder="Enter city"
+                        disabled={!selectedCountry}
+                      />
+                    </FormControl>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -577,19 +725,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="address.country"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Country</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
