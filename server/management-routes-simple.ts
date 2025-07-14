@@ -31,17 +31,17 @@ function calculateSubscriptionStatus(expirationDate: Date | null, isActive: bool
   if (!expirationDate || !isActive) {
     return { status: 'inactive', daysRemaining: 0, color: 'red' };
   }
-  
+
   const now = new Date();
   const daysRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   if (daysRemaining <= 0) {
     return { status: 'expired', daysRemaining: 0, color: 'red' };
   }
-  
+
   const totalDays = period === 'quarter' ? 90 : period === 'year' ? 365 : customDays || 90;
   const percentageRemaining = (daysRemaining / totalDays) * 100;
-  
+
   if (percentageRemaining > 30) {
     return { status: 'active', daysRemaining, color: 'green' };
   } else {
@@ -63,7 +63,7 @@ const verifyCorporateAdmin = async (req: AuthenticatedManagementRequest, res: ex
 
     const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
     const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
-    
+
     if (!user || user.roleType !== 'corporate_admin') {
       return res.status(401).json({ message: 'Access denied. Corporate admin required.' });
     }
@@ -88,28 +88,28 @@ const checkPermission = (permission: string) => {
 router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     // Look for corporate admin by email or username
     const [corporateAdmin] = await db.select().from(users).where(
       username.includes('@') ? eq(users.email, username) : eq(users.username, username)
     );
-    
+
     if (!corporateAdmin || corporateAdmin.roleType !== 'corporate_admin') {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     const isValidPassword = await bcrypt.compare(password, corporateAdmin.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     // Update last seen
     await db.update(users)
       .set({ lastSeenAt: new Date() })
       .where(eq(users.id, corporateAdmin.id));
-    
+
     const token = jwt.sign({ id: corporateAdmin.id }, JWT_SECRET, { expiresIn: '8h' });
-    
+
     return res.json({
       token,
       user: {
@@ -158,22 +158,22 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    
+
     // Use raw SQL query to avoid schema issues
     let whereClause = '';
     const params: any[] = [];
-    
+
     if (search) {
       whereClause += ` WHERE name ILIKE $${params.length + 1}`;
       params.push(`%${search}%`);
     }
-    
+
     if (status === 'active' || status === 'inactive') {
       whereClause += whereClause ? ' AND' : ' WHERE';
       whereClause += ` status = $${params.length + 1}`;
       params.push(status);
     }
-    
+
     const sqlQuery = `
       SELECT 
         id,
@@ -188,12 +188,12 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       ORDER BY created_at DESC
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
-    
+
     params.push(Number(limit), offset);
-    
+
     const result = await db.execute(sql.raw(sqlQuery, ...params));
     const organizationList = result.rows;
-    
+
     // Add subscription placeholder data
     const organizationsWithBasicData = organizationList.map((org: any) => ({
       ...org,
@@ -203,7 +203,7 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       subscriptionActive: false,
       daysRemaining: 0
     }));
-    
+
     res.json(organizationsWithBasicData);
   } catch (error) {
     console.error('Failed to fetch organizations:', error);
@@ -215,16 +215,16 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
 router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
-    
+
     if (!organization) {
       return res.status(404).json({ error: 'Organization not found' });
     }
-    
+
     // Get organization statistics
     const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
-    
+
     // Parse address if it's a JSON string
     let parsedAddress = {};
     if (organization.address) {
@@ -315,7 +315,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
     if (lastPaymentDate && subscriptionPeriod) {
       const paymentDate = new Date(lastPaymentDate);
       const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
-      
+
       [newSubscription] = await db.insert(subscriptions).values({
         organizationId: newOrganization.id,
         lastPaymentDate: paymentDate,
@@ -372,12 +372,12 @@ router.post('/organizations/:id/credit', verifyCorporateAdmin, checkPermission('
   try {
     const { id } = req.params;
     const { amount, description } = req.body;
-    
+
     const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
     if (!organization) {
       return res.status(404).json({ error: 'Organization not found' });
     }
-    
+
     // For now, just return success message
     // In a real implementation, you would update wallet balance
     res.json({ 
@@ -406,7 +406,7 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
       industry, 
       address 
     } = req.body;
-    
+
     const [updatedOrganization] = await db.update(organizations)
       .set({ 
         name, 
@@ -423,11 +423,11 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
       })
       .where(eq(organizations.id, Number(id)))
       .returning();
-    
+
     if (!updatedOrganization) {
       return res.status(404).json({ error: 'Organization not found' });
     }
-    
+
     // If superuserEmail changed, update the admin user's email
     if (superuserEmail) {
       await db.update(users)
@@ -439,7 +439,7 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
           )
         );
     }
-    
+
     res.json(updatedOrganization);
   } catch (error) {
     console.error('Failed to update organization:', error);
@@ -451,7 +451,7 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
 router.post('/organizations/:id/reset-password', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find the organization's admin user
     const [admin] = await db.select()
       .from(users)
@@ -461,21 +461,21 @@ router.post('/organizations/:id/reset-password', verifyCorporateAdmin, checkPerm
           eq(users.roleType, 'client_admin')
         )
       );
-    
+
     if (!admin) {
       return res.status(404).json({ error: 'Organization admin not found' });
     }
-    
+
     // Generate new password
     const newPassword = Math.random().toString(36).slice(-12) + 'A1!';
     const bcrypt = await import('bcrypt');
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Update admin password
     await db.update(users)
       .set({ password: hashedPassword })
       .where(eq(users.id, admin.id));
-    
+
     res.json({ 
       success: true, 
       newPassword,
@@ -494,7 +494,7 @@ router.get('/users', verifyCorporateAdmin, checkPermission('manageUsers'), async
   try {
     const { page = 1, limit = 50, search, organizationId } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    
+
     let query = db.select({
       id: users.id,
       username: users.username,
@@ -511,17 +511,17 @@ router.get('/users', verifyCorporateAdmin, checkPermission('manageUsers'), async
       createdAt: users.createdAt,
       lastSeenAt: users.lastSeenAt
     }).from(users).leftJoin(organizations, eq(users.organization_id, organizations.id));
-    
+
     if (search) {
       query = query.where(sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`})`);
     }
-    
+
     if (organizationId) {
       query = query.where(eq(users.organization_id, Number(organizationId)));
     }
-    
+
     const userList = await query.limit(Number(limit)).offset(offset).orderBy(desc(users.createdAt));
-    
+
     res.json(userList);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -559,7 +559,7 @@ router.get('/analytics', verifyCorporateAdmin, async (req, res) => {
     // Get counts from basic tables that exist
     const [organizationCount] = await db.select({ count: count() }).from(organizations);
     const [userCount] = await db.select({ count: count() }).from(users);
-    
+
     res.json({
       totals: {
         organizations: organizationCount.count,
@@ -593,13 +593,13 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
   try {
     const { id } = req.params;
     const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
-    
+
     // Check if organization exists
     const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
     if (!organization) {
       return res.status(404).json({ error: 'Organization not found' });
     }
-    
+
     // Check if organization already has an active subscription
     const [existingSubscription] = await db.select()
       .from(subscriptions)
@@ -609,15 +609,15 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
           eq(subscriptions.isActive, true)
         )
       );
-    
+
     if (existingSubscription) {
       return res.status(400).json({ error: 'Organization already has an active subscription' });
     }
-    
+
     // Create new subscription
     const paymentDate = new Date(lastPaymentDate);
     const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
-    
+
     const [newSubscription] = await db.insert(subscriptions).values({
       organizationId: Number(id),
       lastPaymentDate: paymentDate,
@@ -626,7 +626,7 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
       expirationDate,
       isActive: true
     }).returning();
-    
+
     // Update organization with subscription reference and activate
     await db.update(organizations)
       .set({ 
@@ -634,7 +634,7 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
         status: 'active'
       })
       .where(eq(organizations.id, Number(id)));
-    
+
     res.status(201).json({
       subscription: newSubscription,
       message: 'Subscription created successfully'
@@ -650,27 +650,27 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
   try {
     const { id } = req.params;
     const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
-    
+
     // Get current subscription
     const [currentSubscription] = await db.select()
       .from(subscriptions)
       .where(eq(subscriptions.organizationId, Number(id)))
       .orderBy(desc(subscriptions.createdAt))
       .limit(1);
-    
+
     if (!currentSubscription) {
       return res.status(404).json({ error: 'No subscription found for organization' });
     }
-    
+
     // Deactivate current subscription
     await db.update(subscriptions)
       .set({ isActive: false })
       .where(eq(subscriptions.id, currentSubscription.id));
-    
+
     // Create new subscription
     const paymentDate = new Date(lastPaymentDate);
     const expirationDate = calculateExpirationDate(paymentDate, subscriptionPeriod, customDurationDays);
-    
+
     const [newSubscription] = await db.insert(subscriptions).values({
       organizationId: Number(id),
       lastPaymentDate: paymentDate,
@@ -679,7 +679,7 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
       expirationDate,
       isActive: true
     }).returning();
-    
+
     // Update organization with new subscription reference
     await db.update(organizations)
       .set({ 
@@ -687,7 +687,7 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
         status: 'active'
       })
       .where(eq(organizations.id, Number(id)));
-    
+
     res.json({
       subscription: newSubscription,
       message: 'Subscription renewed successfully'
@@ -702,7 +702,7 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
 router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const [subscriptionData] = await db.select({
       // Organization info
       organizationId: organizations.id,
@@ -720,11 +720,11 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
     .from(organizations)
     .leftJoin(subscriptions, eq(subscriptions.id, organizations.currentSubscriptionId))
     .where(eq(organizations.id, Number(id)));
-    
+
     if (!subscriptionData) {
       return res.status(404).json({ error: 'Organization not found' });
     }
-    
+
     // Calculate subscription status
     let status = null;
     if (subscriptionData.subscriptionId) {
@@ -735,7 +735,7 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
         subscriptionData.customDurationDays
       );
     }
-    
+
     res.json({
       ...subscriptionData,
       calculatedStatus: status
@@ -750,7 +750,7 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
 router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
   try {
     const { status: statusFilter, expiringSoon } = req.query;
-    
+
     let query = db.select({
       subscriptionId: subscriptions.id,
       organizationId: organizations.id,
@@ -764,7 +764,7 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
     })
     .from(subscriptions)
     .innerJoin(organizations, eq(organizations.currentSubscriptionId, subscriptions.id));
-    
+
     // Filter by expiring soon (next 30 days)
     if (expiringSoon === 'true') {
       const thirtyDaysFromNow = new Date();
@@ -776,9 +776,9 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
         )
       );
     }
-    
+
     const subscriptionsList = await query.orderBy(subscriptions.expirationDate);
-    
+
     // Add calculated status to each subscription
     const enrichedSubscriptions = subscriptionsList.map(sub => ({
       ...sub,
@@ -788,7 +788,7 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
         sub.subscriptionPeriod
       )
     }));
-    
+
     res.json(enrichedSubscriptions);
   } catch (error) {
     console.error('Failed to monitor subscriptions:', error);
@@ -800,21 +800,21 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
 router.post('/organizations/:id/subscription/deactivate', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find current subscription
     const [organization] = await db.select()
       .from(organizations)
       .where(eq(organizations.id, Number(id)));
-    
+
     if (!organization || !organization.currentSubscriptionId) {
       return res.status(404).json({ error: 'No active subscription found' });
     }
-    
+
     // Deactivate subscription
     await db.update(subscriptions)
       .set({ isActive: false })
       .where(eq(subscriptions.id, organization.currentSubscriptionId));
-    
+
     // Update organization status
     await db.update(organizations)
       .set({ 
@@ -822,7 +822,7 @@ router.post('/organizations/:id/subscription/deactivate', verifyCorporateAdmin, 
         currentSubscriptionId: null
       })
       .where(eq(organizations.id, Number(id)));
-    
+
     res.json({ 
       message: 'Subscription deactivated successfully' 
     });
