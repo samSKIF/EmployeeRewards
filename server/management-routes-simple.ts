@@ -163,8 +163,29 @@ router.get('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
     // Get organization statistics
     const userCount = await db.select({ count: count() }).from(users).where(eq(users.organizationId, Number(id)));
     
+    // Parse address if it's a JSON string
+    let parsedAddress = {};
+    if (organization.address) {
+      try {
+        parsedAddress = typeof organization.address === 'string' 
+          ? JSON.parse(organization.address) 
+          : organization.address;
+      } catch (e) {
+        console.error('Failed to parse address:', e);
+        parsedAddress = {};
+      }
+    }
+
     res.json({
       ...organization,
+      // Flatten address fields for easier frontend access
+      streetAddress: parsedAddress.street || '',
+      city: parsedAddress.city || '',
+      state: parsedAddress.state || '',
+      zipCode: parsedAddress.zipCode || '',
+      country: parsedAddress.country || '',
+      // Keep original address as well
+      address: parsedAddress,
       stats: {
         userCount: userCount[0].count,
         orderCount: 0,
