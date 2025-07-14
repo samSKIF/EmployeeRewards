@@ -236,7 +236,7 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       roleType: 'client_admin',
       isAdmin: true,
       status: 'active',
-      organization_id: newOrganization.id
+      organizationId: newOrganization.id
     }).returning();
 
     res.status(201).json({
@@ -322,7 +322,7 @@ router.put('/organizations/:id', verifyCorporateAdmin, checkPermission('manageOr
         .set({ email: superuserEmail })
         .where(
           and(
-            eq(users.organization_id, Number(id)),
+            eq(users.organizationId, Number(id)),
             eq(users.roleType, 'client_admin')
           )
         );
@@ -345,7 +345,7 @@ router.post('/organizations/:id/reset-password', verifyCorporateAdmin, checkPerm
       .from(users)
       .where(
         and(
-          eq(users.organization_id, Number(id)),
+          eq(users.organizationId, Number(id)),
           eq(users.roleType, 'client_admin')
         )
       );
