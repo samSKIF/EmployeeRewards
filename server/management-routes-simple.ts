@@ -191,7 +191,7 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
 
     params.push(Number(limit), offset);
 
-    const result = await db.execute(sql.raw(sqlQuery, ...params));
+    const result = await db.execute(sql.raw(sqlQuery, params));
     const organizationList = result.rows;
 
     // Add subscription placeholder data
