@@ -372,7 +372,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         body: JSON.stringify(data)
       });
 
-      if (response.ok) {
+      // managementApi returns the data directly, not a Response object
+      if (response) {
         toast({ title: 'Organization updated successfully' });
         setIsOpen(false);
         onSuccess();
@@ -380,6 +381,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         toast({ title: 'Failed to update organization', variant: 'destructive' });
       }
     } catch (error) {
+      console.error('Update error:', error);
       toast({ title: 'Failed to update organization', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
@@ -568,7 +570,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                 <FormItem>
                   <FormLabel>ZIP/Postal Code</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="e.g., 0000, 12345" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
