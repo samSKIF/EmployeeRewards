@@ -43,7 +43,7 @@ interface Organization {
   status: string;
   createdAt: string;
   userCount: number;
-  maxUsers?: number;
+  subscribedUsers?: number;
   // Subscription fields
   lastPaymentDate?: string;
   subscriptionPeriod?: string;
@@ -1307,7 +1307,7 @@ const OrganizationsManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Max Employees</p>
-                  <p className="text-lg font-semibold">{organization.maxUsers || 'N/A'}</p>
+                  <p className="text-lg font-semibold">{organization.subscribedUsers || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Created</p>

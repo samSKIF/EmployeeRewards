@@ -172,11 +172,19 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
       .limit(Number(limit))
       .offset(offset);
 
-    // Add user count as a simple property (set to 0 for now to avoid complex queries)
-    const organizationsWithCounts = organizationList.map((org) => ({
-      ...org,
-      userCount: 0 // Simplified for now
-    }));
+    // Add user count for each organization
+    const organizationsWithCounts = await Promise.all(
+      organizationList.map(async (org) => {
+        const [userCountResult] = await db.select({ count: count() })
+          .from(users)
+          .where(eq(users.organizationId, org.id));
+        
+        return {
+          ...org,
+          userCount: userCountResult.count
+        };
+      })
+    );
 
     // Check subscription status for each organization
     const organizationsWithSubscriptionData = await Promise.all(
@@ -223,7 +231,8 @@ router.get('/organizations', verifyCorporateAdmin, checkPermission('manageOrgani
           subscriptionPeriod: activeSubscription?.subscriptionPeriod || null,
           expirationDate: activeSubscription?.expirationDate || null,
           subscriptionActive,
-          daysRemaining
+          daysRemaining,
+          subscribedUsers: activeSubscription?.subscribedUsers || null
         };
       })
     );
