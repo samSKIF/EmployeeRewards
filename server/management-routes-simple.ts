@@ -296,7 +296,6 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       contactEmail,
       contactPhone,
       superuserEmail,
-      maxUsers = 50,
       industry,
       address,
       // Subscription fields
@@ -311,6 +310,11 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
     // Validate required fields
     if (!name || !contactName || !contactEmail || !superuserEmail || !industry || !address) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // If creating a subscription, require pricing fields
+    if (lastPaymentDate && subscriptionPeriod && (!subscribedUsers || !pricePerUserPerMonth)) {
+      return res.status(400).json({ error: 'Subscription requires subscribedUsers and pricePerUserPerMonth' });
     }
 
     // Generate slug if not provided
@@ -332,7 +336,6 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       contactEmail,
       contactPhone,
       superuserEmail,
-      maxUsers,
       industry,
       address
     }).returning();
@@ -349,10 +352,9 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
         subscriptionPeriod,
         customDurationDays,
         expirationDate,
-        maxUsers: newOrganization.maxUsers || 50, // Use organization's max users setting
-        subscribedUsers: subscribedUsers || newOrganization.maxUsers || 50, // Default to max users
+        subscribedUsers: subscribedUsers || 50, // Default to 50 users
         pricePerUserPerMonth: pricePerUserPerMonth || 10.0, // Default price
-        totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || newOrganization.maxUsers || 50) * (pricePerUserPerMonth || 10.0)), // Calculate total
+        totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || 50) * (pricePerUserPerMonth || 10.0)), // Calculate total
         isActive: true
       }).returning();
 
@@ -655,10 +657,9 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
       subscriptionPeriod,
       customDurationDays,
       expirationDate,
-      maxUsers: organization.maxUsers || 50, // Use organization's max users setting
-      subscribedUsers: subscribedUsers || organization.maxUsers || 50,
+      subscribedUsers: subscribedUsers || 50,
       pricePerUserPerMonth: pricePerUserPerMonth || 10.0,
-      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || organization.maxUsers || 50) * (pricePerUserPerMonth || 10.0)),
+      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || 50) * (pricePerUserPerMonth || 10.0)),
       isActive: true
     }).returning();
 
@@ -715,10 +716,9 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
       subscriptionPeriod,
       customDurationDays,
       expirationDate,
-      maxUsers: organization?.maxUsers || 50, // Use organization's max users setting
-      subscribedUsers: subscribedUsers || currentSubscription.subscribedUsers || organization?.maxUsers || 50,
+      subscribedUsers: subscribedUsers || currentSubscription.subscribedUsers || 50,
       pricePerUserPerMonth: pricePerUserPerMonth || currentSubscription.pricePerUserPerMonth || 10.0,
-      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || currentSubscription.subscribedUsers || organization?.maxUsers || 50) * (pricePerUserPerMonth || currentSubscription.pricePerUserPerMonth || 10.0)),
+      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || currentSubscription.subscribedUsers || 50) * (pricePerUserPerMonth || currentSubscription.pricePerUserPerMonth || 10.0)),
       isActive: true
     }).returning();
 
@@ -756,7 +756,6 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
       subscriptionPeriod: subscriptions.subscriptionPeriod,
       customDurationDays: subscriptions.customDurationDays,
       expirationDate: subscriptions.expirationDate,
-      maxUsers: subscriptions.maxUsers,
       subscribedUsers: subscriptions.subscribedUsers,
       pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
       totalMonthlyAmount: subscriptions.totalMonthlyAmount,
@@ -813,7 +812,6 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
       subscriptionPeriod: subscriptions.subscriptionPeriod,
       lastPaymentDate: subscriptions.lastPaymentDate,
       expirationDate: subscriptions.expirationDate,
-      maxUsers: subscriptions.maxUsers,
       subscribedUsers: subscriptions.subscribedUsers,
       pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
       totalMonthlyAmount: subscriptions.totalMonthlyAmount,

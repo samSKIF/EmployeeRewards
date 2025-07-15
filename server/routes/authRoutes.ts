@@ -12,13 +12,12 @@ import jwt from "jsonwebtoken";
 const router = Router();
 
 // Helper function to check user count limits for organization
-async function checkUserCountLimit(organizationId: number): Promise<{ allowed: boolean; message?: string; currentCount?: number; maxUsers?: number }> {
+async function checkUserCountLimit(organizationId: number): Promise<{ allowed: boolean; message?: string; currentCount?: number; subscribedUsers?: number }> {
   try {
     // Get organization's current subscription
     const [organization] = await db.select({
       id: organizations.id,
-      currentSubscriptionId: organizations.currentSubscriptionId,
-      maxUsers: organizations.maxUsers
+      currentSubscriptionId: organizations.currentSubscriptionId
     }).from(organizations).where(eq(organizations.id, organizationId));
 
     if (!organization) {
@@ -32,12 +31,12 @@ async function checkUserCountLimit(organizationId: number): Promise<{ allowed: b
     
     const currentUserCount = userCountResult.count;
 
-    // Get subscription max users limit if there's an active subscription
-    let maxUsersLimit = organization.maxUsers || 50; // Default fallback
+    // Get subscription subscribed users limit if there's an active subscription
+    let subscribedUsersLimit = 50; // Default fallback
 
     if (organization.currentSubscriptionId) {
       const [subscription] = await db.select({
-        maxUsers: subscriptions.maxUsers,
+        subscribedUsers: subscriptions.subscribedUsers,
         isActive: subscriptions.isActive,
         expirationDate: subscriptions.expirationDate
       }).from(subscriptions).where(eq(subscriptions.id, organization.currentSubscriptionId));
@@ -47,26 +46,26 @@ async function checkUserCountLimit(organizationId: number): Promise<{ allowed: b
         const now = new Date();
         const isExpired = new Date(subscription.expirationDate) <= now;
         
-        if (!isExpired && subscription.maxUsers) {
-          maxUsersLimit = subscription.maxUsers;
+        if (!isExpired && subscription.subscribedUsers) {
+          subscribedUsersLimit = subscription.subscribedUsers;
         }
       }
     }
 
     // Check if adding a new user would exceed the limit
-    if (currentUserCount >= maxUsersLimit) {
+    if (currentUserCount >= subscribedUsersLimit) {
       return { 
         allowed: false, 
-        message: `Organization has reached its user limit of ${maxUsersLimit} users. Current count: ${currentUserCount}`,
+        message: `Organization has reached its user limit of ${subscribedUsersLimit} users. Current count: ${currentUserCount}`,
         currentCount: currentUserCount,
-        maxUsers: maxUsersLimit
+        subscribedUsers: subscribedUsersLimit
       };
     }
 
     return { 
       allowed: true,
       currentCount: currentUserCount,
-      maxUsers: maxUsersLimit
+      subscribedUsers: subscribedUsersLimit
     };
   } catch (error) {
     logger.error("Error checking user count limit:", error);
@@ -110,7 +109,7 @@ router.post("/register", async (req, res) => {
             message: userLimitCheck.message,
             error: "USER_LIMIT_EXCEEDED",
             currentCount: userLimitCheck.currentCount,
-            maxUsers: userLimitCheck.maxUsers
+            subscribedUsers: userLimitCheck.subscribedUsers
           });
         }
       }
@@ -162,7 +161,7 @@ router.post("/register", async (req, res) => {
             message: userLimitCheck.message,
             error: "USER_LIMIT_EXCEEDED",
             currentCount: userLimitCheck.currentCount,
-            maxUsers: userLimitCheck.maxUsers
+            subscribedUsers: userLimitCheck.subscribedUsers
           });
         }
       }

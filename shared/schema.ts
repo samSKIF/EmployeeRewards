@@ -19,7 +19,6 @@ export const organizations: any = pgTable("organizations", {
   
   // Organization Details
   industry: text("industry"),
-  maxUsers: integer("max_users").default(50),
   address: jsonb("address"), // {street, city, state, country, zip}
   
   // Legacy and System Fields
@@ -40,8 +39,7 @@ export const subscriptions = pgTable("subscriptions", {
   subscriptionPeriod: text("subscription_period").notNull(), // 'quarter', 'year', 'custom'
   customDurationDays: integer("custom_duration_days"), // Only for 'custom' period
   expirationDate: timestamp("expiration_date").notNull(), // Calculated server-side
-  maxUsers: integer("max_users").notNull().default(50), // Maximum number of users allowed
-  subscribedUsers: integer("subscribed_users").notNull().default(50), // Number of users they paid for
+  subscribedUsers: integer("subscribed_users").notNull().default(50), // Number of users they paid for (this is the user limit)
   pricePerUserPerMonth: doublePrecision("price_per_user_per_month").notNull().default(10.0), // Monthly cost per user
   totalMonthlyAmount: doublePrecision("total_monthly_amount").notNull().default(500.0), // Total monthly subscription cost
   isActive: boolean("is_active").default(true).notNull(),
@@ -1125,7 +1123,6 @@ export const createOrganizationSchema = z.object({
   contactEmail: z.string().email("Valid contact email is required"),
   contactPhone: z.string().optional(),
   superuserEmail: z.string().email("Valid superuser email is required"),
-  maxUsers: z.number().min(1, "Must allow at least 1 user").max(10000, "Maximum 10,000 users allowed"),
   industry: z.string().min(1, "Industry selection is required"),
   address: z.object({
     street: z.string().min(5, "Street address is required"),

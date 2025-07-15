@@ -503,29 +503,7 @@ export default function CreateOrganization({ onClose }: CreateOrganizationProps)
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="maxUsers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Maximum Users *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number"
-                          min="1"
-                          placeholder="Enter maximum number of users"
-                          className="w-full md:w-1/2"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <p className="text-sm text-gray-500">
-                        Specify the maximum number of users allowed for this organization
-                      </p>
-                    </FormItem>
-                  )}
-                />
+
               </CardContent>
             </Card>
 

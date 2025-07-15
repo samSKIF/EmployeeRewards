@@ -505,33 +505,33 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   <p className="text-lg font-semibold">{subscriptionData.currentUserCount || 0}</p>
                 </div>
                 <div>
-                  <Label className="text-sm text-muted-foreground">Max Users</Label>
-                  <p className="text-lg font-semibold">{subscriptionData.maxUsers || 'N/A'}</p>
+                  <Label className="text-sm text-muted-foreground">Subscribed Users</Label>
+                  <p className="text-lg font-semibold">{subscriptionData.subscribedUsers || 'N/A'}</p>
                 </div>
               </div>
-              {subscriptionData.maxUsers && (
+              {subscriptionData.subscribedUsers && (
                 <div className="mt-3">
                   <div className="flex justify-between text-sm text-muted-foreground mb-1">
                     <span>Usage</span>
                     <span>
-                      {subscriptionData.currentUserCount || 0} / {subscriptionData.maxUsers}
+                      {subscriptionData.currentUserCount || 0} / {subscriptionData.subscribedUsers}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all ${
-                        ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.9 
+                        ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.9 
                           ? 'bg-red-500' 
-                          : ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.8 
+                          : ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.8 
                           ? 'bg-orange-500' 
                           : 'bg-green-500'
                       }`}
                       style={{ 
-                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) * 100)}%` 
+                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) * 100)}%` 
                       }}
                     />
                   </div>
-                  {((subscriptionData.currentUserCount || 0) / subscriptionData.maxUsers) >= 0.9 && (
+                  {((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.9 && (
                     <p className="text-xs text-red-600 mt-1">
                       ⚠️ Approaching user limit - new registrations may be blocked
                     </p>
