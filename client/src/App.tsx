@@ -111,16 +111,20 @@ function App() {
     <TooltipProvider>
       <Toaster />
       {appReady && (
-        <AuthProvider>
-          <BrandingProvider>
-            <Switch>
-              {/* Management Dashboard - Separate from social platform */}
-              <Route path="/management">
-                <ManagementDashboard />
-              </Route>
-              <Route path="/management/organizations/new">
-                <CreateOrganization />
-              </Route>
+        <Switch>
+          {/* Management Dashboard - Separate from social platform (no AuthProvider) */}
+          <Route path="/management">
+            <ManagementDashboard />
+          </Route>
+          <Route path="/management/organizations/new">
+            <CreateOrganization />
+          </Route>
+          
+          {/* All other routes use AuthProvider */}
+          <Route>
+            <AuthProvider>
+              <BrandingProvider>
+                <Switch>
 
               {/* Main dashboard routes */}
               <Route path="/social">
@@ -379,12 +383,14 @@ function App() {
                   </svg>
                 </div>
               </Route>
-              <Route>
-                <NotFound />
-              </Route>
-            </Switch>
-          </BrandingProvider>
-        </AuthProvider>
+                  <Route>
+                    <NotFound />
+                  </Route>
+                </Switch>
+              </BrandingProvider>
+            </AuthProvider>
+          </Route>
+        </Switch>
       )}
     </TooltipProvider>
   );
