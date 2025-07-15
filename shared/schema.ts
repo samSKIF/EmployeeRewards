@@ -41,6 +41,9 @@ export const subscriptions = pgTable("subscriptions", {
   customDurationDays: integer("custom_duration_days"), // Only for 'custom' period
   expirationDate: timestamp("expiration_date").notNull(), // Calculated server-side
   maxUsers: integer("max_users").notNull().default(50), // Maximum number of users allowed
+  subscribedUsers: integer("subscribed_users").notNull().default(50), // Number of users they paid for
+  pricePerUserPerMonth: doublePrecision("price_per_user_per_month").notNull().default(10.0), // Monthly cost per user
+  totalMonthlyAmount: doublePrecision("total_monthly_amount").notNull().default(500.0), // Total monthly subscription cost
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

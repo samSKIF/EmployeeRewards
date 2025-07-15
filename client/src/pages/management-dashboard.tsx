@@ -367,7 +367,10 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
     defaultValues: {
       lastPaymentDate: new Date().toISOString().split('T')[0],
       subscriptionPeriod: 'quarter' as 'quarter' | 'year' | 'custom',
-      customDurationDays: 90
+      customDurationDays: 90,
+      subscribedUsers: 50,
+      pricePerUserPerMonth: 10.0,
+      totalMonthlyAmount: 500.0
     }
   });
 
@@ -443,7 +446,7 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
             <CardTitle className="text-lg">Current Subscription</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label className="text-sm text-muted-foreground">Status</Label>
                 <Badge variant={isActive ? "default" : "secondary"}>
@@ -467,6 +470,29 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   {subscriptionData.expirationDate ? 
                     new Date(subscriptionData.expirationDate).toLocaleDateString() : 'N/A'}
                 </p>
+              </div>
+            </div>
+            
+            {/* Pricing Information */}
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-3">Subscription Pricing</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">Subscribed Users</Label>
+                  <p className="text-lg font-semibold">{subscriptionData.subscribedUsers || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">Price Per User/Month</Label>
+                  <p className="text-lg font-semibold">
+                    ${subscriptionData.pricePerUserPerMonth ? subscriptionData.pricePerUserPerMonth.toFixed(2) : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">Total Monthly Amount</Label>
+                  <p className="text-lg font-semibold text-green-600">
+                    ${subscriptionData.totalMonthlyAmount ? subscriptionData.totalMonthlyAmount.toFixed(2) : 'N/A'}
+                  </p>
+                </div>
               </div>
             </div>
             
@@ -597,6 +623,79 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   )}
                 />
               )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={subscriptionForm.control}
+                  name="subscribedUsers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subscribed Users</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="50"
+                          {...field} 
+                          onChange={(e) => {
+                            const users = Number(e.target.value);
+                            field.onChange(users);
+                            // Auto-calculate total monthly amount
+                            const pricePerUser = subscriptionForm.getValues('pricePerUserPerMonth') || 10;
+                            subscriptionForm.setValue('totalMonthlyAmount', users * pricePerUser);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={subscriptionForm.control}
+                  name="pricePerUserPerMonth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price Per User/Month ($)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="10.00"
+                          {...field} 
+                          onChange={(e) => {
+                            const price = Number(e.target.value);
+                            field.onChange(price);
+                            // Auto-calculate total monthly amount
+                            const users = subscriptionForm.getValues('subscribedUsers') || 50;
+                            subscriptionForm.setValue('totalMonthlyAmount', users * price);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={subscriptionForm.control}
+                name="totalMonthlyAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Total Monthly Amount ($)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01"
+                        placeholder="500.00"
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <Button 
                 type="submit" 

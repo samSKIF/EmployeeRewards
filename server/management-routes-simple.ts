@@ -302,7 +302,10 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
       // Subscription fields
       lastPaymentDate,
       subscriptionPeriod,
-      customDurationDays
+      customDurationDays,
+      subscribedUsers,
+      pricePerUserPerMonth,
+      totalMonthlyAmount
     } = req.body;
 
     // Validate required fields
@@ -347,6 +350,9 @@ router.post('/organizations', verifyCorporateAdmin, checkPermission('manageOrgan
         customDurationDays,
         expirationDate,
         maxUsers: newOrganization.maxUsers || 50, // Use organization's max users setting
+        subscribedUsers: subscribedUsers || newOrganization.maxUsers || 50, // Default to max users
+        pricePerUserPerMonth: pricePerUserPerMonth || 10.0, // Default price
+        totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || newOrganization.maxUsers || 50) * (pricePerUserPerMonth || 10.0)), // Calculate total
         isActive: true
       }).returning();
 
@@ -617,7 +623,7 @@ router.get('/analytics', verifyCorporateAdmin, async (req, res) => {
 router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
+    const { lastPaymentDate, subscriptionPeriod, customDurationDays, subscribedUsers, pricePerUserPerMonth, totalMonthlyAmount } = req.body;
 
     // Check if organization exists
     const [organization] = await db.select().from(organizations).where(eq(organizations.id, Number(id)));
@@ -650,6 +656,9 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
       customDurationDays,
       expirationDate,
       maxUsers: organization.maxUsers || 50, // Use organization's max users setting
+      subscribedUsers: subscribedUsers || organization.maxUsers || 50,
+      pricePerUserPerMonth: pricePerUserPerMonth || 10.0,
+      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || organization.maxUsers || 50) * (pricePerUserPerMonth || 10.0)),
       isActive: true
     }).returning();
 
@@ -675,7 +684,7 @@ router.post('/organizations/:id/subscription', verifyCorporateAdmin, checkPermis
 router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { lastPaymentDate, subscriptionPeriod, customDurationDays } = req.body;
+    const { lastPaymentDate, subscriptionPeriod, customDurationDays, subscribedUsers, pricePerUserPerMonth, totalMonthlyAmount } = req.body;
 
     // Get current subscription
     const [currentSubscription] = await db.select()
@@ -707,6 +716,9 @@ router.post('/organizations/:id/subscription/renew', verifyCorporateAdmin, check
       customDurationDays,
       expirationDate,
       maxUsers: organization?.maxUsers || 50, // Use organization's max users setting
+      subscribedUsers: subscribedUsers || currentSubscription.subscribedUsers || organization?.maxUsers || 50,
+      pricePerUserPerMonth: pricePerUserPerMonth || currentSubscription.pricePerUserPerMonth || 10.0,
+      totalMonthlyAmount: totalMonthlyAmount || ((subscribedUsers || currentSubscription.subscribedUsers || organization?.maxUsers || 50) * (pricePerUserPerMonth || currentSubscription.pricePerUserPerMonth || 10.0)),
       isActive: true
     }).returning();
 
@@ -745,6 +757,9 @@ router.get('/organizations/:id/subscription', verifyCorporateAdmin, checkPermiss
       customDurationDays: subscriptions.customDurationDays,
       expirationDate: subscriptions.expirationDate,
       maxUsers: subscriptions.maxUsers,
+      subscribedUsers: subscriptions.subscribedUsers,
+      pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
+      totalMonthlyAmount: subscriptions.totalMonthlyAmount,
       isActive: subscriptions.isActive,
       subscriptionCreatedAt: subscriptions.createdAt
     })
@@ -799,6 +814,9 @@ router.get('/subscriptions/monitor', verifyCorporateAdmin, async (req, res) => {
       lastPaymentDate: subscriptions.lastPaymentDate,
       expirationDate: subscriptions.expirationDate,
       maxUsers: subscriptions.maxUsers,
+      subscribedUsers: subscriptions.subscribedUsers,
+      pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
+      totalMonthlyAmount: subscriptions.totalMonthlyAmount,
       isActive: subscriptions.isActive,
       daysRemaining: sql<number>`EXTRACT(DAY FROM subscriptions.expiration_date - CURRENT_TIMESTAMP)`,
     })
