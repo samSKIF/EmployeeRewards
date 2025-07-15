@@ -314,7 +314,10 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
 const DashboardStats = () => {
   const { data: stats } = useQuery<Analytics>({
     queryKey: ['/api/management/analytics'],
-    queryFn: () => managementApi('/analytics')
+    queryFn: async () => {
+      const result = await managementApi('/analytics');
+      return result;
+    }
   });
 
   const statCards = [
@@ -354,7 +357,10 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
   // Get current subscription status
   const { data: subscriptionData, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organizationId}/subscription`],
-    queryFn: () => managementApi(`/organizations/${organizationId}/subscription`)
+    queryFn: async () => {
+      const result = await managementApi(`/organizations/${organizationId}/subscription`);
+      return result;
+    }
   });
 
   const subscriptionForm = useForm({
@@ -640,7 +646,10 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const { data: fullOrganization, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organization.id}`],
     enabled: !!organization.id,
-    queryFn: () => managementApi(`/organizations/${organization.id}`)
+    queryFn: async () => {
+      const result = await managementApi(`/organizations/${organization.id}`);
+      return result;
+    }
   });
 
   console.log('Query state:', { isLoading, fullOrganization });
@@ -1016,7 +1025,10 @@ const OrganizationsManagement = () => {
 
   const { data: organizations, isLoading, error } = useQuery<Organization[]>({
     queryKey: ['/api/management/organizations'],
-    queryFn: () => managementApi('/organizations')
+    queryFn: async () => {
+      const result = await managementApi('/organizations');
+      return result;
+    }
   });
 
   console.log('Organizations Query:', { isLoading, error, organizations });
