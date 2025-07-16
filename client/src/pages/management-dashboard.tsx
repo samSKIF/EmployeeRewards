@@ -348,6 +348,95 @@ const DashboardStats = () => {
   );
 };
 
+// Unified Organization Management Component
+const UnifiedOrganizationManager = ({ 
+  organization, 
+  onSuccess, 
+  onResetPassword, 
+  creditWalletMutation 
+}: {
+  organization: Organization;
+  onSuccess: () => void;
+  onResetPassword: () => void;
+  creditWalletMutation: any;
+}) => {
+  const [activeTab, setActiveTab] = useState("details");
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="details">Organization Details</TabsTrigger>
+        <TabsTrigger value="admin">Admin Access</TabsTrigger>
+        <TabsTrigger value="subscription">Subscription</TabsTrigger>
+        <TabsTrigger value="wallet">Wallet</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="details" className="space-y-4">
+        <EditOrganizationForm organization={organization} onSuccess={onSuccess} />
+      </TabsContent>
+      
+      <TabsContent value="admin" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Password Management</CardTitle>
+            <CardDescription>
+              Reset the admin password for {organization.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={onResetPassword} variant="destructive">
+              <Key className="h-4 w-4 mr-2" />
+              Reset Admin Password
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              This will generate a new random password and display it once. Make sure to save it securely.
+            </p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="subscription" className="space-y-4">
+        <SubscriptionManagement organizationId={organization.id} />
+      </TabsContent>
+      
+      <TabsContent value="wallet" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Credit Organization Wallet</CardTitle>
+            <CardDescription>
+              Add funds to {organization.name}'s wallet for rewards and purchases
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              creditWalletMutation.mutate({
+                organizationId: organization.id,
+                amount: Number(formData.get('amount')),
+                description: formData.get('description') as string
+              });
+            }} className="space-y-4">
+              <div>
+                <Label htmlFor="amount">Amount ($)</Label>
+                <Input name="amount" type="number" step="0.01" required placeholder="100.00" />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Input name="description" placeholder="e.g., Monthly credit allocation" required />
+              </div>
+              <Button type="submit" className="w-full" disabled={creditWalletMutation.isPending}>
+                <CreditCard className="h-4 w-4 mr-2" />
+                {creditWalletMutation.isPending ? 'Processing...' : 'Credit Wallet'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  );
+};
+
 // Subscription Management Component
 const SubscriptionManagement = ({ organizationId }: { organizationId: number }) => {
   const { toast } = useToast();
@@ -1218,86 +1307,32 @@ const OrganizationsManagement = () => {
                   <Badge variant={organization.status === 'active' ? 'default' : 'secondary'}>
                     {organization.status}
                   </Badge>
-                  <div className="flex gap-1">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <CreditCard className="h-4 w-4 mr-1" />
-                          Credit Wallet
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Credit Organization Wallet</DialogTitle>
-                          <DialogDescription>
-                            Add funds to {organization.name}'s wallet
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={(e) => {
-                          e.preventDefault();
-                          const formData = new FormData(e.currentTarget);
-                          creditWalletMutation.mutate({
-                            organizationId: organization.id,
-                            amount: Number(formData.get('amount')),
-                            description: formData.get('description') as string
-                          });
-                        }} className="space-y-4">
-                          <div>
-                            <Label htmlFor="amount">Amount ($)</Label>
-                            <Input name="amount" type="number" step="0.01" required />
-                          </div>
-                          <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Input name="description" placeholder="e.g., Monthly credit" required />
-                          </div>
-                          <Button type="submit" className="w-full" disabled={creditWalletMutation.isPending}>
-                            {creditWalletMutation.isPending ? 'Processing...' : 'Credit Wallet'}
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl">
-                        <DialogHeader>
-                          <DialogTitle>Edit Organization</DialogTitle>
-                          <DialogDescription>
-                            Update organization details for {organization.name}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <EditOrganizationForm organization={organization} onSuccess={() => {
-                          queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
-                        }} />
-                      </DialogContent>
-                    </Dialog>
-                    <Button variant="outline" size="sm" onClick={() => handleResetPassword(organization.id)}>
-                      Reset Admin Password
-                    </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Manage Subscription
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Subscription Management</DialogTitle>
-                          <DialogDescription>
-                            Manage subscription for {organization.name}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="max-h-[70vh] overflow-y-auto">
-                          <SubscriptionManagement organizationId={organization.id} />
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Manage Organization
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Manage {organization.name}</DialogTitle>
+                        <DialogDescription>
+                          Complete organization management for {organization.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="max-h-[75vh] overflow-y-auto">
+                        <UnifiedOrganizationManager 
+                          organization={organization} 
+                          onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+                          }}
+                          onResetPassword={() => handleResetPassword(organization.id)}
+                          creditWalletMutation={creditWalletMutation}
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardHeader>
