@@ -261,32 +261,6 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    logger.debug("Password verified, checking password reset requirement");
-
-    // Check if user needs to reset password
-    if (user.passwordResetRequired && user.passwordResetExpires) {
-      const now = new Date();
-      if (now <= user.passwordResetExpires) {
-        // Password reset is required and still valid
-        logger.info(`User ${user.username} must reset password before continuing`);
-        
-        const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-        
-        return res.json({
-          passwordResetRequired: true,
-          token,
-          message: "Password reset required. Please change your password to continue.",
-          expiresAt: user.passwordResetExpires
-        });
-      } else {
-        // Reset token expired, deny login
-        logger.warn(`Password reset token expired for user ${user.username}`);
-        return res.status(401).json({ 
-          message: "Password reset token has expired. Please contact your administrator." 
-        });
-      }
-    }
-
     logger.debug("Password verified, checking organization subscription status");
 
     // Check if user's organization has an active subscription (skip for corporate admins)
@@ -395,47 +369,6 @@ router.post("/login", async (req, res) => {
   } catch (error: any) {
     logger.error("Login error:", error);
     res.status(500).json({ message: error.message || "An error occurred during login" });
-  }
-});
-
-// Change password after forced reset
-router.post("/change-password", verifyToken, async (req, res) => {
-  try {
-    const { newPassword } = req.body;
-    const userId = req.user?.id;
-
-    if (!newPassword) {
-      return res.status(400).json({ message: "New password is required" });
-    }
-
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long" });
-    }
-
-    // Hash the new password
-    const hashedPassword = await hash(newPassword, 10);
-
-    // Update user password and clear reset flags
-    await db.update(users)
-      .set({
-        password: hashedPassword,
-        passwordResetRequired: false,
-        passwordResetToken: null,
-        passwordResetExpires: null,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, userId));
-
-    logger.info(`Password successfully changed for user ${userId}`);
-
-    res.json({
-      message: "Password changed successfully",
-      success: true
-    });
-
-  } catch (error) {
-    logger.error("Password change error:", error);
-    res.status(500).json({ message: "Failed to change password" });
   }
 });
 

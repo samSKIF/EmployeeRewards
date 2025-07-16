@@ -1245,43 +1245,22 @@ const OrganizationsManagement = () => {
 
   const handleResetPassword = async (organizationId: number) => {
     try {
-      const organization = organizations?.find(org => org.id === organizationId);
-      if (!organization) return;
-
       const response = await managementApi(`/organizations/${organizationId}/reset-password`, {
         method: 'POST'
       });
 
-      if (response) {
-        // Show detailed information about the password reset
-        const resetInfo = response as any;
-        toast({
-          title: 'Password Reset Successful',
-          description: (
-            <div className="space-y-2">
-              <p>Admin password has been reset for <strong>{organization.name}</strong></p>
-              <p>Email sent to: <strong>{resetInfo.adminEmail}</strong></p>
-              <div className="bg-gray-100 p-3 rounded-md mt-2">
-                <p className="text-sm font-mono"><strong>Temporary Password:</strong></p>
-                <p className="text-lg font-mono bg-white p-2 rounded border">
-                  {resetInfo.temporaryPassword}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  This password expires in 24 hours. Admin will be forced to change it on next login.
-                </p>
-              </div>
-            </div>
-          ),
-          duration: 15000 // Show for 15 seconds
+      if (response.ok) {
+        const result = await response.json();
+        toast({ 
+          title: 'Password Reset Successfully', 
+          description: `New password: ${result.newPassword}`,
+          duration: 10000
         });
+      } else {
+        toast({ title: 'Failed to reset password', variant: 'destructive' });
       }
     } catch (error) {
-      console.error('Password reset failed:', error);
-      toast({
-        title: 'Password Reset Failed',
-        description: 'Unable to reset password. Please try again.',
-        variant: 'destructive'
-      });
+      toast({ title: 'Failed to reset password', variant: 'destructive' });
     }
   };
 

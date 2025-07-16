@@ -4,8 +4,6 @@ import jwt from 'jsonwebtoken';
 import { db, pool } from './db';
 import { users, organizations, subscriptions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count, sql } from 'drizzle-orm';
-import crypto from 'crypto';
-import { emailService } from './email-service';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -906,85 +904,6 @@ router.post('/organizations/:id/subscription/deactivate', verifyCorporateAdmin, 
   } catch (error) {
     console.error('Failed to deactivate subscription:', error);
     res.status(500).json({ error: 'Failed to deactivate subscription' });
-  }
-});
-
-// Generate a secure random password
-function generateSecurePassword(): string {
-  const length = 12;
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-  let password = '';
-  for (let i = 0; i < length; i++) {
-    password += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return password;
-}
-
-// Reset organization admin password
-router.post('/organizations/:id/reset-password', verifyCorporateAdmin, checkPermission('manageOrganizations'), async (req: AuthenticatedManagementRequest, res) => {
-  try {
-    const organizationId = parseInt(req.params.id);
-    
-    // Get organization details
-    const [organization] = await db.select().from(organizations).where(eq(organizations.id, organizationId));
-    if (!organization) {
-      return res.status(404).json({ message: 'Organization not found' });
-    }
-
-    // Find the admin user for this organization
-    const [adminUser] = await db.select().from(users).where(
-      and(
-        eq(users.organizationId, organizationId),
-        eq(users.roleType, 'client_admin')
-      )
-    );
-
-    if (!adminUser) {
-      return res.status(404).json({ message: 'No admin user found for this organization' });
-    }
-
-    // Generate new temporary password
-    const newPassword = generateSecurePassword();
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Generate reset token (for tracking)
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Update user with new password and reset flags
-    await db.update(users)
-      .set({
-        password: hashedPassword,
-        passwordResetRequired: true,
-        passwordResetToken: resetToken,
-        passwordResetExpires: resetExpires,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, adminUser.id));
-
-    // Send email notification to admin
-    const emailResult = await emailService.sendPasswordResetEmail(
-      adminUser.email,
-      newPassword,
-      organization.name
-    );
-
-    if (!emailResult.success) {
-      console.error('Failed to send password reset email:', emailResult.error);
-      // Don't fail the request, but log the issue
-    }
-
-    res.json({
-      message: 'Password reset successfully',
-      adminEmail: adminUser.email,
-      temporaryPassword: newPassword, // Return for corporate admin to see
-      emailSent: emailResult.success,
-      expiresAt: resetExpires
-    });
-
-  } catch (error) {
-    console.error('Password reset error:', error);
-    res.status(500).json({ message: 'Failed to reset password' });
   }
 });
 
