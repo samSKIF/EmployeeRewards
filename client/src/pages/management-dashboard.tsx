@@ -1285,14 +1285,16 @@ const OrganizationsManagement = () => {
                           Manage Subscription
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Subscription Management</DialogTitle>
                           <DialogDescription>
                             Manage subscription for {organization.name}
                           </DialogDescription>
                         </DialogHeader>
-                        <SubscriptionManagement organizationId={organization.id} />
+                        <div className="max-h-[70vh] overflow-y-auto">
+                          <SubscriptionManagement organizationId={organization.id} />
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
