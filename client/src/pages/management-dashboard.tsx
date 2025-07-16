@@ -925,6 +925,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       if (response) {
         toast({ title: 'Organization updated successfully' });
         setIsOpen(false);
+        // Immediately refetch to get latest data
+        await fullOrgQuery.refetch();
         onSuccess();
       } else {
         toast({ title: 'Failed to update organization', variant: 'destructive' });
@@ -1309,8 +1311,10 @@ const OrganizationsManagement = () => {
                       <div className="max-h-[75vh] overflow-y-auto">
                         <UnifiedOrganizationManager 
                           organization={organization} 
-                          onSuccess={() => {
-                            queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+                          onSuccess={async () => {
+                            await queryClient.invalidateQueries({ queryKey: ['/organizations'] });
+                            await queryClient.invalidateQueries({ queryKey: [`/organizations/${organization.id}`] });
+                            setSelectedOrg(null);
                           }}
                           onResetPassword={() => handleResetPassword(organization.id)}
                           creditWalletMutation={creditWalletMutation}
