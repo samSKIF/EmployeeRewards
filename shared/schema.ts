@@ -90,6 +90,9 @@ export const users = pgTable("users", {
   adminScope: text("admin_scope").default("none"), // 'super', 'site', 'department', 'hybrid', 'none'
   allowedSites: text("allowed_sites").array().default([]), // Array of sites this admin can manage (multiple sites possible)
   allowedDepartments: text("allowed_departments").array().default([]), // Array of departments this admin can manage (multiple departments possible)
+  passwordResetRequired: boolean("password_reset_required").default(false), // Force password change on next login
+  passwordResetToken: text("password_reset_token"), // Temporary reset token
+  passwordResetExpires: timestamp("password_reset_expires"), // Reset token expiration
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by"),
 });

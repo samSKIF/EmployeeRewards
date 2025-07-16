@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useBranding } from "@/context/BrandingContext";
+import { PasswordChangeDialog } from "@/components/PasswordChangeDialog";
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
@@ -18,6 +19,9 @@ export default function AuthPage() {
   const [showSubscriptionWarning, setShowSubscriptionWarning] = useState(false);
   const [subscriptionMessage, setSubscriptionMessage] = useState("");
   const [adminContactEmail, setAdminContactEmail] = useState("");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [passwordResetToken, setPasswordResetToken] = useState("");
+  const [passwordResetExpires, setPasswordResetExpires] = useState("");
   
   // Admin account setup form fields
   const [adminEmail, setAdminEmail] = useState("");
@@ -140,6 +144,21 @@ export default function AuthPage() {
       }
       
       const data = await response.json();
+      
+      // Check if password reset is required
+      if (data.passwordResetRequired) {
+        // Store the token temporarily for password change
+        setPasswordResetToken(data.token);
+        setPasswordResetExpires(data.expiresAt);
+        setShowPasswordReset(true);
+        
+        toast({
+          title: "Password Reset Required",
+          description: data.message,
+          variant: "default"
+        });
+        return;
+      }
       
       // Store the authentication token
       localStorage.setItem("token", data.token);
@@ -463,6 +482,28 @@ export default function AuthPage() {
           </p>
         </div>
       </div>
+      
+      {/* Password Change Dialog */}
+      <PasswordChangeDialog
+        isOpen={showPasswordReset}
+        token={passwordResetToken}
+        onPasswordChanged={() => {
+          // Store the token and redirect after successful password change
+          localStorage.setItem("token", passwordResetToken);
+          setShowPasswordReset(false);
+          
+          toast({
+            title: "Success",
+            description: "Password changed successfully. Redirecting...",
+          });
+          
+          // Redirect to social platform
+          setTimeout(() => {
+            window.location.href = '/social';
+          }, 1000);
+        }}
+        expiresAt={passwordResetExpires}
+      />
     </div>
   );
 }
