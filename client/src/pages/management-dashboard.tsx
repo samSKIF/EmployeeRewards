@@ -905,6 +905,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         setAvailableCities(COUNTRY_CITIES[formData.address.country] || []);
       }
 
+      // Reset form to trigger re-render with new values
+      form.reset(formData);
+
       console.log('Form values after setting:', form.getValues());
     }
   }, [fullOrganization, organization, form]);
