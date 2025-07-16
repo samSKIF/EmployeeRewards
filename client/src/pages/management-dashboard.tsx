@@ -846,7 +846,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
     defaultValues: {
       name: organization.name,
       status: organization.status,
-      maxUsers: organization.maxUsers || 50,
       contactName: '',
       contactEmail: '',
       contactPhone: '',
@@ -871,12 +870,11 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       const formData = {
         name: fullOrganization.name || '',
         status: fullOrganization.status || 'active',
-        maxUsers: fullOrganization.maxUsers || 50,
         contactName: fullOrganization.contactName || '',
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
         superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
-        industry: fullOrganization.activity || fullOrganization.industry || '',
+        industry: fullOrganization.industry || '',
         address: {
           street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
@@ -890,7 +888,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       // Force form update with explicit field setting
       form.setValue('name', formData.name);
       form.setValue('status', formData.status);
-      form.setValue('maxUsers', formData.maxUsers);
       form.setValue('contactName', formData.contactName);
       form.setValue('contactEmail', formData.contactEmail);
       form.setValue('contactPhone', formData.contactPhone);
@@ -959,7 +956,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue />
@@ -971,22 +968,6 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                     <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="maxUsers"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Maximum Users</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -1059,7 +1040,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           render={({ field }) => (
             <FormItem>
               <FormLabel>Business Activity *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select business activity" />
@@ -1109,7 +1090,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                       // Reset city when country changes
                       form.setValue('address.city', '');
                     }}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -1137,7 +1118,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                   {availableCities.length > 0 ? (
                     <Select 
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={!selectedCountry}
                     >
                       <FormControl>
