@@ -115,36 +115,36 @@ interface PlatformStats {
 
 // Activities list for organizations
 const ACTIVITIES = [
-  'Technology & Software',
-  'Healthcare & Medical',
-  'Financial Services',
-  'Education & Training',
-  'Manufacturing',
-  'Retail & E-commerce',
-  'Consulting Services',
-  'Real Estate',
-  'Construction',
-  'Transportation & Logistics',
-  'Food & Beverage',
-  'Media & Entertainment',
-  'Telecommunications',
-  'Energy & Utilities',
-  'Government & Public Sector',
-  'Non-Profit Organizations',
-  'Aerospace & Defense',
-  'Automotive',
-  'Pharmaceuticals',
-  'Agriculture',
-  'Tourism & Hospitality',
-  'Legal Services',
-  'Marketing & Advertising',
-  'Insurance',
-  'Banking',
-  'Architecture & Design',
-  'Research & Development',
-  'Human Resources',
-  'Facility Management',
-  'Security Services'
+  { label: 'Technology & Software', value: 'technology' },
+  { label: 'Healthcare & Medical', value: 'healthcare' },
+  { label: 'Financial Services', value: 'financial' },
+  { label: 'Education & Training', value: 'education' },
+  { label: 'Manufacturing', value: 'manufacturing' },
+  { label: 'Retail & E-commerce', value: 'retail' },
+  { label: 'Consulting Services', value: 'consulting' },
+  { label: 'Real Estate', value: 'real-estate' },
+  { label: 'Construction', value: 'construction' },
+  { label: 'Transportation & Logistics', value: 'logistics' },
+  { label: 'Food & Beverage', value: 'food-beverage' },
+  { label: 'Media & Entertainment', value: 'media' },
+  { label: 'Telecommunications', value: 'telecom' },
+  { label: 'Energy & Utilities', value: 'energy' },
+  { label: 'Government & Public Sector', value: 'government' },
+  { label: 'Non-Profit Organizations', value: 'non-profit' },
+  { label: 'Aerospace & Defense', value: 'aerospace' },
+  { label: 'Automotive', value: 'automotive' },
+  { label: 'Pharmaceuticals', value: 'pharma' },
+  { label: 'Agriculture', value: 'agriculture' },
+  { label: 'Tourism & Hospitality', value: 'hospitality' },
+  { label: 'Legal Services', value: 'legal' },
+  { label: 'Marketing & Advertising', value: 'marketing' },
+  { label: 'Insurance', value: 'insurance' },
+  { label: 'Banking', value: 'banking' },
+  { label: 'Architecture & Design', value: 'architecture' },
+  { label: 'Research & Development', value: 'research' },
+  { label: 'Human Resources', value: 'hr' },
+  { label: 'Facility Management', value: 'facility' },
+  { label: 'Security Services', value: 'security' }
 ];
 
 // Country-City mapping (simplified version)
@@ -885,28 +885,29 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       };
       console.log('Processed form data:', formData);
 
-      // Force form update with explicit field setting
-      form.setValue('name', formData.name);
-      form.setValue('status', formData.status);
-      form.setValue('contactName', formData.contactName);
-      form.setValue('contactEmail', formData.contactEmail);
-      form.setValue('contactPhone', formData.contactPhone);
-      form.setValue('superuserEmail', formData.superuserEmail);
-      form.setValue('industry', formData.industry);
-      form.setValue('address.street', formData.address.street);
-      form.setValue('address.city', formData.address.city);
-      form.setValue('address.state', formData.address.state);
-      form.setValue('address.zipCode', formData.address.zipCode);
-      form.setValue('address.country', formData.address.country);
-
-      // Set selected country and update cities
+      // Set selected country and update cities BEFORE setting form values
       if (formData.address.country) {
         setSelectedCountry(formData.address.country);
         setAvailableCities(COUNTRY_CITIES[formData.address.country] || []);
       }
 
-      // Reset form to trigger re-render with new values
-      form.reset(formData);
+      // Use reset to set all form values at once - this properly updates controlled components
+      form.reset({
+        name: formData.name,
+        status: formData.status,
+        contactName: formData.contactName,
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        superuserEmail: formData.superuserEmail,
+        industry: formData.industry,
+        address: {
+          street: formData.address.street,
+          city: formData.address.city,
+          state: formData.address.state,
+          zipCode: formData.address.zipCode,
+          country: formData.address.country
+        }
+      });
 
       console.log('Form values after setting:', form.getValues());
     }
@@ -1051,8 +1052,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                 </FormControl>
                 <SelectContent className="max-h-60">
                   {ACTIVITIES.map((activity) => (
-                    <SelectItem key={activity} value={activity}>
-                      {activity}
+                    <SelectItem key={activity.value} value={activity.value}>
+                      {activity.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
