@@ -851,7 +851,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       contactEmail: '',
       contactPhone: '',
       superuserEmail: '',
-      activity: '',
+      industry: '',
       address: {
         street: '',
         city: '',
@@ -876,7 +876,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
         superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
-        activity: fullOrganization.activity || fullOrganization.industry || '',
+        industry: fullOrganization.activity || fullOrganization.industry || '',
         address: {
           street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
@@ -895,7 +895,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
       form.setValue('contactEmail', formData.contactEmail);
       form.setValue('contactPhone', formData.contactPhone);
       form.setValue('superuserEmail', formData.superuserEmail);
-      form.setValue('activity', formData.activity);
+      form.setValue('industry', formData.industry);
       form.setValue('address.street', formData.address.street);
       form.setValue('address.city', formData.address.city);
       form.setValue('address.state', formData.address.state);
@@ -1055,7 +1055,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
 
         <FormField
           control={form.control}
-          name="activity"
+          name="industry"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Business Activity *</FormLabel>
