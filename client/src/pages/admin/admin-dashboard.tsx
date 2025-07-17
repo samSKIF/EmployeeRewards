@@ -56,7 +56,7 @@ const AdminDashboard = () => {
                 </span>
               </div>
               <div className="mt-4">
-                <p className="text-sm text-gray-500">Total Users</p>
+                <p className="text-sm text-gray-500">Total Employees</p>
                 <h3 className="text-2xl font-bold">
                   {stats?.userCount || 0}
                   {stats?.subscribedUsers && (
