@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userCount = userCountResult?.count || 0;
 
       // Get subscription info to compare with limit
-      const { subscriptions, organizations } = await import("@shared/schema");
+      const { subscriptions, organizations, transactions, accounts, orders } = await import("@shared/schema");
       const [orgData] = await db
         .select({
           subscription: subscriptions,
