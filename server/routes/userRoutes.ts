@@ -184,13 +184,25 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
 
     const organizationId = req.user.organizationId;
     
-    logger.info(`Returning ${await storage.getUserCount(organizationId)} users for company ${organizationId}`);
+    const userCount = await storage.getUserCount(organizationId);
+    logger.info(`Total users in organization ${organizationId}: ${userCount}`);
+    logger.info(`Fetching users with limit: ${limit}, offset: ${offset}`);
 
     const users = await storage.getUsers(
       organizationId,
       parseInt(limit as string),
       parseInt(offset as string)
     );
+    
+    logger.info(`Returned ${users.length} users for organization ${organizationId}`);
+    
+    // Check if Shams is in the results
+    const shamsUser = users.find(u => u.name?.toLowerCase() === 'shams' || u.surname?.toLowerCase() === 'aranib');
+    if (shamsUser) {
+      logger.info(`Found Shams Aranib in results: ${JSON.stringify(shamsUser)}`);
+    } else {
+      logger.info(`Shams Aranib NOT found in current batch`);
+    }
 
     res.json(users);
   } catch (error: any) {

@@ -1629,9 +1629,9 @@ function EmployeeDirectory() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch employees
+  // Fetch employees with a higher limit to get all users
   const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
-    queryKey: ['/api/users'],
+    queryKey: ['/api/users?limit=500'],
   });
 
   // Fetch departments
