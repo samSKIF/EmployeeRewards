@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 // Import Comments component
 import { Comments } from "@/components/social";
+import { LikesModal } from "./LikesModal";
 
 interface PostProps {
   post: PostWithDetails;
@@ -41,6 +42,8 @@ export const Post = ({ post, currentUser }: PostProps) => {
   const [isCommenting, setIsCommenting] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [selectedReactionType, setSelectedReactionType] = useState<string | undefined>(undefined);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -426,30 +429,60 @@ export const Post = ({ post, currentUser }: PostProps) => {
         
         {/* Reaction counts summary */}
         {post.reactionCounts && Object.keys(post.reactionCounts).length > 0 && (
-          <div className="flex items-center text-sm text-gray-500 mb-3 pb-3 border-b">
+          <div 
+            className="flex items-center text-sm text-gray-500 mb-3 pb-3 border-b cursor-pointer hover:bg-gray-50 -mx-4 px-4 py-2 rounded-lg transition-colors"
+            onClick={() => {
+              setSelectedReactionType(undefined);
+              setShowLikesModal(true);
+            }}
+          >
             <div className="flex -space-x-1 mr-2">
               {post.reactionCounts && post.reactionCounts['like'] > 0 && (
-                <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center">
+                <div 
+                  className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center hover:scale-110 transition-transform"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedReactionType('like');
+                    setShowLikesModal(true);
+                  }}
+                >
                   <ThumbsUp className="text-teal-600 w-3 h-3" />
                 </div>
               )}
               {post.reactionCounts && post.reactionCounts['celebrate'] > 0 && (
-                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                <div 
+                  className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center hover:scale-110 transition-transform"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedReactionType('celebrate');
+                    setShowLikesModal(true);
+                  }}
+                >
                   <Award className="text-amber-600 w-3 h-3" />
                 </div>
               )}
               {post.reactionCounts && post.reactionCounts['insightful'] > 0 && (
-                <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center">
+                <div 
+                  className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center hover:scale-110 transition-transform"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedReactionType('insightful');
+                    setShowLikesModal(true);
+                  }}
+                >
                   <Sparkles className="text-purple-600 w-3 h-3" />
                 </div>
               )}
             </div>
-            <span>{post.reactionCounts ? Object.values(post.reactionCounts).reduce((a, b) => a + b, 0) : 0}</span>
+            <span className="hover:underline">
+              {post.reactionCounts ? Object.values(post.reactionCounts).reduce((a, b) => a + b, 0) : 0}
+              {Object.values(post.reactionCounts).reduce((a, b) => a + b, 0) === 1 ? ' person reacted' : ' people reacted'}
+            </span>
           </div>
         )}
         
         {/* Action buttons */}
-        <div className="flex items-center justify-between border-b pb-3 mb-3">
+        <div className="flex items-center border-b pb-3 mb-3">
           <div className="flex gap-2">
             <ReactionButton 
               type="like" 
@@ -471,13 +504,6 @@ export const Post = ({ post, currentUser }: PostProps) => {
               <span className="text-sm hidden sm:inline">{t("social.comment")}</span>
             </button>
           </div>
-          
-          <button 
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <Share2 className="h-4 w-4" />
-            <span className="text-sm hidden sm:inline">{t("social.share")}</span>
-          </button>
         </div>
         
         {/* Comments section */}
@@ -527,6 +553,14 @@ export const Post = ({ post, currentUser }: PostProps) => {
             </form>
           </div>
         )}
+
+        {/* Likes Modal */}
+        <LikesModal
+          isOpen={showLikesModal}
+          onClose={() => setShowLikesModal(false)}
+          postId={post.id}
+          reactionType={selectedReactionType}
+        />
       </div>
     </div>
   );

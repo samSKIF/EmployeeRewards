@@ -316,6 +316,15 @@ export const reactions = pgTable("reactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Comment reactions table
+export const commentReactions = pgTable("comment_reactions", {
+  id: serial("id").primaryKey(),
+  commentId: integer("comment_id").references(() => comments.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: text("type").notNull().default("like"), // like, celebrate, insightful, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Poll schema
 export const polls = pgTable("polls", {
   id: serial("id").primaryKey(),

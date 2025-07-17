@@ -97,6 +97,85 @@ export const Comments = ({ postId, currentUser }: CommentsProps) => {
       deleteCommentMutation.mutate(commentId);
     }
   };
+
+  // Add comment reaction mutation
+  const addCommentReactionMutation = useMutation({
+    mutationFn: async ({ commentId, type }: { commentId: number, type: string }) => {
+      const token = localStorage.getItem('token');
+      
+      const res = await fetch("/api/social/comment-reactions", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          commentId,
+          type
+        })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to add reaction");
+      }
+      
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/social/posts", postId, "comments"] 
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add reaction",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Remove comment reaction mutation
+  const removeCommentReactionMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      const token = localStorage.getItem('token');
+      
+      const res = await fetch(`/api/social/comment-reactions/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to remove reaction");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/social/posts", postId, "comments"] 
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove reaction",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Handle comment reaction
+  const handleCommentReaction = (commentId: number, type: string = 'like') => {
+    const comment = comments.find(c => c.id === commentId);
+    if ((comment as any)?.userReaction === type) {
+      removeCommentReactionMutation.mutate(commentId);
+    } else {
+      addCommentReactionMutation.mutate({ commentId, type });
+    }
+  };
   
   if (isLoading) {
     return (
@@ -146,11 +225,19 @@ export const Comments = ({ postId, currentUser }: CommentsProps) => {
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-gray-500">{formattedDate}</span>
-                <button className="text-xs font-medium text-gray-500 hover:text-gray-700">
+                <button 
+                  className={`text-xs font-medium transition-colors flex items-center gap-1 ${
+                    (comment as any).userReaction === 'like' 
+                      ? 'text-teal-600' 
+                      : 'text-gray-500 hover:text-teal-600'
+                  }`}
+                  onClick={() => handleCommentReaction(comment.id, 'like')}
+                >
+                  <ThumbsUp className="h-3 w-3" />
                   Like
-                </button>
-                <button className="text-xs font-medium text-gray-500 hover:text-gray-700">
-                  Reply
+                  {(comment as any).reactionCount > 0 && (
+                    <span>({(comment as any).reactionCount})</span>
+                  )}
                 </button>
               </div>
             </div>

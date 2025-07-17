@@ -1162,7 +1162,7 @@ export class DatabaseStorage implements IStorage {
     return comment;
   }
 
-  async getPostComments(postId: number): Promise<CommentWithUser[]> {
+  async getPostComments(postId: number, currentUserId?: number): Promise<CommentWithUser[]> {
     const commentsData = await db.select({
       comment: comments,
       user: users,
@@ -1172,12 +1172,57 @@ export class DatabaseStorage implements IStorage {
     .where(eq(comments.postId, postId))
     .orderBy(asc(comments.createdAt));
 
+    // Get comment IDs for reaction queries
+    const commentIds = commentsData.map(c => c.comment.id);
+    
+    if (commentIds.length === 0) {
+      return [];
+    }
+
+    // Get reaction counts for comments
+    const reactionCountsData = await db.select({
+      commentId: commentReactions.commentId,
+      count: count(commentReactions.id),
+    })
+    .from(commentReactions)
+    .where(inArray(commentReactions.commentId, commentIds))
+    .groupBy(commentReactions.commentId);
+
+    // Get current user's reactions to comments if currentUserId is provided
+    let userReactionsData: { commentId: number, type: string }[] = [];
+    if (currentUserId) {
+      userReactionsData = await db.select({
+        commentId: commentReactions.commentId,
+        type: commentReactions.type,
+      })
+      .from(commentReactions)
+      .where(
+        and(
+          inArray(commentReactions.commentId, commentIds),
+          eq(commentReactions.userId, currentUserId)
+        )
+      );
+    }
+
+    // Create maps for efficient lookup
+    const reactionCountsMap = new Map<number, number>();
+    reactionCountsData.forEach(r => {
+      reactionCountsMap.set(r.commentId, Number(r.count));
+    });
+
+    const userReactionsMap = new Map<number, string>();
+    userReactionsData.forEach(r => {
+      userReactionsMap.set(r.commentId, r.type);
+    });
+
     return commentsData.map(c => {
       const { password, ...userWithoutPassword } = c.user;
 
       return {
         ...c.comment,
         user: userWithoutPassword,
+        reactionCount: reactionCountsMap.get(c.comment.id) || 0,
+        userReaction: userReactionsMap.get(c.comment.id) || null,
       };
     });
   }
