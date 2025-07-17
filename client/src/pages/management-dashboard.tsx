@@ -304,6 +304,20 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+          
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-600 mb-4">
+              Are you an organization member?
+            </p>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full"
+              onClick={() => window.location.href = '/auth'}
+            >
+              Sign in as Organization Member
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
