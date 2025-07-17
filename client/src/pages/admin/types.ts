@@ -1,6 +1,7 @@
 // Dashboard types
 export interface DashboardStats {
   userCount?: number;
+  subscribedUsers?: number;
   pointsBalance?: number;
   pointsEarned?: number;
   pointsSpent?: number;

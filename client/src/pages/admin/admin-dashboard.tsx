@@ -57,7 +57,15 @@ const AdminDashboard = () => {
               </div>
               <div className="mt-4">
                 <p className="text-sm text-gray-500">Total Users</p>
-                <h3 className="text-2xl font-bold">{stats?.userCount || 0}</h3>
+                <h3 className="text-2xl font-bold">
+                  {stats?.userCount || 0}
+                  {stats?.subscribedUsers && (
+                    <span className="text-sm font-normal text-gray-500"> / {stats.subscribedUsers}</span>
+                  )}
+                </h3>
+                {stats?.userCount && stats?.subscribedUsers && stats.userCount > stats.subscribedUsers && (
+                  <p className="text-xs text-red-500 mt-1">Exceeds subscription limit</p>
+                )}
               </div>
             </CardContent>
           </Card>

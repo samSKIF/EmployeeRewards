@@ -152,6 +152,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard stats endpoint
+  app.get('/api/dashboard/stats', verifyToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const organizationId = req.user.organizationId;
+
+      // Get user count for this organization
+      const [userCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.organizationId, organizationId));
+      
+      const userCount = userCountResult?.count || 0;
+
+      // Get subscription info to compare with limit
+      const { subscriptions, organizations } = await import("@shared/schema");
+      const [orgData] = await db
+        .select({
+          subscription: subscriptions,
+          subscribedUsers: subscriptions.subscribedUsers
+        })
+        .from(organizations)
+        .leftJoin(subscriptions, eq(organizations.currentSubscriptionId, subscriptions.id))
+        .where(eq(organizations.id, organizationId));
+
+      const subscribedUsers = orgData?.subscribedUsers || 0;
+
+      // Get points balance for the organization
+      const [pointsResult] = await db
+        .select({ 
+          total: sql<number>`sum(${transactions.amount})` 
+        })
+        .from(transactions)
+        .innerJoin(accounts, eq(transactions.toAccountId, accounts.id))
+        .innerJoin(users, eq(accounts.userId, users.id))
+        .where(eq(users.organizationId, organizationId));
+
+      const pointsBalance = pointsResult?.total || 0;
+
+      // Get order count for the organization
+      const [orderCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(orders)
+        .innerJoin(users, eq(orders.userId, users.id))
+        .where(eq(users.organizationId, organizationId));
+
+      const orderCount = orderCountResult?.count || 0;
+
+      // Get engagement stats (posts and comments)
+      const { posts, comments } = await import("@shared/schema");
+      
+      const [postsCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(posts)
+        .innerJoin(users, eq(posts.authorId, users.id))
+        .where(eq(users.organizationId, organizationId));
+
+      const postsCount = postsCountResult?.count || 0;
+
+      const [commentsCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(comments)
+        .innerJoin(users, eq(comments.authorId, users.id))
+        .where(eq(users.organizationId, organizationId));
+
+      const commentsCount = commentsCountResult?.count || 0;
+
+      // Get recognition count
+      const { recognitions } = await import("@shared/schema");
+      const [recognitionsCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(recognitions)
+        .innerJoin(users, eq(recognitions.giverId, users.id))
+        .where(eq(users.organizationId, organizationId));
+
+      const recognitionsCount = recognitionsCountResult?.count || 0;
+
+      res.json({
+        userCount,
+        subscribedUsers,
+        pointsBalance,
+        orderCount,
+        posts: postsCount,
+        comments: commentsCount,
+        reactions: 0, // Not implemented yet
+        recognitions: recognitionsCount
+      });
+    } catch (error: any) {
+      logger.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats", error: error.message });
+    }
+  });
+
   // Return a placeholder server since the main server handles listening
   const httpServer = createServer(app);
   return httpServer;
