@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, Award, Sparkles } from "lucide-react";
 import { User } from "@shared/types";
-import { useRouter } from "wouter";
+import { useLocation } from "wouter";
 
 interface LikesModalProps {
   isOpen: boolean;
@@ -32,7 +32,7 @@ interface ReactionWithUser {
 }
 
 export const LikesModal = ({ isOpen, onClose, postId, reactionType }: LikesModalProps) => {
-  const [, navigate] = useRouter();
+  const [, navigate] = useLocation();
 
   // Fetch users who reacted to the post
   const { data: reactions = [], isLoading } = useQuery<ReactionWithUser[]>({
