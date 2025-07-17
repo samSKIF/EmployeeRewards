@@ -88,6 +88,7 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
     }
     
     // Execute the query to get posts only from users in the same company
+    const userId = req.user?.id;
     const query = `
       SELECT 
         p.id, 
@@ -111,7 +112,22 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
           SELECT COUNT(*) 
           FROM comments 
           WHERE post_id = p.id
-        ) AS "commentCount"
+        ) AS "commentCount",
+        (
+          SELECT json_object_agg(type, count) 
+          FROM (
+            SELECT type, COUNT(*) as count 
+            FROM reactions 
+            WHERE post_id = p.id 
+            GROUP BY type
+          ) reaction_counts
+        ) AS "reactionCounts",
+        (
+          SELECT type 
+          FROM reactions 
+          WHERE post_id = p.id AND user_id = $2
+          LIMIT 1
+        ) AS "userReaction"
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE ($1::integer IS NULL OR 
@@ -120,7 +136,7 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
       LIMIT 50
     `;
     
-    const result = await pool.query(query, [companyId]);
+    const result = await pool.query(query, [companyId, userId]);
     
     console.log(`Social microservice: Filtering posts for company ${companyId} (${userEmail})`);
     
@@ -136,6 +152,77 @@ router.get('/posts', verifyToken, async (req: AuthenticatedRequest, res: Respons
 /**
  * Get detailed reactions for a post with user information
  */
+/**
+ * Add reaction to post
+ */
+router.post('/reactions', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+    
+    const { postId, type } = req.body;
+    const userId = req.user.id;
+    
+    if (!postId) {
+      return res.status(400).json({ error: 'Post ID is required' });
+    }
+    
+    if (!type || !['like', 'celebrate', 'insightful'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid reaction type' });
+    }
+    
+    console.log('Social microservice: Adding reaction', { postId, type, userId });
+    
+    // Check if user already reacted to this post
+    const existingQuery = `
+      SELECT id, type FROM reactions 
+      WHERE post_id = $1 AND user_id = $2
+    `;
+    const existingResult = await pool.query(existingQuery, [postId, userId]);
+    
+    if (existingResult.rows.length > 0) {
+      const existingReaction = existingResult.rows[0];
+      
+      if (existingReaction.type === type) {
+        // Remove reaction if same type
+        const deleteQuery = `
+          DELETE FROM reactions 
+          WHERE post_id = $1 AND user_id = $2
+          RETURNING *
+        `;
+        await pool.query(deleteQuery, [postId, userId]);
+        console.log('Social microservice: Reaction removed');
+        return res.status(200).json({ message: 'Reaction removed', removed: true });
+      } else {
+        // Update to new reaction type
+        const updateQuery = `
+          UPDATE reactions 
+          SET type = $1, created_at = NOW()
+          WHERE post_id = $2 AND user_id = $3
+          RETURNING *
+        `;
+        const result = await pool.query(updateQuery, [type, postId, userId]);
+        console.log('Social microservice: Reaction updated');
+        return res.status(200).json({ message: 'Reaction updated', reaction: result.rows[0] });
+      }
+    } else {
+      // Create new reaction with timestamp
+      const insertQuery = `
+        INSERT INTO reactions (post_id, user_id, type, created_at)
+        VALUES ($1, $2, $3, NOW())
+        RETURNING *
+      `;
+      const result = await pool.query(insertQuery, [postId, userId, type]);
+      console.log('Social microservice: Reaction added');
+      return res.status(201).json({ message: 'Reaction added', reaction: result.rows[0] });
+    }
+  } catch (error) {
+    console.error('Social microservice: Error adding reaction:', error);
+    return res.status(500).json({ error: 'Failed to add reaction' });
+  }
+});
+
 router.get('/posts/:postId/reactions', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { postId } = req.params;
@@ -183,6 +270,40 @@ router.get('/posts/:postId/reactions', verifyToken, async (req: AuthenticatedReq
   } catch (error) {
     console.error('Social microservice: Error getting post reactions:', error);
     return res.status(500).json({ error: 'Failed to get post reactions' });
+  }
+});
+
+/**
+ * Remove reaction from post
+ */
+router.delete('/reactions/:postId', verifyToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+    
+    const { postId } = req.params;
+    const userId = req.user.id;
+    
+    console.log('Social microservice: Removing reaction', { postId, userId });
+    
+    const deleteQuery = `
+      DELETE FROM reactions 
+      WHERE post_id = $1 AND user_id = $2
+      RETURNING *
+    `;
+    
+    const result = await pool.query(deleteQuery, [postId, userId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Reaction not found' });
+    }
+    
+    console.log('Social microservice: Reaction removed');
+    return res.status(200).json({ message: 'Reaction removed successfully' });
+  } catch (error) {
+    console.error('Social microservice: Error removing reaction:', error);
+    return res.status(500).json({ error: 'Failed to remove reaction' });
   }
 });
 
