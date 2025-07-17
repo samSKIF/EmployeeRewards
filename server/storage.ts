@@ -158,8 +158,8 @@ export interface IStorage {
   leaveChannel(userId: number, channelId: number): Promise<void>;
 
   // User count and retrieval methods
-  getUserCount(): Promise<number>;
-  getUsers(limit?: number, offset?: number): Promise<User[]>;
+  getUserCount(organizationId?: number): Promise<number>;
+  getUsers(organizationId: number, limit?: number, offset?: number): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2170,18 +2170,24 @@ async getUserSocialStats(userId: number): Promise<SocialStats> {
   }
 
   // User count and retrieval methods
-  async getUserCount(): Promise<number> {
-    const [result] = await db.select({
+  async getUserCount(organizationId?: number): Promise<number> {
+    const query = db.select({
       count: count(users.id),
     }).from(users);
-
+    
+    if (organizationId) {
+      query.where(eq(users.organizationId, organizationId));
+    }
+    
+    const [result] = await query;
     return Number(result.count);
   }
 
-  async getUsers(limit: number = 50, offset: number = 0): Promise<User[]> {
+  async getUsers(organizationId: number, limit: number = 50, offset: number = 0): Promise<User[]> {
     const usersData = await db
       .select()
       .from(users)
+      .where(eq(users.organizationId, organizationId))
       .limit(limit)
       .offset(offset)
       .orderBy(asc(users.name));

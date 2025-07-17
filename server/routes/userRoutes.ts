@@ -182,9 +182,12 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
 
     const { department, location, search, limit = 50, offset = 0 } = req.query;
 
-    logger.info(`Returning ${await storage.getUserCount()} users for company ${req.user.organizationId}`);
+    const organizationId = req.user.organizationId;
+    
+    logger.info(`Returning ${await storage.getUserCount(organizationId)} users for company ${organizationId}`);
 
     const users = await storage.getUsers(
+      organizationId,
       parseInt(limit as string),
       parseInt(offset as string)
     );
