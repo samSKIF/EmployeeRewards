@@ -6,6 +6,7 @@ import { users } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { logger } from "@shared/logger";
 import { CacheService } from "../cache/cacheService";
+import { hash } from "bcrypt";
 
 const router = Router();
 
@@ -256,6 +257,162 @@ router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => 
   } catch (error: any) {
     logger.error("Error fetching locations:", error);
     res.status(500).json({ message: error.message || "Failed to fetch locations" });
+  }
+});
+
+// Check for duplicate email/name before creating user
+router.post("/check-duplicate", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { email, name, surname } = req.body;
+    let emailExists = false;
+    let nameExists = false;
+
+    // Check if email already exists in the organization
+    if (email) {
+      const existingEmail = await db.select()
+        .from(users)
+        .where(
+          and(
+            eq(users.email, email),
+            eq(users.organizationId, req.user.organizationId)
+          )
+        );
+      emailExists = existingEmail.length > 0;
+    }
+
+    // Check if name/surname combination already exists in the organization
+    if (name && surname) {
+      const existingName = await db.select()
+        .from(users)
+        .where(
+          and(
+            eq(users.name, name),
+            eq(users.surname, surname),
+            eq(users.organizationId, req.user.organizationId)
+          )
+        );
+      nameExists = existingName.length > 0;
+    }
+
+    res.json({ emailExists, nameExists });
+  } catch (error: any) {
+    logger.error("Error checking duplicates:", error);
+    res.status(500).json({ message: error.message || "Failed to check duplicates" });
+  }
+});
+
+// Create new employee
+router.post("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Only admins can create employees
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: "Only administrators can create employees" });
+    }
+
+    const {
+      email,
+      name,
+      surname,
+      password = "changeme123",
+      phoneNumber,
+      jobTitle,
+      department,
+      location,
+      managerEmail,
+      sex,
+      nationality,
+      birthDate,
+      hireDate,
+      isAdmin = false,
+      status = "active",
+      avatarUrl,
+      adminScope = "none",
+      allowedSites = [],
+      allowedDepartments = []
+    } = req.body;
+
+    // Validate required fields
+    if (!email || !name) {
+      return res.status(400).json({ message: "Email and name are required" });
+    }
+
+    // Check if email already exists in the organization
+    const existingEmail = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.email, email),
+          eq(users.organizationId, req.user.organizationId)
+        )
+      );
+    
+    if (existingEmail.length > 0) {
+      return res.status(409).json({ message: "Email already exists in this organization" });
+    }
+
+    // Generate username from email
+    const username = email.split('@')[0];
+    
+    // Check if username already exists in the organization
+    const existingUsername = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.username, username),
+          eq(users.organizationId, req.user.organizationId)
+        )
+      );
+    
+    const finalUsername = existingUsername.length > 0 
+      ? `${username}_${Date.now()}`
+      : username;
+
+    // Hash the password
+    const hashedPassword = await hash(password, 10);
+
+    // Create the user
+    const [newUser] = await db.insert(users).values({
+      email,
+      username: finalUsername,
+      password: hashedPassword,
+      name,
+      surname,
+      phoneNumber,
+      jobTitle,
+      department,
+      location,
+      managerEmail,
+      sex,
+      nationality,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      hireDate: hireDate ? new Date(hireDate) : null,
+      isAdmin,
+      status,
+      avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/identicon/png?seed=${finalUsername}&backgroundColor=random&size=150`,
+      adminScope,
+      allowedSites: JSON.stringify(allowedSites),
+      allowedDepartments: JSON.stringify(allowedDepartments),
+      organizationId: req.user.organizationId,
+      createdBy: req.user.id,
+      createdAt: new Date()
+    }).returning();
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = newUser;
+
+    logger.info(`Employee created successfully: ${email} by admin ${req.user.email}`);
+    res.status(201).json(userWithoutPassword);
+  } catch (error: any) {
+    logger.error("Error creating employee:", error);
+    res.status(500).json({ message: error.message || "Failed to create employee" });
   }
 });
 
