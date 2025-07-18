@@ -209,4 +209,127 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// GET /api/celebrations/extended - Get extended celebrations (last 5 days + today + next 5 days)
+router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { department, location } = req.query;
+    const organizationId = req.user?.organizationId;
+    
+    if (!organizationId) {
+      return res.status(400).json({ error: 'Organization ID is required' });
+    }
+
+    logger.info('Extended celebrations API called', { department, location, organizationId });
+    
+    const celebrations = [];
+
+    // Check last 5 days, today, and next 5 days
+    for (let i = -5; i <= 5; i++) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + i);
+      const month = targetDate.getMonth() + 1;
+      const day = targetDate.getDate();
+
+      // Build birthday query conditions
+      let birthdayConditions = [
+        sql`${users.birthDate} IS NOT NULL`,
+        sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
+        sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`,
+        eq(users.organizationId, organizationId)
+      ];
+
+      // Add department filter if specified
+      if (department && department !== 'all') {
+        birthdayConditions.push(eq(users.department, department as string));
+      }
+
+      // Add location filter if specified
+      if (location && location !== 'all') {
+        birthdayConditions.push(eq(users.location, location as string));
+      }
+
+      // Fetch birthday celebrants for this date
+      const birthdayUsers = await db.select()
+        .from(users)
+        .where(and(...birthdayConditions));
+
+      // Build anniversary query conditions
+      let anniversaryConditions = [
+        sql`${users.hireDate} IS NOT NULL`,
+        sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+        sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`,
+        eq(users.organizationId, organizationId)
+      ];
+
+      // Add department filter if specified
+      if (department && department !== 'all') {
+        anniversaryConditions.push(eq(users.department, department as string));
+      }
+
+      // Add location filter if specified
+      if (location && location !== 'all') {
+        anniversaryConditions.push(eq(users.location, location as string));
+      }
+
+      // Fetch anniversary celebrants for this date
+      const anniversaryUsers = await db.select()
+        .from(users)
+        .where(and(...anniversaryConditions));
+
+      // Add birthday celebrations
+      celebrations.push(...birthdayUsers.map(employee => ({
+        id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+        user: {
+          id: employee.id,
+          name: employee.name,
+          surname: employee.surname,
+          avatarUrl: employee.avatarUrl,
+          department: employee.department,
+          location: employee.location,
+          birthDate: employee.birthDate,
+          hireDate: employee.hireDate,
+          jobTitle: employee.jobTitle
+        },
+        type: 'birthday',
+        date: targetDate.toISOString().split('T')[0],
+        hasReacted: false,
+        hasCommented: false
+      })));
+
+      // Add anniversary celebrations
+      celebrations.push(...anniversaryUsers.map(employee => {
+        const years = employee.hireDate ? targetDate.getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
+        return {
+          id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+          user: {
+            id: employee.id,
+            name: employee.name,
+            surname: employee.surname,
+            avatarUrl: employee.avatarUrl,
+            department: employee.department,
+            location: employee.location,
+            birthDate: employee.birthDate,
+            hireDate: employee.hireDate,
+            jobTitle: employee.jobTitle
+          },
+          type: 'work_anniversary',
+          date: targetDate.toISOString().split('T')[0],
+          yearsOfService: years,
+          hasReacted: false,
+          hasCommented: false
+        };
+      }));
+    }
+
+    // Sort by date
+    celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    logger.info(`Extended celebrations: Found ${celebrations.length} celebrations`);
+    res.json(celebrations);
+  } catch (error) {
+    logger.error('Error fetching extended celebrations:', error);
+    res.status(500).json({ error: 'Failed to fetch extended celebrations' });
+  }
+});
+
 export default router;
