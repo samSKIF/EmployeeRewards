@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1808,9 +1808,11 @@ function EmployeeDirectory() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">
-                            {employee.name} {employee.surname}
-                          </p>
+                          <Link to={`/profile/${employee.id}`}>
+                            <p className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer hover:underline">
+                              {employee.name} {employee.surname}
+                            </p>
+                          </Link>
                           <p className="text-sm text-gray-500">{employee.email}</p>
                         </div>
                       </div>

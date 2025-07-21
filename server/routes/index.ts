@@ -1,6 +1,6 @@
 import { Express } from "express";
 import authRoutes from "./authRoutes";
-import userRoutes from "./userRoutes";
+import { userRoutes } from "./userRoutes";
 import adminRoutes from "./adminRoutes";
 import celebrationRoutes from "./celebrationRoutes";
 import pointsRoutes from "./pointsRoutes";
