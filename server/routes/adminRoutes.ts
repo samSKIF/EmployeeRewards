@@ -259,16 +259,17 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     if (updateData.name !== undefined) dbUpdateData.name = updateData.name;
     if (updateData.surname !== undefined) dbUpdateData.surname = updateData.surname;
     if (updateData.email !== undefined) dbUpdateData.email = updateData.email;
-    if (updateData.phoneNumber !== undefined) dbUpdateData.phoneNumber = updateData.phoneNumber;
-    if (updateData.jobTitle !== undefined) dbUpdateData.jobTitle = updateData.jobTitle;
+    if (updateData.phoneNumber !== undefined) dbUpdateData.phone_number = updateData.phoneNumber;
+    if (updateData.jobTitle !== undefined) dbUpdateData.job_title = updateData.jobTitle;
     if (updateData.department !== undefined) dbUpdateData.department = updateData.department;
     if (updateData.location !== undefined) dbUpdateData.location = updateData.location;
     if (updateData.sex !== undefined) dbUpdateData.sex = updateData.sex;
     if (updateData.nationality !== undefined) dbUpdateData.nationality = updateData.nationality;
-    if (updateData.birthDate !== undefined) dbUpdateData.birthDate = updateData.birthDate;
-    if (updateData.hireDate !== undefined) dbUpdateData.hireDate = updateData.hireDate;
+    if (updateData.birthDate !== undefined) dbUpdateData.birth_date = updateData.birthDate;
+    if (updateData.hireDate !== undefined) dbUpdateData.hire_date = updateData.hireDate;
     if (updateData.status !== undefined) dbUpdateData.status = updateData.status;
-    if (updateData.avatarUrl !== undefined) dbUpdateData.avatarUrl = updateData.avatarUrl;
+    if (updateData.avatarUrl !== undefined) dbUpdateData.avatar_url = updateData.avatarUrl;
+    if (updateData.managerEmail !== undefined) dbUpdateData.manager_email = updateData.managerEmail;
     
     // Handle admin-specific fields
     if (updateData.isAdmin !== undefined) {
