@@ -157,36 +157,48 @@ export default function CelebrationCenter() {
           </div>
         </div>
 
-        {/* Upcoming celebrations preview */}
-        {upcomingCelebrations && upcomingCelebrations.slice(0, 2).map((event) => (
-          <div key={`${event.id}-${event.type}`} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={event.user.avatarUrl} />
-              <AvatarFallback className="text-xs">
-                {getInitials(event.user.name, event.user.surname)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <p 
-                className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={() => navigate(`/profile/${event.user.id}`)}
-              >
-                {event.user.name} {event.user.surname}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                {event.type === 'birthday' ? (
-                  <Cake className="w-3 h-3" />
-                ) : (
-                  <Calendar className="w-3 h-3" />
-                )}
-                {format(new Date(event.date), 'MMM dd')}
-                {event.yearsOfService && (
-                  <span>• {event.yearsOfService} years</span>
-                )}
+        {/* Today's and upcoming celebrations preview - Today first! */}
+        {(() => {
+          // Combine today's and upcoming celebrations, prioritizing today's
+          const allCelebrations = [
+            ...(todayCelebrations || []),
+            ...(upcomingCelebrations || [])
+          ];
+          
+          return allCelebrations.slice(0, 2).map((event) => (
+            <div key={`${event.id}-${event.type}`} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={event.user.avatarUrl} />
+                <AvatarFallback className="text-xs">
+                  {getInitials(event.user.name, event.user.surname)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p 
+                  className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => navigate(`/profile/${event.user.id}`)}
+                >
+                  {event.user.name} {event.user.surname}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  {event.type === 'birthday' ? (
+                    <Cake className="w-3 h-3" />
+                  ) : (
+                    <Calendar className="w-3 h-3" />
+                  )}
+                  {isToday(new Date(event.date)) ? (
+                    <span className="text-pink-600 font-medium">Today</span>
+                  ) : (
+                    format(new Date(event.date), 'MMM dd')
+                  )}
+                  {event.yearsOfService && (
+                    <span>• {event.yearsOfService} years</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ));
+        })()}
 
         {/* Action buttons */}
         {true && (
