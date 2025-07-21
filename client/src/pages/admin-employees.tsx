@@ -179,7 +179,9 @@ export default function AdminEmployeesPage() {
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/employees');
       return await response.json() as Employee[];
-    }
+    },
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 5 * 60 * 1000 // Keep in cache for 5 minutes
   });
 
   // Create employee mutation
@@ -232,15 +234,21 @@ export default function AdminEmployeesPage() {
         };
       }
       
+      console.log("Updating employee with data:", data.data);
       const response = await apiRequest('PATCH', `/api/admin/employees/${data.id}`, data.data);
-      return await response.json();
+      const result = await response.json();
+      console.log("Update response:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Update successful, returned data:", data);
       toast({
         title: "Success",
         description: "Employee updated successfully",
       });
+      // Invalidate and refetch immediately
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
+      queryClient.refetchQueries({ queryKey: ['/api/admin/employees'] });
       setIsEditDialogOpen(false);
       resetForm();
     },
@@ -511,27 +519,30 @@ export default function AdminEmployeesPage() {
   }
 
   function openEditDialog(employee: Employee) {
-    setCurrentEmployee(employee);
+    // Find the most recent data from the query results
+    const freshEmployee = employees?.find(e => e.id === employee.id) || employee;
+    
+    setCurrentEmployee(freshEmployee);
     setFormData({
       password: "", // We don't show or set the password when editing
-      name: employee.name,
-      surname: employee.surname || "",
-      email: employee.email,
-      phoneNumber: employee.phoneNumber || "",
-      jobTitle: employee.jobTitle || "",
-      department: employee.department || "",
-      location: employee.location || "",
-      managerEmail: employee.managerEmail || "",
-      sex: employee.sex ? employee.sex.toLowerCase() : "",
-      nationality: employee.nationality || "",
-      birthDate: employee.dateOfBirth ? format(new Date(employee.dateOfBirth), 'yyyy-MM-dd') : "",
-      hireDate: employee.dateJoined ? format(new Date(employee.dateJoined), 'yyyy-MM-dd') : "",
-      isAdmin: employee.isAdmin,
-      status: employee.status ? employee.status.toLowerCase() : "active",
-      avatarUrl: employee.avatarUrl || "",
-      adminScope: (employee as any).adminScope || "none",
-      allowedSites: (employee as any).allowedSites || [],
-      allowedDepartments: (employee as any).allowedDepartments || []
+      name: freshEmployee.name,
+      surname: freshEmployee.surname || "",
+      email: freshEmployee.email,
+      phoneNumber: freshEmployee.phoneNumber || "",
+      jobTitle: freshEmployee.jobTitle || "",
+      department: freshEmployee.department || "",
+      location: freshEmployee.location || "",
+      managerEmail: freshEmployee.managerEmail || "",
+      sex: freshEmployee.sex ? freshEmployee.sex.toLowerCase() : "",
+      nationality: freshEmployee.nationality || "",
+      birthDate: freshEmployee.dateOfBirth ? format(new Date(freshEmployee.dateOfBirth), 'yyyy-MM-dd') : "",
+      hireDate: freshEmployee.dateJoined ? format(new Date(freshEmployee.dateJoined), 'yyyy-MM-dd') : "",
+      isAdmin: freshEmployee.isAdmin,
+      status: freshEmployee.status ? freshEmployee.status.toLowerCase() : "active",
+      avatarUrl: freshEmployee.avatarUrl || "",
+      adminScope: (freshEmployee as any).adminScope || "none",
+      allowedSites: (freshEmployee as any).allowedSites || [],
+      allowedDepartments: (freshEmployee as any).allowedDepartments || []
     });
     setIsEditDialogOpen(true);
   }

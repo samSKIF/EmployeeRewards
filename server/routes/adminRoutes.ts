@@ -339,12 +339,18 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     if (updateData.surname !== undefined) dbUpdateData.surname = updateData.surname;
     if (updateData.email !== undefined) dbUpdateData.email = updateData.email;
     if (updateData.phoneNumber !== undefined) dbUpdateData.phone_number = updateData.phoneNumber;
-    if (updateData.jobTitle !== undefined) dbUpdateData.job_title = updateData.jobTitle;
+    if (updateData.jobTitle !== undefined) {
+      dbUpdateData.job_title = updateData.jobTitle;
+      logger.info("Setting job_title to:", updateData.jobTitle);
+    }
     if (updateData.department !== undefined) dbUpdateData.department = updateData.department;
     if (updateData.location !== undefined) dbUpdateData.location = updateData.location;
     if (updateData.sex !== undefined) dbUpdateData.sex = updateData.sex;
     if (updateData.nationality !== undefined) dbUpdateData.nationality = updateData.nationality;
-    if (updateData.birthDate !== undefined) dbUpdateData.birth_date = updateData.birthDate;
+    if (updateData.birthDate !== undefined) {
+      dbUpdateData.birth_date = updateData.birthDate;
+      logger.info("Setting birth_date to:", updateData.birthDate);
+    }
     if (updateData.hireDate !== undefined) dbUpdateData.hire_date = updateData.hireDate;
     if (updateData.status !== undefined) dbUpdateData.status = updateData.status;
     if (updateData.avatarUrl !== undefined) dbUpdateData.avatar_url = updateData.avatarUrl;
@@ -396,6 +402,8 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     logger.info("Team member updated successfully:", {
       id: updatedEmployee.id,
       name: updatedEmployee.name,
+      job_title: updatedEmployee.job_title,
+      birth_date: updatedEmployee.birth_date,
       is_admin: updatedEmployee.is_admin
     });
 
