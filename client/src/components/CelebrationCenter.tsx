@@ -209,29 +209,6 @@ export default function CelebrationCenter() {
                     All upcoming celebrations and milestones
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  {extendedCelebrations?.map((celebration) => (
-                    <div key={celebration.id} className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className="rounded-full bg-pink-100 p-2">
-                        {celebration.type === 'birthday' ? (
-                          <Cake className="w-4 h-4 text-pink-500" />
-                        ) : (
-                          <Trophy className="w-4 h-4 text-amber-500" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 
-                          className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-                          onClick={() => navigate(`/profile/${celebration.user.id}`)}
-                        >
-                          {celebration.user.name}
-                        </h4>
-                        <p className="text-sm text-gray-500">{celebration.date}</p>
-                        <p className="text-sm">{formatCelebrationText(celebration)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
               {/* Filters */}
               <div className="flex gap-4 mb-6">
@@ -267,33 +244,101 @@ export default function CelebrationCenter() {
 
               {/* Celebrations timeline */}
               <div className="space-y-6">
-                {Object.entries(groupedCelebrations)
-                  .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-                  .map(([date, events]) => {
+                {(() => {
+                  const sortedEntries = Object.entries(groupedCelebrations)
+                    .sort(([a], [b]) => {
+                      const dateA = new Date(a);
+                      const dateB = new Date(b);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      const isAToday = isToday(dateA);
+                      const isBToday = isToday(dateB);
+                      const isAPast = dateA < today;
+                      const isBPast = dateB < today;
+                      
+                      // Today events first
+                      if (isAToday && !isBToday) return -1;
+                      if (!isAToday && isBToday) return 1;
+                      
+                      // Then past events (most recent first)
+                      if (isAPast && !isBPast) return -1;
+                      if (!isAPast && isBPast) return 1;
+                      if (isAPast && isBPast) return dateB.getTime() - dateA.getTime();
+                      
+                      // Then future events (earliest first)
+                      return dateA.getTime() - dateB.getTime();
+                    });
+
+                  let currentSection = '';
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  return sortedEntries.map(([date, events], index) => {
                     const celebrationDate = new Date(date);
-                    const isPast = celebrationDate < new Date() && !isToday(celebrationDate);
+                    const isPast = celebrationDate < today && !isToday(celebrationDate);
                     const isTodayDate = isToday(celebrationDate);
+                    const isFuture = celebrationDate > today && !isToday(celebrationDate);
+
+                    let sectionHeader = null;
+                    let newSection = '';
+
+                    if (isTodayDate) {
+                      newSection = 'today';
+                    } else if (isPast) {
+                      newSection = 'earlier';
+                    } else if (isFuture) {
+                      newSection = 'upcoming';
+                    }
+
+                    if (newSection !== currentSection) {
+                      currentSection = newSection;
+                      if (newSection === 'today') {
+                        sectionHeader = (
+                          <div className="flex items-center gap-2 mb-4">
+                            <h2 className="text-lg font-semibold text-pink-600">Today</h2>
+                            <div className="flex-1 h-px bg-pink-200"></div>
+                          </div>
+                        );
+                      } else if (newSection === 'earlier') {
+                        sectionHeader = (
+                          <div className="flex items-center gap-2 mb-4 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-600">Earlier</h2>
+                            <div className="flex-1 h-px bg-gray-200"></div>
+                          </div>
+                        );
+                      } else if (newSection === 'upcoming') {
+                        sectionHeader = (
+                          <div className="flex items-center gap-2 mb-4 mt-6">
+                            <h2 className="text-lg font-semibold text-blue-600">Upcoming</h2>
+                            <div className="flex-1 h-px bg-blue-200"></div>
+                          </div>
+                        );
+                      }
+                    }
 
                     return (
-                      <div key={date} className={`p-4 rounded-lg border ${
-                        isTodayDate ? 'bg-pink-50 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800' :
-                        isPast ? 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700' :
-                        'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-                      }`}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="font-semibold">
-                            {format(celebrationDate, 'EEEE, MMMM dd, yyyy')}
-                          </h3>
-                          {isTodayDate && (
-                            <Badge variant="secondary" className="bg-pink-100 text-pink-800">
-                              Today
-                            </Badge>
-                          )}
-                          {isTomorrow(celebrationDate) && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                              Tomorrow
-                            </Badge>
-                          )}
+                      <div key={date}>
+                        {sectionHeader}
+                        <div className={`p-4 rounded-lg border ${
+                          isTodayDate ? 'bg-pink-50 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800' :
+                          isPast ? 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700' :
+                          'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <h3 className="font-semibold">
+                              {format(celebrationDate, 'EEEE, MMMM dd, yyyy')}
+                            </h3>
+                            {isTodayDate && (
+                              <Badge variant="secondary" className="bg-pink-100 text-pink-800">
+                                Today
+                              </Badge>
+                            )}
+                            {isTomorrow(celebrationDate) && (
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                Tomorrow
+                              </Badge>
+                            )}
                         </div>
 
                         <div className="grid gap-3 sm:grid-cols-2">
@@ -344,10 +389,12 @@ export default function CelebrationCenter() {
                               )}
                             </div>
                           ))}
+                          </div>
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                })()}
               </div>
             </DialogContent>
           </Dialog>
