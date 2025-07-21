@@ -112,7 +112,7 @@ router.get("/today", verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get upcoming celebrations (next 30 days)
+// Get upcoming celebrations (next 3 days)
 router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const currentUser = req.user;
@@ -120,48 +120,49 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Get company ID from admin's email domain
-    const domain = currentUser.email.split('@')[1];
-    const domainToCompanyMap: Record<string, number> = {
-      'canva.com': 1,
-      'monday.com': 2, 
-      'loylogic.com': 3,
-      'fripl.com': 4,
-      'democorp.com': 5
-    };
-    const companyId = domainToCompanyMap[domain] || null;
-
-    if (!companyId) {
+    const organizationId = currentUser.organizationId;
+    if (!organizationId) {
       return res.json([]);
     }
 
-    // Simplified birthday query to avoid date function issues
-    const upcomingBirthdays = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.organizationId, companyId),
-          sql`${users.birthDate} IS NOT NULL`
-        )
-      )
-      .limit(10);
+    const celebrations = [];
 
-    // Simplified anniversary query 
-    const upcomingAnniversaries = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.organizationId, companyId),
-          sql`${users.hireDate} IS NOT NULL`
-        )
-      )
-      .limit(10);
+    // Check next 3 days for upcoming celebrations
+    for (let i = 1; i <= 3; i++) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + i);
+      const month = targetDate.getMonth() + 1;
+      const day = targetDate.getDate();
 
-    const celebrations = [
-      ...upcomingBirthdays.map(employee => ({
-        id: `birthday-${employee.id}`,
+      // Get birthday celebrants for this date
+      const birthdayUsers = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.organizationId, organizationId),
+            sql`${users.birthDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
+            sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
+          )
+        );
+
+      // Get anniversary celebrants for this date
+      const anniversaryUsers = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.organizationId, organizationId),
+            sql`${users.hireDate} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
+            sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
+          )
+        );
+
+      // Add birthday celebrations
+      celebrations.push(...birthdayUsers.map(employee => ({
+        id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
         user: {
           id: employee.id,
           name: employee.name,
@@ -174,14 +175,16 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
           jobTitle: employee.jobTitle
         },
         type: 'birthday',
-        date: employee.birthDate,
+        date: targetDate.toISOString().split('T')[0],
         hasReacted: false,
         hasCommented: false
-      })),
-      ...upcomingAnniversaries.map(employee => {
-        const years = employee.hireDate ? new Date().getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
+      })));
+
+      // Add anniversary celebrations
+      celebrations.push(...anniversaryUsers.map(employee => {
+        const years = employee.hireDate ? targetDate.getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
         return {
-          id: `anniversary-${employee.id}`,
+          id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
           user: {
             id: employee.id,
             name: employee.name,
@@ -194,13 +197,16 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
             jobTitle: employee.jobTitle
           },
           type: 'work_anniversary',
-          date: employee.hireDate,
-          yearsOfService: years + 1, // Next anniversary
+          date: targetDate.toISOString().split('T')[0],
+          yearsOfService: years,
           hasReacted: false,
           hasCommented: false
         };
-      })
-    ];
+      }));
+    }
+
+    // Sort by date
+    celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     res.json(celebrations);
   } catch (error) {
@@ -223,8 +229,8 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
     
     const celebrations = [];
 
-    // Check last 5 days, today, and next 5 days
-    for (let i = -5; i <= 5; i++) {
+    // Check last 3 days, today, and next 3 days
+    for (let i = -3; i <= 3; i++) {
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + i);
       const month = targetDate.getMonth() + 1;

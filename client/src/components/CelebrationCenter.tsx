@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,18 +37,19 @@ export default function CelebrationCenter() {
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const queryClient = useQueryClient();
+  const [location, navigate] = useLocation();
 
   // Fetch today's celebrations
   const { data: todayCelebrations } = useQuery<CelebrationEvent[]>({
     queryKey: ['/api/celebrations/today']
   });
 
-  // Fetch upcoming celebrations (next 5 days)
+  // Fetch upcoming celebrations (next 3 days)
   const { data: upcomingCelebrations } = useQuery<CelebrationEvent[]>({
     queryKey: ['/api/celebrations/upcoming']
   });
 
-  // Fetch extended celebrations for modal (last 5 days + today + next 5 days)
+  // Fetch extended celebrations for modal (last 3 days + today + next 3 days)
   const { data: extendedCelebrations } = useQuery<CelebrationEvent[]>({
     queryKey: ['/api/celebrations/extended', departmentFilter, locationFilter],
     enabled: showModal
@@ -165,7 +167,10 @@ export default function CelebrationCenter() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <p className="text-sm font-medium">
+              <p 
+                className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={() => navigate(`/profile/${event.user.id}`)}
+              >
                 {event.user.name} {event.user.surname}
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -215,7 +220,12 @@ export default function CelebrationCenter() {
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium">{celebration.user.name}</h4>
+                        <h4 
+                          className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => navigate(`/profile/${celebration.user.id}`)}
+                        >
+                          {celebration.user.name}
+                        </h4>
                         <p className="text-sm text-gray-500">{celebration.date}</p>
                         <p className="text-sm">{formatCelebrationText(celebration)}</p>
                       </div>
@@ -299,7 +309,10 @@ export default function CelebrationCenter() {
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1">
-                                <p className="font-medium">
+                                <p 
+                                  className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                                  onClick={() => navigate(`/profile/${event.user.id}`)}
+                                >
                                   {event.user.name} {event.user.surname}
                                 </p>
                                 <p className="text-sm text-gray-500">
