@@ -97,7 +97,7 @@ export interface Post {
   userId: number;
   content: string;
   imageUrl?: string;
-  type: 'standard' | 'poll' | 'recognition';
+  type: 'standard' | 'poll' | 'recognition' | 'celebration';
   tags?: string[];
   isPinned?: boolean;
   createdAt: Date;

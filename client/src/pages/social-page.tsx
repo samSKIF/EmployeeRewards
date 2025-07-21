@@ -62,8 +62,8 @@ export default function SocialPage() {
       // Set sessionStorage to prevent auto-login on auth page
       sessionStorage.setItem("skipAutoLogin", "true");
       
-      // Sign out from Firebase
-      await signOut();
+      // Remove custom auth token
+      localStorage.removeItem("token");
       
       toast({
         title: "Logged out",

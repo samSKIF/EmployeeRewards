@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import { setWebSocketInstance } from './microservices/recognition';
 import { users, organizations } from '@shared/mysql-schema';
 import { initializeMongoDB, setupMongoDBSocialRoutes, migrateSocialDataToMongoDB } from './mongodb/integration';
+import { startCelebrationPostCron, runCelebrationPostsOnStartup } from './jobs/celebrationPostCron';
 // Firebase admin removed - using custom JWT authentication only
 
 const app = express();
@@ -132,6 +133,14 @@ app.use((req, res, next) => {
       });
     }
   });
+
+  // Initialize celebration post generation
+  startCelebrationPostCron();
+  
+  // Generate celebration posts on startup (for any missed celebrations)
+  setTimeout(() => {
+    runCelebrationPostsOnStartup();
+  }, 5000); // Wait 5 seconds after server startup
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.

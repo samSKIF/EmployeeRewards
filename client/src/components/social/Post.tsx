@@ -19,7 +19,11 @@ import {
   MoreHorizontal,
   Smile,
   Send,
-  Trash2
+  Trash2,
+  Cake,
+  Trophy,
+  Calendar,
+  Gift
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -353,8 +357,134 @@ export const Post = ({ post, currentUser }: PostProps) => {
     );
   };
 
+  // Parse celebration data from hashtags and content
+  const parseCelebrationData = () => {
+    if (post.type !== 'celebration') return null;
+    
+    const content = post.content || '';
+    const userIdMatch = content.match(/#userId:(\d+)/);
+    const typeMatch = content.match(/#type:(birthday|work_anniversary)/);
+    
+    return {
+      userId: userIdMatch ? parseInt(userIdMatch[1]) : null,
+      type: typeMatch ? typeMatch[1] : null,
+      isBirthday: typeMatch && typeMatch[1] === 'birthday',
+      isAnniversary: typeMatch && typeMatch[1] === 'work_anniversary'
+    };
+  };
+
+  // Extract the celebrating user's name from post content (clickable)
+  const extractCelebratingName = (content: string) => {
+    // Look for patterns like "Happy Birthday to John Smith!" or "Celebrating John Smith"
+    const patterns = [
+      /(?:Happy Birthday to|Congratulations to|Celebrating)\s+([^!]+?)(?:\s+on|\s*!|$)/i,
+      /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)'s\s+(?:special day|work anniversary|birthday)/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    return null;
+  };
+
+  // Render celebration banner if post type is celebration
+  const renderCelebrationBanner = () => {
+    if (post.type !== 'celebration') return null;
+    
+    const celebrationData = parseCelebrationData();
+    if (!celebrationData) return null;
+    
+    const { isBirthday, isAnniversary } = celebrationData;
+    const celebratingName = extractCelebratingName(post.content);
+    
+    const handleNameClick = () => {
+      if (celebrationData.userId && currentUser) {
+        // Navigate to user profile - using wouter navigate
+        const navigate = (path: string) => window.location.hash = path;
+        navigate(`/profile/${celebrationData.userId}`);
+      }
+    };
+    
+    if (isBirthday) {
+      return (
+        <div className="bg-gradient-to-r from-pink-50 via-purple-50 to-pink-50 border-2 border-pink-200 p-4 rounded-lg mb-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-100/30 via-purple-100/30 to-pink-100/30"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white p-2">
+                <Cake size={20} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-pink-500" size={16} />
+                <span className="font-semibold text-pink-900 text-lg">🎂 Birthday Celebration!</span>
+                <Sparkles className="text-pink-500" size={16} />
+              </div>
+            </div>
+            {celebratingName && (
+              <div className="mb-2">
+                <span className="text-pink-800">Celebrating </span>
+                <button 
+                  onClick={handleNameClick}
+                  className="font-bold text-pink-900 hover:text-pink-700 hover:underline cursor-pointer bg-pink-100/50 px-2 py-1 rounded-md transition-colors"
+                >
+                  {celebratingName}
+                </button>
+                <span className="text-pink-800">'s special day! 🎉</span>
+              </div>
+            )}
+            <div className="text-sm text-pink-700 font-medium">
+              🎈 Join us in wishing them a wonderful year ahead! 🎈
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (isAnniversary) {
+      return (
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-2 border-blue-200 p-4 rounded-lg mb-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 via-indigo-100/30 to-blue-100/30"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-2">
+                <Trophy size={20} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="text-blue-500" size={16} />
+                <span className="font-semibold text-blue-900 text-lg">🏆 Work Anniversary!</span>
+                <Award className="text-blue-500" size={16} />
+              </div>
+            </div>
+            {celebratingName && (
+              <div className="mb-2">
+                <span className="text-blue-800">Congratulating </span>
+                <button 
+                  onClick={handleNameClick}
+                  className="font-bold text-blue-900 hover:text-blue-700 hover:underline cursor-pointer bg-blue-100/50 px-2 py-1 rounded-md transition-colors"
+                >
+                  {celebratingName}
+                </button>
+                <span className="text-blue-800"> on their dedication! 🎊</span>
+              </div>
+            )}
+            <div className="text-sm text-blue-700 font-medium">
+              🌟 Thank you for being an amazing part of our team! 🌟
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+    <div className={`bg-white rounded-xl shadow-sm overflow-hidden mb-4 ${
+      post.type === 'celebration' ? 'ring-2 ring-gradient-to-r from-pink-200 to-purple-200' : ''
+    }`}>
       <div className="p-4">
         {/* Post header with user info */}
         <div className="flex items-center justify-between mb-3">
@@ -364,8 +494,7 @@ export const Post = ({ post, currentUser }: PostProps) => {
                 id: post.authorId || post.userId,
                 name: post.authorName || post.user?.name || post.userName || 'User',
                 avatarUrl: post.user?.avatarUrl || post.userProfileImage || post.avatarUrl,
-                jobTitle: post.user?.jobTitle || post.userJobTitle,
-                dateJoined: post.user?.hireDate || (post as any).userHireDate
+                jobTitle: post.user?.jobTitle || (post as any).userJobTitle
               }}
               size="md"
               className="mr-3"
@@ -393,6 +522,9 @@ export const Post = ({ post, currentUser }: PostProps) => {
             </DropdownMenu>
           )}
         </div>
+        
+        {/* Celebration banner */}
+        {renderCelebrationBanner()}
         
         {/* Post content */}
         <div className="mb-4">

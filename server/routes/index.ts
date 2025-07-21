@@ -3,6 +3,7 @@ import authRoutes from "./authRoutes";
 import { userRoutes } from "./userRoutes";
 import adminRoutes from "./adminRoutes";
 import celebrationRoutes from "./celebrationRoutes";
+import { celebrationPostRoutes } from "./celebrationPostRoutes";
 import pointsRoutes from "./pointsRoutes";
 import channelRoutes from "./channelRoutes";
 import spacesRoutes from "./spacesRoutes";
@@ -33,6 +34,9 @@ export function registerRoutes(app: Express) {
 
   // Celebration routes (birthdays, anniversaries)
   app.use("/api/celebrations", celebrationRoutes);
+  
+  // Celebration post generation routes
+  app.use("/api/celebration-posts", celebrationPostRoutes);
 
   // Points system routes
   app.use("/api/points", pointsRoutes);
