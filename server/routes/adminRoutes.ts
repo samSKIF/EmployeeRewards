@@ -329,10 +329,19 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     const employeeId = parseInt(req.params.id);
     const updateData = req.body;
     
-    logger.info("Admin updating employee:", { employeeId, updateData });
+    logger.info("=== EMPLOYEE UPDATE REQUEST ===");
+    logger.info("Employee ID:", employeeId);
+    logger.info("Full request body:", JSON.stringify(updateData, null, 2));
+    logger.info("User org ID:", req.user.organizationId);
+    logger.info("===============================");
 
     // Build update object with proper field mapping
     const dbUpdateData: any = {};
+    
+    if (Object.keys(updateData).length === 0) {
+      logger.error("No data provided for update");
+      return res.status(400).json({ message: "No data provided for update" });
+    }
     
     // Map frontend field names to database field names
     if (updateData.name !== undefined) dbUpdateData.name = updateData.name;
@@ -390,7 +399,16 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     
     values.push(req.user.organizationId);
     
-    logger.info("Executing SQL:", { updateQuery, values });
+    if (Object.keys(dbUpdateData).length === 0) {
+      logger.warn("No valid fields to update after mapping");
+      return res.status(400).json({ message: "No valid fields provided for update" });
+    }
+    
+    logger.info("=== SQL EXECUTION ===");
+    logger.info("Query:", updateQuery);
+    logger.info("Values:", values);
+    logger.info("dbUpdateData keys:", Object.keys(dbUpdateData));
+    logger.info("====================");
     
     const result = await pool.query(updateQuery, values);
     
