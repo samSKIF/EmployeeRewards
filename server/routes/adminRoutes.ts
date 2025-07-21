@@ -244,6 +244,85 @@ router.post("/organizations", verifyToken, async (req: AuthenticatedRequest, res
   }
 });
 
+// Get all employees for admin view
+router.get("/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { department, location, search, limit = 50, offset = 0 } = req.query;
+    const organizationId = req.user.organizationId;
+    
+    logger.info(`Admin fetching employees for organization ${organizationId}`);
+    
+    // Query employees from database
+    let query = `
+      SELECT 
+        id, username, name, surname, email, phone_number, job_title, 
+        department, location, manager_email, sex, nationality, 
+        birth_date, hire_date, is_admin, status, avatar_url, 
+        created_at, admin_scope, allowed_sites, allowed_departments
+      FROM users 
+      WHERE organization_id = $1
+    `;
+    
+    const queryParams: any[] = [organizationId];
+    let paramCount = 1;
+    
+    // Add filters if provided
+    if (department) {
+      paramCount++;
+      query += ` AND department = $${paramCount}`;
+      queryParams.push(department);
+    }
+    
+    if (location) {
+      paramCount++;
+      query += ` AND location = $${paramCount}`;
+      queryParams.push(location);
+    }
+    
+    if (search) {
+      paramCount++;
+      query += ` AND (name ILIKE $${paramCount} OR surname ILIKE $${paramCount} OR email ILIKE $${paramCount})`;
+      queryParams.push(`%${search}%`);
+    }
+    
+    query += ` ORDER BY name ASC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    queryParams.push(parseInt(limit as string), parseInt(offset as string));
+    
+    const result = await pool.query(query, queryParams);
+    
+    // Map database fields to frontend expected format
+    const employees = result.rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      name: row.name,
+      surname: row.surname,
+      email: row.email,
+      phoneNumber: row.phone_number,  // Map snake_case to camelCase
+      jobTitle: row.job_title,         // Map snake_case to camelCase
+      department: row.department,
+      location: row.location,
+      managerEmail: row.manager_email, // Map snake_case to camelCase
+      sex: row.sex,
+      nationality: row.nationality,
+      dateOfBirth: row.birth_date,    // Map birth_date to dateOfBirth
+      dateJoined: row.hire_date,       // Map hire_date to dateJoined
+      isAdmin: row.is_admin,
+      status: row.status,
+      avatarUrl: row.avatar_url,       // Map snake_case to camelCase
+      createdAt: row.created_at,
+      adminScope: row.admin_scope,
+      allowedSites: row.allowed_sites ? JSON.parse(row.allowed_sites) : [],
+      allowedDepartments: row.allowed_departments ? JSON.parse(row.allowed_departments) : []
+    }));
+    
+    logger.info(`Returning ${employees.length} employees for admin view`);
+    res.json(employees);
+  } catch (error: any) {
+    logger.error("Error fetching employees:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch employees" });
+  }
+});
+
 // Update employee admin status and permissions
 router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
