@@ -311,8 +311,8 @@ router.get("/employees", verifyToken, verifyAdmin, async (req: AuthenticatedRequ
       avatarUrl: row.avatar_url,       // Map snake_case to camelCase
       createdAt: row.created_at,
       adminScope: row.admin_scope,
-      allowedSites: row.allowed_sites ? JSON.parse(row.allowed_sites) : [],
-      allowedDepartments: row.allowed_departments ? JSON.parse(row.allowed_departments) : []
+      allowedSites: typeof row.allowed_sites === 'string' ? JSON.parse(row.allowed_sites) : (row.allowed_sites || []),
+      allowedDepartments: typeof row.allowed_departments === 'string' ? JSON.parse(row.allowed_departments) : (row.allowed_departments || [])
     }));
     
     logger.info(`Returning ${employees.length} employees for admin view`);
@@ -384,7 +384,7 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     
     values.push(req.user.organizationId);
     
-    logger.debug("Executing SQL:", { updateQuery, values });
+    logger.info("Executing SQL:", { updateQuery, values });
     
     const result = await pool.query(updateQuery, values);
     
@@ -399,7 +399,32 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
       is_admin: updatedEmployee.is_admin
     });
 
-    res.json(updatedEmployee);
+    // Map database fields back to frontend expected format
+    const responseData = {
+      id: updatedEmployee.id,
+      username: updatedEmployee.username,
+      name: updatedEmployee.name,
+      surname: updatedEmployee.surname,
+      email: updatedEmployee.email,
+      phoneNumber: updatedEmployee.phone_number,
+      jobTitle: updatedEmployee.job_title,
+      department: updatedEmployee.department,
+      location: updatedEmployee.location,
+      managerEmail: updatedEmployee.manager_email,
+      sex: updatedEmployee.sex,
+      nationality: updatedEmployee.nationality,
+      dateOfBirth: updatedEmployee.birth_date,
+      dateJoined: updatedEmployee.hire_date,
+      isAdmin: updatedEmployee.is_admin,
+      status: updatedEmployee.status,
+      avatarUrl: updatedEmployee.avatar_url,
+      createdAt: updatedEmployee.created_at,
+      adminScope: updatedEmployee.admin_scope,
+      allowedSites: typeof updatedEmployee.allowed_sites === 'string' ? JSON.parse(updatedEmployee.allowed_sites) : (updatedEmployee.allowed_sites || []),
+      allowedDepartments: typeof updatedEmployee.allowed_departments === 'string' ? JSON.parse(updatedEmployee.allowed_departments) : (updatedEmployee.allowed_departments || [])
+    };
+
+    res.json(responseData);
   } catch (error: any) {
     logger.error("Error updating team member:", error);
     res.status(500).json({ message: error.message || "Error updating team member" });
