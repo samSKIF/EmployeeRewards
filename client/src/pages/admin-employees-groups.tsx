@@ -1626,6 +1626,7 @@ function EmployeeDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "active">("all");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -1706,10 +1707,13 @@ function EmployeeDirectory() {
       result = result.filter((employee: Employee) => employee.location === selectedLocation);
     }
 
-
+    // Apply status filter - only show active employees if selectedStatus is "active"
+    if (selectedStatus === 'active') {
+      result = result.filter((employee: Employee) => employee.status === 'active');
+    }
 
     return result;
-  }, [employees, searchTerm, selectedDepartment, selectedLocation]);
+  }, [employees, searchTerm, selectedDepartment, selectedLocation, selectedStatus]);
 
   return (
     <div className="space-y-6">
@@ -1757,7 +1761,12 @@ function EmployeeDirectory() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
-                  <div className="text-sm text-muted-foreground">Current Employees</div>
+                  <div className="text-sm text-muted-foreground">Active Employees</div>
+                  {usageStats.totalEmployees > usageStats.currentEmployees && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      ({usageStats.totalEmployees} total)
+                    </div>
+                  )}
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
@@ -1848,6 +1857,16 @@ function EmployeeDirectory() {
             {locations && locations.map((location: string) => (
               <SelectItem key={location} value={location}>{location}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedStatus} onValueChange={(value: "all" | "active") => setSelectedStatus(value)}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Employee Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Employees</SelectItem>
+            <SelectItem value="active">Active Only</SelectItem>
           </SelectContent>
         </Select>
       </div>

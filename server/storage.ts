@@ -159,6 +159,7 @@ export interface IStorage {
 
   // User count and retrieval methods
   getUserCount(organizationId?: number): Promise<number>;
+  getActiveUserCount(organizationId: number): Promise<number>;
   getUsers(organizationId: number, limit?: number, offset?: number): Promise<User[]>;
 }
 
@@ -2225,6 +2226,19 @@ async getUserSocialStats(userId: number): Promise<SocialStats> {
     }
     
     const [result] = await query;
+    return Number(result.count);
+  }
+
+  // Get count of active employees only (for subscription validation)
+  async getActiveUserCount(organizationId: number): Promise<number> {
+    const [result] = await db.select({
+      count: count(users.id),
+    }).from(users)
+    .where(and(
+      eq(users.organizationId, organizationId),
+      eq(users.status, 'active')
+    ));
+    
     return Number(result.count);
   }
 

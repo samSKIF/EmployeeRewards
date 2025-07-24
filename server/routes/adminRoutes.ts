@@ -21,7 +21,8 @@ router.get("/usage-stats", verifyToken, verifyAdmin, async (req: AuthenticatedRe
         o.name as organization_name,
         o.max_users,
         s.subscribed_users,
-        COUNT(u.id) as current_employees
+        COUNT(CASE WHEN u.status = 'active' THEN 1 END) as current_employees,
+        COUNT(u.id) as total_employees
       FROM organizations o
       LEFT JOIN subscriptions s ON o.current_subscription_id = s.id
       LEFT JOIN users u ON u.organization_id = o.id
@@ -38,7 +39,8 @@ router.get("/usage-stats", verifyToken, verifyAdmin, async (req: AuthenticatedRe
       organizationName: stats.organization_name,
       maxUsers: parseInt(stats.max_users) || 0,
       subscribedUsers: parseInt(stats.subscribed_users) || 0,
-      currentEmployees: parseInt(stats.current_employees) || 0
+      currentEmployees: parseInt(stats.current_employees) || 0,
+      totalEmployees: parseInt(stats.total_employees) || 0
     });
   } catch (error) {
     logger.error("Error fetching usage stats:", error);

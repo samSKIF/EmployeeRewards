@@ -24,10 +24,13 @@ async function checkUserCountLimit(organizationId: number): Promise<{ allowed: b
       return { allowed: false, message: "Organization not found" };
     }
 
-    // Get current user count
+    // Get current ACTIVE user count only (for subscription validation)
     const [userCountResult] = await db.select({ count: count() })
       .from(users)
-      .where(eq(users.organizationId, organizationId));
+      .where(and(
+        eq(users.organizationId, organizationId),
+        eq(users.status, 'active')
+      ));
     
     const currentUserCount = userCountResult.count;
 
