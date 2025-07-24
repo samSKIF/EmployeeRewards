@@ -386,13 +386,25 @@ const managementApi = (endpoint: string, options: RequestInit = {}) => {
     }
 
     const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await res.json();
-      console.log(`API Data for ${endpoint}:`, data);
-      return data;
+    console.log(`Content-Type for ${endpoint}:`, contentType);
+    
+    // Try to parse as JSON even if content-type is missing or incorrect
+    try {
+      const text = await res.text();
+      console.log(`Raw response for ${endpoint}:`, text);
+      
+      if (text) {
+        const data = JSON.parse(text);
+        console.log(`API Data for ${endpoint}:`, data);
+        return data;
+      }
+      
+      console.log('Empty response body');
+      return [];
+    } catch (error) {
+      console.error('Failed to parse response:', error);
+      return null;
     }
-
-    return null;
   });
 };
 
