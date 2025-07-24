@@ -185,12 +185,14 @@ export default function AdminEmployeesPage() {
   });
 
   // Fetch organization usage stats
-  const { data: usageStats } = useQuery({
+  const { data: usageStats, error: usageStatsError } = useQuery({
     queryKey: ['/api/admin/usage-stats'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/usage-stats');
       return await response.json();
-    }
+    },
+    retry: false,
+    staleTime: 60000 // Cache for 1 minute
   });
 
   // Create employee mutation
@@ -619,7 +621,7 @@ export default function AdminEmployeesPage() {
       </div>
 
       {/* Usage Statistics Card */}
-      {usageStats && (
+      {(usageStats || usageStatsError) && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -628,49 +630,63 @@ export default function AdminEmployeesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees}</div>
-                <div className="text-sm text-muted-foreground">Current Employees</div>
+            {usageStatsError ? (
+              <div className="text-center py-4">
+                <div className="text-sm text-muted-foreground mb-2">Unable to load usage statistics</div>
+                <div className="text-xs text-red-600">Authentication required</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers}</div>
-                <div className="text-sm text-muted-foreground">Subscription Capacity</div>
-              </div>
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${usageStats.currentEmployees <= usageStats.subscribedUsers ? 'text-green-600' : 'text-red-600'}`}>
-                  {usageStats.subscribedUsers - usageStats.currentEmployees}
+            ) : usageStats ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
+                    <div className="text-sm text-muted-foreground">Current Employees</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
+                    <div className="text-sm text-muted-foreground">Subscription Capacity</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                      {(usageStats.subscribedUsers || 0) - (usageStats.currentEmployees || 0)}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'Available Seats' : 'Over Limit'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {usageStats.subscribedUsers ? Math.round(((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100) : 0}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Capacity Used</div>
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {usageStats.currentEmployees <= usageStats.subscribedUsers ? 'Available Seats' : 'Over Limit'}
+                <div className="mt-4">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        (usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0)
+                          ? 'bg-green-600' 
+                          : 'bg-red-600'
+                      }`}
+                      style={{ 
+                        width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                  {(usageStats.currentEmployees || 0) > (usageStats.subscribedUsers || 0) && (
+                    <div className="mt-2 text-sm text-red-600 font-medium">
+                      ⚠️ Organization is over subscription limit. Consider upgrading your plan.
+                    </div>
+                  )}
                 </div>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                <div className="text-sm text-muted-foreground mt-2">Loading usage statistics...</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {Math.round((usageStats.currentEmployees / usageStats.subscribedUsers) * 100)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Capacity Used</div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${
-                    usageStats.currentEmployees <= usageStats.subscribedUsers 
-                      ? 'bg-green-600' 
-                      : 'bg-red-600'
-                  }`}
-                  style={{ 
-                    width: `${Math.min((usageStats.currentEmployees / usageStats.subscribedUsers) * 100, 100)}%` 
-                  }}
-                ></div>
-              </div>
-              {usageStats.currentEmployees > usageStats.subscribedUsers && (
-                <div className="mt-2 text-sm text-red-600 font-medium">
-                  ⚠️ Organization is over subscription limit. Consider upgrading your plan.
-                </div>
-              )}
-            </div>
+            )}
           </CardContent>
         </Card>
       )}
