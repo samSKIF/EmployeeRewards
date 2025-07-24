@@ -1,24 +1,44 @@
-import React, { useState, useEffect, Suspense } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { useParams } from "wouter";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Edit, Camera, Mail, Phone, MapPin, Calendar, Award, 
-  History, User, Home, ShoppingBag, Trophy, FileText, 
-  Zap, Heart, Camera as CameraIcon, Loader2
-} from "lucide-react";
-import { User as BaseUserType } from "@shared/types";
-import InterestsSection from "@/components/profile/InterestsSection";
+import React, { useState, useEffect, Suspense } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { useParams } from 'wouter';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import {
+  Edit,
+  Camera,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Award,
+  History,
+  User,
+  Home,
+  ShoppingBag,
+  Trophy,
+  FileText,
+  Zap,
+  Heart,
+  Camera as CameraIcon,
+  Loader2,
+} from 'lucide-react';
+import { User as BaseUserType } from '@shared/types';
+import InterestsSection from '@/components/profile/InterestsSection';
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
@@ -44,7 +64,7 @@ const ProfilePage = () => {
     department: '',
     location: '',
     responsibilities: '',
-    aboutMe: ''
+    aboutMe: '',
   });
 
   // Check if viewing own profile or another employee's profile
@@ -52,8 +72,8 @@ const ProfilePage = () => {
 
   // Fetch user data - either current user or specific employee
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: isOwnProfile ? ["/api/users/me"] : [`/api/users/${employeeId}`],
-    retry: false
+    queryKey: isOwnProfile ? ['/api/users/me'] : [`/api/users/${employeeId}`],
+    retry: false,
   });
 
   // Update form values when user data is fetched
@@ -66,53 +86,52 @@ const ProfilePage = () => {
         department: user.department || '',
         location: user.location || '',
         responsibilities: user.responsibilities || '',
-        aboutMe: user.aboutMe || ''
+        aboutMe: user.aboutMe || '',
       });
     }
   }, [user]);
 
-
-
   // Mock data for profile sections
   const personalityType = {
-    title: "The Champion",
-    description: "Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs."
+    title: 'The Champion',
+    description:
+      'Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs.',
   };
 
   const strengths = [
-    { id: 1, name: "Belief", count: 6 },
-    { id: 2, name: "Ideation", count: 2 },
-    { id: 3, name: "Includer", count: 3 },
-    { id: 4, name: "Input", count: 4 }
+    { id: 1, name: 'Belief', count: 6 },
+    { id: 2, name: 'Ideation', count: 2 },
+    { id: 3, name: 'Includer', count: 3 },
+    { id: 4, name: 'Input', count: 4 },
   ];
 
   const similarPeople = [
-    { id: 101, name: "John Smith", avatar: "/avatars/john.jpg" },
-    { id: 102, name: "Sarah Lee", avatar: "/avatars/sarah.jpg" },
-    { id: 103, name: "Mike Chen", avatar: "/avatars/mike.jpg" }
+    { id: 101, name: 'John Smith', avatar: '/avatars/john.jpg' },
+    { id: 102, name: 'Sarah Lee', avatar: '/avatars/sarah.jpg' },
+    { id: 103, name: 'Mike Chen', avatar: '/avatars/mike.jpg' },
   ];
 
   // Format dates properly
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   // User details (use real database values only)
   const userDetails = {
-    email: user?.email || "",
-    title: user?.jobTitle || "",
-    location: user?.location || "", 
-    department: user?.department || "",
-    responsibilities: user?.responsibilities || "",
+    email: user?.email || '',
+    title: user?.jobTitle || '',
+    location: user?.location || '',
+    department: user?.department || '',
+    responsibilities: user?.responsibilities || '',
     hireDate: formatDate(user?.hireDate),
     birthday: formatDate(user?.birthDate),
-    profileStatus: 89 // This can remain as a calculated value
+    profileStatus: 89, // This can remain as a calculated value
   };
 
   // Avatar upload mutation
@@ -123,21 +142,21 @@ const ProfilePage = () => {
         reader.onloadend = async () => {
           try {
             const base64Data = reader.result as string;
-            
-            const res = await fetch("/api/users/avatar", {
-              method: "POST",
+
+            const res = await fetch('/api/users/avatar', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('firebaseToken')}`,
               },
-              body: JSON.stringify({ avatarUrl: base64Data })
+              body: JSON.stringify({ avatarUrl: base64Data }),
             });
-            
+
             if (!res.ok) {
               const error = await res.json();
-              throw new Error(error.message || "Failed to upload avatar");
+              throw new Error(error.message || 'Failed to upload avatar');
             }
-            
+
             const data = await res.json();
             resolve(data.user.avatarUrl);
           } catch (error: any) {
@@ -145,31 +164,31 @@ const ProfilePage = () => {
           }
         };
         reader.onerror = () => {
-          reject(new Error("Failed to read file"));
+          reject(new Error('Failed to read file'));
         };
         reader.readAsDataURL(file);
       });
     },
     onSuccess: (avatarUrl) => {
       // Update the user data in the cache with the new avatar URL
-      const currentUser = queryClient.getQueryData<UserType>(["/api/users/me"]);
+      const currentUser = queryClient.getQueryData<UserType>(['/api/users/me']);
       if (currentUser) {
-        queryClient.setQueryData(["/api/users/me"], {
+        queryClient.setQueryData(['/api/users/me'], {
           ...currentUser,
-          avatarUrl
+          avatarUrl,
         });
       }
-      
+
       toast({
-        title: "Avatar uploaded",
-        description: "Your profile picture has been updated successfully.",
+        title: 'Avatar uploaded',
+        description: 'Your profile picture has been updated successfully.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload avatar",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload avatar',
+        variant: 'destructive',
       });
     },
   });
@@ -178,7 +197,7 @@ const ProfilePage = () => {
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Compress image before uploading
     const compressImage = (file: File): Promise<File> => {
       return new Promise((resolve, reject) => {
@@ -187,16 +206,16 @@ const ProfilePage = () => {
         reader.onload = (event) => {
           const img = new Image();
           img.src = event.target?.result as string;
-          
+
           img.onload = () => {
             const canvas = document.createElement('canvas');
             // Max dimensions while maintaining aspect ratio
             const MAX_WIDTH = 400;
             const MAX_HEIGHT = 400;
-            
+
             let width = img.width;
             let height = img.height;
-            
+
             // Calculate new dimensions
             if (width > height) {
               if (width > MAX_WIDTH) {
@@ -209,51 +228,55 @@ const ProfilePage = () => {
                 height = MAX_HEIGHT;
               }
             }
-            
+
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(img, 0, 0, width, height);
-            
+
             // Convert to Blob with reduced quality
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                reject(new Error('Failed to compress image'));
-                return;
-              }
-              
-              // Create new file from blob
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now()
-              });
-              
-              resolve(compressedFile);
-            }, 'image/jpeg', 0.7); // 70% quality
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Failed to compress image'));
+                  return;
+                }
+
+                // Create new file from blob
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+
+                resolve(compressedFile);
+              },
+              'image/jpeg',
+              0.7
+            ); // 70% quality
           };
-          
+
           img.onerror = () => {
             reject(new Error('Failed to load image'));
           };
         };
-        
+
         reader.onerror = () => {
           reject(new Error('Failed to read file'));
         };
       });
     };
-    
+
     // Process and upload the compressed image
     compressImage(file)
-      .then(compressedFile => {
+      .then((compressedFile) => {
         avatarUploadMutation.mutate(compressedFile);
       })
-      .catch(error => {
+      .catch((error) => {
         toast({
-          title: "Error processing image",
-          description: error.message || "Failed to process image for upload",
-          variant: "destructive"
+          title: 'Error processing image',
+          description: error.message || 'Failed to process image for upload',
+          variant: 'destructive',
         });
       });
   };
@@ -261,41 +284,43 @@ const ProfilePage = () => {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (userData: Partial<UserType>) => {
-      const res = await apiRequest("PATCH", "/api/users/me", userData);
+      const res = await apiRequest('PATCH', '/api/users/me', userData);
       return res.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["/api/users/me"], data);
+      queryClient.setQueryData(['/api/users/me'], data);
       setIsEditing(false);
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: 'Profile updated',
+        description: 'Your profile has been updated successfully.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to update profile',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({
+    setFormValues((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Send the form data to the server
     updateProfileMutation.mutate(formValues);
   };
@@ -317,8 +342,8 @@ const ProfilePage = () => {
           className="h-48 bg-gradient-to-r from-amber-300 to-amber-500 relative"
           style={{
             backgroundImage: "url('/assets/cover-background.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
           {/* Edit Button */}
@@ -329,26 +354,31 @@ const ProfilePage = () => {
             onClick={handleEditToggle}
           >
             <Edit className="h-4 w-4 mr-2" />
-            {isEditing ? "Cancel" : "Edit User"}
+            {isEditing ? 'Cancel' : 'Edit User'}
           </Button>
-          
+
           {/* Profile Image */}
           <div className="absolute -bottom-12 left-8">
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-white">
                 <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
-                  {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
+                  {user?.name
+                    ?.split(' ')
+                    .map((n) => n[0])
+                    .join('') || 'AU'}
                 </AvatarFallback>
-                <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+                <AvatarImage src={user?.avatarUrl} alt={user?.name || 'User'} />
               </Avatar>
               <Button
                 variant="outline"
                 size="icon"
                 className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-white"
-                onClick={() => document.getElementById('avatar-upload')?.click()}
+                onClick={() =>
+                  document.getElementById('avatar-upload')?.click()
+                }
               >
                 <Camera className="h-4 w-4" />
-                <input 
+                <input
                   type="file"
                   id="avatar-upload"
                   className="hidden"
@@ -359,26 +389,32 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Profile Information */}
         <div className="pt-14 px-8 pb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold">{user?.name} {user?.surname}</h1>
+              <h1 className="text-2xl font-bold">
+                {user?.name} {user?.surname}
+              </h1>
               <p className="text-gray-600">{userDetails.title}</p>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-500">Profile Status {userDetails.profileStatus}%</div>
+              <div className="text-sm text-gray-500">
+                Profile Status {userDetails.profileStatus}%
+              </div>
               <div className="w-48 mt-1">
                 <Progress value={userDetails.profileStatus} className="h-2" />
               </div>
               {isEditing ? (
-                <Button 
-                  className="mt-3" 
-                  onClick={handleSaveProfile} 
+                <Button
+                  className="mt-3"
+                  onClick={handleSaveProfile}
                   disabled={updateProfileMutation.isPending}
                 >
-                  {updateProfileMutation.isPending ? "Saving..." : "Edit Profile"}
+                  {updateProfileMutation.isPending
+                    ? 'Saving...'
+                    : 'Edit Profile'}
                 </Button>
               ) : (
                 <Button variant="outline" className="mt-3">
@@ -388,7 +424,7 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Tabs */}
         <div className="px-8">
           <Tabs defaultValue="about" className="w-full">
@@ -412,7 +448,7 @@ const ProfilePage = () => {
                 Highlights
               </TabsTrigger>
             </TabsList>
-            
+
             {/* About Me Tab Content */}
             <TabsContent value="about" className="mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -424,7 +460,12 @@ const ProfilePage = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between">
                         <div className="space-y-1">
-                          <Label htmlFor="email" className="text-sm text-gray-500">Email:</Label>
+                          <Label
+                            htmlFor="email"
+                            className="text-sm text-gray-500"
+                          >
+                            Email:
+                          </Label>
                           {isEditing ? (
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-2 text-gray-500" />
@@ -438,12 +479,19 @@ const ProfilePage = () => {
                           ) : (
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                              <span className="text-blue-500">{userDetails.email}</span>
+                              <span className="text-blue-500">
+                                {userDetails.email}
+                              </span>
                             </div>
                           )}
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor="phone" className="text-sm text-gray-500">Phone:</Label>
+                          <Label
+                            htmlFor="phone"
+                            className="text-sm text-gray-500"
+                          >
+                            Phone:
+                          </Label>
                           {isEditing ? (
                             <div className="flex items-center">
                               <Phone className="h-4 w-4 mr-2 text-gray-500" />
@@ -461,17 +509,27 @@ const ProfilePage = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between">
                         <div className="space-y-1">
-                          <Label htmlFor="title" className="text-sm text-gray-500">Title:</Label>
+                          <Label
+                            htmlFor="title"
+                            className="text-sm text-gray-500"
+                          >
+                            Title:
+                          </Label>
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-2 text-gray-500" />
                             <span>{userDetails.title}</span>
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor="department" className="text-sm text-gray-500">Department:</Label>
+                          <Label
+                            htmlFor="department"
+                            className="text-sm text-gray-500"
+                          >
+                            Department:
+                          </Label>
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-2 text-gray-500" />
                             <span>{userDetails.department}</span>
@@ -480,13 +538,15 @@ const ProfilePage = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* About Me */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-4">About Me</h3>
                     {isEditing ? (
                       <div>
-                        <Label htmlFor="aboutMe" className="sr-only">About Me</Label>
+                        <Label htmlFor="aboutMe" className="sr-only">
+                          About Me
+                        </Label>
                         <textarea
                           id="aboutMe"
                           name="aboutMe"
@@ -497,16 +557,22 @@ const ProfilePage = () => {
                         />
                       </div>
                     ) : (
-                      <p className="text-gray-700">{user?.aboutMe || 'No information provided'}</p>
+                      <p className="text-gray-700">
+                        {user?.aboutMe || 'No information provided'}
+                      </p>
                     )}
                   </div>
-                  
+
                   {/* Responsibilities */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-4">Responsibilities</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Responsibilities
+                    </h3>
                     {isEditing ? (
                       <div>
-                        <Label htmlFor="responsibilities" className="sr-only">Responsibilities</Label>
+                        <Label htmlFor="responsibilities" className="sr-only">
+                          Responsibilities
+                        </Label>
                         <textarea
                           id="responsibilities"
                           name="responsibilities"
@@ -517,23 +583,31 @@ const ProfilePage = () => {
                         />
                       </div>
                     ) : (
-                      <p className="text-gray-700">{userDetails.responsibilities}</p>
+                      <p className="text-gray-700">
+                        {userDetails.responsibilities}
+                      </p>
                     )}
                   </div>
-                  
+
                   {/* Important Dates */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-4">Important Dates</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Important Dates
+                    </h3>
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-1">
-                        <label className="text-sm text-gray-500">Hire Date:</label>
+                        <label className="text-sm text-gray-500">
+                          Hire Date:
+                        </label>
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           <span>{userDetails.hireDate}</span>
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-sm text-gray-500">Birthday:</label>
+                        <label className="text-sm text-gray-500">
+                          Birthday:
+                        </label>
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           <span>{userDetails.birthday}</span>
@@ -541,7 +615,7 @@ const ProfilePage = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* History Section */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-4">History</h3>
@@ -551,45 +625,65 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Right Column - Personality, Interests, Strengths */}
                 <div className="space-y-6">
                   {/* Personality Type */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-2">Personality</h3>
-                    <h4 className="font-medium text-gray-800 mb-2">{user?.name?.split(' ')[0] || 'User'} - The {personalityType.title}</h4>
-                    <p className="text-gray-600 text-sm">{personalityType.description}</p>
+                    <h4 className="font-medium text-gray-800 mb-2">
+                      {user?.name?.split(' ')[0] || 'User'} - The{' '}
+                      {personalityType.title}
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      {personalityType.description}
+                    </p>
                   </div>
-                  
+
                   {/* People Like You */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3">People most like {user?.name?.split(' ')[0] || 'User'}</h3>
+                    <h3 className="text-lg font-semibold mb-3">
+                      People most like {user?.name?.split(' ')[0] || 'User'}
+                    </h3>
                     <div className="flex space-x-2">
-                      {similarPeople.map(person => (
+                      {similarPeople.map((person) => (
                         <Avatar key={person.id} className="h-10 w-10">
                           <AvatarFallback className="bg-blue-100 text-blue-700">
-                            {person.name.split(' ').map(n => n[0]).join('')}
+                            {person.name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')}
                           </AvatarFallback>
                           <AvatarImage src={person.avatar} alt={person.name} />
                         </Avatar>
                       ))}
                     </div>
                   </div>
-                  
+
                   {/* Interests */}
                   {(user?.id || employeeId) && (
-                    <InterestsSection 
-                      userId={isOwnProfile && user ? user.id : (employeeId ? parseInt(employeeId as string) : 0)} 
+                    <InterestsSection
+                      userId={
+                        isOwnProfile && user
+                          ? user.id
+                          : employeeId
+                            ? parseInt(employeeId as string)
+                            : 0
+                      }
                       isCurrentUser={isOwnProfile}
                     />
                   )}
-                  
+
                   {/* Strengths */}
                   <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold mb-3">Strengths</h3>
                     <div className="flex flex-wrap gap-2">
-                      {strengths.map(strength => (
-                        <Badge key={strength.id} variant="outline" className="bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200">
+                      {strengths.map((strength) => (
+                        <Badge
+                          key={strength.id}
+                          variant="outline"
+                          className="bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200"
+                        >
                           <span className="bg-gray-200 text-gray-700 rounded-full h-5 w-5 inline-flex items-center justify-center mr-1.5 text-xs">
                             {strength.count}
                           </span>
@@ -601,24 +695,26 @@ const ProfilePage = () => {
                 </div>
               </div>
             </TabsContent>
-            
+
             {/* Other Tab Contents (placeholders) */}
             <TabsContent value="appreciations" className="mt-0">
               <div className="bg-white rounded-lg shadow-sm p-10 text-center">
                 <Award className="h-12 w-12 mx-auto mb-4 text-amber-500" />
                 <h3 className="text-xl font-semibold mb-2">Appreciations</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  This section will show appreciations and recognition you've received from your colleagues.
+                  This section will show appreciations and recognition you've
+                  received from your colleagues.
                 </p>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="highlights" className="mt-0">
               <div className="bg-white rounded-lg shadow-sm p-10 text-center">
                 <Award className="h-12 w-12 mx-auto mb-4 text-purple-500" />
                 <h3 className="text-xl font-semibold mb-2">Your Highlights</h3>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  Key achievements and highlights of your work will be displayed here.
+                  Key achievements and highlights of your work will be displayed
+                  here.
                 </p>
               </div>
             </TabsContent>

@@ -1,28 +1,28 @@
-import { Router } from "express";
-import { verifyToken, AuthenticatedRequest } from "../middleware/auth";
-import { db } from "../db";
-import { users } from "@shared/schema";
-import { eq, and, sql } from "drizzle-orm";
-import { logger } from "@shared/logger";
+import { Router } from 'express';
+import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
+import { db } from '../db';
+import { users } from '@shared/schema';
+import { eq, and, sql } from 'drizzle-orm';
+import { logger } from '@shared/logger';
 
 const router = Router();
 
 // Get today's celebrations (birthdays and work anniversaries)
-router.get("/today", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const currentUser = req.user;
     if (!currentUser) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Get company ID from admin's email domain
     const domain = currentUser.email.split('@')[1];
     const domainToCompanyMap: Record<string, number> = {
       'canva.com': 1,
-      'monday.com': 2, 
+      'monday.com': 2,
       'loylogic.com': 3,
       'fripl.com': 4,
-      'democorp.com': 5
+      'democorp.com': 5,
     };
     const companyId = domainToCompanyMap[domain] || null;
 
@@ -62,7 +62,7 @@ router.get("/today", verifyToken, async (req: AuthenticatedRequest, res) => {
     logger.debug('Anniversary users found:', anniversaryUsers.length);
 
     const celebrations = [
-      ...birthdayUsers.map(employee => ({
+      ...birthdayUsers.map((employee) => ({
         id: employee.id,
         user: {
           id: employee.id,
@@ -73,15 +73,17 @@ router.get("/today", verifyToken, async (req: AuthenticatedRequest, res) => {
           location: employee.location,
           birthDate: employee.birthDate,
           hireDate: employee.hireDate,
-          jobTitle: employee.jobTitle
+          jobTitle: employee.jobTitle,
         },
         type: 'birthday',
         date: todayDate.toISOString().split('T')[0],
         hasReacted: false,
-        hasCommented: false
+        hasCommented: false,
       })),
-      ...anniversaryUsers.map(employee => {
-        const years = employee.hireDate ? new Date().getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
+      ...anniversaryUsers.map((employee) => {
+        const years = employee.hireDate
+          ? new Date().getFullYear() - new Date(employee.hireDate).getFullYear()
+          : 0;
         return {
           id: employee.id,
           user: {
@@ -93,31 +95,31 @@ router.get("/today", verifyToken, async (req: AuthenticatedRequest, res) => {
             location: employee.location,
             birthDate: employee.birthDate,
             hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle
+            jobTitle: employee.jobTitle,
           },
           type: 'work_anniversary',
           date: todayDate.toISOString().split('T')[0],
           yearsOfService: years,
           hasReacted: false,
-          hasCommented: false
+          hasCommented: false,
         };
-      })
+      }),
     ];
 
     logger.debug('Total celebrations returning:', celebrations.length);
     res.json(celebrations);
   } catch (error) {
-    logger.error('Error fetching today\'s celebrations:', error);
+    logger.error("Error fetching today's celebrations:", error);
     res.status(500).json({ error: 'Failed to fetch celebrations' });
   }
 });
 
 // Get upcoming celebrations (next 3 days)
-router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const currentUser = req.user;
     if (!currentUser) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const organizationId = currentUser.organizationId;
@@ -161,30 +163,9 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
         );
 
       // Add birthday celebrations
-      celebrations.push(...birthdayUsers.map(employee => ({
-        id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
-        user: {
-          id: employee.id,
-          name: employee.name,
-          surname: employee.surname,
-          avatarUrl: employee.avatarUrl,
-          department: employee.department,
-          location: employee.location,
-          birthDate: employee.birthDate,
-          hireDate: employee.hireDate,
-          jobTitle: employee.jobTitle
-        },
-        type: 'birthday',
-        date: targetDate.toISOString().split('T')[0],
-        hasReacted: false,
-        hasCommented: false
-      })));
-
-      // Add anniversary celebrations
-      celebrations.push(...anniversaryUsers.map(employee => {
-        const years = employee.hireDate ? targetDate.getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
-        return {
-          id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+      celebrations.push(
+        ...birthdayUsers.map((employee) => ({
+          id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
           user: {
             id: employee.id,
             name: employee.name,
@@ -194,19 +175,49 @@ router.get("/upcoming", verifyToken, async (req: AuthenticatedRequest, res) => {
             location: employee.location,
             birthDate: employee.birthDate,
             hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle
+            jobTitle: employee.jobTitle,
           },
-          type: 'work_anniversary',
+          type: 'birthday',
           date: targetDate.toISOString().split('T')[0],
-          yearsOfService: years,
           hasReacted: false,
-          hasCommented: false
-        };
-      }));
+          hasCommented: false,
+        }))
+      );
+
+      // Add anniversary celebrations
+      celebrations.push(
+        ...anniversaryUsers.map((employee) => {
+          const years = employee.hireDate
+            ? targetDate.getFullYear() -
+              new Date(employee.hireDate).getFullYear()
+            : 0;
+          return {
+            id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+            user: {
+              id: employee.id,
+              name: employee.name,
+              surname: employee.surname,
+              avatarUrl: employee.avatarUrl,
+              department: employee.department,
+              location: employee.location,
+              birthDate: employee.birthDate,
+              hireDate: employee.hireDate,
+              jobTitle: employee.jobTitle,
+            },
+            type: 'work_anniversary',
+            date: targetDate.toISOString().split('T')[0],
+            yearsOfService: years,
+            hasReacted: false,
+            hasCommented: false,
+          };
+        })
+      );
     }
 
     // Sort by date
-    celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    celebrations.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
     res.json(celebrations);
   } catch (error) {
@@ -220,13 +231,17 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { department, location } = req.query;
     const organizationId = req.user?.organizationId;
-    
+
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
     }
 
-    logger.info('Extended celebrations API called', { department, location, organizationId });
-    
+    logger.info('Extended celebrations API called', {
+      department,
+      location,
+      organizationId,
+    });
+
     const celebrations = [];
 
     // Check last 3 days, today, and next 3 days
@@ -237,11 +252,11 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
       const day = targetDate.getDate();
 
       // Build birthday query conditions
-      let birthdayConditions = [
+      const birthdayConditions = [
         sql`${users.birthDate} IS NOT NULL`,
         sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
         sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`,
-        eq(users.organizationId, organizationId)
+        eq(users.organizationId, organizationId),
       ];
 
       // Add department filter if specified
@@ -255,16 +270,17 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
       }
 
       // Fetch birthday celebrants for this date
-      const birthdayUsers = await db.select()
+      const birthdayUsers = await db
+        .select()
         .from(users)
         .where(and(...birthdayConditions));
 
       // Build anniversary query conditions
-      let anniversaryConditions = [
+      const anniversaryConditions = [
         sql`${users.hireDate} IS NOT NULL`,
         sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
         sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`,
-        eq(users.organizationId, organizationId)
+        eq(users.organizationId, organizationId),
       ];
 
       // Add department filter if specified
@@ -278,35 +294,15 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
       }
 
       // Fetch anniversary celebrants for this date
-      const anniversaryUsers = await db.select()
+      const anniversaryUsers = await db
+        .select()
         .from(users)
         .where(and(...anniversaryConditions));
 
       // Add birthday celebrations
-      celebrations.push(...birthdayUsers.map(employee => ({
-        id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
-        user: {
-          id: employee.id,
-          name: employee.name,
-          surname: employee.surname,
-          avatarUrl: employee.avatarUrl,
-          department: employee.department,
-          location: employee.location,
-          birthDate: employee.birthDate,
-          hireDate: employee.hireDate,
-          jobTitle: employee.jobTitle
-        },
-        type: 'birthday',
-        date: targetDate.toISOString().split('T')[0],
-        hasReacted: false,
-        hasCommented: false
-      })));
-
-      // Add anniversary celebrations
-      celebrations.push(...anniversaryUsers.map(employee => {
-        const years = employee.hireDate ? targetDate.getFullYear() - new Date(employee.hireDate).getFullYear() : 0;
-        return {
-          id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+      celebrations.push(
+        ...birthdayUsers.map((employee) => ({
+          id: `birthday-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
           user: {
             id: employee.id,
             name: employee.name,
@@ -316,21 +312,53 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
             location: employee.location,
             birthDate: employee.birthDate,
             hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle
+            jobTitle: employee.jobTitle,
           },
-          type: 'work_anniversary',
+          type: 'birthday',
           date: targetDate.toISOString().split('T')[0],
-          yearsOfService: years,
           hasReacted: false,
-          hasCommented: false
-        };
-      }));
+          hasCommented: false,
+        }))
+      );
+
+      // Add anniversary celebrations
+      celebrations.push(
+        ...anniversaryUsers.map((employee) => {
+          const years = employee.hireDate
+            ? targetDate.getFullYear() -
+              new Date(employee.hireDate).getFullYear()
+            : 0;
+          return {
+            id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
+            user: {
+              id: employee.id,
+              name: employee.name,
+              surname: employee.surname,
+              avatarUrl: employee.avatarUrl,
+              department: employee.department,
+              location: employee.location,
+              birthDate: employee.birthDate,
+              hireDate: employee.hireDate,
+              jobTitle: employee.jobTitle,
+            },
+            type: 'work_anniversary',
+            date: targetDate.toISOString().split('T')[0],
+            yearsOfService: years,
+            hasReacted: false,
+            hasCommented: false,
+          };
+        })
+      );
     }
 
     // Sort by date
-    celebrations.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    celebrations.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
-    logger.info(`Extended celebrations: Found ${celebrations.length} celebrations`);
+    logger.info(
+      `Extended celebrations: Found ${celebrations.length} celebrations`
+    );
     res.json(celebrations);
   } catch (error) {
     logger.error('Error fetching extended celebrations:', error);

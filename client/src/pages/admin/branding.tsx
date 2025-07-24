@@ -10,15 +10,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Check, Upload, RefreshCw } from 'lucide-react';
 
 const brandingSchema = z.object({
   organizationName: z.string().min(2, {
-    message: "Organization name must be at least 2 characters.",
+    message: 'Organization name must be at least 2 characters.',
   }),
   colorScheme: z.string(),
   primaryColor: z.string().optional(),
@@ -31,53 +46,53 @@ type BrandingFormValues = z.infer<typeof brandingSchema>;
 
 // Color scheme presets
 const colorSchemes = [
-  { 
-    id: 'default', 
-    name: 'ThrivioHR Default', 
-    primaryColor: '#00A389', 
-    secondaryColor: '#232E3E', 
+  {
+    id: 'default',
+    name: 'ThrivioHR Default',
+    primaryColor: '#00A389',
+    secondaryColor: '#232E3E',
     accentColor: '#FFA500',
-    preview: 'bg-gradient-to-r from-[#00A389] to-[#232E3E]'
+    preview: 'bg-gradient-to-r from-[#00A389] to-[#232E3E]',
   },
-  { 
-    id: 'ocean', 
-    name: 'Ocean Blue', 
-    primaryColor: '#1E88E5', 
-    secondaryColor: '#0D47A1', 
+  {
+    id: 'ocean',
+    name: 'Ocean Blue',
+    primaryColor: '#1E88E5',
+    secondaryColor: '#0D47A1',
     accentColor: '#4FC3F7',
-    preview: 'bg-gradient-to-r from-[#1E88E5] to-[#0D47A1]'
+    preview: 'bg-gradient-to-r from-[#1E88E5] to-[#0D47A1]',
   },
-  { 
-    id: 'forest', 
-    name: 'Forest Green', 
-    primaryColor: '#388E3C', 
-    secondaryColor: '#1B5E20', 
+  {
+    id: 'forest',
+    name: 'Forest Green',
+    primaryColor: '#388E3C',
+    secondaryColor: '#1B5E20',
     accentColor: '#81C784',
-    preview: 'bg-gradient-to-r from-[#388E3C] to-[#1B5E20]'
+    preview: 'bg-gradient-to-r from-[#388E3C] to-[#1B5E20]',
   },
-  { 
-    id: 'sunset', 
-    name: 'Sunset Orange', 
-    primaryColor: '#E64A19', 
-    secondaryColor: '#BF360C', 
+  {
+    id: 'sunset',
+    name: 'Sunset Orange',
+    primaryColor: '#E64A19',
+    secondaryColor: '#BF360C',
     accentColor: '#FFAB91',
-    preview: 'bg-gradient-to-r from-[#E64A19] to-[#BF360C]'
+    preview: 'bg-gradient-to-r from-[#E64A19] to-[#BF360C]',
   },
-  { 
-    id: 'lavender', 
-    name: 'Lavender Purple', 
-    primaryColor: '#7B1FA2', 
-    secondaryColor: '#4A148C', 
+  {
+    id: 'lavender',
+    name: 'Lavender Purple',
+    primaryColor: '#7B1FA2',
+    secondaryColor: '#4A148C',
     accentColor: '#CE93D8',
-    preview: 'bg-gradient-to-r from-[#7B1FA2] to-[#4A148C]'
+    preview: 'bg-gradient-to-r from-[#7B1FA2] to-[#4A148C]',
   },
-  { 
-    id: 'custom', 
-    name: 'Custom Colors', 
-    primaryColor: '', 
-    secondaryColor: '', 
+  {
+    id: 'custom',
+    name: 'Custom Colors',
+    primaryColor: '',
+    secondaryColor: '',
     accentColor: '',
-    preview: 'bg-gradient-to-r from-gray-300 to-gray-400'
+    preview: 'bg-gradient-to-r from-gray-300 to-gray-400',
   },
 ];
 
@@ -110,10 +125,11 @@ const BrandingPage = () => {
   useEffect(() => {
     if (branding) {
       // Find which color scheme matches the current colors
-      const currentScheme = colorSchemes.find(scheme => 
-        scheme.primaryColor === branding.primaryColor && 
-        scheme.secondaryColor === branding.secondaryColor &&
-        scheme.accentColor === branding.accentColor
+      const currentScheme = colorSchemes.find(
+        (scheme) =>
+          scheme.primaryColor === branding.primaryColor &&
+          scheme.secondaryColor === branding.secondaryColor &&
+          scheme.accentColor === branding.accentColor
       );
 
       form.reset({
@@ -133,7 +149,7 @@ const BrandingPage = () => {
 
   // Handle color scheme change
   const handleColorSchemeChange = (schemeId: string) => {
-    const scheme = colorSchemes.find(s => s.id === schemeId);
+    const scheme = colorSchemes.find((s) => s.id === schemeId);
     if (scheme && scheme.id !== 'custom') {
       form.setValue('primaryColor', scheme.primaryColor);
       form.setValue('secondaryColor', scheme.secondaryColor);
@@ -151,10 +167,10 @@ const BrandingPage = () => {
       };
       reader.readAsDataURL(file);
       setLogoFile(file);
-      
+
       // Clear the input value to prevent double triggers
       event.target.value = '';
-      
+
       // Automatically upload the file immediately after selection
       logoUploadMutation.mutate();
     }
@@ -164,7 +180,7 @@ const BrandingPage = () => {
   const logoUploadMutation = useMutation<any, Error, void>({
     mutationFn: async () => {
       if (!logoFile) return null;
-      
+
       // Convert the uploaded file to base64
       return new Promise<any>((resolve, reject) => {
         const reader = new FileReader();
@@ -172,14 +188,16 @@ const BrandingPage = () => {
         reader.onload = async () => {
           try {
             const logoUrl = reader.result as string;
-            
+
             // Send the base64 data instead of FormData
-            const res = await apiRequest('POST', '/api/hr/branding/logo', { logoUrl });
-            
+            const res = await apiRequest('POST', '/api/hr/branding/logo', {
+              logoUrl,
+            });
+
             if (!res.ok) {
               throw new Error('Failed to upload logo');
             }
-            
+
             return resolve(await res.json());
           } catch (error) {
             reject(error);
@@ -194,16 +212,16 @@ const BrandingPage = () => {
       if (data && data.logoUrl) {
         form.setValue('logoUrl', data.logoUrl);
         toast({
-          title: "Logo uploaded",
-          description: "Your logo has been successfully uploaded.",
+          title: 'Logo uploaded',
+          description: 'Your logo has been successfully uploaded.',
         });
       }
     },
     onError: (error) => {
       toast({
-        title: "Upload failed",
+        title: 'Upload failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -217,10 +235,10 @@ const BrandingPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hr/branding'] });
       toast({
-        title: "Branding updated",
-        description: "Your branding settings have been saved.",
+        title: 'Branding updated',
+        description: 'Your branding settings have been saved.',
       });
-      
+
       // Force refresh to ensure theme is applied fully
       setTimeout(() => {
         window.location.reload();
@@ -228,9 +246,9 @@ const BrandingPage = () => {
     },
     onError: (error) => {
       toast({
-        title: "Save failed",
+        title: 'Save failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -241,7 +259,7 @@ const BrandingPage = () => {
     if (logoFile) {
       await logoUploadMutation.mutateAsync();
     }
-    
+
     // Then save the branding data
     brandingMutation.mutate(data);
   };
@@ -257,7 +275,9 @@ const BrandingPage = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Brand Identity</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">
+          Brand Identity
+        </h1>
 
         <Tabs defaultValue="branding" className="w-full">
           <TabsList className="mb-6">
@@ -267,12 +287,16 @@ const BrandingPage = () => {
 
           <TabsContent value="branding">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 <Card>
                   <CardHeader>
                     <CardTitle>Organization Information</CardTitle>
                     <CardDescription>
-                      Set your organization name and logo as they will appear throughout the platform.
+                      Set your organization name and logo as they will appear
+                      throughout the platform.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -286,7 +310,8 @@ const BrandingPage = () => {
                             <Input {...field} />
                           </FormControl>
                           <FormDescription>
-                            This name will be displayed in the header and various places across the platform.
+                            This name will be displayed in the header and
+                            various places across the platform.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -299,15 +324,21 @@ const BrandingPage = () => {
                         <div className="flex items-center gap-4">
                           <div className="bg-gray-100 border rounded-lg h-20 w-20 flex items-center justify-center overflow-hidden">
                             {logoPreview ? (
-                              <img src={logoPreview} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
+                              <img
+                                src={logoPreview}
+                                alt="Logo Preview"
+                                className="max-h-full max-w-full object-contain"
+                              />
                             ) : (
-                              <div className="text-gray-400 text-xs text-center p-2">No logo uploaded</div>
+                              <div className="text-gray-400 text-xs text-center p-2">
+                                No logo uploaded
+                              </div>
                             )}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <label className="relative">
-                                <Button 
+                                <Button
                                   type="button"
                                   variant="outline"
                                   asChild
@@ -337,7 +368,8 @@ const BrandingPage = () => {
                               </label>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
-                              Recommended size: 200x200px. PNG or SVG with transparent background.
+                              Recommended size: 200x200px. PNG or SVG with
+                              transparent background.
                             </p>
                           </div>
                         </div>
@@ -361,12 +393,12 @@ const BrandingPage = () => {
                         <FormItem>
                           <FormLabel>Color Scheme</FormLabel>
                           <FormControl>
-                            <RadioGroup 
+                            <RadioGroup
                               onValueChange={(value) => {
                                 field.onChange(value);
                                 handleColorSchemeChange(value);
-                              }} 
-                              value={field.value} 
+                              }}
+                              value={field.value}
                               className="grid grid-cols-1 gap-4 sm:grid-cols-3"
                             >
                               {colorSchemes.map((scheme) => (
@@ -379,11 +411,17 @@ const BrandingPage = () => {
                                   <Label
                                     htmlFor={`color-scheme-${scheme.id}`}
                                     className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:border-primary cursor-pointer ${
-                                      field.value === scheme.id ? 'border-primary' : ''
+                                      field.value === scheme.id
+                                        ? 'border-primary'
+                                        : ''
                                     }`}
                                   >
-                                    <div className={`h-12 w-full rounded-md mb-2 ${scheme.preview}`}></div>
-                                    <span className="text-sm font-medium">{scheme.name}</span>
+                                    <div
+                                      className={`h-12 w-full rounded-md mb-2 ${scheme.preview}`}
+                                    ></div>
+                                    <span className="text-sm font-medium">
+                                      {scheme.name}
+                                    </span>
                                   </Label>
                                 </div>
                               ))}
@@ -397,8 +435,12 @@ const BrandingPage = () => {
                     {/* Always show color customization below schemes */}
                     <div className="space-y-4 border rounded-md p-4 bg-gray-50">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-700">Customize Colors</h3>
-                        <p className="text-xs text-gray-500">Click color boxes to open palette</p>
+                        <h3 className="text-sm font-medium text-gray-700">
+                          Customize Colors
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          Click color boxes to open palette
+                        </p>
                       </div>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <FormField
@@ -420,9 +462,9 @@ const BrandingPage = () => {
                                     title="Click to open color picker"
                                   />
                                   <FormControl>
-                                    <Input 
-                                      type="text" 
-                                      {...field} 
+                                    <Input
+                                      type="text"
+                                      {...field}
                                       placeholder="#1976D2"
                                       className="flex-1"
                                       onChange={(e) => {
@@ -432,9 +474,11 @@ const BrandingPage = () => {
                                     />
                                   </FormControl>
                                 </div>
-                                <div 
+                                <div
                                   className="w-full h-6 rounded border shadow-sm"
-                                  style={{ backgroundColor: field.value || '#1976D2' }}
+                                  style={{
+                                    backgroundColor: field.value || '#1976D2',
+                                  }}
                                   title={`Preview: ${field.value || '#1976D2'}`}
                                 ></div>
                               </div>
@@ -442,7 +486,7 @@ const BrandingPage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="secondaryColor"
@@ -462,9 +506,9 @@ const BrandingPage = () => {
                                     title="Click to open color picker"
                                   />
                                   <FormControl>
-                                    <Input 
-                                      type="text" 
-                                      {...field} 
+                                    <Input
+                                      type="text"
+                                      {...field}
                                       placeholder="#0D47A1"
                                       className="flex-1"
                                       onChange={(e) => {
@@ -474,9 +518,11 @@ const BrandingPage = () => {
                                     />
                                   </FormControl>
                                 </div>
-                                <div 
+                                <div
                                   className="w-full h-6 rounded border shadow-sm"
-                                  style={{ backgroundColor: field.value || '#0D47A1' }}
+                                  style={{
+                                    backgroundColor: field.value || '#0D47A1',
+                                  }}
                                   title={`Preview: ${field.value || '#0D47A1'}`}
                                 ></div>
                               </div>
@@ -484,7 +530,7 @@ const BrandingPage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="accentColor"
@@ -504,9 +550,9 @@ const BrandingPage = () => {
                                     title="Click to open color picker"
                                   />
                                   <FormControl>
-                                    <Input 
-                                      type="text" 
-                                      {...field} 
+                                    <Input
+                                      type="text"
+                                      {...field}
                                       placeholder="#90CAF9"
                                       className="flex-1"
                                       onChange={(e) => {
@@ -516,9 +562,11 @@ const BrandingPage = () => {
                                     />
                                   </FormControl>
                                 </div>
-                                <div 
+                                <div
                                   className="w-full h-6 rounded border shadow-sm"
-                                  style={{ backgroundColor: field.value || '#90CAF9' }}
+                                  style={{
+                                    backgroundColor: field.value || '#90CAF9',
+                                  }}
                                   title={`Preview: ${field.value || '#90CAF9'}`}
                                 ></div>
                               </div>
@@ -531,30 +579,43 @@ const BrandingPage = () => {
 
                     {/* Inline Color Preview */}
                     <div className="space-y-4 border rounded-md p-4 bg-white">
-                      <h3 className="text-sm font-medium text-gray-700">Color Preview</h3>
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Color Preview
+                      </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Navigation Preview */}
                         <div className="border rounded-md overflow-hidden">
-                          <div 
+                          <div
                             className="p-3 flex items-center justify-between text-white text-sm"
-                            style={{ backgroundColor: form.watch('primaryColor') || '#1976D2' }}
+                            style={{
+                              backgroundColor:
+                                form.watch('primaryColor') || '#1976D2',
+                            }}
                           >
-                            <span className="font-medium">{form.watch('organizationName') || 'Organization'}</span>
+                            <span className="font-medium">
+                              {form.watch('organizationName') || 'Organization'}
+                            </span>
                             <div className="w-5 h-5 bg-white/20 rounded"></div>
                           </div>
                         </div>
 
                         {/* Button Preview */}
                         <div className="flex gap-2">
-                          <button 
+                          <button
                             className="px-3 py-2 rounded text-white text-xs font-medium flex-1"
-                            style={{ backgroundColor: form.watch('primaryColor') || '#1976D2' }}
+                            style={{
+                              backgroundColor:
+                                form.watch('primaryColor') || '#1976D2',
+                            }}
                           >
                             Primary
                           </button>
-                          <button 
+                          <button
                             className="px-3 py-2 rounded text-gray-800 text-xs font-medium flex-1"
-                            style={{ backgroundColor: form.watch('accentColor') || '#90CAF9' }}
+                            style={{
+                              backgroundColor:
+                                form.watch('accentColor') || '#90CAF9',
+                            }}
                           >
                             Accent
                           </button>
@@ -563,8 +624,8 @@ const BrandingPage = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-end">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={brandingMutation.isPending}
                       className="w-full sm:w-auto"
                     >
@@ -573,7 +634,9 @@ const BrandingPage = () => {
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Saving...
                         </>
-                      ) : 'Save Branding Settings'}
+                      ) : (
+                        'Save Branding Settings'
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -592,23 +655,39 @@ const BrandingPage = () => {
               <CardContent>
                 <div className="space-y-6">
                   <div className="rounded-lg border overflow-hidden">
-                    <div className="bg-white p-4 border-b flex items-center justify-between" style={{ 
-                      backgroundColor: form.watch('primaryColor') || '#00A389',
-                      color: 'white'
-                    }}>
+                    <div
+                      className="bg-white p-4 border-b flex items-center justify-between"
+                      style={{
+                        backgroundColor:
+                          form.watch('primaryColor') || '#00A389',
+                        color: 'white',
+                      }}
+                    >
                       <div className="flex items-center gap-2">
                         {logoPreview ? (
-                          <img src={logoPreview} alt="Logo" className="h-8 w-8 object-contain" />
+                          <img
+                            src={logoPreview}
+                            alt="Logo"
+                            className="h-8 w-8 object-contain"
+                          />
                         ) : (
-                          <div className="bg-white text-black h-8 w-8 rounded-full flex items-center justify-center font-bold">T</div>
+                          <div className="bg-white text-black h-8 w-8 rounded-full flex items-center justify-center font-bold">
+                            T
+                          </div>
                         )}
-                        <span className="font-bold">{form.watch('organizationName') || 'ThrivioHR'}</span>
+                        <span className="font-bold">
+                          {form.watch('organizationName') || 'ThrivioHR'}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="text-xs px-2 py-1 rounded" style={{ 
-                          backgroundColor: form.watch('accentColor') || '#FFA500',
-                          color: 'white'
-                        }}>
+                        <div
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            backgroundColor:
+                              form.watch('accentColor') || '#FFA500',
+                            color: 'white',
+                          }}
+                        >
                           1,250 Points
                         </div>
                         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
@@ -620,10 +699,14 @@ const BrandingPage = () => {
                       <div className="flex space-x-3 mb-4">
                         <div className="w-32 rounded bg-gray-200 h-10"></div>
                         <div className="w-32 rounded bg-gray-200 h-10"></div>
-                        <div className="w-32 rounded" style={{ 
-                          backgroundColor: form.watch('secondaryColor') || '#232E3E',
-                          height: '2.5rem'
-                        }}></div>
+                        <div
+                          className="w-32 rounded"
+                          style={{
+                            backgroundColor:
+                              form.watch('secondaryColor') || '#232E3E',
+                            height: '2.5rem',
+                          }}
+                        ></div>
                       </div>
                       <div className="space-y-2">
                         <div className="w-full h-32 rounded bg-white border p-3">
@@ -657,29 +740,42 @@ const BrandingPage = () => {
                   </div>
 
                   <div className="mt-6">
-                    <h3 className="text-sm font-medium mb-2">Button Styles Preview</h3>
+                    <h3 className="text-sm font-medium mb-2">
+                      Button Styles Preview
+                    </h3>
                     <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant="default" 
-                        style={{ backgroundColor: form.watch('primaryColor') || '#00A389' }}
+                      <Button
+                        variant="default"
+                        style={{
+                          backgroundColor:
+                            form.watch('primaryColor') || '#00A389',
+                        }}
                       >
                         Primary Button
                       </Button>
-                      <Button 
-                        variant="secondary" 
-                        style={{ backgroundColor: form.watch('secondaryColor') || '#232E3E' }}
+                      <Button
+                        variant="secondary"
+                        style={{
+                          backgroundColor:
+                            form.watch('secondaryColor') || '#232E3E',
+                        }}
                       >
                         Secondary Button
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        style={{ borderColor: form.watch('primaryColor') || '#00A389', color: form.watch('primaryColor') || '#00A389' }}
+                      <Button
+                        variant="outline"
+                        style={{
+                          borderColor: form.watch('primaryColor') || '#00A389',
+                          color: form.watch('primaryColor') || '#00A389',
+                        }}
                       >
                         Outline Button
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        style={{ color: form.watch('primaryColor') || '#00A389' }}
+                      <Button
+                        variant="ghost"
+                        style={{
+                          color: form.watch('primaryColor') || '#00A389',
+                        }}
                       >
                         Ghost Button
                       </Button>

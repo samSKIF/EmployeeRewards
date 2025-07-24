@@ -1,22 +1,22 @@
 /**
  * This migration adds profile fields to the users table
  */
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import { Pool, neonConfig } from '@neondatabase/serverless';
-import { sql } from "drizzle-orm";
+import { sql } from 'drizzle-orm';
 import ws from 'ws';
 
 async function runProfileMigration() {
-  console.log("Starting profile fields migration...");
+  console.log('Starting profile fields migration...');
 
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL environment variable is not set.");
+    throw new Error('DATABASE_URL environment variable is not set.');
   }
 
   // Configure Neon to use the WebSocket polyfill
   neonConfig.webSocketConstructor = ws;
-  
+
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool);
 
@@ -29,9 +29,9 @@ async function runProfileMigration() {
       ADD COLUMN IF NOT EXISTS responsibilities TEXT;
     `);
 
-    console.log("Profile fields migration completed successfully.");
+    console.log('Profile fields migration completed successfully.');
   } catch (error) {
-    console.error("Error during migration:", error);
+    console.error('Error during migration:', error);
     throw error;
   } finally {
     await pool.end();
@@ -41,10 +41,10 @@ async function runProfileMigration() {
 // Run the migration
 runProfileMigration()
   .then(() => {
-    console.log("Profile fields migration script completed.");
+    console.log('Profile fields migration script completed.');
     process.exit(0);
   })
   .catch((error) => {
-    console.error("Migration failed:", error);
+    console.error('Migration failed:', error);
     process.exit(1);
   });

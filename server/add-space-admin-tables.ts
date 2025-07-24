@@ -1,11 +1,11 @@
-import { pool } from "./db";
+import { pool } from './db';
 
 /**
  * This script adds the new Channel Admin tables for join requests and pinned posts
  */
 async function addChannelAdminTables() {
-  console.log("Adding Channel Admin tables...");
-  
+  console.log('Adding Channel Admin tables...');
+
   try {
     // Create interest_channel_join_requests table
     await pool.query(`
@@ -22,7 +22,7 @@ async function addChannelAdminTables() {
         UNIQUE(channel_id, user_id)
       )
     `);
-    console.log("Created interest_channel_join_requests table");
+    console.log('Created interest_channel_join_requests table');
 
     // Create interest_channel_pinned_posts table
     await pool.query(`
@@ -36,11 +36,11 @@ async function addChannelAdminTables() {
         UNIQUE(channel_id, post_id)
       )
     `);
-    console.log("Created interest_channel_pinned_posts table");
+    console.log('Created interest_channel_pinned_posts table');
 
     // Add admin field to existing channels by promoting one member to admin for each channel
-    console.log("Promoting existing channel members to admins...");
-    
+    console.log('Promoting existing channel members to admins...');
+
     // Get all channels that have members
     const channelsWithMembers = await pool.query(`
       SELECT DISTINCT c.id as channel_id, c.created_by, 
@@ -55,19 +55,24 @@ async function addChannelAdminTables() {
     // Promote the first member (or creator if they're a member) to admin for each channel
     for (const channel of channelsWithMembers.rows) {
       const adminUserId = channel.first_member || channel.created_by;
-      
-      await pool.query(`
+
+      await pool.query(
+        `
         UPDATE interest_channel_members 
         SET role = 'admin' 
         WHERE channel_id = $1 AND user_id = $2
-      `, [channel.channel_id, adminUserId]);
-      
-      console.log(`Promoted user ${adminUserId} to admin for channel ${channel.channel_id}`);
+      `,
+        [channel.channel_id, adminUserId]
+      );
+
+      console.log(
+        `Promoted user ${adminUserId} to admin for channel ${channel.channel_id}`
+      );
     }
 
-    console.log("Channel Admin tables added successfully!");
+    console.log('Channel Admin tables added successfully!');
   } catch (error) {
-    console.error("Error adding Channel Admin tables:", error);
+    console.error('Error adding Channel Admin tables:', error);
   } finally {
     await pool.end();
   }

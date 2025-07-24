@@ -1,22 +1,62 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Download, Users } from "lucide-react";
-import { format } from "date-fns";
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Link } from 'wouter';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Loader2,
+  Plus,
+  User,
+  UserPlus,
+  FileText,
+  Trash,
+  PenSquare,
+  Upload,
+  Download,
+  Users,
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 // Define employee form data type
 interface EmployeeFormData {
@@ -63,25 +103,25 @@ interface Employee {
 }
 
 const defaultEmployeeFormData: EmployeeFormData = {
-  password: "changeme123",
-  name: "",
-  surname: "",
-  email: "",
-  phoneNumber: "",
-  jobTitle: "",
-  department: "",
-  location: "",
-  managerEmail: "",
-  sex: "",
-  nationality: "",
-  birthDate: "",
-  hireDate: "",
+  password: 'changeme123',
+  name: '',
+  surname: '',
+  email: '',
+  phoneNumber: '',
+  jobTitle: '',
+  department: '',
+  location: '',
+  managerEmail: '',
+  sex: '',
+  nationality: '',
+  birthDate: '',
+  hireDate: '',
   isAdmin: false,
-  status: "active",
-  avatarUrl: "",
-  adminScope: "none",
+  status: 'active',
+  avatarUrl: '',
+  adminScope: 'none',
   allowedSites: [],
-  allowedDepartments: []
+  allowedDepartments: [],
 };
 
 export default function AdminEmployeesPage() {
@@ -92,8 +132,10 @@ export default function AdminEmployeesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
-  const [formData, setFormData] = useState<EmployeeFormData>(defaultEmployeeFormData);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [formData, setFormData] = useState<EmployeeFormData>(
+    defaultEmployeeFormData
+  );
+  const [searchQuery, setSearchQuery] = useState('');
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
   const [allSites, setAllSites] = useState<string[]>([]);
   const [allDepartments, setAllDepartments] = useState<string[]>([]);
@@ -106,7 +148,7 @@ export default function AdminEmployeesPage() {
       try {
         const [sitesResponse, deptResponse] = await Promise.all([
           apiRequest('GET', '/api/users/locations'),
-          apiRequest('GET', '/api/users/departments')
+          apiRequest('GET', '/api/users/departments'),
         ]);
 
         if (sitesResponse.ok) {
@@ -128,48 +170,48 @@ export default function AdminEmployeesPage() {
 
   // Download all employees function
   const downloadAllEmployees = () => {
-    const firebaseToken = localStorage.getItem("firebaseToken");
-    const jwtToken = localStorage.getItem("token");
+    const firebaseToken = localStorage.getItem('firebaseToken');
+    const jwtToken = localStorage.getItem('token');
     const token = firebaseToken || jwtToken;
-    
+
     if (!token) {
       toast({
-        title: "Authentication Error",
-        description: "You need to be logged in to download employees",
-        variant: "destructive"
+        title: 'Authentication Error',
+        description: 'You need to be logged in to download employees',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     // Download all employees as Excel
     window.location.href = `/api/admin/employees/export?token=${token}`;
-    
+
     toast({
-      title: "Employee List Downloading",
-      description: "Complete employee list is being downloaded to your device"
+      title: 'Employee List Downloading',
+      description: 'Complete employee list is being downloaded to your device',
     });
   };
 
   // Download template function
   const downloadTemplate = () => {
-    const firebaseToken = localStorage.getItem("firebaseToken");
-    const jwtToken = localStorage.getItem("token");
+    const firebaseToken = localStorage.getItem('firebaseToken');
+    const jwtToken = localStorage.getItem('token');
     const token = firebaseToken || jwtToken;
-    
+
     if (!token) {
       toast({
-        title: "Authentication Error",
-        description: "You need to be logged in to download the template",
-        variant: "destructive"
+        title: 'Authentication Error',
+        description: 'You need to be logged in to download the template',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     window.location.href = `/api/file-templates/employee_import/download?token=${token}`;
-    
+
     toast({
-      title: "Template Downloading",
-      description: "Employee template is being downloaded to your device"
+      title: 'Template Downloading',
+      description: 'Employee template is being downloaded to your device',
     });
   };
 
@@ -178,10 +220,10 @@ export default function AdminEmployeesPage() {
     queryKey: ['/api/admin/employees'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/employees');
-      return await response.json() as Employee[];
+      return (await response.json()) as Employee[];
     },
     staleTime: 0, // Always consider data stale for immediate updates
-    gcTime: 5 * 60 * 1000 // Keep in cache for 5 minutes
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
   // Fetch organization usage stats
@@ -192,7 +234,7 @@ export default function AdminEmployeesPage() {
       return await response.json();
     },
     retry: false,
-    staleTime: 60000 // Cache for 1 minute
+    staleTime: 60000, // Cache for 1 minute
   });
 
   // Create employee mutation
@@ -200,22 +242,28 @@ export default function AdminEmployeesPage() {
     mutationFn: async (data: EmployeeFormData) => {
       // Generate a username from the email address (take everything before the @ symbol)
       const emailParts = data.email.split('@');
-      const baseUsername = emailParts[0].toLowerCase().replace(/[^a-z0-9]/g, '.');
-      
+      const baseUsername = emailParts[0]
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '.');
+
       // Add the username field to the data (extend the type)
       const dataWithUsername = {
         ...data,
-        username: baseUsername
+        username: baseUsername,
       } as EmployeeFormData & { username: string };
-      
+
       // Use the specific HR employees endpoint to ensure Firebase user creation
-      const response = await apiRequest('POST', '/api/hr/employees', dataWithUsername);
+      const response = await apiRequest(
+        'POST',
+        '/api/hr/employees',
+        dataWithUsername
+      );
       return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Employee created successfully",
+        title: 'Success',
+        description: 'Employee created successfully',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
       setIsCreateDialogOpen(false);
@@ -223,39 +271,48 @@ export default function AdminEmployeesPage() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create employee",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to create employee',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Update employee mutation
   const updateMutation = useMutation({
-    mutationFn: async (data: { id: number, data: Partial<EmployeeFormData> }) => {
+    mutationFn: async (data: {
+      id: number;
+      data: Partial<EmployeeFormData>;
+    }) => {
       // If we have an email, also generate a username
       if (data.data.email) {
         const emailParts = data.data.email.split('@');
-        const baseUsername = emailParts[0].toLowerCase().replace(/[^a-z0-9]/g, '.');
-        
+        const baseUsername = emailParts[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '.');
+
         // Add the username field to the data
         data.data = {
           ...data.data,
-          username: baseUsername
+          username: baseUsername,
         };
       }
-      
-      console.log("Updating employee with data:", data.data);
-      const response = await apiRequest('PATCH', `/api/admin/employees/${data.id}`, data.data);
+
+      console.log('Updating employee with data:', data.data);
+      const response = await apiRequest(
+        'PATCH',
+        `/api/admin/employees/${data.id}`,
+        data.data
+      );
       const result = await response.json();
-      console.log("Update response:", result);
+      console.log('Update response:', result);
       return result;
     },
     onSuccess: (data) => {
-      console.log("Update successful, returned data:", data);
+      console.log('Update successful, returned data:', data);
       toast({
-        title: "Success",
-        description: "Employee updated successfully",
+        title: 'Success',
+        description: 'Employee updated successfully',
       });
       // Invalidate and refetch immediately
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
@@ -264,13 +321,13 @@ export default function AdminEmployeesPage() {
       resetForm();
     },
     onError: (error: any) => {
-      console.error("Update employee error:", error);
+      console.error('Update employee error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update employee",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to update employee',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Delete employee mutation
@@ -281,42 +338,42 @@ export default function AdminEmployeesPage() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Employee deleted successfully",
+        title: 'Success',
+        description: 'Employee deleted successfully',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
       setIsDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete employee",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to delete employee',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Bulk upload mutation
   const bulkUploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       // Get Firebase token first, then fallback to JWT token
-      const firebaseToken = localStorage.getItem("firebaseToken");
-      const jwtToken = localStorage.getItem("token");
+      const firebaseToken = localStorage.getItem('firebaseToken');
+      const jwtToken = localStorage.getItem('token');
       const token = firebaseToken || jwtToken;
-      
+
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
-      
+
       const response = await fetch('/api/admin/employees/bulk-upload', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
         // Don't set Content-Type header - browser will set it with correct boundary for multipart/form-data
       });
-      
+
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Unauthorized: Invalid authentication token');
@@ -324,12 +381,12 @@ export default function AdminEmployeesPage() {
         const error = await response.json();
         throw new Error(error.message || 'Bulk upload failed');
       }
-      
+
       return await response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Success",
+        title: 'Success',
         description: `Successfully imported ${data.success || data.count || 0} employees`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
@@ -338,11 +395,11 @@ export default function AdminEmployeesPage() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to bulk upload employees",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to bulk upload employees',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   function resetForm() {
@@ -350,83 +407,111 @@ export default function AdminEmployeesPage() {
     setCurrentEmployee(null);
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  function handleInputChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
     const { name, value } = e.target;
-    
+
     // Apply validation and normalization for department and location fields
     if (name === 'department' || name === 'location') {
       const normalizedValue = value.trim();
       // Apply proper case formatting on blur
-      setFormData(prev => ({ ...prev, [name]: normalizedValue }));
+      setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   }
 
   // Handle blur events for department and location to apply proper formatting
-  function handleFieldBlur(fieldName: 'department' | 'location', value: string) {
+  function handleFieldBlur(
+    fieldName: 'department' | 'location',
+    value: string
+  ) {
     if (value.trim()) {
-      const properCase = value.trim()
+      const properCase = value
+        .trim()
         .toLowerCase()
         .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-      
-      setFormData(prev => ({ ...prev, [fieldName]: properCase }));
-      
+
+      setFormData((prev) => ({ ...prev, [fieldName]: properCase }));
+
       // Auto-add to available options if it doesn't exist
-      if (fieldName === 'department' && !allDepartments.some(dept => normalizeText(dept) === normalizeText(properCase))) {
-        setAllDepartments(prev => [...prev, properCase]);
-      } else if (fieldName === 'location' && !allSites.some(site => normalizeText(site) === normalizeText(properCase))) {
-        setAllSites(prev => [...prev, properCase]);
+      if (
+        fieldName === 'department' &&
+        !allDepartments.some(
+          (dept) => normalizeText(dept) === normalizeText(properCase)
+        )
+      ) {
+        setAllDepartments((prev) => [...prev, properCase]);
+      } else if (
+        fieldName === 'location' &&
+        !allSites.some(
+          (site) => normalizeText(site) === normalizeText(properCase)
+        )
+      ) {
+        setAllSites((prev) => [...prev, properCase]);
       }
     }
   }
 
   function handleCheckboxChange(name: string, checked: boolean) {
-    setFormData(prev => ({ ...prev, [name]: checked }));
+    setFormData((prev) => ({ ...prev, [name]: checked }));
   }
 
   // Handle admin scope change
   function handleAdminScopeChange(value: string) {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       adminScope: value,
       // Reset arrays when scope changes
       allowedSites: [],
-      allowedDepartments: []
+      allowedDepartments: [],
     }));
   }
 
   // Handle site selection for admin permissions
   function handleSiteSelection(site: string, checked: boolean) {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      allowedSites: checked 
+      allowedSites: checked
         ? [...prev.allowedSites, site]
-        : prev.allowedSites.filter(s => s !== site)
+        : prev.allowedSites.filter((s) => s !== site),
     }));
   }
 
   // Handle department selection for admin permissions
   function handleDepartmentSelection(department: string, checked: boolean) {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      allowedDepartments: checked 
+      allowedDepartments: checked
         ? [...prev.allowedDepartments, department]
-        : prev.allowedDepartments.filter(d => d !== department)
+        : prev.allowedDepartments.filter((d) => d !== department),
     }));
   }
 
   // Normalize text for comparison (handles case, spacing, special chars)
   function normalizeText(text: string): string {
-    return text.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+    return text
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ');
   }
 
   // Check for similar existing entries
-  function findSimilarEntry(newEntry: string, existingEntries: string[]): string | null {
+  function findSimilarEntry(
+    newEntry: string,
+    existingEntries: string[]
+  ): string | null {
     const normalized = normalizeText(newEntry);
-    return existingEntries.find(entry => normalizeText(entry) === normalized) || null;
+    return (
+      existingEntries.find((entry) => normalizeText(entry) === normalized) ||
+      null
+    );
   }
 
   // Add new site with validation
@@ -438,9 +523,9 @@ export default function AdminEmployeesPage() {
     const similar = findSimilarEntry(trimmedSite, allSites);
     if (similar) {
       toast({
-        title: "Duplicate Site",
+        title: 'Duplicate Site',
         description: `"${trimmedSite}" is too similar to existing site "${similar}"`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return;
     }
@@ -448,18 +533,18 @@ export default function AdminEmployeesPage() {
     // Validate format
     if (trimmedSite.length < 2) {
       toast({
-        title: "Invalid Site Name",
-        description: "Site name must be at least 2 characters long",
-        variant: "destructive"
+        title: 'Invalid Site Name',
+        description: 'Site name must be at least 2 characters long',
+        variant: 'destructive',
       });
       return;
     }
 
     if (trimmedSite.length > 50) {
       toast({
-        title: "Invalid Site Name", 
-        description: "Site name must be less than 50 characters",
-        variant: "destructive"
+        title: 'Invalid Site Name',
+        description: 'Site name must be less than 50 characters',
+        variant: 'destructive',
       });
       return;
     }
@@ -468,14 +553,14 @@ export default function AdminEmployeesPage() {
     const properCase = trimmedSite
       .toLowerCase()
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    setAllSites(prev => [...prev, properCase]);
+    setAllSites((prev) => [...prev, properCase]);
     setNewSite('');
     toast({
-      title: "Site Added",
-      description: `"${properCase}" has been added to available sites`
+      title: 'Site Added',
+      description: `"${properCase}" has been added to available sites`,
     });
   }
 
@@ -488,9 +573,9 @@ export default function AdminEmployeesPage() {
     const similar = findSimilarEntry(trimmedDept, allDepartments);
     if (similar) {
       toast({
-        title: "Duplicate Department",
+        title: 'Duplicate Department',
         description: `"${trimmedDept}" is too similar to existing department "${similar}"`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return;
     }
@@ -498,18 +583,18 @@ export default function AdminEmployeesPage() {
     // Validate format
     if (trimmedDept.length < 2) {
       toast({
-        title: "Invalid Department Name",
-        description: "Department name must be at least 2 characters long",
-        variant: "destructive"
+        title: 'Invalid Department Name',
+        description: 'Department name must be at least 2 characters long',
+        variant: 'destructive',
       });
       return;
     }
 
     if (trimmedDept.length > 50) {
       toast({
-        title: "Invalid Department Name",
-        description: "Department name must be less than 50 characters",
-        variant: "destructive"
+        title: 'Invalid Department Name',
+        description: 'Department name must be less than 50 characters',
+        variant: 'destructive',
       });
       return;
     }
@@ -518,42 +603,49 @@ export default function AdminEmployeesPage() {
     const properCase = trimmedDept
       .toLowerCase()
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    setAllDepartments(prev => [...prev, properCase]);
+    setAllDepartments((prev) => [...prev, properCase]);
     setNewDepartment('');
     toast({
-      title: "Department Added",
-      description: `"${properCase}" has been added to available departments`
+      title: 'Department Added',
+      description: `"${properCase}" has been added to available departments`,
     });
   }
 
   function openEditDialog(employee: Employee) {
     // Find the most recent data from the query results
-    const freshEmployee = employees?.find(e => e.id === employee.id) || employee;
-    
+    const freshEmployee =
+      employees?.find((e) => e.id === employee.id) || employee;
+
     setCurrentEmployee(freshEmployee);
     setFormData({
-      password: "", // We don't show or set the password when editing
+      password: '', // We don't show or set the password when editing
       name: freshEmployee.name,
-      surname: freshEmployee.surname || "",
+      surname: freshEmployee.surname || '',
       email: freshEmployee.email,
-      phoneNumber: freshEmployee.phoneNumber || "",
-      jobTitle: freshEmployee.jobTitle || "",
-      department: freshEmployee.department || "",
-      location: freshEmployee.location || "",
-      managerEmail: freshEmployee.managerEmail || "",
-      sex: freshEmployee.sex ? freshEmployee.sex.toLowerCase() : "",
-      nationality: freshEmployee.nationality || "",
-      birthDate: freshEmployee.dateOfBirth ? format(new Date(freshEmployee.dateOfBirth), 'yyyy-MM-dd') : "",
-      hireDate: freshEmployee.dateJoined ? format(new Date(freshEmployee.dateJoined), 'yyyy-MM-dd') : "",
+      phoneNumber: freshEmployee.phoneNumber || '',
+      jobTitle: freshEmployee.jobTitle || '',
+      department: freshEmployee.department || '',
+      location: freshEmployee.location || '',
+      managerEmail: freshEmployee.managerEmail || '',
+      sex: freshEmployee.sex ? freshEmployee.sex.toLowerCase() : '',
+      nationality: freshEmployee.nationality || '',
+      birthDate: freshEmployee.dateOfBirth
+        ? format(new Date(freshEmployee.dateOfBirth), 'yyyy-MM-dd')
+        : '',
+      hireDate: freshEmployee.dateJoined
+        ? format(new Date(freshEmployee.dateJoined), 'yyyy-MM-dd')
+        : '',
       isAdmin: freshEmployee.isAdmin,
-      status: freshEmployee.status ? freshEmployee.status.toLowerCase() : "active",
-      avatarUrl: freshEmployee.avatarUrl || "",
-      adminScope: (freshEmployee as any).adminScope || "none",
+      status: freshEmployee.status
+        ? freshEmployee.status.toLowerCase()
+        : 'active',
+      avatarUrl: freshEmployee.avatarUrl || '',
+      adminScope: (freshEmployee as any).adminScope || 'none',
       allowedSites: (freshEmployee as any).allowedSites || [],
-      allowedDepartments: (freshEmployee as any).allowedDepartments || []
+      allowedDepartments: (freshEmployee as any).allowedDepartments || [],
     });
     setIsEditDialogOpen(true);
   }
@@ -572,9 +664,9 @@ export default function AdminEmployeesPage() {
   function handleBulkUpload() {
     if (!bulkUploadFile) {
       toast({
-        title: "Error",
-        description: "Please select a file to upload",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Please select a file to upload',
+        variant: 'destructive',
       });
       return;
     }
@@ -587,16 +679,19 @@ export default function AdminEmployeesPage() {
   function getInitials(name: string, surname: string | null) {
     return `${name.charAt(0)}${surname ? surname.charAt(0) : ''}`.toUpperCase();
   }
-  
+
   // Filter employees based on search query
-  const filteredEmployees = employees?.filter(employee => {
+  const filteredEmployees = employees?.filter((employee) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       employee.name.toLowerCase().includes(searchLower) ||
-      (employee.surname && employee.surname.toLowerCase().includes(searchLower)) ||
+      (employee.surname &&
+        employee.surname.toLowerCase().includes(searchLower)) ||
       employee.email.toLowerCase().includes(searchLower) ||
-      (employee.jobTitle && employee.jobTitle.toLowerCase().includes(searchLower)) ||
-      (employee.department && employee.department.toLowerCase().includes(searchLower))
+      (employee.jobTitle &&
+        employee.jobTitle.toLowerCase().includes(searchLower)) ||
+      (employee.department &&
+        employee.department.toLowerCase().includes(searchLower))
     );
   });
 
@@ -631,51 +726,81 @@ export default function AdminEmployeesPage() {
         <CardContent>
           {usageStatsError ? (
             <div className="text-center py-4">
-              <div className="text-sm text-muted-foreground mb-2">Unable to load usage statistics</div>
-              <div className="text-xs text-red-600">Authentication required</div>
+              <div className="text-sm text-muted-foreground mb-2">
+                Unable to load usage statistics
+              </div>
+              <div className="text-xs text-red-600">
+                Authentication required
+              </div>
             </div>
           ) : usageStats ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
-                  <div className="text-sm text-muted-foreground">Current Employees</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
-                  <div className="text-sm text-muted-foreground">Subscription Capacity</div>
-                </div>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                    {(usageStats.subscribedUsers || 0) - (usageStats.currentEmployees || 0)}
+                  <div className="text-2xl font-bold text-primary">
+                    {usageStats.currentEmployees || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'Available Seats' : 'Over Limit'}
+                    Current Employees
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {usageStats.subscribedUsers || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Subscription Capacity
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div
+                    className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {(usageStats.subscribedUsers || 0) -
+                      (usageStats.currentEmployees || 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {(usageStats.currentEmployees || 0) <=
+                    (usageStats.subscribedUsers || 0)
+                      ? 'Available Seats'
+                      : 'Over Limit'}
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {usageStats.subscribedUsers ? Math.round(((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100) : 0}%
+                    {usageStats.subscribedUsers
+                      ? Math.round(
+                          ((usageStats.currentEmployees || 0) /
+                            usageStats.subscribedUsers) *
+                            100
+                        )
+                      : 0}
+                    %
                   </div>
-                  <div className="text-sm text-muted-foreground">Capacity Used</div>
+                  <div className="text-sm text-muted-foreground">
+                    Capacity Used
+                  </div>
                 </div>
               </div>
               <div className="mt-4">
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full ${
-                      (usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0)
-                        ? 'bg-green-600' 
+                      (usageStats.currentEmployees || 0) <=
+                      (usageStats.subscribedUsers || 0)
+                        ? 'bg-green-600'
                         : 'bg-red-600'
                     }`}
-                    style={{ 
-                      width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%` 
+                    style={{
+                      width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%`,
                     }}
                   ></div>
                 </div>
-                {(usageStats.currentEmployees || 0) > (usageStats.subscribedUsers || 0) && (
+                {(usageStats.currentEmployees || 0) >
+                  (usageStats.subscribedUsers || 0) && (
                   <div className="mt-2 text-sm text-red-600 font-medium">
-                    ⚠️ Organization is over subscription limit. Consider upgrading your plan.
+                    ⚠️ Organization is over subscription limit. Consider
+                    upgrading your plan.
                   </div>
                 )}
               </div>
@@ -683,13 +808,13 @@ export default function AdminEmployeesPage() {
           ) : (
             <div className="text-center py-4">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-              <div className="text-sm text-muted-foreground mt-2">Loading usage statistics...</div>
+              <div className="text-sm text-muted-foreground mt-2">
+                Loading usage statistics...
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
-
-
 
       <Card className="mb-8">
         <CardHeader>
@@ -707,7 +832,7 @@ export default function AdminEmployeesPage() {
               className="max-w-sm"
             />
           </div>
-          
+
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -715,7 +840,9 @@ export default function AdminEmployeesPage() {
           ) : filteredEmployees && filteredEmployees.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
-                <TableCaption>A list of all employees in your organization</TableCaption>
+                <TableCaption>
+                  A list of all employees in your organization
+                </TableCaption>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Employee</TableHead>
@@ -729,37 +856,64 @@ export default function AdminEmployeesPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredEmployees.map((employee, index) => (
-                    <TableRow key={`employee-${employee.id}-${employee.email}-${index}`}>
+                    <TableRow
+                      key={`employee-${employee.id}-${employee.email}-${index}`}
+                    >
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={employee.avatarUrl || undefined} alt={employee.name} />
-                          <AvatarFallback>{getInitials(employee.name, employee.surname)}</AvatarFallback>
+                          <AvatarImage
+                            src={employee.avatarUrl || undefined}
+                            alt={employee.name}
+                          />
+                          <AvatarFallback>
+                            {getInitials(employee.name, employee.surname)}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div>{employee.name} {employee.surname}</div>
-                          <div className="text-sm text-muted-foreground">{employee.email}</div>
+                          <div>
+                            {employee.name} {employee.surname}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {employee.email}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>{employee.jobTitle || "—"}</TableCell>
-                      <TableCell>{employee.department || "—"}</TableCell>
+                      <TableCell>{employee.jobTitle || '—'}</TableCell>
+                      <TableCell>{employee.department || '—'}</TableCell>
                       <TableCell>
-                        <Badge variant={employee.status === "active" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            employee.status === 'active'
+                              ? 'default'
+                              : 'secondary'
+                          }
+                        >
                           {employee.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={employee.isAdmin ? "destructive" : "outline"}>
-                          {employee.isAdmin ? "Admin" : "User"}
+                        <Badge
+                          variant={employee.isAdmin ? 'destructive' : 'outline'}
+                        >
+                          {employee.isAdmin ? 'Admin' : 'User'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-muted-foreground">—</div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(employee)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditDialog(employee)}
+                        >
                           <PenSquare className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(employee)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDeleteDialog(employee)}
+                        >
                           <Trash className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -782,10 +936,11 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Add New Employee</DialogTitle>
             <DialogDescription>
-              Create a new employee account. All fields marked with * are required.
+              Create a new employee account. All fields marked with * are
+              required.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">First Name *</Label>
@@ -797,7 +952,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="surname">Last Name *</Label>
               <Input
@@ -808,7 +963,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="email">Email *</Label>
               <Input
@@ -820,7 +975,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="managerEmail">Manager's Email</Label>
               <Input
@@ -832,7 +987,7 @@ export default function AdminEmployeesPage() {
                 placeholder="manager@company.com"
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="password">Default Password *</Label>
               <Input
@@ -844,7 +999,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
@@ -854,7 +1009,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="jobTitle">Job Title</Label>
               <Input
@@ -864,7 +1019,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="department">Department</Label>
               <Input
@@ -877,15 +1032,17 @@ export default function AdminEmployeesPage() {
                 list="create-departments-list"
               />
               <datalist id="create-departments-list">
-                {allDepartments.map(dept => (
+                {allDepartments.map((dept) => (
                   <option key={dept} value={dept} />
                 ))}
               </datalist>
               {formData.department && formData.department.length > 50 && (
-                <p className="text-sm text-red-600">Department name must be less than 50 characters</p>
+                <p className="text-sm text-red-600">
+                  Department name must be less than 50 characters
+                </p>
               )}
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="location">Location</Label>
               <Input
@@ -898,18 +1055,26 @@ export default function AdminEmployeesPage() {
                 list="create-locations-list"
               />
               <datalist id="create-locations-list">
-                {allSites.map(site => (
+                {allSites.map((site) => (
                   <option key={site} value={site} />
                 ))}
               </datalist>
               {formData.location && formData.location.length > 50 && (
-                <p className="text-sm text-red-600">Location name must be less than 50 characters</p>
+                <p className="text-sm text-red-600">
+                  Location name must be less than 50 characters
+                </p>
               )}
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="sex">Gender</Label>
-              <Select name="sex" value={formData.sex} onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
+              <Select
+                name="sex"
+                value={formData.sex}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, sex: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -917,11 +1082,13 @@ export default function AdminEmployeesPage() {
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  <SelectItem value="prefer_not_to_say">
+                    Prefer not to say
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="nationality">Nationality</Label>
               <Input
@@ -931,7 +1098,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="birthDate">Date of Birth</Label>
               <Input
@@ -942,7 +1109,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="hireDate">Hire Date</Label>
               <Input
@@ -953,10 +1120,16 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
-              <Select name="status" value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+              <Select
+                name="status"
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, status: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -967,7 +1140,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="avatarUrl">Profile Picture URL</Label>
               <Input
@@ -978,12 +1151,14 @@ export default function AdminEmployeesPage() {
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2 mt-8">
-              <Checkbox 
-                id="isAdmin" 
+              <Checkbox
+                id="isAdmin"
                 checked={formData.isAdmin}
-                onCheckedChange={(checked) => handleCheckboxChange("isAdmin", checked as boolean)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange('isAdmin', checked as boolean)
+                }
               />
               <Label htmlFor="isAdmin">Admin privileges</Label>
             </div>
@@ -991,52 +1166,79 @@ export default function AdminEmployeesPage() {
             {/* Admin Permissions Configuration for Create Form */}
             {formData.isAdmin && (
               <div className="mt-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
-                <h3 className="text-lg font-semibold text-orange-800 mb-4">Admin Permissions Configuration</h3>
-                
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">
+                  Admin Permissions Configuration
+                </h3>
+
                 <div className="grid gap-4">
                   {/* Admin Scope Selection */}
                   <div className="grid gap-2">
                     <Label htmlFor="create-adminScope">Admin Scope *</Label>
-                    <Select 
-                      value={formData.adminScope} 
+                    <Select
+                      value={formData.adminScope}
                       onValueChange={handleAdminScopeChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select admin scope" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="super">Super Admin (Full Access)</SelectItem>
-                        <SelectItem value="site">Site Admin (Multiple Sites)</SelectItem>
-                        <SelectItem value="department">Department Admin (Multiple Departments)</SelectItem>
-                        <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
+                        <SelectItem value="super">
+                          Super Admin (Full Access)
+                        </SelectItem>
+                        <SelectItem value="site">
+                          Site Admin (Multiple Sites)
+                        </SelectItem>
+                        <SelectItem value="department">
+                          Department Admin (Multiple Departments)
+                        </SelectItem>
+                        <SelectItem value="hybrid">
+                          Hybrid Admin (Sites + Departments)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-sm text-muted-foreground">
-                      {formData.adminScope === 'super' && "Complete administrative access to all company resources"}
-                      {formData.adminScope === 'site' && "Administrative access to selected sites/locations"}
-                      {formData.adminScope === 'department' && "Administrative access to selected departments"}
-                      {formData.adminScope === 'hybrid' && "Administrative access to selected sites AND departments"}
+                      {formData.adminScope === 'super' &&
+                        'Complete administrative access to all company resources'}
+                      {formData.adminScope === 'site' &&
+                        'Administrative access to selected sites/locations'}
+                      {formData.adminScope === 'department' &&
+                        'Administrative access to selected departments'}
+                      {formData.adminScope === 'hybrid' &&
+                        'Administrative access to selected sites AND departments'}
                     </p>
                   </div>
 
                   {/* Site Selection for Site/Hybrid Admins */}
-                  {(formData.adminScope === 'site' || formData.adminScope === 'hybrid') && (
+                  {(formData.adminScope === 'site' ||
+                    formData.adminScope === 'hybrid') && (
                     <div className="grid gap-2">
                       <Label>Allowed Sites/Locations</Label>
                       <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
                         {allSites.length > 0 ? (
-                          allSites.map(site => (
-                            <div key={site} className="flex items-center space-x-2 py-1">
+                          allSites.map((site) => (
+                            <div
+                              key={site}
+                              className="flex items-center space-x-2 py-1"
+                            >
                               <Checkbox
                                 id={`create-site-${site}`}
                                 checked={formData.allowedSites.includes(site)}
-                                onCheckedChange={(checked) => handleSiteSelection(site, checked as boolean)}
+                                onCheckedChange={(checked) =>
+                                  handleSiteSelection(site, checked as boolean)
+                                }
                               />
-                              <Label htmlFor={`create-site-${site}`} className="text-sm">{site}</Label>
+                              <Label
+                                htmlFor={`create-site-${site}`}
+                                className="text-sm"
+                              >
+                                {site}
+                              </Label>
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-muted-foreground">No sites available</p>
+                          <p className="text-sm text-muted-foreground">
+                            No sites available
+                          </p>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -1046,48 +1248,84 @@ export default function AdminEmployeesPage() {
                   )}
 
                   {/* Department Selection for Department/Hybrid Admins */}
-                  {(formData.adminScope === 'department' || formData.adminScope === 'hybrid') && (
+                  {(formData.adminScope === 'department' ||
+                    formData.adminScope === 'hybrid') && (
                     <div className="grid gap-2">
                       <Label>Allowed Departments</Label>
                       <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
                         {allDepartments.length > 0 ? (
-                          allDepartments.map(department => (
-                            <div key={department} className="flex items-center space-x-2 py-1">
+                          allDepartments.map((department) => (
+                            <div
+                              key={department}
+                              className="flex items-center space-x-2 py-1"
+                            >
                               <Checkbox
                                 id={`create-dept-${department}`}
-                                checked={formData.allowedDepartments.includes(department)}
-                                onCheckedChange={(checked) => handleDepartmentSelection(department, checked as boolean)}
+                                checked={formData.allowedDepartments.includes(
+                                  department
+                                )}
+                                onCheckedChange={(checked) =>
+                                  handleDepartmentSelection(
+                                    department,
+                                    checked as boolean
+                                  )
+                                }
                               />
-                              <Label htmlFor={`create-dept-${department}`} className="text-sm">{department}</Label>
+                              <Label
+                                htmlFor={`create-dept-${department}`}
+                                className="text-sm"
+                              >
+                                {department}
+                              </Label>
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-muted-foreground">No departments available</p>
+                          <p className="text-sm text-muted-foreground">
+                            No departments available
+                          </p>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Selected: {formData.allowedDepartments.length} department(s)
+                        Selected: {formData.allowedDepartments.length}{' '}
+                        department(s)
                       </p>
                     </div>
                   )}
 
                   {/* Admin Summary */}
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-                    <h4 className="font-medium text-blue-800 mb-2">Permission Summary</h4>
+                    <h4 className="font-medium text-blue-800 mb-2">
+                      Permission Summary
+                    </h4>
                     <div className="text-sm text-blue-700">
                       {formData.adminScope === 'super' && (
-                        <p>✓ Full administrative access to all company resources</p>
+                        <p>
+                          ✓ Full administrative access to all company resources
+                        </p>
                       )}
                       {formData.adminScope === 'site' && (
-                        <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                        <p>
+                          ✓ Admin access to {formData.allowedSites.length}{' '}
+                          selected site(s)
+                        </p>
                       )}
                       {formData.adminScope === 'department' && (
-                        <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                        <p>
+                          ✓ Admin access to {formData.allowedDepartments.length}{' '}
+                          selected department(s)
+                        </p>
                       )}
                       {formData.adminScope === 'hybrid' && (
                         <div>
-                          <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
-                          <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                          <p>
+                            ✓ Admin access to {formData.allowedSites.length}{' '}
+                            selected site(s)
+                          </p>
+                          <p>
+                            ✓ Admin access to{' '}
+                            {formData.allowedDepartments.length} selected
+                            department(s)
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1096,10 +1334,10 @@ export default function AdminEmployeesPage() {
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setIsCreateDialogOpen(false);
                 resetForm();
@@ -1107,11 +1345,13 @@ export default function AdminEmployeesPage() {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={() => createMutation.mutate(formData)}
               disabled={createMutation.isPending}
             >
-              {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {createMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Create Employee
             </Button>
           </DialogFooter>
@@ -1124,10 +1364,11 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Edit Employee</DialogTitle>
             <DialogDescription>
-              Update employee information. Leave password blank to keep the current password.
+              Update employee information. Leave password blank to keep the
+              current password.
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Same form fields as Create Dialog but with current values */}
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="grid gap-2">
@@ -1140,7 +1381,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-surname">Last Name *</Label>
               <Input
@@ -1151,7 +1392,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-email">Email *</Label>
               <Input
@@ -1163,7 +1404,7 @@ export default function AdminEmployeesPage() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-managerEmail">Manager's Email</Label>
               <Input
@@ -1175,7 +1416,7 @@ export default function AdminEmployeesPage() {
                 placeholder="manager@company.com"
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-password">New Password (optional)</Label>
               <Input
@@ -1187,7 +1428,7 @@ export default function AdminEmployeesPage() {
                 placeholder="Leave blank to keep current password"
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-phoneNumber">Phone Number</Label>
               <Input
@@ -1197,7 +1438,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-jobTitle">Job Title</Label>
               <Input
@@ -1207,7 +1448,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-department">Department</Label>
               <Input
@@ -1220,15 +1461,17 @@ export default function AdminEmployeesPage() {
                 list="departments-list"
               />
               <datalist id="departments-list">
-                {allDepartments.map(dept => (
+                {allDepartments.map((dept) => (
                   <option key={dept} value={dept} />
                 ))}
               </datalist>
               {formData.department && formData.department.length > 50 && (
-                <p className="text-sm text-red-600">Department name must be less than 50 characters</p>
+                <p className="text-sm text-red-600">
+                  Department name must be less than 50 characters
+                </p>
               )}
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-location">Location</Label>
               <Input
@@ -1241,18 +1484,26 @@ export default function AdminEmployeesPage() {
                 list="locations-list"
               />
               <datalist id="locations-list">
-                {allSites.map(site => (
+                {allSites.map((site) => (
                   <option key={site} value={site} />
                 ))}
               </datalist>
               {formData.location && formData.location.length > 50 && (
-                <p className="text-sm text-red-600">Location name must be less than 50 characters</p>
+                <p className="text-sm text-red-600">
+                  Location name must be less than 50 characters
+                </p>
               )}
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-sex">Gender</Label>
-              <Select name="sex" value={formData.sex} onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
+              <Select
+                name="sex"
+                value={formData.sex}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, sex: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -1260,11 +1511,13 @@ export default function AdminEmployeesPage() {
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  <SelectItem value="prefer_not_to_say">
+                    Prefer not to say
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-nationality">Nationality</Label>
               <Input
@@ -1274,7 +1527,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-birthDate">Date of Birth</Label>
               <Input
@@ -1285,7 +1538,7 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-hireDate">Hire Date</Label>
               <Input
@@ -1296,10 +1549,16 @@ export default function AdminEmployeesPage() {
                 onChange={handleInputChange}
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
-              <Select name="status" value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+              <Select
+                name="status"
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, status: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -1310,7 +1569,7 @@ export default function AdminEmployeesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="edit-avatarUrl">Profile Picture URL</Label>
               <Input
@@ -1321,12 +1580,14 @@ export default function AdminEmployeesPage() {
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2 mt-8">
-              <Checkbox 
-                id="edit-isAdmin" 
+              <Checkbox
+                id="edit-isAdmin"
                 checked={formData.isAdmin}
-                onCheckedChange={(checked) => handleCheckboxChange("isAdmin", checked as boolean)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange('isAdmin', checked as boolean)
+                }
               />
               <Label htmlFor="edit-isAdmin">Admin privileges</Label>
             </div>
@@ -1334,55 +1595,82 @@ export default function AdminEmployeesPage() {
             {/* Admin Permissions Configuration */}
             {formData.isAdmin && (
               <div className="mt-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
-                <h3 className="text-lg font-semibold text-orange-800 mb-4">Admin Permissions Configuration</h3>
-                
+                <h3 className="text-lg font-semibold text-orange-800 mb-4">
+                  Admin Permissions Configuration
+                </h3>
+
                 <div className="grid gap-4">
                   {/* Admin Scope Selection */}
                   <div className="grid gap-2">
                     <Label htmlFor="adminScope">Admin Scope *</Label>
-                    <Select 
-                      value={formData.adminScope} 
+                    <Select
+                      value={formData.adminScope}
                       onValueChange={handleAdminScopeChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select admin scope" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="super">Super Admin (Full Access)</SelectItem>
-                        <SelectItem value="site">Site Admin (Multiple Sites)</SelectItem>
-                        <SelectItem value="department">Department Admin (Multiple Departments)</SelectItem>
-                        <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
+                        <SelectItem value="super">
+                          Super Admin (Full Access)
+                        </SelectItem>
+                        <SelectItem value="site">
+                          Site Admin (Multiple Sites)
+                        </SelectItem>
+                        <SelectItem value="department">
+                          Department Admin (Multiple Departments)
+                        </SelectItem>
+                        <SelectItem value="hybrid">
+                          Hybrid Admin (Sites + Departments)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-sm text-muted-foreground">
-                      {formData.adminScope === 'super' && "Complete administrative access to all company resources"}
-                      {formData.adminScope === 'site' && "Administrative access to selected sites/locations"}
-                      {formData.adminScope === 'department' && "Administrative access to selected departments"}
-                      {formData.adminScope === 'hybrid' && "Administrative access to selected sites AND departments"}
+                      {formData.adminScope === 'super' &&
+                        'Complete administrative access to all company resources'}
+                      {formData.adminScope === 'site' &&
+                        'Administrative access to selected sites/locations'}
+                      {formData.adminScope === 'department' &&
+                        'Administrative access to selected departments'}
+                      {formData.adminScope === 'hybrid' &&
+                        'Administrative access to selected sites AND departments'}
                     </p>
                   </div>
 
                   {/* Site Selection for Site/Hybrid Admins */}
-                  {(formData.adminScope === 'site' || formData.adminScope === 'hybrid') && (
+                  {(formData.adminScope === 'site' ||
+                    formData.adminScope === 'hybrid') && (
                     <div className="grid gap-2">
                       <Label>Allowed Sites/Locations</Label>
                       <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
                         {allSites.length > 0 ? (
-                          allSites.map(site => (
-                            <div key={site} className="flex items-center space-x-2 py-1">
+                          allSites.map((site) => (
+                            <div
+                              key={site}
+                              className="flex items-center space-x-2 py-1"
+                            >
                               <Checkbox
                                 id={`site-${site}`}
                                 checked={formData.allowedSites.includes(site)}
-                                onCheckedChange={(checked) => handleSiteSelection(site, checked as boolean)}
+                                onCheckedChange={(checked) =>
+                                  handleSiteSelection(site, checked as boolean)
+                                }
                               />
-                              <Label htmlFor={`site-${site}`} className="text-sm">{site}</Label>
+                              <Label
+                                htmlFor={`site-${site}`}
+                                className="text-sm"
+                              >
+                                {site}
+                              </Label>
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-muted-foreground">No sites available</p>
+                          <p className="text-sm text-muted-foreground">
+                            No sites available
+                          </p>
                         )}
                       </div>
-                      
+
                       {/* Add new site */}
                       <div className="flex gap-2">
                         <Input
@@ -1396,7 +1684,9 @@ export default function AdminEmployeesPage() {
                           variant="outline"
                           size="sm"
                           onClick={addNewSite}
-                          disabled={!newSite.trim() || allSites.includes(newSite.trim())}
+                          disabled={
+                            !newSite.trim() || allSites.includes(newSite.trim())
+                          }
                         >
                           Add
                         </Button>
@@ -1408,26 +1698,44 @@ export default function AdminEmployeesPage() {
                   )}
 
                   {/* Department Selection for Department/Hybrid Admins */}
-                  {(formData.adminScope === 'department' || formData.adminScope === 'hybrid') && (
+                  {(formData.adminScope === 'department' ||
+                    formData.adminScope === 'hybrid') && (
                     <div className="grid gap-2">
                       <Label>Allowed Departments</Label>
                       <div className="max-h-32 overflow-y-auto border rounded p-2 bg-white">
                         {allDepartments.length > 0 ? (
-                          allDepartments.map(department => (
-                            <div key={department} className="flex items-center space-x-2 py-1">
+                          allDepartments.map((department) => (
+                            <div
+                              key={department}
+                              className="flex items-center space-x-2 py-1"
+                            >
                               <Checkbox
                                 id={`dept-${department}`}
-                                checked={formData.allowedDepartments.includes(department)}
-                                onCheckedChange={(checked) => handleDepartmentSelection(department, checked as boolean)}
+                                checked={formData.allowedDepartments.includes(
+                                  department
+                                )}
+                                onCheckedChange={(checked) =>
+                                  handleDepartmentSelection(
+                                    department,
+                                    checked as boolean
+                                  )
+                                }
                               />
-                              <Label htmlFor={`dept-${department}`} className="text-sm">{department}</Label>
+                              <Label
+                                htmlFor={`dept-${department}`}
+                                className="text-sm"
+                              >
+                                {department}
+                              </Label>
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-muted-foreground">No departments available</p>
+                          <p className="text-sm text-muted-foreground">
+                            No departments available
+                          </p>
                         )}
                       </div>
-                      
+
                       {/* Add new department */}
                       <div className="flex gap-2">
                         <Input
@@ -1441,34 +1749,55 @@ export default function AdminEmployeesPage() {
                           variant="outline"
                           size="sm"
                           onClick={addNewDepartment}
-                          disabled={!newDepartment.trim() || allDepartments.includes(newDepartment.trim())}
+                          disabled={
+                            !newDepartment.trim() ||
+                            allDepartments.includes(newDepartment.trim())
+                          }
                         >
                           Add
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Selected: {formData.allowedDepartments.length} department(s)
+                        Selected: {formData.allowedDepartments.length}{' '}
+                        department(s)
                       </p>
                     </div>
                   )}
 
                   {/* Admin Summary */}
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-                    <h4 className="font-medium text-blue-800 mb-2">Permission Summary</h4>
+                    <h4 className="font-medium text-blue-800 mb-2">
+                      Permission Summary
+                    </h4>
                     <div className="text-sm text-blue-700">
                       {formData.adminScope === 'super' && (
-                        <p>✓ Full administrative access to all company resources</p>
+                        <p>
+                          ✓ Full administrative access to all company resources
+                        </p>
                       )}
                       {formData.adminScope === 'site' && (
-                        <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
+                        <p>
+                          ✓ Admin access to {formData.allowedSites.length}{' '}
+                          selected site(s)
+                        </p>
                       )}
                       {formData.adminScope === 'department' && (
-                        <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                        <p>
+                          ✓ Admin access to {formData.allowedDepartments.length}{' '}
+                          selected department(s)
+                        </p>
                       )}
                       {formData.adminScope === 'hybrid' && (
                         <div>
-                          <p>✓ Admin access to {formData.allowedSites.length} selected site(s)</p>
-                          <p>✓ Admin access to {formData.allowedDepartments.length} selected department(s)</p>
+                          <p>
+                            ✓ Admin access to {formData.allowedSites.length}{' '}
+                            selected site(s)
+                          </p>
+                          <p>
+                            ✓ Admin access to{' '}
+                            {formData.allowedDepartments.length} selected
+                            department(s)
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1477,10 +1806,10 @@ export default function AdminEmployeesPage() {
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setIsEditDialogOpen(false);
                 resetForm();
@@ -1488,24 +1817,28 @@ export default function AdminEmployeesPage() {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 if (currentEmployee) {
                   // Remove password if empty to avoid changing it
-                  const updatedData = {...formData} as Partial<EmployeeFormData>;
+                  const updatedData = {
+                    ...formData,
+                  } as Partial<EmployeeFormData>;
                   if (!updatedData.password) {
                     delete (updatedData as any).password;
                   }
-                  
+
                   updateMutation.mutate({
-                    id: currentEmployee.id, 
-                    data: updatedData
+                    id: currentEmployee.id,
+                    data: updatedData,
                   });
                 }
               }}
               disabled={updateMutation.isPending}
             >
-              {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {updateMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Update Employee
             </Button>
           </DialogFooter>
@@ -1518,18 +1851,19 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {currentEmployee?.name} {currentEmployee?.surname}? This action cannot be undone.
+              Are you sure you want to delete {currentEmployee?.name}{' '}
+              {currentEmployee?.surname}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               onClick={() => {
                 if (currentEmployee) {
@@ -1538,7 +1872,9 @@ export default function AdminEmployeesPage() {
               }}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {deleteMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Delete
             </Button>
           </DialogFooter>
@@ -1551,36 +1887,42 @@ export default function AdminEmployeesPage() {
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
             <DialogDescription>
-              Upload a CSV file containing employee information. Download a template to see the required format.
+              Upload a CSV file containing employee information. Download a
+              template to see the required format.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
-            <Button variant="outline" size="sm" className="w-full justify-start" onClick={downloadTemplate}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={downloadTemplate}
+            >
               <FileText className="mr-2 h-4 w-4" />
               Download template CSV
             </Button>
-            
+
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="file-upload">Upload CSV</Label>
-              <Input 
-                id="file-upload" 
-                type="file" 
-                accept=".csv" 
+              <Input
+                id="file-upload"
+                type="file"
+                accept=".csv"
                 onChange={handleFileChange}
               />
             </div>
-            
+
             {bulkUploadFile && (
               <p className="text-sm text-muted-foreground">
                 Selected file: {bulkUploadFile.name}
               </p>
             )}
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setIsUploadDialogOpen(false);
                 setBulkUploadFile(null);
@@ -1588,11 +1930,13 @@ export default function AdminEmployeesPage() {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleBulkUpload}
               disabled={bulkUploadMutation.isPending || !bulkUploadFile}
             >
-              {bulkUploadMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {bulkUploadMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Upload
             </Button>
           </DialogFooter>

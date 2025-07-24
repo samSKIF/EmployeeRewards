@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,28 +13,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Save, Eye } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+} from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  departmentId: z.string().min(1, "Department is required"),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  departmentId: z.string().min(1, 'Department is required'),
   jobTitleId: z.string().optional(),
   locationId: z.string().optional(),
-  duration: z.string().min(1, "Duration is required"),
+  duration: z.string().min(1, 'Duration is required'),
   isTemplate: z.boolean().default(false),
 });
 
@@ -42,23 +48,23 @@ export default function NewOnboardingPlanPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      departmentId: "",
-      jobTitleId: "",
-      locationId: "",
-      duration: "30",
+      title: '',
+      description: '',
+      departmentId: '',
+      jobTitleId: '',
+      locationId: '',
+      duration: '30',
       isTemplate: false,
     },
   });
-  
+
   const createMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const res = await apiRequest("POST", "/api/onboarding/plans", {
+      const res = await apiRequest('POST', '/api/onboarding/plans', {
         ...values,
         departmentId: parseInt(values.departmentId),
         jobTitleId: values.jobTitleId ? parseInt(values.jobTitleId) : null,
@@ -70,16 +76,16 @@ export default function NewOnboardingPlanPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/onboarding/plans'] });
       toast({
-        title: "Success",
-        description: "Onboarding plan created successfully.",
+        title: 'Success',
+        description: 'Onboarding plan created successfully.',
       });
       navigate(`/admin/onboarding/${data.id}`);
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to create plan",
+        title: 'Failed to create plan',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -93,21 +99,25 @@ export default function NewOnboardingPlanPage() {
       <div className="flex items-center mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate("/admin/onboarding")}
+          onClick={() => navigate('/admin/onboarding')}
           className="mr-2"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Plans
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">Create Onboarding Plan</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Create Onboarding Plan
+        </h1>
       </div>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Provide details about the onboarding plan</CardDescription>
+              <CardDescription>
+                Provide details about the onboarding plan
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -117,7 +127,10 @@ export default function NewOnboardingPlanPage() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Marketing Team Onboarding" {...field} />
+                      <Input
+                        placeholder="e.g. Marketing Team Onboarding"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       The name of the onboarding plan
@@ -126,7 +139,7 @@ export default function NewOnboardingPlanPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="description"
@@ -147,7 +160,7 @@ export default function NewOnboardingPlanPage() {
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -180,7 +193,7 @@ export default function NewOnboardingPlanPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="jobTitleId"
@@ -212,7 +225,7 @@ export default function NewOnboardingPlanPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="locationId"
@@ -244,7 +257,7 @@ export default function NewOnboardingPlanPage() {
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="duration"
@@ -252,12 +265,7 @@ export default function NewOnboardingPlanPage() {
                   <FormItem>
                     <FormLabel>Duration (days)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="365"
-                        {...field}
-                      />
+                      <Input type="number" min="1" max="365" {...field} />
                     </FormControl>
                     <FormDescription>
                       Expected number of days to complete this onboarding plan
@@ -266,7 +274,7 @@ export default function NewOnboardingPlanPage() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="isTemplate"
@@ -291,24 +299,28 @@ export default function NewOnboardingPlanPage() {
               />
             </CardContent>
           </Card>
-          
+
           <div className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => navigate("/admin/onboarding")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => navigate('/admin/onboarding')}
+            >
               Cancel
             </Button>
             <div>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="mr-2"
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
               >
                 <Eye className="mr-2 h-4 w-4" />
-                {isPreviewMode ? "Edit Mode" : "Preview"}
+                {isPreviewMode ? 'Edit Mode' : 'Preview'}
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
                 <Save className="mr-2 h-4 w-4" />
-                {createMutation.isPending ? "Saving..." : "Save Plan"}
+                {createMutation.isPending ? 'Saving...' : 'Save Plan'}
               </Button>
             </div>
           </div>

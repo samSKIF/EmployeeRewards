@@ -1,4 +1,3 @@
-
 import { hybridDb } from './hybrid-db';
 import { mysqlDb } from './db-mysql';
 import { redisCache } from './db-redis';
@@ -10,7 +9,7 @@ async function provisionDatabases() {
   try {
     // Test and initialize all connections
     console.log('📡 Testing database connections...');
-    
+
     // Initialize hybrid database service
     await hybridDb.initialize();
     console.log('✅ Hybrid database service initialized');
@@ -33,9 +32,9 @@ async function provisionDatabases() {
 
     // Test Elasticsearch connection
     try {
-      await auditLogger.logSystemEvent('database_provision_test', { 
+      await auditLogger.logSystemEvent('database_provision_test', {
         timestamp: new Date(),
-        action: 'provision_test'
+        action: 'provision_test',
       });
       console.log('✅ Elasticsearch connection successful');
     } catch (error) {
@@ -50,15 +49,16 @@ async function provisionDatabases() {
       console.log(`${service}: ${status ? '✅ Healthy' : '❌ Unhealthy'}`);
     });
 
-    const allHealthy = Object.values(health).every(status => status);
+    const allHealthy = Object.values(health).every((status) => status);
     if (allHealthy) {
       console.log('\n🎉 All databases are healthy and ready!');
       console.log('You can now run the migration script.');
     } else {
       console.log('\n⚠️  Some databases are not responding correctly.');
-      console.log('Please check your environment variables and database connections.');
+      console.log(
+        'Please check your environment variables and database connections.'
+      );
     }
-
   } catch (error) {
     console.error('❌ Database provisioning failed:', error);
     console.log('\n📋 Required Environment Variables:');

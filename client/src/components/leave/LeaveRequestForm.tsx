@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -14,7 +13,7 @@ export const LeaveRequestForm = () => {
     startHalfDay: false,
     endHalfDay: false,
     reason: '',
-    leaveTypeId: ''
+    leaveTypeId: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,9 +24,9 @@ export const LeaveRequestForm = () => {
       const response = await fetch('/api/leave/requests', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -35,8 +34,8 @@ export const LeaveRequestForm = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Leave request submitted successfully"
+        title: 'Success',
+        description: 'Leave request submitted successfully',
       });
 
       // Reset form
@@ -46,14 +45,13 @@ export const LeaveRequestForm = () => {
         startHalfDay: false,
         endHalfDay: false,
         reason: '',
-        leaveTypeId: ''
+        leaveTypeId: '',
       });
-
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to submit leave request",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to submit leave request',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -64,9 +62,11 @@ export const LeaveRequestForm = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block mb-1">Leave Type</label>
-        <select 
+        <select
           value={formData.leaveTypeId}
-          onChange={(e) => setFormData({...formData, leaveTypeId: e.target.value})}
+          onChange={(e) =>
+            setFormData({ ...formData, leaveTypeId: e.target.value })
+          }
           className="w-full p-2 border rounded"
           required
         >
@@ -81,14 +81,18 @@ export const LeaveRequestForm = () => {
           <Input
             type="date"
             value={formData.startDate}
-            onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, startDate: e.target.value })
+            }
             required
           />
           <label className="mt-1 flex items-center">
             <input
               type="checkbox"
               checked={formData.startHalfDay}
-              onChange={(e) => setFormData({...formData, startHalfDay: e.target.checked})}
+              onChange={(e) =>
+                setFormData({ ...formData, startHalfDay: e.target.checked })
+              }
               className="mr-2"
             />
             Half Day
@@ -100,14 +104,18 @@ export const LeaveRequestForm = () => {
           <Input
             type="date"
             value={formData.endDate}
-            onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, endDate: e.target.value })
+            }
             required
           />
           <label className="mt-1 flex items-center">
             <input
               type="checkbox"
               checked={formData.endHalfDay}
-              onChange={(e) => setFormData({...formData, endHalfDay: e.target.checked})}
+              onChange={(e) =>
+                setFormData({ ...formData, endHalfDay: e.target.checked })
+              }
               className="mr-2"
             />
             Half Day
@@ -119,7 +127,7 @@ export const LeaveRequestForm = () => {
         <label className="block mb-1">Reason</label>
         <Textarea
           value={formData.reason}
-          onChange={(e) => setFormData({...formData, reason: e.target.value})}
+          onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
           required
           rows={4}
         />

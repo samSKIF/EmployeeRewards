@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Product } from "@shared/schema";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Product } from '@shared/schema';
 import {
   Table,
   TableBody,
@@ -8,27 +8,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 const ProductTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const itemsPerPage = 10;
 
   // Fetch all products
   const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["/api/catalog"],
+    queryKey: ['/api/catalog'],
   });
 
   // Filter products based on search and filters
@@ -37,15 +37,15 @@ const ProductTable = () => {
         const matchesSearch = product.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
-          
+
         const matchesCategory =
-          categoryFilter === "all" || product.category === categoryFilter;
-          
+          categoryFilter === 'all' || product.category === categoryFilter;
+
         const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "active" && product.isActive) ||
-          (statusFilter === "inactive" && !product.isActive);
-          
+          statusFilter === 'all' ||
+          (statusFilter === 'active' && product.isActive) ||
+          (statusFilter === 'inactive' && !product.isActive);
+
         return matchesSearch && matchesCategory && matchesStatus;
       })
     : [];
@@ -161,7 +161,9 @@ const ProductTable = () => {
                         <div className="text-sm font-medium text-gray-900">
                           {product.name}
                         </div>
-                        <div className="text-xs text-gray-500">ID: {product.id}</div>
+                        <div className="text-xs text-gray-500">
+                          ID: {product.id}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
@@ -174,19 +176,25 @@ const ProductTable = () => {
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         product.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {product.isActive ? "Active" : "Inactive"}
+                      {product.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button variant="link" className="text-primary hover:text-indigo-800 h-auto p-0">
+                    <Button
+                      variant="link"
+                      className="text-primary hover:text-indigo-800 h-auto p-0"
+                    >
                       Edit
                     </Button>
-                    <Button variant="link" className="text-red-500 hover:text-red-700 ml-3 h-auto p-0">
-                      {product.isActive ? "Deactivate" : "Activate"}
+                    <Button
+                      variant="link"
+                      className="text-red-500 hover:text-red-700 ml-3 h-auto p-0"
+                    >
+                      {product.isActive ? 'Deactivate' : 'Activate'}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -206,10 +214,14 @@ const ProductTable = () => {
         <div className="px-6 py-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+              Showing{' '}
+              <span className="font-medium">
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{' '}
+              to{' '}
               <span className="font-medium">
                 {Math.min(currentPage * itemsPerPage, totalProducts)}
-              </span>{" "}
+              </span>{' '}
               of <span className="font-medium">{totalProducts}</span> results
             </div>
             <div className="flex space-x-2">

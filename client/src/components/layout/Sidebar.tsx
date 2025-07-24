@@ -1,26 +1,26 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
-import { useState } from "react";
-import { 
-  Home, 
-  ShoppingCart, 
-  RefreshCcw, 
-  Shield, 
-  Store, 
-  LogOut, 
-  Menu, 
+import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { Link, useLocation } from 'wouter';
+import { useState } from 'react';
+import {
+  Home,
+  ShoppingCart,
+  RefreshCcw,
+  Shield,
+  Store,
+  LogOut,
+  Menu,
   Award,
   MessageSquare,
   Settings,
   Users,
   ClipboardList,
   FileText,
-  Calendar
-} from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
+  Calendar,
+} from 'lucide-react';
+import { useMobile } from '@/hooks/use-mobile';
 // Firebase authentication removed - using custom auth
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 
 const Sidebar = () => {
   const { user } = useAuth();
@@ -32,8 +32,8 @@ const Sidebar = () => {
 
   // Fetch user balance
   const { data: balanceData } = useQuery<{ balance: number }>({
-    queryKey: ["/api/points/balance"],
-    enabled: !!user
+    queryKey: ['/api/points/balance'],
+    enabled: !!user,
   });
 
   const toggleMenu = () => {
@@ -60,88 +60,88 @@ const Sidebar = () => {
   // Direct logout handler with Firebase integration
   const handleLogout = async () => {
     try {
-      console.log("Sidebar: Starting logout process");
+      console.log('Sidebar: Starting logout process');
 
       // Remove Firebase token
-      localStorage.removeItem("firebaseToken");
+      localStorage.removeItem('firebaseToken');
 
       // Set sessionStorage to prevent auto-login on auth page
-      sessionStorage.setItem("skipAutoLogin", "true");
+      sessionStorage.setItem('skipAutoLogin', 'true');
 
       // Sign out from Firebase
       await firebaseSignOut();
 
-      console.log("Sidebar: Logout completed successfully");
+      console.log('Sidebar: Logout completed successfully');
 
       toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
+        title: 'Logged out',
+        description: 'You have been logged out successfully',
       });
 
       // Redirect to auth page
-      window.location.href = "/auth";
+      window.location.href = '/auth';
     } catch (error) {
-      console.error("Sidebar logout failed:", error);
+      console.error('Sidebar logout failed:', error);
       toast({
-        variant: "destructive",
-        title: "Logout failed",
-        description: "There was a problem logging out. Please try again.",
+        variant: 'destructive',
+        title: 'Logout failed',
+        description: 'There was a problem logging out. Please try again.',
       });
     }
   };
 
   const navItems = [
-    { 
-      path: "/dashboard", 
-      label: "Dashboard", 
-      icon: <Home className="w-5 h-5 mr-3" /> 
-    },
-    { 
-      path: "/shop-config", 
-      label: "Configure Shop", 
-      icon: <ShoppingCart className="w-5 h-5 mr-3" /> 
-    },
-    { 
-      path: "/transactions", 
-      label: "Transactions", 
-      icon: <RefreshCcw className="w-5 h-5 mr-3" /> 
-    },
-    { 
-      path: "/leave-request", 
-      label: "Leave Request", 
-      icon: <FileText className="w-5 h-5 mr-3" /> 
+    {
+      path: '/dashboard',
+      label: 'Dashboard',
+      icon: <Home className="w-5 h-5 mr-3" />,
     },
     {
-      path: "/admin/surveys",
-      label: "Surveys",
-      icon: <ClipboardList className="w-5 h-5 mr-3" />
+      path: '/shop-config',
+      label: 'Configure Shop',
+      icon: <ShoppingCart className="w-5 h-5 mr-3" />,
     },
     {
-      path: "/admin/surveys/templates",
-      label: "Survey Templates",
-      icon: <FileText className="w-5 h-5 mr-3" />
-    }
+      path: '/transactions',
+      label: 'Transactions',
+      icon: <RefreshCcw className="w-5 h-5 mr-3" />,
+    },
+    {
+      path: '/leave-request',
+      label: 'Leave Request',
+      icon: <FileText className="w-5 h-5 mr-3" />,
+    },
+    {
+      path: '/admin/surveys',
+      label: 'Surveys',
+      icon: <ClipboardList className="w-5 h-5 mr-3" />,
+    },
+    {
+      path: '/admin/surveys/templates',
+      label: 'Survey Templates',
+      icon: <FileText className="w-5 h-5 mr-3" />,
+    },
   ];
 
   // Add admin and seller links for admin users
   if (user?.isAdmin) {
     navItems.push(
-      { 
-        path: "/admin", 
-        label: "Admin", 
-        icon: <Shield className="w-5 h-5 mr-3" /> 
+      {
+        path: '/admin',
+        label: 'Admin',
+        icon: <Shield className="w-5 h-5 mr-3" />,
       },
 
-      { 
-        path: "/seller", 
-        label: "Seller Center", 
-        icon: <Store className="w-5 h-5 mr-3" /> 
+      {
+        path: '/seller',
+        label: 'Seller Center',
+        icon: <Store className="w-5 h-5 mr-3" />,
       }
     );
   }
 
   const sidebarClasses = `bg-gray-800 text-white w-full md:w-64 md:min-h-screen md:fixed md:h-screen overflow-y-auto transition-all ${
-    isMobile && !isOpen ? "hidden" : "block"
+    isMobile && !isOpen ? 'hidden' : 'block'
   }`;
 
   return (
@@ -152,8 +152,8 @@ const Sidebar = () => {
           <h1 className="text-xl font-bold">RewardHub</h1>
         </div>
         {isMobile && (
-          <button 
-            className="text-gray-300 hover:text-white" 
+          <button
+            className="text-gray-300 hover:text-white"
             onClick={toggleMenu}
             aria-label="Toggle menu"
           >
@@ -168,12 +168,16 @@ const Sidebar = () => {
             <div className="flex items-center mb-4">
               <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-white font-semibold">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {user.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()}
                 </span>
               </div>
               <div className="ml-3">
                 <p className="text-sm font-semibold text-white">{user.name}</p>
-                <p className="text-xs text-gray-400">{user.department || ""}</p>
+                <p className="text-xs text-gray-400">{user.department || ''}</p>
               </div>
             </div>
             <div className="bg-gray-700 rounded-lg p-3 mb-4">
@@ -191,13 +195,13 @@ const Sidebar = () => {
           <ul>
             {navItems.map((item) => (
               <li className="mb-1" key={item.path}>
-                <Link 
+                <Link
                   href={item.path}
                   onClick={closeMobileMenu}
                   className={`flex items-center ${
                     location === item.path
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   } rounded-md px-3 py-2 text-sm font-medium transition-colors`}
                 >
                   {item.icon}

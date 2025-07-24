@@ -15,16 +15,20 @@ const PrioritiesWidget: React.FC = () => {
       id: 1,
       text: 'Camping trip for the department',
       completed: false,
-      date: '1 week old'
-    }
+      date: '1 week old',
+    },
   ]);
-  
+
   const [newPriority, setNewPriority] = useState('');
 
   const handleTogglePriority = (id: number) => {
-    setPriorities(priorities.map(priority => 
-      priority.id === id ? { ...priority, completed: !priority.completed } : priority
-    ));
+    setPriorities(
+      priorities.map((priority) =>
+        priority.id === id
+          ? { ...priority, completed: !priority.completed }
+          : priority
+      )
+    );
   };
 
   const handleAddPriority = () => {
@@ -35,8 +39,8 @@ const PrioritiesWidget: React.FC = () => {
           id: Date.now(),
           text: newPriority.trim(),
           completed: false,
-          date: 'Just now'
-        }
+          date: 'Just now',
+        },
       ]);
       setNewPriority('');
     }
@@ -53,23 +57,23 @@ const PrioritiesWidget: React.FC = () => {
     <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
       <div className="p-4">
         <h2 className="font-bold text-gray-800 mb-3">Priorities</h2>
-        
+
         {/* Priority list */}
         <div className="space-y-3 mb-4">
-          {priorities.map(priority => (
+          {priorities.map((priority) => (
             <div key={priority.id} className="flex items-start group">
               <button className="p-1 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity">
                 <GripVertical className="h-4 w-4" />
               </button>
               <div className="flex-1 flex items-start">
-                <Checkbox 
-                  id={`priority-${priority.id}`} 
+                <Checkbox
+                  id={`priority-${priority.id}`}
                   checked={priority.completed}
                   onCheckedChange={() => handleTogglePriority(priority.id)}
                   className="mt-1 mr-2"
                 />
                 <div className="flex-1">
-                  <label 
+                  <label
                     htmlFor={`priority-${priority.id}`}
                     className={`text-sm ${priority.completed ? 'text-gray-400 line-through' : 'text-gray-700'}`}
                   >
@@ -83,10 +87,10 @@ const PrioritiesWidget: React.FC = () => {
             </div>
           ))}
         </div>
-        
+
         {/* Add new priority */}
         <div className="flex items-center">
-          <button 
+          <button
             className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 mr-2 hover:bg-gray-100"
             onClick={handleAddPriority}
           >

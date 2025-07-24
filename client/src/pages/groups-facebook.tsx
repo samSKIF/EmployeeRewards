@@ -5,11 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  Users, 
-  Search, 
-  Plus, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Users,
+  Search,
+  Plus,
   Globe,
   Lock,
   MoreHorizontal,
@@ -25,7 +31,7 @@ import {
   Calendar,
   MapPin,
   UserPlus,
-  Star
+  Star,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -48,7 +54,7 @@ function FacebookGroupCard({ group, isJoined, onJoin }: any) {
           )}
         </div>
       </div>
-      
+
       {/* Group Info */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
@@ -57,30 +63,33 @@ function FacebookGroupCard({ group, isJoined, onJoin }: any) {
           </div>
           <MoreHorizontal className="h-4 w-4 text-gray-400 cursor-pointer" />
         </div>
-        
+
         <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-          {group.description || "Connect with colleagues who share similar interests and engage in meaningful discussions."}
+          {group.description ||
+            'Connect with colleagues who share similar interests and engage in meaningful discussions.'}
         </p>
-        
+
         {/* Recent Activity */}
         <div className="flex items-center mb-4">
           <div className="flex -space-x-2">
-            {[1,2,3].map(i => (
+            {[1, 2, 3].map((i) => (
               <Avatar key={i} className="h-6 w-6 border-2 border-white">
-                <AvatarFallback className="text-xs bg-gray-300">U{i}</AvatarFallback>
+                <AvatarFallback className="text-xs bg-gray-300">
+                  U{i}
+                </AvatarFallback>
               </Avatar>
             ))}
           </div>
           <span className="text-xs text-gray-500 ml-2">Recent activity</span>
         </div>
-        
+
         {/* Join Button */}
-        <Button 
+        <Button
           onClick={() => onJoin(group.id)}
           disabled={isJoined}
           className={`w-full ${
-            isJoined 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+            isJoined
+              ? 'bg-green-100 text-green-700 hover:bg-green-200'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
@@ -103,16 +112,20 @@ function FacebookGroupCard({ group, isJoined, onJoin }: any) {
 
 // Discover Tab Component
 function DiscoverTab({ groups, onJoin, userGroups, searchQuery }: any) {
-  const filteredGroups = groups?.filter((group: any) => 
-    group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredGroups =
+    groups?.filter(
+      (group: any) =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   return (
     <div className="space-y-6">
       {/* Suggested Groups */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Suggested for you</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          Suggested for you
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredGroups.slice(0, 6).map((group: any) => (
             <FacebookGroupCard
@@ -127,7 +140,9 @@ function DiscoverTab({ groups, onJoin, userGroups, searchQuery }: any) {
 
       {/* Popular Groups */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Popular in your workplace</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          Popular in your workplace
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredGroups.slice(6, 12).map((group: any) => (
             <FacebookGroupCard
@@ -155,11 +170,14 @@ function YourGroupsTab({ userGroups }: any) {
             Manage
           </Button>
         </div>
-        
+
         {userGroups && userGroups.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {userGroups.map((group: any) => (
-              <div key={group.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div
+                key={group.id}
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
                 <div className="flex items-center mb-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
                     <span className="text-white font-bold">
@@ -167,20 +185,23 @@ function YourGroupsTab({ userGroups }: any) {
                     </span>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{group.name}</h3>
-                    <p className="text-sm text-gray-500">{group.memberCount} members</p>
+                    <h3 className="font-semibold text-gray-900">
+                      {group.name}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {group.memberCount} members
+                    </p>
                   </div>
                   <MoreHorizontal className="h-5 w-5 text-gray-400" />
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm text-gray-600">
                   <span className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
                     Active 2h ago
                   </span>
                   <span className="flex items-center">
-                    <Bell className="h-4 w-4 mr-1" />
-                    3 new posts
+                    <Bell className="h-4 w-4 mr-1" />3 new posts
                   </span>
                 </div>
               </div>
@@ -189,8 +210,12 @@ function YourGroupsTab({ userGroups }: any) {
         ) : (
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">You haven't joined any groups yet</h3>
-            <p className="text-gray-500 mb-6">Discover groups that match your interests</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              You haven't joined any groups yet
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Discover groups that match your interests
+            </p>
           </div>
         )}
       </div>
@@ -209,13 +234,13 @@ function FeedTab() {
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <Input 
+            <Input
               placeholder="Share something with your groups..."
               className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex space-x-4">
             <Button variant="ghost" size="sm" className="text-gray-600">
@@ -236,7 +261,7 @@ function FeedTab() {
       </div>
 
       {/* Sample Posts */}
-      {[1, 2, 3].map(i => (
+      {[1, 2, 3].map((i) => (
         <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
@@ -245,16 +270,19 @@ function FeedTab() {
               </Avatar>
               <div>
                 <p className="font-semibold text-gray-900">User {i}</p>
-                <p className="text-sm text-gray-500">Posted in Tech Enthusiasts • 2h ago</p>
+                <p className="text-sm text-gray-500">
+                  Posted in Tech Enthusiasts • 2h ago
+                </p>
               </div>
             </div>
             <MoreHorizontal className="h-5 w-5 text-gray-400 cursor-pointer" />
           </div>
-          
+
           <p className="text-gray-700 mb-4">
-            Just discovered this amazing new technology! What do you all think about the latest developments in AI?
+            Just discovered this amazing new technology! What do you all think
+            about the latest developments in AI?
           </p>
-          
+
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
             <Button variant="ghost" size="sm" className="text-gray-600">
               <Heart className="h-4 w-4 mr-2" />
@@ -281,7 +309,7 @@ function CreateGroupForm({ onSubmit }: { onSubmit: (data: any) => void }) {
     name: '',
     description: '',
     category: '',
-    isPrivate: false
+    isPrivate: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -292,7 +320,9 @@ function CreateGroupForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Group Name</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Group Name
+        </label>
         <Input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -300,40 +330,56 @@ function CreateGroupForm({ onSubmit }: { onSubmit: (data: any) => void }) {
           required
         />
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Description
+        </label>
         <Textarea
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
           placeholder="Describe your group"
           rows={3}
         />
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Category
+        </label>
         <Input
           value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, category: e.target.value })
+          }
           placeholder="e.g., Technology, Sports, Arts"
         />
       </div>
-      
+
       <div className="flex items-center space-x-2">
         <input
           type="checkbox"
           id="private"
           checked={formData.isPrivate}
-          onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+          onChange={(e) =>
+            setFormData({ ...formData, isPrivate: e.target.checked })
+          }
           className="rounded border-gray-300"
         />
-        <label htmlFor="private" className="text-sm text-gray-700">Make this group private</label>
+        <label htmlFor="private" className="text-sm text-gray-700">
+          Make this group private
+        </label>
       </div>
-      
+
       <div className="flex justify-end space-x-3 pt-4">
-        <Button type="button" variant="outline">Cancel</Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Create Group</Button>
+        <Button type="button" variant="outline">
+          Cancel
+        </Button>
+        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+          Create Group
+        </Button>
       </div>
     </form>
   );
@@ -350,40 +396,47 @@ export default function GroupsPage() {
   // Fetch groups
   const { data: groups, isLoading: groupsLoading } = useQuery({
     queryKey: ['/api/groups'],
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Fetch user's groups
   const { data: userGroups } = useQuery({
     queryKey: ['/api/groups/user', user?.id],
-    enabled: !!user?.id
+    enabled: !!user?.id,
   });
 
   // Create group mutation
   const createGroupMutation = useMutation({
-    mutationFn: async (groupData: { name: string; description: string; category: string; isPrivate: boolean }) => {
+    mutationFn: async (groupData: {
+      name: string;
+      description: string;
+      category: string;
+      isPrivate: boolean;
+    }) => {
       return apiRequest('/api/groups', {
         method: 'POST',
-        body: JSON.stringify(groupData)
+        body: JSON.stringify(groupData),
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
       setShowCreateDialog(false);
-    }
+    },
   });
 
   // Join group mutation
   const joinGroupMutation = useMutation({
     mutationFn: async (groupId: number) => {
       return apiRequest(`/api/groups/${groupId}/join`, {
-        method: 'POST'
+        method: 'POST',
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/groups/user', user?.id] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ['/api/groups/user', user?.id],
+      });
+    },
   });
 
   return (
@@ -394,10 +447,12 @@ export default function GroupsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Groups</h1>
-              <p className="text-gray-600 text-sm">Connect with colleagues who share your interests</p>
+              <p className="text-gray-600 text-sm">
+                Connect with colleagues who share your interests
+              </p>
             </div>
-            
-            <Button 
+
+            <Button
               onClick={() => setShowCreateDialog(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
             >
@@ -428,9 +483,11 @@ export default function GroupsPage() {
 
               {/* Navigation */}
               <div className="p-2">
-                <div 
+                <div
                   className={`flex items-center px-3 py-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedTab === 'discover' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                    selectedTab === 'discover'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'hover:bg-gray-50'
                   }`}
                   onClick={() => setSelectedTab('discover')}
                 >
@@ -440,9 +497,11 @@ export default function GroupsPage() {
                   <span className="font-medium">Discover</span>
                 </div>
 
-                <div 
+                <div
                   className={`flex items-center px-3 py-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedTab === 'your-groups' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                    selectedTab === 'your-groups'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'hover:bg-gray-50'
                   }`}
                   onClick={() => setSelectedTab('your-groups')}
                 >
@@ -451,13 +510,17 @@ export default function GroupsPage() {
                   </div>
                   <div className="flex-1">
                     <span className="font-medium">Your groups</span>
-                    <div className="text-xs text-gray-500">{userGroups?.length || 0} groups</div>
+                    <div className="text-xs text-gray-500">
+                      {userGroups?.length || 0} groups
+                    </div>
                   </div>
                 </div>
 
-                <div 
+                <div
                   className={`flex items-center px-3 py-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedTab === 'feed' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                    selectedTab === 'feed'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'hover:bg-gray-50'
                   }`}
                   onClick={() => setSelectedTab('feed')}
                 >
@@ -471,18 +534,27 @@ export default function GroupsPage() {
               {/* Your Groups Quick Access */}
               {userGroups && userGroups.length > 0 && (
                 <div className="p-4 border-t border-gray-100">
-                  <h3 className="font-semibold text-gray-900 mb-3">Your groups</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    Your groups
+                  </h3>
                   <div className="space-y-2">
                     {userGroups.slice(0, 5).map((group: any) => (
-                      <div key={group.id} className="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <div
+                        key={group.id}
+                        className="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
                           <span className="text-white font-bold text-sm">
                             {group.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{group.name}</p>
-                          <p className="text-xs text-gray-500">{group.memberCount} members</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {group.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {group.memberCount} members
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -494,8 +566,17 @@ export default function GroupsPage() {
 
           {/* Main Content */}
           <div className="flex-1">
-            {selectedTab === 'discover' && <DiscoverTab groups={groups} onJoin={joinGroupMutation.mutate} userGroups={userGroups} searchQuery={searchQuery} />}
-            {selectedTab === 'your-groups' && <YourGroupsTab userGroups={userGroups} />}
+            {selectedTab === 'discover' && (
+              <DiscoverTab
+                groups={groups}
+                onJoin={joinGroupMutation.mutate}
+                userGroups={userGroups}
+                searchQuery={searchQuery}
+              />
+            )}
+            {selectedTab === 'your-groups' && (
+              <YourGroupsTab userGroups={userGroups} />
+            )}
             {selectedTab === 'feed' && <FeedTab />}
           </div>
         </div>
@@ -505,9 +586,13 @@ export default function GroupsPage() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Create New Group</DialogTitle>
+            <DialogTitle className="text-xl font-bold">
+              Create New Group
+            </DialogTitle>
           </DialogHeader>
-          <CreateGroupForm onSubmit={(data) => createGroupMutation.mutate(data)} />
+          <CreateGroupForm
+            onSubmit={(data) => createGroupMutation.mutate(data)}
+          />
         </DialogContent>
       </Dialog>
     </div>

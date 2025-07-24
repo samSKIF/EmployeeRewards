@@ -1,27 +1,27 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { X, UserPlus } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { X, UserPlus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 export interface CreateSpaceDialogProps {
   open: boolean;
@@ -36,19 +36,22 @@ interface User {
   location: string;
 }
 
-export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps) {
+export function CreateSpaceDialog({
+  open,
+  onOpenChange,
+}: CreateSpaceDialogProps) {
   const [formData, setFormData] = useState({
-    spaceType: "",
-    name: "",
-    description: "",
+    spaceType: '',
+    name: '',
+    description: '',
     isPrivate: false,
     requiresApproval: false,
-    maxMembers: "",
+    maxMembers: '',
     selectedDepartments: [] as string[],
     selectedLocations: [] as string[],
     autoAddMembers: false,
     initialMembers: [] as User[],
-    spaceAdmins: [] as User[]
+    spaceAdmins: [] as User[],
   });
 
   const { toast } = useToast();
@@ -57,18 +60,18 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
   // Fetch departments and locations
   const { data: departments } = useQuery({
     queryKey: ['/api/users/departments'],
-    enabled: open
+    enabled: open,
   });
 
   const { data: locations } = useQuery({
     queryKey: ['/api/users/locations'],
-    enabled: open
+    enabled: open,
   });
 
   // Fetch users for member selection
   const { data: users } = useQuery({
     queryKey: ['/api/users'],
-    enabled: open
+    enabled: open,
   });
 
   // Create space mutation
@@ -79,40 +82,40 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
       toast({
-        title: "Success",
-        description: "Space created successfully",
+        title: 'Success',
+        description: 'Space created successfully',
       });
       onOpenChange(false);
       resetForm();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create channel",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to create channel',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const resetForm = () => {
     setFormData({
-      spaceType: "",
-      name: "",
-      description: "",
+      spaceType: '',
+      name: '',
+      description: '',
       isPrivate: false,
       requiresApproval: false,
-      maxMembers: "",
+      maxMembers: '',
       selectedDepartments: [],
       selectedLocations: [],
       autoAddMembers: false,
       initialMembers: [],
-      spaceAdmins: []
+      spaceAdmins: [],
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const spaceData = {
       name: formData.name,
       description: formData.description,
@@ -125,7 +128,7 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
       allowedDepartments: formData.selectedDepartments,
       allowedLocations: formData.selectedLocations,
       autoAddMembers: formData.autoAddMembers,
-      initialMembers: formData.initialMembers.map(user => user.id)
+      initialMembers: formData.initialMembers.map((user) => user.id),
     };
 
     console.log('Sending space data:', spaceData);
@@ -134,47 +137,53 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
   };
 
   const addMember = (user: User) => {
-    if (!formData.initialMembers.find(member => member.id === user.id)) {
-      setFormData(prev => ({
+    if (!formData.initialMembers.find((member) => member.id === user.id)) {
+      setFormData((prev) => ({
         ...prev,
-        initialMembers: [...prev.initialMembers, user]
+        initialMembers: [...prev.initialMembers, user],
       }));
     }
   };
 
   const removeMember = (userId: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      initialMembers: prev.initialMembers.filter(member => member.id !== userId)
+      initialMembers: prev.initialMembers.filter(
+        (member) => member.id !== userId
+      ),
     }));
   };
 
   const handleDepartmentChange = (department: string, checked: boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      selectedDepartments: checked 
+      selectedDepartments: checked
         ? [...prev.selectedDepartments, department]
-        : prev.selectedDepartments.filter(d => d !== department)
+        : prev.selectedDepartments.filter((d) => d !== department),
     }));
   };
 
   const handleLocationChange = (location: string, checked: boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      selectedLocations: checked 
+      selectedLocations: checked
         ? [...prev.selectedLocations, location]
-        : prev.selectedLocations.filter(l => l !== location)
+        : prev.selectedLocations.filter((l) => l !== location),
     }));
   };
 
   // Filter users based on selected departments and locations
-  const filteredUsers = Array.isArray(users) ? users.filter((user: User) => {
-    const deptMatch = formData.selectedDepartments.length === 0 || 
-                     formData.selectedDepartments.includes(user.department);
-    const locMatch = formData.selectedLocations.length === 0 || 
-                    formData.selectedLocations.includes(user.location);
-    return deptMatch && locMatch;
-  }) : [];
+  const filteredUsers = Array.isArray(users)
+    ? users.filter((user: User) => {
+        const deptMatch =
+          formData.selectedDepartments.length === 0 ||
+          formData.selectedDepartments.includes(user.department);
+        const locMatch =
+          formData.selectedLocations.length === 0 ||
+          formData.selectedLocations.includes(user.location);
+        return deptMatch && locMatch;
+      })
+    : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -182,14 +191,16 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
         <DialogHeader>
           <DialogTitle>Create New Space</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Space Type */}
           <div className="space-y-2">
             <Label>Type of Space</Label>
-            <Select 
-              value={formData.spaceType} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, spaceType: value }))}
+            <Select
+              value={formData.spaceType}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, spaceType: value }))
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select space type" />
@@ -213,7 +224,9 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                 id="name"
                 placeholder="Enter space name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 required
               />
             </div>
@@ -224,7 +237,12 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                 type="number"
                 placeholder="Leave empty for unlimited"
                 value={formData.maxMembers}
-                onChange={(e) => setFormData(prev => ({ ...prev, maxMembers: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    maxMembers: e.target.value,
+                  }))
+                }
                 min="1"
               />
             </div>
@@ -236,7 +254,12 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
               id="description"
               placeholder="Enter space description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               rows={3}
             />
           </div>
@@ -249,7 +272,9 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                 <Checkbox
                   id="isPrivate"
                   checked={formData.isPrivate}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: !!checked }))}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isPrivate: !!checked }))
+                  }
                 />
                 <Label htmlFor="isPrivate">Private Space (invite only)</Label>
               </div>
@@ -257,9 +282,16 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                 <Checkbox
                   id="requiresApproval"
                   checked={formData.requiresApproval}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, requiresApproval: !!checked }))}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      requiresApproval: !!checked,
+                    }))
+                  }
                 />
-                <Label htmlFor="requiresApproval">Requires approval to join</Label>
+                <Label htmlFor="requiresApproval">
+                  Requires approval to join
+                </Label>
               </div>
             </div>
           </div>
@@ -269,17 +301,25 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
             <div className="space-y-3">
               <Label className="text-base font-medium">Space Admins</Label>
               <p className="text-sm text-muted-foreground">
-                Select members who can approve join requests, invite users, and manage the space.
+                Select members who can approve join requests, invite users, and
+                manage the space.
               </p>
-              
+
               <div className="space-y-2">
                 <Select
                   onValueChange={(value) => {
-                    const user = Array.isArray(users) ? users.find((u: User) => u.id === parseInt(value)) : undefined;
-                    if (user && !formData.spaceAdmins.find((admin: User) => admin.id === user.id)) {
-                      setFormData(prev => ({
+                    const user = Array.isArray(users)
+                      ? users.find((u: User) => u.id === parseInt(value))
+                      : undefined;
+                    if (
+                      user &&
+                      !formData.spaceAdmins.find(
+                        (admin: User) => admin.id === user.id
+                      )
+                    ) {
+                      setFormData((prev) => ({
                         ...prev,
-                        spaceAdmins: [...prev.spaceAdmins, user]
+                        spaceAdmins: [...prev.spaceAdmins, user],
                       }));
                     }
                   }}
@@ -288,27 +328,43 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
                     <SelectValue placeholder="Select space admin" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.isArray(users) ? users.filter((user: User) => 
-                      !formData.spaceAdmins.find((admin: User) => admin.id === user.id)
-                    ).map((user: User) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name} ({user.username}) - {user.department}
-                      </SelectItem>
-                    )) : null}
+                    {Array.isArray(users)
+                      ? users
+                          .filter(
+                            (user: User) =>
+                              !formData.spaceAdmins.find(
+                                (admin: User) => admin.id === user.id
+                              )
+                          )
+                          .map((user: User) => (
+                            <SelectItem
+                              key={user.id}
+                              value={user.id.toString()}
+                            >
+                              {user.name} ({user.username}) - {user.department}
+                            </SelectItem>
+                          ))
+                      : null}
                   </SelectContent>
                 </Select>
 
                 {formData.spaceAdmins.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {formData.spaceAdmins.map((admin: User) => (
-                      <Badge key={admin.id} variant="secondary" className="gap-2">
+                      <Badge
+                        key={admin.id}
+                        variant="secondary"
+                        className="gap-2"
+                      >
                         {admin.name}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
+                        <X
+                          className="h-3 w-3 cursor-pointer"
                           onClick={() => {
-                            setFormData(prev => ({
+                            setFormData((prev) => ({
                               ...prev,
-                              spaceAdmins: prev.spaceAdmins.filter((a: User) => a.id !== admin.id)
+                              spaceAdmins: prev.spaceAdmins.filter(
+                                (a: User) => a.id !== admin.id
+                              ),
                             }));
                           }}
                         />
@@ -323,18 +379,25 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
           {/* Department Selection */}
           {departments && Object.keys(departments).length > 0 && (
             <div className="space-y-3">
-              <Label className="text-base font-medium">Select Departments (Optional)</Label>
+              <Label className="text-base font-medium">
+                Select Departments (Optional)
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-md p-3">
-                {departments && Object.keys(departments).map((dept: string) => (
-                  <div key={dept} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`dept-${dept}`}
-                      checked={formData.selectedDepartments.includes(dept)}
-                      onCheckedChange={(checked) => handleDepartmentChange(dept, !!checked)}
-                    />
-                    <Label htmlFor={`dept-${dept}`} className="text-sm">{dept}</Label>
-                  </div>
-                ))}
+                {departments &&
+                  Object.keys(departments).map((dept: string) => (
+                    <div key={dept} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`dept-${dept}`}
+                        checked={formData.selectedDepartments.includes(dept)}
+                        onCheckedChange={(checked) =>
+                          handleDepartmentChange(dept, !!checked)
+                        }
+                      />
+                      <Label htmlFor={`dept-${dept}`} className="text-sm">
+                        {dept}
+                      </Label>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -342,18 +405,25 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
           {/* Location Selection */}
           {locations && Object.keys(locations).length > 0 && (
             <div className="space-y-3">
-              <Label className="text-base font-medium">Select Locations (Optional)</Label>
+              <Label className="text-base font-medium">
+                Select Locations (Optional)
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-md p-3">
-                {locations && Object.keys(locations).map((location: string) => (
-                  <div key={location} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`loc-${location}`}
-                      checked={formData.selectedLocations.includes(location)}
-                      onCheckedChange={(checked) => handleLocationChange(location, !!checked)}
-                    />
-                    <Label htmlFor={`loc-${location}`} className="text-sm">{location}</Label>
-                  </div>
-                ))}
+                {locations &&
+                  Object.keys(locations).map((location: string) => (
+                    <div key={location} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`loc-${location}`}
+                        checked={formData.selectedLocations.includes(location)}
+                        onCheckedChange={(checked) =>
+                          handleLocationChange(location, !!checked)
+                        }
+                      />
+                      <Label htmlFor={`loc-${location}`} className="text-sm">
+                        {location}
+                      </Label>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -363,28 +433,39 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
             <Checkbox
               id="autoAddMembers"
               checked={formData.autoAddMembers}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, autoAddMembers: !!checked }))}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, autoAddMembers: !!checked }))
+              }
             />
             <Label htmlFor="autoAddMembers">
-              Automatically add all members from selected departments and locations
+              Automatically add all members from selected departments and
+              locations
             </Label>
           </div>
 
           {/* Manual Member Selection */}
           {!formData.autoAddMembers && (
             <div className="space-y-3">
-              <Label className="text-base font-medium">Add Initial Members (Optional)</Label>
-              
+              <Label className="text-base font-medium">
+                Add Initial Members (Optional)
+              </Label>
+
               {/* Selected Members */}
               {formData.initialMembers.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Selected Members:</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Selected Members:
+                  </Label>
                   <div className="flex flex-wrap gap-2">
-                    {formData.initialMembers.map(member => (
-                      <Badge key={member.id} variant="secondary" className="flex items-center gap-1">
+                    {formData.initialMembers.map((member) => (
+                      <Badge
+                        key={member.id}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         {member.name}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
+                        <X
+                          className="h-3 w-3 cursor-pointer"
                           onClick={() => removeMember(member.id)}
                         />
                       </Badge>
@@ -397,8 +478,8 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
               <div className="border rounded-md p-3 max-h-40 overflow-y-auto">
                 <div className="space-y-2">
                   {filteredUsers.map((user: User) => (
-                    <div 
-                      key={user.id} 
+                    <div
+                      key={user.id}
                       className="flex items-center justify-between p-2 hover:bg-muted rounded-sm cursor-pointer"
                       onClick={() => addMember(user)}
                     >
@@ -423,14 +504,22 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={createSpaceMutation.isPending || !formData.name || !formData.spaceType}
+            <Button
+              type="submit"
+              disabled={
+                createSpaceMutation.isPending ||
+                !formData.name ||
+                !formData.spaceType
+              }
             >
-              {createSpaceMutation.isPending ? "Creating..." : "Create Space"}
+              {createSpaceMutation.isPending ? 'Creating...' : 'Create Space'}
             </Button>
           </div>
         </form>

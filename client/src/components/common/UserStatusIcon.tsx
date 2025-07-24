@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { apiRequest } from '@/lib/queryClient';
 import { useTranslation } from 'react-i18next';
 import * as LucideIcons from 'lucide-react';
 
-// Define our status type 
+// Define our status type
 export type UserStatus = {
   id: number;
   statusType: {
@@ -24,7 +29,11 @@ type UserStatusIconProps = {
   className?: string;
 };
 
-const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', className = '' }) => {
+const UserStatusIcon: React.FC<UserStatusIconProps> = ({
+  userId,
+  size = 'md',
+  className = '',
+}) => {
   const { t } = useTranslation();
   const [statuses, setStatuses] = useState<UserStatus[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,14 +43,17 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    lg: 'h-6 w-6',
   };
 
   useEffect(() => {
     const fetchUserStatuses = async () => {
       setLoading(true);
       try {
-        const response = await apiRequest('GET', `/api/employee-status/users/${userId}/statuses`);
+        const response = await apiRequest(
+          'GET',
+          `/api/employee-status/users/${userId}/statuses`
+        );
         if (response.ok) {
           const data = await response.json();
           setStatuses(data);
@@ -71,12 +83,12 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
 
   const getStatusIcon = (iconName: string) => {
     const iconMap: Record<string, string> = {
-      'Cake': '🍰',
-      'PalmTree': '🌴', 
-      'Home': '🏠',
-      'GraduationCap': '🎓',
-      'Stethoscope': '🩺',
-      'Calendar': '📅'
+      Cake: '🍰',
+      PalmTree: '🌴',
+      Home: '🏠',
+      GraduationCap: '🎓',
+      Stethoscope: '🩺',
+      Calendar: '📅',
     };
     return iconMap[iconName] || '📍';
   };
@@ -88,7 +100,7 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
           <TooltipProvider key={status.id}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div 
+                <div
                   className={`rounded-full flex items-center justify-center p-1 text-white font-medium`}
                   style={{ backgroundColor: status.statusType.color }}
                 >
@@ -99,7 +111,9 @@ const UserStatusIcon: React.FC<UserStatusIconProps> = ({ userId, size = 'md', cl
               </TooltipTrigger>
               <TooltipContent>
                 <p className="font-medium">{status.statusType.name}</p>
-                {status.notes && <p className="text-xs opacity-80">{status.notes}</p>}
+                {status.notes && (
+                  <p className="text-xs opacity-80">{status.notes}</p>
+                )}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

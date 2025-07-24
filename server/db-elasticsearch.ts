@@ -1,10 +1,7 @@
-
 import { Client } from '@elastic/elasticsearch';
 
 if (!process.env.ELASTICSEARCH_URL) {
-  throw new Error(
-    "ELASTICSEARCH_URL must be set for audit logging",
-  );
+  throw new Error('ELASTICSEARCH_URL must be set for audit logging');
 }
 
 class ElasticsearchLogger {
@@ -14,10 +11,13 @@ class ElasticsearchLogger {
   private constructor() {
     this.client = new Client({
       node: process.env.ELASTICSEARCH_URL!,
-      auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD ? {
-        username: process.env.ELASTICSEARCH_USERNAME,
-        password: process.env.ELASTICSEARCH_PASSWORD,
-      } : undefined,
+      auth:
+        process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD
+          ? {
+              username: process.env.ELASTICSEARCH_USERNAME,
+              password: process.env.ELASTICSEARCH_PASSWORD,
+            }
+          : undefined,
     });
   }
 
@@ -43,7 +43,12 @@ class ElasticsearchLogger {
     }
   }
 
-  public async logUserAction(userId: number, action: string, details: any, organizationId?: number): Promise<void> {
+  public async logUserAction(
+    userId: number,
+    action: string,
+    details: any,
+    organizationId?: number
+  ): Promise<void> {
     await this.logEvent('user-actions', {
       userId,
       action,
@@ -53,7 +58,11 @@ class ElasticsearchLogger {
     });
   }
 
-  public async logSystemEvent(event: string, details: any, organizationId?: number): Promise<void> {
+  public async logSystemEvent(
+    event: string,
+    details: any,
+    organizationId?: number
+  ): Promise<void> {
     await this.logEvent('system-events', {
       event,
       details,
@@ -62,7 +71,12 @@ class ElasticsearchLogger {
     });
   }
 
-  public async logDataAccess(userId: number, resource: string, action: 'read' | 'write' | 'delete', details: any): Promise<void> {
+  public async logDataAccess(
+    userId: number,
+    resource: string,
+    action: 'read' | 'write' | 'delete',
+    details: any
+  ): Promise<void> {
     await this.logEvent('data-access', {
       userId,
       resource,

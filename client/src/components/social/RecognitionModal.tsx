@@ -3,11 +3,34 @@ import { User } from '@shared/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Award, Star, Users, Zap, Sparkles, Target, Cake, Trophy, Brain, Heart, Rocket } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Award,
+  Star,
+  Users,
+  Zap,
+  Sparkles,
+  Target,
+  Cake,
+  Trophy,
+  Brain,
+  Heart,
+  Rocket,
+} from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 
 interface RecognitionModalProps {
@@ -16,34 +39,78 @@ interface RecognitionModalProps {
   currentUser: User | undefined;
 }
 
-export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionModalProps) => {
-  const [selectedBadge, setSelectedBadge] = useState<string>("");
+export const RecognitionModal = ({
+  isOpen,
+  onClose,
+  currentUser,
+}: RecognitionModalProps) => {
+  const [selectedBadge, setSelectedBadge] = useState<string>('');
   const [recipientId, setRecipientId] = useState<number | null>(null);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [points, setPoints] = useState<number>(50);
-  const [gifUrl, setGifUrl] = useState("");
+  const [gifUrl, setGifUrl] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Enhanced badge options
   const badges = [
-    { type: "Outstanding Work", icon: <Star className="h-5 w-5" />, color: "bg-amber-500" },
-    { type: "Team Player", icon: <Users className="h-5 w-5" />, color: "bg-blue-500" },
-    { type: "Problem Solver", icon: <Zap className="h-5 w-5" />, color: "bg-purple-500" },
-    { type: "Innovation Award", icon: <Sparkles className="h-5 w-5" />, color: "bg-emerald-500" },
-    { type: "Leadership", icon: <Target className="h-5 w-5" />, color: "bg-red-500" },
-    { type: "Work Anniversary", icon: <Cake className="h-5 w-5" />, color: "bg-pink-500" },
-    { type: "Top Performer", icon: <Trophy className="h-5 w-5" />, color: "bg-indigo-500" },
-    { type: "Mentor", icon: <Brain className="h-5 w-5" />, color: "bg-cyan-500" },
-    { type: "Culture Champion", icon: <Heart className="h-5 w-5" />, color: "bg-rose-500" },
-    { type: "Growth Mindset", icon: <Rocket className="h-5 w-5" />, color: "bg-orange-500" }
+    {
+      type: 'Outstanding Work',
+      icon: <Star className="h-5 w-5" />,
+      color: 'bg-amber-500',
+    },
+    {
+      type: 'Team Player',
+      icon: <Users className="h-5 w-5" />,
+      color: 'bg-blue-500',
+    },
+    {
+      type: 'Problem Solver',
+      icon: <Zap className="h-5 w-5" />,
+      color: 'bg-purple-500',
+    },
+    {
+      type: 'Innovation Award',
+      icon: <Sparkles className="h-5 w-5" />,
+      color: 'bg-emerald-500',
+    },
+    {
+      type: 'Leadership',
+      icon: <Target className="h-5 w-5" />,
+      color: 'bg-red-500',
+    },
+    {
+      type: 'Work Anniversary',
+      icon: <Cake className="h-5 w-5" />,
+      color: 'bg-pink-500',
+    },
+    {
+      type: 'Top Performer',
+      icon: <Trophy className="h-5 w-5" />,
+      color: 'bg-indigo-500',
+    },
+    {
+      type: 'Mentor',
+      icon: <Brain className="h-5 w-5" />,
+      color: 'bg-cyan-500',
+    },
+    {
+      type: 'Culture Champion',
+      icon: <Heart className="h-5 w-5" />,
+      color: 'bg-rose-500',
+    },
+    {
+      type: 'Growth Mindset',
+      icon: <Rocket className="h-5 w-5" />,
+      color: 'bg-orange-500',
+    },
   ];
 
   // Get users query
   const { data: users = [] } = useQuery<User[]>({
-    queryKey: ["/api/users"],
+    queryKey: ['/api/users'],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/users");
+      const res = await apiRequest('GET', '/api/users');
       return res.json();
     },
     enabled: isOpen,
@@ -56,7 +123,7 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
       badgeType,
       message,
       points,
-      gifUrl
+      gifUrl,
     }: {
       recipientId: number;
       badgeType: string;
@@ -65,19 +132,25 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
       gifUrl?: string;
     }) => {
       const formData = new FormData();
-      formData.append('content', `Congratulations @${users.find(u => u.id === recipientId)?.name?.split(' ')[0] || 'teammate'} for ${message}`);
+      formData.append(
+        'content',
+        `Congratulations @${users.find((u) => u.id === recipientId)?.name?.split(' ')[0] || 'teammate'} for ${message}`
+      );
       formData.append('type', 'recognition');
-      formData.append('recognitionData', JSON.stringify({
-        recipientId,
-        badgeType,
-        message,
-        points,
-        gifUrl
-      }));
+      formData.append(
+        'recognitionData',
+        JSON.stringify({
+          recipientId,
+          badgeType,
+          message,
+          points,
+          gifUrl,
+        })
+      );
 
-      const res = await fetch("/api/social/posts", {
-        method: "POST",
-        body: formData
+      const res = await fetch('/api/social/posts', {
+        method: 'POST',
+        body: formData,
       });
 
       if (!res.ok) {
@@ -87,38 +160,38 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/social/posts"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/social/posts'] });
       onClose();
       toast({
-        title: "Recognition sent!",
-        description: "Your recognition has been successfully posted.",
+        title: 'Recognition sent!',
+        description: 'Your recognition has been successfully posted.',
       });
     },
     onError: (error: Error) => {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to send recognition",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message || 'Failed to send recognition',
       });
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipientId) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select a recipient",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please select a recipient',
       });
       return;
     }
 
     if (!selectedBadge) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select a badge",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please select a badge',
       });
       return;
     }
@@ -128,7 +201,7 @@ export const RecognitionModal = ({ isOpen, onClose, currentUser }: RecognitionMo
       badgeType: selectedBadge,
       message,
       points,
-      gifUrl: gifUrl || undefined
+      gifUrl: gifUrl || undefined,
     });
   };
 

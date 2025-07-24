@@ -22,20 +22,20 @@ interface UserProfileProps {
   onEditClick?: () => void;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ 
-  user, 
+const UserProfile: React.FC<UserProfileProps> = ({
+  user,
   editable = false,
-  onEditClick
+  onEditClick,
 }) => {
   const { t } = useTranslation();
-  
+
   return (
     <Card className="overflow-hidden">
       <div className="h-32 bg-gradient-to-r from-primary/20 to-primary/10 relative">
         {editable && (
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             className="absolute top-2 right-2 bg-white"
             onClick={onEditClick}
           >
@@ -44,30 +44,30 @@ const UserProfile: React.FC<UserProfileProps> = ({
           </Button>
         )}
       </div>
-      
+
       <CardHeader className="p-0 relative">
         <div className="flex justify-center -mt-12 mb-4">
-          <UserAvatar 
+          <UserAvatar
             user={{
               ...user,
-              dateJoined: user.hireDate || user.dateJoined
-            }} 
-            size="xl" 
-            showStatus={true} 
+              dateJoined: user.hireDate || user.dateJoined,
+            }}
+            size="xl"
+            showStatus={true}
             className="border-4 border-white shadow-md"
           />
         </div>
-        
+
         <div className="text-center px-6">
           <h2 className="text-2xl font-bold">{user.name}</h2>
-          
+
           {user.jobTitle && (
             <div className="flex items-center justify-center mt-1 text-gray-600">
               <Briefcase className="h-4 w-4 mr-1" />
               <span>{user.jobTitle}</span>
             </div>
           )}
-          
+
           {user.department && (
             <Badge variant="outline" className="mt-2">
               {user.department}
@@ -75,7 +75,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4">
         <div className="space-y-3">
           {user.email && (
@@ -84,7 +84,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
               <span>{user.email}</span>
             </div>
           )}
-          
+
           {user.location && (
             <div className="flex items-center text-sm">
               <MapPin className="h-4 w-4 mr-2 text-gray-500" />

@@ -7,7 +7,7 @@ import { pool } from './db';
 
 async function runSubscriptionMigration() {
   const client = await pool.connect();
-  
+
   try {
     console.log('Starting subscription migration...');
 

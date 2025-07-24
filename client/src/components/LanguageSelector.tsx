@@ -6,8 +6,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const LanguageSelector = () => {
   const { t, i18n } = useTranslation();
@@ -47,8 +52,8 @@ const LanguageSelector = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[180px]">
                 {languages.map((lang) => (
-                  <DropdownMenuItem 
-                    key={lang.code} 
+                  <DropdownMenuItem
+                    key={lang.code}
                     onClick={() => changeLanguage(lang.code)}
                     className={`cursor-pointer flex items-center py-2 px-4 ${i18n.language === lang.code ? 'bg-primary/10' : ''}`}
                   >

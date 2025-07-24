@@ -1,39 +1,45 @@
-import { Router } from "express";
-import { verifyToken, AuthenticatedRequest } from "../middleware/auth";
-import { storage } from "../storage";
-import { db } from "../db";
-import { users } from "@shared/schema";
-import { eq, desc, sql, and } from "drizzle-orm";
-import { logger } from "@shared/logger";
-import { CacheService } from "../cache/cacheService";
-import { hash } from "bcrypt";
+import { Router } from 'express';
+import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
+import { storage } from '../storage';
+import { db } from '../db';
+import { users } from '@shared/schema';
+import { eq, desc, sql, and } from 'drizzle-orm';
+import { logger } from '@shared/logger';
+import { CacheService } from '../cache/cacheService';
+import { hash } from 'bcrypt';
 
 const router = Router();
 
 // Get current user profile
-router.get("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    logger.debug(`/api/users/me: Returning data for user ${req.user.id} (${req.user.name}, ${req.user.email})`);
+    logger.debug(
+      `/api/users/me: Returning data for user ${req.user.id} (${req.user.name}, ${req.user.email})`
+    );
     logger.debug(`User isAdmin value: ${req.user.isAdmin}`);
 
     // Update lastSeenAt timestamp for ongoing activity tracking
     try {
-      await db.update(users)
+      await db
+        .update(users)
         .set({ lastSeenAt: new Date() })
         .where(eq(users.id, req.user.id));
     } catch (error) {
-      logger.warn("Failed to update lastSeenAt:", error);
+      logger.warn('Failed to update lastSeenAt:', error);
     }
 
     // Fetch fresh user data from database to include any recent updates
-    const [freshUser] = await db.select().from(users).where(eq(users.id, req.user.id));
+    const [freshUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, req.user.id));
 
     if (!freshUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Get the user's balance
@@ -43,26 +49,34 @@ router.get("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
     const userWithBalance = {
       ...freshUser,
       isAdmin: freshUser.isAdmin === true, // Ensure boolean false for non-admins
-      balance
+      balance,
     };
 
     logger.debug(`Final user object isAdmin: ${userWithBalance.isAdmin}`);
     res.json(userWithBalance);
   } catch (error: any) {
-    logger.error("Error getting user data:", error);
-    res.status(500).json({ message: error.message || "Failed to get user" });
+    logger.error('Error getting user data:', error);
+    res.status(500).json({ message: error.message || 'Failed to get user' });
   }
 });
 
 // Update user profile
-router.patch("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.patch('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Get fields to update from the request body
-    const { name, title, department, location, responsibilities, aboutMe, avatarUrl } = req.body;
+    const {
+      name,
+      title,
+      department,
+      location,
+      responsibilities,
+      aboutMe,
+      avatarUrl,
+    } = req.body;
 
     // Build update object with only provided fields
     const updateData: any = {};
@@ -70,7 +84,8 @@ router.patch("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
     if (title !== undefined) updateData.jobTitle = title;
     if (department !== undefined) updateData.department = department;
     if (location !== undefined) updateData.location = location;
-    if (responsibilities !== undefined) updateData.responsibilities = responsibilities;
+    if (responsibilities !== undefined)
+      updateData.responsibilities = responsibilities;
     if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
     if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
 
@@ -82,7 +97,7 @@ router.patch("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
       .returning();
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Get the user's balance
@@ -91,100 +106,112 @@ router.patch("/me", verifyToken, async (req: AuthenticatedRequest, res) => {
     // Combine user data with balance
     const userWithBalance = {
       ...updatedUser,
-      balance
+      balance,
     };
 
     res.json(userWithBalance);
   } catch (error: any) {
-    logger.error("Error updating user profile:", error);
-    res.status(500).json({ message: error.message || "Failed to update user profile" });
+    logger.error('Error updating user profile:', error);
+    res
+      .status(500)
+      .json({ message: error.message || 'Failed to update user profile' });
   }
 });
 
 // Upload user avatar
-router.post("/avatar", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.post('/avatar', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const { avatarUrl } = req.body;
 
     if (!avatarUrl) {
-      return res.status(400).json({ message: "No avatar image provided" });
+      return res.status(400).json({ message: 'No avatar image provided' });
     }
 
     try {
       // Update the user record in the database
-      const [updatedUser] = await db.update(users)
+      const [updatedUser] = await db
+        .update(users)
         .set({ avatarUrl })
         .where(eq(users.id, req.user.id))
         .returning();
 
       res.json({
-        message: "Avatar updated successfully",
-        user: updatedUser
+        message: 'Avatar updated successfully',
+        user: updatedUser,
       });
     } catch (dbError) {
-      logger.error("Database error updating avatar:", dbError);
+      logger.error('Database error updating avatar:', dbError);
 
       // Fallback: If database update fails, still return the user with updated avatar
       const updatedUser = {
         ...req.user,
-        avatarUrl
+        avatarUrl,
       };
 
       res.json({
-        message: "Avatar updated successfully (local only)",
-        user: updatedUser
+        message: 'Avatar updated successfully (local only)',
+        user: updatedUser,
       });
     }
   } catch (error: any) {
-    logger.error("Error updating user avatar:", error);
-    res.status(500).json({ message: error.message || "Failed to update avatar" });
+    logger.error('Error updating user avatar:', error);
+    res
+      .status(500)
+      .json({ message: error.message || 'Failed to update avatar' });
   }
 });
 
 // Upload user cover photo
-router.post("/cover-photo", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+router.post(
+  '/cover-photo',
+  verifyToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const { coverPhotoUrl } = req.body;
+
+      if (!coverPhotoUrl) {
+        return res.status(400).json({ message: 'No cover photo provided' });
+      }
+
+      // Update user with the cover photo URL in the database
+      const [updatedUser] = await db
+        .update(users)
+        .set({ coverPhotoUrl })
+        .where(eq(users.id, req.user.id))
+        .returning();
+
+      res.json({
+        message: 'Cover photo updated successfully',
+        user: updatedUser,
+      });
+    } catch (error: any) {
+      logger.error('Error updating user cover photo:', error);
+      res
+        .status(500)
+        .json({ message: error.message || 'Failed to update cover photo' });
     }
-
-    const { coverPhotoUrl } = req.body;
-
-    if (!coverPhotoUrl) {
-      return res.status(400).json({ message: "No cover photo provided" });
-    }
-
-    // Update user with the cover photo URL in the database
-    const [updatedUser] = await db.update(users)
-      .set({ coverPhotoUrl })
-      .where(eq(users.id, req.user.id))
-      .returning();
-
-    res.json({
-      message: "Cover photo updated successfully",
-      user: updatedUser
-    });
-  } catch (error: any) {
-    logger.error("Error updating user cover photo:", error);
-    res.status(500).json({ message: error.message || "Failed to update cover photo" });
   }
-});
+);
 
 // Get all users with optional filtering
-router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const { department, location, search, limit = 50, offset = 0 } = req.query;
 
     const organizationId = req.user.organizationId;
-    
+
     const userCount = await storage.getUserCount(organizationId);
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
     logger.info(`Fetching users with limit: ${limit}, offset: ${offset}`);
@@ -194,134 +221,170 @@ router.get("/", verifyToken, async (req: AuthenticatedRequest, res) => {
       parseInt(limit as string),
       parseInt(offset as string)
     );
-    
-    logger.info(`Returned ${users.length} users for organization ${organizationId}`);
-    
+
+    logger.info(
+      `Returned ${users.length} users for organization ${organizationId}`
+    );
+
     // Check if Shams is in the results
-    const shamsUser = users.find(u => u.name?.toLowerCase() === 'shams' || u.surname?.toLowerCase() === 'aranib');
+    const shamsUser = users.find(
+      (u) =>
+        u.name?.toLowerCase() === 'shams' ||
+        u.surname?.toLowerCase() === 'aranib'
+    );
     if (shamsUser) {
-      logger.info(`Found Shams Aranib in results: ${JSON.stringify(shamsUser)}`);
+      logger.info(
+        `Found Shams Aranib in results: ${JSON.stringify(shamsUser)}`
+      );
     } else {
       logger.info(`Shams Aranib NOT found in current batch`);
     }
 
     res.json(users);
   } catch (error: any) {
-    logger.error("Error fetching users:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch users" });
+    logger.error('Error fetching users:', error);
+    res.status(500).json({ message: error.message || 'Failed to fetch users' });
   }
 });
 
 // Get user departments (from database tables)
-router.get("/departments", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+router.get(
+  '/departments',
+  verifyToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
 
-    // Query the departments table directly (no caching for now)
-    const departmentRows = await db.execute(sql`
+      // Query the departments table directly (no caching for now)
+      const departmentRows = await db.execute(sql`
       SELECT name FROM departments 
       WHERE organization_id = ${req.user.organizationId || 1} 
       ORDER BY name
     `);
 
-    const departments = departmentRows.rows.map((row: any) => row.name);
-    
-    logger.info(`Returning ${departments.length} departments for org ${req.user.organizationId}:`, departments);
-    res.json(departments);
-  } catch (error: any) {
-    logger.error("Error fetching departments:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch departments" });
+      const departments = departmentRows.rows.map((row: any) => row.name);
+
+      logger.info(
+        `Returning ${departments.length} departments for org ${req.user.organizationId}:`,
+        departments
+      );
+      res.json(departments);
+    } catch (error: any) {
+      logger.error('Error fetching departments:', error);
+      res
+        .status(500)
+        .json({ message: error.message || 'Failed to fetch departments' });
+    }
   }
-});
+);
 
 // Get user locations (from database tables)
-router.get("/locations", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+router.get(
+  '/locations',
+  verifyToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
 
-    // Query the locations table directly (no caching for now)
-    const locationRows = await db.execute(sql`
+      // Query the locations table directly (no caching for now)
+      const locationRows = await db.execute(sql`
       SELECT name FROM locations 
       WHERE organization_id = ${req.user.organizationId || 1} 
       ORDER BY name
     `);
 
-    const locations = locationRows.rows.map((row: any) => row.name);
-    
-    logger.info(`Returning ${locations.length} locations for org ${req.user.organizationId}:`, locations);
-    res.json(locations);
-  } catch (error: any) {
-    logger.error("Error fetching locations:", error);
-    res.status(500).json({ message: error.message || "Failed to fetch locations" });
+      const locations = locationRows.rows.map((row: any) => row.name);
+
+      logger.info(
+        `Returning ${locations.length} locations for org ${req.user.organizationId}:`,
+        locations
+      );
+      res.json(locations);
+    } catch (error: any) {
+      logger.error('Error fetching locations:', error);
+      res
+        .status(500)
+        .json({ message: error.message || 'Failed to fetch locations' });
+    }
   }
-});
+);
 
 // Check for duplicate email/name before creating user
-router.post("/check-duplicate", verifyToken, async (req: AuthenticatedRequest, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+router.post(
+  '/check-duplicate',
+  verifyToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const { email, name, surname } = req.body;
+      let emailExists = false;
+      let nameExists = false;
+
+      // Check if email already exists in the organization
+      if (email) {
+        const existingEmail = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.email, email),
+              eq(users.organizationId, req.user.organizationId)
+            )
+          );
+        emailExists = existingEmail.length > 0;
+      }
+
+      // Check if name/surname combination already exists in the organization
+      if (name && surname) {
+        const existingName = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.name, name),
+              eq(users.surname, surname),
+              eq(users.organizationId, req.user.organizationId)
+            )
+          );
+        nameExists = existingName.length > 0;
+      }
+
+      res.json({ emailExists, nameExists });
+    } catch (error: any) {
+      logger.error('Error checking duplicates:', error);
+      res
+        .status(500)
+        .json({ message: error.message || 'Failed to check duplicates' });
     }
-
-    const { email, name, surname } = req.body;
-    let emailExists = false;
-    let nameExists = false;
-
-    // Check if email already exists in the organization
-    if (email) {
-      const existingEmail = await db.select()
-        .from(users)
-        .where(
-          and(
-            eq(users.email, email),
-            eq(users.organizationId, req.user.organizationId)
-          )
-        );
-      emailExists = existingEmail.length > 0;
-    }
-
-    // Check if name/surname combination already exists in the organization
-    if (name && surname) {
-      const existingName = await db.select()
-        .from(users)
-        .where(
-          and(
-            eq(users.name, name),
-            eq(users.surname, surname),
-            eq(users.organizationId, req.user.organizationId)
-          )
-        );
-      nameExists = existingName.length > 0;
-    }
-
-    res.json({ emailExists, nameExists });
-  } catch (error: any) {
-    logger.error("Error checking duplicates:", error);
-    res.status(500).json({ message: error.message || "Failed to check duplicates" });
   }
-});
+);
 
 // Create new employee
-router.post("/", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Only admins can create employees
     if (!req.user.isAdmin) {
-      return res.status(403).json({ message: "Only administrators can create employees" });
+      return res
+        .status(403)
+        .json({ message: 'Only administrators can create employees' });
     }
 
     const {
       email,
       name,
       surname,
-      password = "changeme123",
+      password = 'changeme123',
       phoneNumber,
       jobTitle,
       department,
@@ -332,20 +395,21 @@ router.post("/", verifyToken, async (req: AuthenticatedRequest, res) => {
       birthDate,
       hireDate,
       isAdmin = false,
-      status = "active",
+      status = 'active',
       avatarUrl,
-      adminScope = "none",
+      adminScope = 'none',
       allowedSites = [],
-      allowedDepartments = []
+      allowedDepartments = [],
     } = req.body;
 
     // Validate required fields
     if (!email || !name) {
-      return res.status(400).json({ message: "Email and name are required" });
+      return res.status(400).json({ message: 'Email and name are required' });
     }
 
     // Check if email already exists in the organization
-    const existingEmail = await db.select()
+    const existingEmail = await db
+      .select()
       .from(users)
       .where(
         and(
@@ -353,16 +417,19 @@ router.post("/", verifyToken, async (req: AuthenticatedRequest, res) => {
           eq(users.organizationId, req.user.organizationId)
         )
       );
-    
+
     if (existingEmail.length > 0) {
-      return res.status(409).json({ message: "Email already exists in this organization" });
+      return res
+        .status(409)
+        .json({ message: 'Email already exists in this organization' });
     }
 
     // Generate username from email
     const username = email.split('@')[0];
-    
+
     // Check if username already exists in the organization
-    const existingUsername = await db.select()
+    const existingUsername = await db
+      .select()
       .from(users)
       .where(
         and(
@@ -370,74 +437,85 @@ router.post("/", verifyToken, async (req: AuthenticatedRequest, res) => {
           eq(users.organizationId, req.user.organizationId)
         )
       );
-    
-    const finalUsername = existingUsername.length > 0 
-      ? `${username}_${Date.now()}`
-      : username;
+
+    const finalUsername =
+      existingUsername.length > 0 ? `${username}_${Date.now()}` : username;
 
     // Hash the password
     const hashedPassword = await hash(password, 10);
 
     // Create the user
-    const [newUser] = await db.insert(users).values({
-      email,
-      username: finalUsername,
-      password: hashedPassword,
-      name,
-      surname,
-      phoneNumber,
-      jobTitle,
-      department,
-      location,
-      managerEmail,
-      sex,
-      nationality,
-      birthDate: birthDate ? new Date(birthDate) : null,
-      hireDate: hireDate ? new Date(hireDate) : null,
-      isAdmin,
-      status,
-      avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/identicon/png?seed=${finalUsername}&backgroundColor=random&size=150`,
-      adminScope,
-      allowedSites: JSON.stringify(allowedSites),
-      allowedDepartments: JSON.stringify(allowedDepartments),
-      organizationId: req.user.organizationId,
-      createdBy: req.user.id,
-      createdAt: new Date()
-    }).returning();
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        email,
+        username: finalUsername,
+        password: hashedPassword,
+        name,
+        surname,
+        phoneNumber,
+        jobTitle,
+        department,
+        location,
+        managerEmail,
+        sex,
+        nationality,
+        birthDate: birthDate ? new Date(birthDate) : null,
+        hireDate: hireDate ? new Date(hireDate) : null,
+        isAdmin,
+        status,
+        avatarUrl:
+          avatarUrl ||
+          `https://api.dicebear.com/7.x/identicon/png?seed=${finalUsername}&backgroundColor=random&size=150`,
+        adminScope,
+        allowedSites: JSON.stringify(allowedSites),
+        allowedDepartments: JSON.stringify(allowedDepartments),
+        organizationId: req.user.organizationId,
+        createdBy: req.user.id,
+        createdAt: new Date(),
+      })
+      .returning();
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
 
-    logger.info(`Employee created successfully: ${email} by admin ${req.user.email}`);
+    logger.info(
+      `Employee created successfully: ${email} by admin ${req.user.email}`
+    );
     res.status(201).json(userWithoutPassword);
   } catch (error: any) {
-    logger.error("Error creating employee:", error);
-    res.status(500).json({ message: error.message || "Failed to create employee" });
+    logger.error('Error creating employee:', error);
+    res
+      .status(500)
+      .json({ message: error.message || 'Failed to create employee' });
   }
 });
 
 // Get specific user by ID (must be last to avoid conflicts with other routes)
-router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const userId = parseInt(req.params.id);
     if (isNaN(userId)) {
-      return res.status(400).json({ message: "Invalid user ID" });
+      return res.status(400).json({ message: 'Invalid user ID' });
     }
 
     // Fetch user data from database
-    const [targetUser] = await db.select().from(users).where(eq(users.id, userId));
+    const [targetUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
 
     if (!targetUser) {
-      return res.status(404).json({ message: "Team member not found" });
+      return res.status(404).json({ message: 'Team member not found' });
     }
 
     // Ensure user belongs to same organization (multi-tenant security)
     if (targetUser.organizationId !== req.user.organizationId) {
-      return res.status(404).json({ message: "Team member not found" });
+      return res.status(404).json({ message: 'Team member not found' });
     }
 
     // Only return public profile information
@@ -457,14 +535,16 @@ router.get("/:id", verifyToken, async (req: AuthenticatedRequest, res) => {
       phoneNumber: targetUser.phoneNumber,
       nationality: targetUser.nationality,
       sex: targetUser.sex,
-      coverPhotoUrl: targetUser.coverPhotoUrl
+      coverPhotoUrl: targetUser.coverPhotoUrl,
     };
 
-    logger.debug(`Returning public profile for user ${userId} (${targetUser.name})`);
+    logger.debug(
+      `Returning public profile for user ${userId} (${targetUser.name})`
+    );
     res.json(publicProfile);
   } catch (error: any) {
-    logger.error("Error getting user by ID:", error);
-    res.status(500).json({ message: error.message || "Failed to get user" });
+    logger.error('Error getting user by ID:', error);
+    res.status(500).json({ message: error.message || 'Failed to get user' });
   }
 });
 

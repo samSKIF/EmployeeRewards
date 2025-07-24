@@ -1,24 +1,24 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "@shared/schema";
-import { db } from "../db";
-import { eq } from "drizzle-orm";
-import { users } from "@shared/schema";
-import { logger } from "@shared/logger";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { User } from '@shared/schema';
+import { db } from '../db';
+import { eq } from 'drizzle-orm';
+import { users } from '@shared/schema';
+import { logger } from '@shared/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || "rewardhub-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || 'rewardhub-secret-key';
 
 // Extended Request type with authenticated user
 export interface AuthenticatedRequest extends Request {
-  user?: Omit<User, "password">;
+  user?: Omit<User, 'password'>;
 }
 
 // Generate JWT token
-export const generateToken = (user: Omit<User, "password">): string => {
+export const generateToken = (user: Omit<User, 'password'>): string => {
   return jwt.sign(
     { id: user.id, email: user.email, isAdmin: user.isAdmin },
     JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: '1d' }
   );
 };
 
@@ -32,7 +32,7 @@ export const verifyToken = async (
   let token: string | undefined;
 
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.substring(7);
   }
 
@@ -43,28 +43,31 @@ export const verifyToken = async (
 
   // If still no token, return unauthorized
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
+    return res.status(401).json({ message: 'Unauthorized: No token provided' });
   }
 
   try {
     // Verify the token
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
+
     // Fetch the current user data from database
-    const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
-    
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, decoded.id));
+
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized: User not found" });
+      return res.status(401).json({ message: 'Unauthorized: User not found' });
     }
 
     // Remove password before attaching to request
     const { password: _, ...userWithoutPassword } = user;
     req.user = userWithoutPassword;
-    
+
     next();
   } catch (error) {
-    logger.error("Token verification error:", error);
-    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    logger.error('Token verification error:', error);
+    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
 };
 
@@ -75,11 +78,13 @@ export const verifyAdmin = (
   next: NextFunction
 ) => {
   if (!req.user) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
   if (!req.user.isAdmin) {
-    return res.status(403).json({ message: "Forbidden: Admin access required" });
+    return res
+      .status(403)
+      .json({ message: 'Forbidden: Admin access required' });
   }
 
   next();

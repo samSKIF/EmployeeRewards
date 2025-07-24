@@ -1,16 +1,16 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, Award, Sparkles } from "lucide-react";
-import { User } from "@shared/types";
-import { useLocation } from "wouter";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ThumbsUp, Award, Sparkles } from 'lucide-react';
+import { User } from '@shared/types';
+import { useLocation } from 'wouter';
 
 interface LikesModalProps {
   isOpen: boolean;
@@ -31,31 +31,36 @@ interface ReactionWithUser {
   createdAt: string;
 }
 
-export const LikesModal = ({ isOpen, onClose, postId, reactionType }: LikesModalProps) => {
+export const LikesModal = ({
+  isOpen,
+  onClose,
+  postId,
+  reactionType,
+}: LikesModalProps) => {
   const [, navigate] = useLocation();
 
   // Fetch users who reacted to the post
   const { data: reactions = [], isLoading } = useQuery<ReactionWithUser[]>({
-    queryKey: ["/api/social/posts", postId, "reactions", reactionType],
+    queryKey: ['/api/social/posts', postId, 'reactions', reactionType],
     queryFn: async () => {
       const token = localStorage.getItem('token');
-      const url = reactionType 
+      const url = reactionType
         ? `/api/social/posts/${postId}/reactions?type=${reactionType}`
         : `/api/social/posts/${postId}/reactions`;
-      
+
       const res = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!res.ok) {
-        throw new Error("Failed to fetch reactions");
+        throw new Error('Failed to fetch reactions');
       }
-      
+
       return res.json();
     },
-    enabled: isOpen
+    enabled: isOpen,
   });
 
   const getReactionIcon = (type: string) => {
@@ -100,16 +105,19 @@ export const LikesModal = ({ isOpen, onClose, postId, reactionType }: LikesModal
                 <span className="capitalize">{reactionType}s</span>
               </div>
             ) : (
-              "Reactions"
+              'Reactions'
             )}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="max-h-80 overflow-y-auto">
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-3 animate-pulse">
+                <div
+                  key={i}
+                  className="flex items-center space-x-3 animate-pulse"
+                >
                   <div className="w-10 h-10 rounded-full bg-gray-200" />
                   <div className="flex-1">
                     <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
@@ -132,15 +140,18 @@ export const LikesModal = ({ isOpen, onClose, postId, reactionType }: LikesModal
                   onClick={() => handleUserClick(reaction.user.id)}
                 >
                   <Avatar className="w-10 h-10">
-                    <AvatarImage 
-                      src={reaction.user.avatarUrl} 
-                      alt={reaction.user.name} 
+                    <AvatarImage
+                      src={reaction.user.avatarUrl}
+                      alt={reaction.user.name}
                     />
                     <AvatarFallback className="bg-teal-100 text-teal-700">
-                      {reaction.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                      {reaction.user.name
+                        ?.split(' ')
+                        .map((n) => n[0])
+                        .join('') || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  
+
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
                       {reaction.user.name}
@@ -151,9 +162,9 @@ export const LikesModal = ({ isOpen, onClose, postId, reactionType }: LikesModal
                       </div>
                     )}
                   </div>
-                  
-                  <Badge 
-                    variant="secondary" 
+
+                  <Badge
+                    variant="secondary"
                     className={`${getReactionColor(reaction.type)} flex items-center gap-1`}
                   >
                     {getReactionIcon(reaction.type)}

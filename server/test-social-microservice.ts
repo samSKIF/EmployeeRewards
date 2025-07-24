@@ -12,12 +12,12 @@ async function testSocialMicroservice() {
     const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: 'admin@demo.io',
-        password: 'admin123'
-      })
+        password: 'admin123',
+      }),
     });
 
     if (!loginResponse.ok) {
@@ -26,22 +26,31 @@ async function testSocialMicroservice() {
 
     const loginData = await loginResponse.json();
     console.log('Login successful, token obtained');
-    
+
     // Create a post without an image
     const formData = new FormData();
-    formData.append('content', 'Test post from social microservice test script');
+    formData.append(
+      'content',
+      'Test post from social microservice test script'
+    );
     formData.append('type', 'standard');
-    
-    const textPostResponse = await fetch('http://localhost:5000/api/social/posts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${loginData.token}`
-      },
-      body: formData
-    });
+
+    const textPostResponse = await fetch(
+      'http://localhost:5000/api/social/posts',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${loginData.token}`,
+        },
+        body: formData,
+      }
+    );
 
     if (!textPostResponse.ok) {
-      console.error('Error response from server:', await textPostResponse.text());
+      console.error(
+        'Error response from server:',
+        await textPostResponse.text()
+      );
       throw new Error('Failed to create text post');
     }
 
@@ -51,22 +60,28 @@ async function testSocialMicroservice() {
     // Now test with an image upload
     const form = new FormData();
     form.append('content', 'Test post with image from social microservice');
-    
+
     // Try to find a test image to upload
     const testImagePath = 'server/test-image.png';
     if (fs.existsSync(testImagePath)) {
       form.append('image', fs.createReadStream(testImagePath));
-      
-      const imagePostResponse = await fetch('http://localhost:5000/api/social/posts', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${loginData.token}`
-        },
-        body: form
-      });
+
+      const imagePostResponse = await fetch(
+        'http://localhost:5000/api/social/posts',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${loginData.token}`,
+          },
+          body: form,
+        }
+      );
 
       if (!imagePostResponse.ok) {
-        console.error('Error response from server:', await imagePostResponse.text());
+        console.error(
+          'Error response from server:',
+          await imagePostResponse.text()
+        );
         throw new Error('Failed to create image post');
       }
 

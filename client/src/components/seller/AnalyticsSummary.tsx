@@ -1,30 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
-import { format } from "date-fns";
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
+import { format } from 'date-fns';
 
 // Mock data for visualizations
 const AnalyticsSummary = () => {
   // Fetch orders for calculations
   const { data: orders } = useQuery({
-    queryKey: ["/api/orders"],
+    queryKey: ['/api/orders'],
   });
 
   // Fetch products for calculations
   const { data: products } = useQuery({
-    queryKey: ["/api/catalog"],
+    queryKey: ['/api/catalog'],
   });
 
   // Calculate summary statistics
   const totalOrders = orders?.length || 0;
-  const pointsRedeemed = orders?.reduce((sum, order) => sum + (order.points || 0), 0) || 0;
-  const avgPointsPerOrder = totalOrders ? Math.round(pointsRedeemed / totalOrders) : 0;
+  const pointsRedeemed =
+    orders?.reduce((sum, order) => sum + (order.points || 0), 0) || 0;
+  const avgPointsPerOrder = totalOrders
+    ? Math.round(pointsRedeemed / totalOrders)
+    : 0;
 
   // Calculate basic product analytics
-  const productCounts = products?.reduce((acc: Record<string, number>, product) => {
-    const orderCount = orders?.filter(o => o.productId === product.id).length || 0;
-    acc[product.name] = orderCount;
-    return acc;
-  }, {}) || {};
+  const productCounts =
+    products?.reduce((acc: Record<string, number>, product) => {
+      const orderCount =
+        orders?.filter((o) => o.productId === product.id).length || 0;
+      acc[product.name] = orderCount;
+      return acc;
+    }, {}) || {};
 
   // Get top products
   const topProducts = Object.entries(productCounts)
@@ -32,23 +37,32 @@ const AnalyticsSummary = () => {
     .slice(0, 3);
 
   // Calculate category distribution
-  const categoryDistribution = products?.reduce((acc: Record<string, number>, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = 0;
-    }
-    
-    const orderCount = orders?.filter(o => o.productId === product.id).length || 0;
-    acc[product.category] += orderCount;
-    
-    return acc;
-  }, {}) || {};
+  const categoryDistribution =
+    products?.reduce((acc: Record<string, number>, product) => {
+      if (!acc[product.category]) {
+        acc[product.category] = 0;
+      }
+
+      const orderCount =
+        orders?.filter((o) => o.productId === product.id).length || 0;
+      acc[product.category] += orderCount;
+
+      return acc;
+    }, {}) || {};
 
   // Calculate percentage for visualization
-  const totalCategoryOrders = Object.values(categoryDistribution).reduce((sum, val) => sum + val, 0);
-  const categoryPercentages = Object.entries(categoryDistribution).map(([category, count]) => ({
-    category,
-    percentage: totalCategoryOrders ? Math.round((count / totalCategoryOrders) * 100) : 0
-  }));
+  const totalCategoryOrders = Object.values(categoryDistribution).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+  const categoryPercentages = Object.entries(categoryDistribution).map(
+    ([category, count]) => ({
+      category,
+      percentage: totalCategoryOrders
+        ? Math.round((count / totalCategoryOrders) * 100)
+        : 0,
+    })
+  );
 
   return (
     <div className="p-6">
@@ -56,7 +70,9 @@ const AnalyticsSummary = () => {
         <Card>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-500">Total Orders</h3>
+              <h3 className="text-sm font-medium text-gray-500">
+                Total Orders
+              </h3>
               <span className="text-xs text-green-500 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -74,14 +90,18 @@ const AnalyticsSummary = () => {
               </span>
             </div>
             <p className="text-2xl font-bold">{totalOrders}</p>
-            <p className="text-xs text-gray-500 mt-1">Updated {format(new Date(), "MMM dd, yyyy")}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Updated {format(new Date(), 'MMM dd, yyyy')}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-500">Points Redeemed</h3>
+              <h3 className="text-sm font-medium text-gray-500">
+                Points Redeemed
+              </h3>
               <span className="text-xs text-green-500 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +118,9 @@ const AnalyticsSummary = () => {
                 +32%
               </span>
             </div>
-            <p className="text-2xl font-bold">{pointsRedeemed.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              {pointsRedeemed.toLocaleString()}
+            </p>
             <p className="text-xs text-gray-500 mt-1">Total lifetime points</p>
           </CardContent>
         </Card>
@@ -106,7 +128,9 @@ const AnalyticsSummary = () => {
         <Card>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-500">Avg. Points per Order</h3>
+              <h3 className="text-sm font-medium text-gray-500">
+                Avg. Points per Order
+              </h3>
               <span className="text-xs text-green-500 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -131,9 +155,14 @@ const AnalyticsSummary = () => {
 
       <Card className="mb-6">
         <CardContent className="pt-5">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Monthly Redemption Trend</h3>
+          <h3 className="text-lg font-medium text-gray-800 mb-4">
+            Monthly Redemption Trend
+          </h3>
           <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-500">Monthly redemption trend visualization would appear here in production.</p>
+            <p className="text-gray-500">
+              Monthly redemption trend visualization would appear here in
+              production.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -141,13 +170,17 @@ const AnalyticsSummary = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="pt-5">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Top Products</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
+              Top Products
+            </h3>
             <div className="space-y-4">
               {topProducts.length > 0 ? (
                 topProducts.map(([productName, count], index) => {
-                  const product = products?.find(p => p.name === productName);
-                  const percentage = totalOrders ? Math.round((count / totalOrders) * 100) : 0;
-                  
+                  const product = products?.find((p) => p.name === productName);
+                  const percentage = totalOrders
+                    ? Math.round((count / totalOrders) * 100)
+                    : 0;
+
                   return (
                     <div className="flex items-center" key={index}>
                       <div className="h-10 w-10 flex-shrink-0">
@@ -161,8 +194,12 @@ const AnalyticsSummary = () => {
                       </div>
                       <div className="ml-4 flex-grow">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-900">{productName}</p>
-                          <p className="text-sm font-medium text-gray-900">{percentage}%</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {productName}
+                          </p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {percentage}%
+                          </p>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                           <div
@@ -175,7 +212,9 @@ const AnalyticsSummary = () => {
                   );
                 })
               ) : (
-                <p className="text-gray-500 text-center py-4">No product data available.</p>
+                <p className="text-gray-500 text-center py-4">
+                  No product data available.
+                </p>
               )}
             </div>
           </CardContent>
@@ -183,7 +222,9 @@ const AnalyticsSummary = () => {
 
         <Card>
           <CardContent className="pt-5">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Categories Distribution</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
+              Categories Distribution
+            </h3>
             <div className="h-64 flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4">
               {categoryPercentages.length > 0 ? (
                 <div className="w-full space-y-4">
@@ -203,7 +244,9 @@ const AnalyticsSummary = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">Category distribution visualization would appear here.</p>
+                <p className="text-gray-500">
+                  Category distribution visualization would appear here.
+                </p>
               )}
             </div>
           </CardContent>

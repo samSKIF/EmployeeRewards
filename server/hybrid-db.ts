@@ -1,10 +1,19 @@
-
 import { mysqlDb } from './db-mysql';
 import { mongoDb } from './db-mongodb';
 import { redisCache } from './db-redis';
 import { auditLogger } from './db-elasticsearch';
-import { COLLECTIONS, type SocialPost, type Comment, type Notification } from '@shared/mongodb-schemas';
-import { users, organizations, leaveRequests, pointTransactions } from '@shared/mysql-schema';
+import {
+  COLLECTIONS,
+  type SocialPost,
+  type Comment,
+  type Notification,
+} from '@shared/mongodb-schemas';
+import {
+  users,
+  organizations,
+  leaveRequests,
+  pointTransactions,
+} from '@shared/mysql-schema';
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
 
 export class HybridDatabaseService {
@@ -38,7 +47,7 @@ export class HybridDatabaseService {
   // MySQL operations (structured data)
   public async getUserById(id: number): Promise<any> {
     const cacheKey = `user:${id}`;
-    
+
     // Try cache first
     const cached = await redisCache.get(cacheKey);
     if (cached) {
@@ -46,7 +55,11 @@ export class HybridDatabaseService {
     }
 
     // Query MySQL
-    const user = await mysqlDb.select().from(users).where(eq(users.id, id)).limit(1);
+    const user = await mysqlDb
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     const result = user[0] || null;
 
     // Cache for 5 minutes
@@ -59,7 +72,7 @@ export class HybridDatabaseService {
 
   public async getOrganizationUsers(organizationId: number): Promise<any[]> {
     const cacheKey = `org_users:${organizationId}`;
-    
+
     const cached = await redisCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -68,7 +81,9 @@ export class HybridDatabaseService {
     const orgUsers = await mysqlDb
       .select()
       .from(users)
-      .where(and(eq(users.organizationId, organizationId), eq(users.isActive, true)))
+      .where(
+        and(eq(users.organizationId, organizationId), eq(users.isActive, true))
+      )
       .orderBy(users.name);
 
     // Cache for 2 minutes
@@ -78,7 +93,7 @@ export class HybridDatabaseService {
 
   public async createLeaveRequest(data: any): Promise<any> {
     const result = await mysqlDb.insert(leaveRequests).values(data);
-    
+
     // Log audit event
     await auditLogger.logUserAction(
       data.userId,
@@ -89,12 +104,14 @@ export class HybridDatabaseService {
 
     // Invalidate cache
     await redisCache.del(`user_leave_requests:${data.userId}`);
-    
+
     return result;
   }
 
   // MongoDB operations (social/real-time data)
-  public async createPost(postData: Omit<SocialPost, '_id' | 'createdAt' | 'updatedAt'>): Promise<SocialPost> {
+  public async createPost(
+    postData: Omit<SocialPost, '_id' | 'createdAt' | 'updatedAt'>
+  ): Promise<SocialPost> {
     const post: SocialPost = {
       ...postData,
       reactions: [],
@@ -105,8 +122,10 @@ export class HybridDatabaseService {
       isDeleted: false,
     };
 
-    const result = await this.mongodb.collection(COLLECTIONS.POSTS).insertOne(post);
-    
+    const result = await this.mongodb
+      .collection(COLLECTIONS.POSTS)
+      .insertOne(post);
+
     // Log audit event
     await auditLogger.logUserAction(
       postData.authorId,
@@ -122,9 +141,13 @@ export class HybridDatabaseService {
     return { ...post, _id: result.insertedId };
   }
 
-  public async getOrganizationPosts(organizationId: number, limit = 20, skip = 0): Promise<SocialPost[]> {
+  public async getOrganizationPosts(
+    organizationId: number,
+    limit = 20,
+    skip = 0
+  ): Promise<SocialPost[]> {
     const cacheKey = `feed:${organizationId}:${skip}:${limit}`;
-    
+
     const cached = await redisCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -146,7 +169,9 @@ export class HybridDatabaseService {
     return posts;
   }
 
-  public async addComment(commentData: Omit<Comment, '_id' | 'createdAt' | 'updatedAt'>): Promise<Comment> {
+  public async addComment(
+    commentData: Omit<Comment, '_id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Comment> {
     const comment: Comment = {
       ...commentData,
       reactions: [],
@@ -155,19 +180,23 @@ export class HybridDatabaseService {
       isDeleted: false,
     };
 
-    const result = await this.mongodb.collection(COLLECTIONS.COMMENTS).insertOne(comment);
+    const result = await this.mongodb
+      .collection(COLLECTIONS.COMMENTS)
+      .insertOne(comment);
 
     // Update post comment count
-    await this.mongodb.collection(COLLECTIONS.POSTS).updateOne(
-      { _id: commentData.postId },
-      { $inc: { commentsCount: 1 } }
-    );
+    await this.mongodb
+      .collection(COLLECTIONS.POSTS)
+      .updateOne({ _id: commentData.postId }, { $inc: { commentsCount: 1 } });
 
     // Log audit event
     await auditLogger.logUserAction(
       commentData.authorId,
       'comment_created',
-      { commentId: result.insertedId.toString(), postId: commentData.postId.toString() },
+      {
+        commentId: result.insertedId.toString(),
+        postId: commentData.postId.toString(),
+      },
       commentData.organizationId
     );
 
@@ -177,14 +206,18 @@ export class HybridDatabaseService {
     return { ...comment, _id: result.insertedId };
   }
 
-  public async addReactionToPost(postId: string, userId: number, reactionType: string, organizationId: number): Promise<void> {
+  public async addReactionToPost(
+    postId: string,
+    userId: number,
+    reactionType: string,
+    organizationId: number
+  ): Promise<void> {
     const objectId = new (await import('mongodb')).ObjectId(postId);
-    
+
     // Remove existing reaction from same user
-    await this.mongodb.collection(COLLECTIONS.POSTS).updateOne(
-      { _id: objectId },
-      { $pull: { reactions: { userId } } }
-    );
+    await this.mongodb
+      .collection(COLLECTIONS.POSTS)
+      .updateOne({ _id: objectId }, { $pull: { reactions: { userId } } });
 
     // Add new reaction
     await this.mongodb.collection(COLLECTIONS.POSTS).updateOne(
@@ -195,8 +228,8 @@ export class HybridDatabaseService {
             userId,
             type: reactionType,
             createdAt: new Date(),
-          }
-        }
+          },
+        },
       }
     );
 
@@ -212,22 +245,29 @@ export class HybridDatabaseService {
     await redisCache.del(`feed:${organizationId}`);
   }
 
-  public async createNotification(notificationData: Omit<Notification, '_id' | 'createdAt' | 'expiresAt'>): Promise<void> {
+  public async createNotification(
+    notificationData: Omit<Notification, '_id' | 'createdAt' | 'expiresAt'>
+  ): Promise<void> {
     const notification: Notification = {
       ...notificationData,
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days TTL
     };
 
-    await this.mongodb.collection(COLLECTIONS.NOTIFICATIONS).insertOne(notification);
+    await this.mongodb
+      .collection(COLLECTIONS.NOTIFICATIONS)
+      .insertOne(notification);
 
     // Invalidate user notifications cache
     await redisCache.del(`notifications:${notificationData.userId}`);
   }
 
-  public async getUserNotifications(userId: number, limit = 20): Promise<Notification[]> {
+  public async getUserNotifications(
+    userId: number,
+    limit = 20
+  ): Promise<Notification[]> {
     const cacheKey = `notifications:${userId}`;
-    
+
     const cached = await redisCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -248,7 +288,7 @@ export class HybridDatabaseService {
   // Hybrid operations (combining MySQL and MongoDB)
   public async getUserDashboardData(userId: number): Promise<any> {
     const cacheKey = `dashboard:${userId}`;
-    
+
     const cached = await redisCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -288,7 +328,7 @@ export class HybridDatabaseService {
         totalPoints: user.points,
         postsCount: recentPosts.length,
         notificationsCount: unreadNotifications,
-      }
+      },
     };
 
     // Cache for 2 minutes
@@ -306,7 +346,9 @@ export class HybridDatabaseService {
     ]);
   }
 
-  public async invalidateOrganizationCache(organizationId: number): Promise<void> {
+  public async invalidateOrganizationCache(
+    organizationId: number
+  ): Promise<void> {
     await Promise.all([
       redisCache.del(`org_users:${organizationId}`),
       redisCache.del(`feed:${organizationId}`),
@@ -314,7 +356,12 @@ export class HybridDatabaseService {
   }
 
   // Health check
-  public async healthCheck(): Promise<{ mysql: boolean; mongodb: boolean; redis: boolean; elasticsearch: boolean }> {
+  public async healthCheck(): Promise<{
+    mysql: boolean;
+    mongodb: boolean;
+    redis: boolean;
+    elasticsearch: boolean;
+  }> {
     const results = {
       mysql: false,
       mongodb: false,
@@ -348,7 +395,9 @@ export class HybridDatabaseService {
 
     try {
       // Test Elasticsearch
-      await auditLogger.logSystemEvent('health_check', { timestamp: new Date() });
+      await auditLogger.logSystemEvent('health_check', {
+        timestamp: new Date(),
+      });
       results.elasticsearch = true;
     } catch (error) {
       console.error('Elasticsearch health check failed:', error);

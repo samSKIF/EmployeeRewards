@@ -14,7 +14,7 @@ const resources = {
   fr: { translation: frTranslation },
   ar: { translation: arTranslation },
   es: { translation: esTranslation },
-  ru: { translation: ruTranslation }
+  ru: { translation: ruTranslation },
 };
 
 i18n
@@ -27,7 +27,7 @@ i18n
     resources,
     fallbackLng: 'en',
     debug: false,
-    
+
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },
@@ -37,11 +37,11 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
     },
-    
+
     // Special options for react-i18next
     react: {
       useSuspense: true,
-    }
+    },
   });
 
 export default i18n;

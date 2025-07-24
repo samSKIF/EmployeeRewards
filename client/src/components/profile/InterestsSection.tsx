@@ -3,30 +3,42 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Edit, Sparkles, X, Check } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 // Component for interest items in the categorized list
-const InterestItem = ({ 
-  icon, 
-  label, 
-  category, 
+const InterestItem = ({
+  icon,
+  label,
+  category,
   onAdd,
-  availableInterests
-}: { 
-  icon: string; 
-  label: string; 
-  category: string; 
+  availableInterests,
+}: {
+  icon: string;
+  label: string;
+  category: string;
   onAdd: (interest: any) => void;
   availableInterests: Interest[];
 }) => {
   // Find the actual interest ID from the available interests list
-  const actualInterest = availableInterests.find(interest => 
-    interest.label === label && interest.category === category
+  const actualInterest = availableInterests.find(
+    (interest) => interest.label === label && interest.category === category
   );
 
   return (
@@ -38,13 +50,13 @@ const InterestItem = ({
           onAdd(actualInterest);
         } else {
           // For hardcoded interests not in database, create as custom
-          onAdd({ 
+          onAdd({
             id: -Date.now(), // Negative ID for custom interests
             label,
             category,
             icon,
             isPrimary: false,
-            visibility: 'EVERYONE'
+            visibility: 'EVERYONE',
           });
         }
       }}
@@ -58,39 +70,52 @@ const InterestItem = ({
 };
 
 // Simple interest tag component for displaying interests
-const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibilityChange }: { 
-  interest: Interest, 
-  onRemove?: () => void, 
-  isPrimary?: boolean,
-  onTogglePrimary?: () => void,
-  onVisibilityChange?: (visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => void
+const InterestTag = ({
+  interest,
+  onRemove,
+  isPrimary,
+  onTogglePrimary,
+  onVisibilityChange,
+}: {
+  interest: Interest;
+  onRemove?: () => void;
+  isPrimary?: boolean;
+  onTogglePrimary?: () => void;
+  onVisibilityChange?: (visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => void;
 }) => {
   const { t } = useTranslation();
   const visibilityOptions = [
-    { value: 'EVERYONE', label: t('interests.visibility.everyone', 'Everyone') },
+    {
+      value: 'EVERYONE',
+      label: t('interests.visibility.everyone', 'Everyone'),
+    },
     { value: 'TEAM', label: t('interests.visibility.team', 'My Team') },
-    { value: 'PRIVATE', label: t('interests.visibility.private', 'Only Me') }
+    { value: 'PRIVATE', label: t('interests.visibility.private', 'Only Me') },
   ];
 
   return (
     <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-md mb-2 bg-white hover:bg-gray-50 transition-colors">
-      <div 
+      <div
         className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm ${isPrimary ? 'bg-primary/90 text-white shadow-sm' : 'bg-gray-100 text-gray-800'}`}
       >
         {interest.icon && <span className="text-lg mr-1">{interest.icon}</span>}
-        <span className="font-medium">{interest.customLabel || interest.label}</span>
+        <span className="font-medium">
+          {interest.customLabel || interest.label}
+        </span>
       </div>
 
       {onVisibilityChange && (
-        <Select 
-          value={interest.visibility} 
-          onValueChange={(value) => onVisibilityChange(value as 'EVERYONE' | 'TEAM' | 'PRIVATE')}
+        <Select
+          value={interest.visibility}
+          onValueChange={(value) =>
+            onVisibilityChange(value as 'EVERYONE' | 'TEAM' | 'PRIVATE')
+          }
         >
           <SelectTrigger className="h-8 w-28 text-xs border-gray-200">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {visibilityOptions.map(option => (
+            {visibilityOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -101,9 +126,9 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
 
       <div className="ml-auto flex items-center gap-2">
         {onTogglePrimary && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className={`h-8 w-8 p-0 rounded-full ${isPrimary ? 'bg-yellow-100 text-yellow-600' : 'text-gray-400 hover:bg-gray-100'}`}
             onClick={onTogglePrimary}
             title={t('interests.markAsPrimary', 'Mark as primary interest')}
@@ -113,9 +138,9 @@ const InterestTag = ({ interest, onRemove, isPrimary, onTogglePrimary, onVisibil
         )}
 
         {onRemove && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-8 w-8 p-0 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
             onClick={onRemove}
           >
@@ -143,7 +168,10 @@ type InterestsSectionProps = {
   isCurrentUser: boolean;
 };
 
-const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUser }) => {
+const InterestsSection: React.FC<InterestsSectionProps> = ({
+  userId,
+  isCurrentUser,
+}) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [interests, setInterests] = useState<Interest[]>([]);
@@ -154,7 +182,8 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const [searchResults, setSearchResults] = useState<Interest[]>([]);
   const [editableInterests, setEditableInterests] = useState<Interest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('Sport & Fitness');
+  const [activeCategory, setActiveCategory] =
+    useState<string>('Sport & Fitness');
 
   // Fetch user interests and available interests
   useEffect(() => {
@@ -163,32 +192,40 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
         setIsLoading(true);
 
         // Fetch both user interests and available interests in parallel
-        const [userInterestsResponse, availableInterestsResponse] = await Promise.all([
-          apiRequest('GET', `/api/employees/${userId}/interests`),
-          apiRequest('GET', '/api/interests')
-        ]);
+        const [userInterestsResponse, availableInterestsResponse] =
+          await Promise.all([
+            apiRequest('GET', `/api/employees/${userId}/interests`),
+            apiRequest('GET', '/api/interests'),
+          ]);
 
         // Process user interests
         if (userInterestsResponse.ok) {
           const userInterestsData = await userInterestsResponse.json();
           console.log('Fetched user interests:', userInterestsData);
-          setInterests(Array.isArray(userInterestsData) ? userInterestsData : []);
+          setInterests(
+            Array.isArray(userInterestsData) ? userInterestsData : []
+          );
         }
 
         // Process available interests
         if (availableInterestsResponse.ok) {
-          const availableInterestsData = await availableInterestsResponse.json();
+          const availableInterestsData =
+            await availableInterestsResponse.json();
           console.log('Fetched available interests:', availableInterestsData);
-          setAvailableInterests(Array.isArray(availableInterestsData) ? availableInterestsData : []);
+          setAvailableInterests(
+            Array.isArray(availableInterestsData) ? availableInterestsData : []
+          );
         }
-
       } catch (error) {
         console.error('Failed to fetch data:', error);
         // Only show error toast if it's a real error, not just empty data
         if (error instanceof Error && !error.message.includes('404')) {
           toast({
             title: t('interests.fetchError', 'Error Loading Interests'),
-            description: t('interests.fetchErrorDescription', 'Could not load interests. Please try again later.'),
+            description: t(
+              'interests.fetchErrorDescription',
+              'Could not load interests. Please try again later.'
+            ),
             variant: 'destructive',
           });
         }
@@ -214,7 +251,10 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
     }
 
     try {
-      const response = await apiRequest('GET', `/api/interests?query=${encodeURIComponent(value)}`);
+      const response = await apiRequest(
+        'GET',
+        `/api/interests?query=${encodeURIComponent(value)}`
+      );
       const data = await response.json();
       setSearchResults(data);
     } catch (error) {
@@ -232,28 +272,35 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   const handleAddInterest = (interest: Interest) => {
     console.log('Adding interest:', interest);
     console.log('Current editableInterests:', editableInterests);
-    
+
     // Check if interest already exists
-    const exists = editableInterests.some(item => 
-      (item.id === interest.id) || 
-      (item.label === interest.label && item.category === interest.category)
+    const exists = editableInterests.some(
+      (item) =>
+        item.id === interest.id ||
+        (item.label === interest.label && item.category === interest.category)
     );
 
     if (exists) {
       toast({
         title: t('interests.alreadyAdded', 'Already added'),
-        description: t('interests.alreadyAddedDescription', 'This interest is already in your list.'),
+        description: t(
+          'interests.alreadyAddedDescription',
+          'This interest is already in your list.'
+        ),
       });
       return;
     }
 
     // Add the interest to editable list
-    const newEditableInterests = [...editableInterests, { 
-      ...interest, 
-      isPrimary: false, 
-      visibility: 'EVERYONE' 
-    }];
-    
+    const newEditableInterests = [
+      ...editableInterests,
+      {
+        ...interest,
+        isPrimary: false,
+        visibility: 'EVERYONE',
+      },
+    ];
+
     console.log('New editableInterests:', newEditableInterests);
     setEditableInterests(newEditableInterests);
 
@@ -274,7 +321,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       customLabel: searchTerm,
       category: activeCategory,
       isPrimary: false,
-      visibility: 'EVERYONE'
+      visibility: 'EVERYONE',
     };
 
     setEditableInterests([...editableInterests, customInterest]);
@@ -289,13 +336,15 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
   // Remove interest
   const handleRemoveInterest = (interestId: number) => {
-    setEditableInterests(editableInterests.filter(interest => interest.id !== interestId));
+    setEditableInterests(
+      editableInterests.filter((interest) => interest.id !== interestId)
+    );
   };
 
   // Toggle primary flag
   const handleTogglePrimary = (interestId: number) => {
     setEditableInterests(
-      editableInterests.map(interest => {
+      editableInterests.map((interest) => {
         if (interest.id === interestId) {
           return { ...interest, isPrimary: !interest.isPrimary };
         }
@@ -305,9 +354,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
   };
 
   // Update visibility
-  const handleVisibilityChange = (interestId: number, visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE') => {
+  const handleVisibilityChange = (
+    interestId: number,
+    visibility: 'EVERYONE' | 'TEAM' | 'PRIVATE'
+  ) => {
     setEditableInterests(
-      editableInterests.map(interest => {
+      editableInterests.map((interest) => {
         if (interest.id === interestId) {
           return { ...interest, visibility };
         }
@@ -323,13 +375,20 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
       // Fix for empty interests - send empty array instead of nothing
       if (editableInterests.length === 0) {
-        const response = await apiRequest('POST', `/api/employees/${userId}/interests`, []);
+        const response = await apiRequest(
+          'POST',
+          `/api/employees/${userId}/interests`,
+          []
+        );
         if (response.ok) {
           setInterests([]);
           setIsModalOpen(false);
           toast({
             title: t('interests.saveSuccess', 'Interests saved'),
-            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+            description: t(
+              'interests.saveSuccessDescription',
+              'Your interests have been updated successfully.'
+            ),
           });
         }
         return;
@@ -338,14 +397,18 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
       // Format the interests to match what the server expects
       // Server expects { interestIds: number[] } format
       const interestIds = editableInterests
-        .filter(interest => interest.id > 0) // Only include non-custom interests for now
-        .map(interest => interest.id);
+        .filter((interest) => interest.id > 0) // Only include non-custom interests for now
+        .map((interest) => interest.id);
 
       const formattedData = { interestIds };
 
       console.log('Saving interests:', formattedData);
 
-      const response = await apiRequest('POST', `/api/employees/${userId}/interests`, formattedData);
+      const response = await apiRequest(
+        'POST',
+        `/api/employees/${userId}/interests`,
+        formattedData
+      );
 
       console.log('Save response status:', response.status);
       console.log('Save response ok:', response.ok);
@@ -358,7 +421,10 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           setIsModalOpen(false);
           toast({
             title: t('interests.saveSuccess', 'Interests saved'),
-            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+            description: t(
+              'interests.saveSuccessDescription',
+              'Your interests have been updated successfully.'
+            ),
           });
         } catch (parseError) {
           console.error('Error parsing response JSON:', parseError);
@@ -367,20 +433,32 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           setIsModalOpen(false);
           toast({
             title: t('interests.saveSuccess', 'Interests saved'),
-            description: t('interests.saveSuccessDescription', 'Your interests have been updated successfully.'),
+            description: t(
+              'interests.saveSuccessDescription',
+              'Your interests have been updated successfully.'
+            ),
           });
         }
       } else {
-        console.error('Server response not OK:', response.status, response.statusText);
+        console.error(
+          'Server response not OK:',
+          response.status,
+          response.statusText
+        );
         const errorData = await response.json().catch(() => null);
         console.error('Error data:', errorData);
-        throw new Error(errorData?.message || `Server error: ${response.status}`);
+        throw new Error(
+          errorData?.message || `Server error: ${response.status}`
+        );
       }
     } catch (error) {
       console.error('Failed to save interests:', error);
       toast({
         title: t('interests.saveError', 'Error saving interests'),
-        description: t('interests.saveErrorDescription', 'Could not save your interests. Please try again later.'),
+        description: t(
+          'interests.saveErrorDescription',
+          'Could not save your interests. Please try again later.'
+        ),
         variant: 'destructive',
       });
     } finally {
@@ -418,17 +496,19 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           <div className="flex justify-center py-4">
             <div className="animate-spin h-6 w-6 border-2 border-teal-500 rounded-full border-t-transparent"></div>
           </div>
-        ) : (interests.length > 0 ? (
+        ) : interests.length > 0 ? (
           <>
             <div className="flex flex-wrap gap-2 mb-2">
-              {visibleInterests.map(interest => (
-                <Badge 
-                  key={interest.id} 
-                  variant="outline" 
+              {visibleInterests.map((interest) => (
+                <Badge
+                  key={interest.id}
+                  variant="outline"
                   className={`${interest.isPrimary ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-gray-50'} hover:bg-gray-100 flex items-center gap-1`}
                   title={interest.customLabel || interest.label}
                 >
-                  {interest.icon && <span className="text-sm">{interest.icon}</span>}
+                  {interest.icon && (
+                    <span className="text-sm">{interest.icon}</span>
+                  )}
                   <span>{interest.customLabel || interest.label}</span>
                   <span className="text-xs text-gray-500 ml-1">
                     ({interest.memberCount || 0})
@@ -437,20 +517,33 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
               ))}
             </div>
             {hasMoreInterests && (
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-sm text-blue-500" 
+              <Button
+                variant="link"
+                className="p-0 h-auto text-sm text-blue-500"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? t('interests.showLess', 'Show less') : t('interests.showMore', { defaultValue: 'Show {{count}} more', count: interests.length - 5 })}
+                {isExpanded
+                  ? t('interests.showLess', 'Show less')
+                  : t('interests.showMore', {
+                      defaultValue: 'Show {{count}} more',
+                      count: interests.length - 5,
+                    })}
               </Button>
             )}
           </>
         ) : (
           <div className="text-center py-4 text-gray-500">
-            {isCurrentUser ? t('interests.emptyCurrentUser', 'You haven\'t added any interests yet.') : t('interests.emptyOtherUser', 'This user hasn\'t added any interests yet.')}
+            {isCurrentUser
+              ? t(
+                  'interests.emptyCurrentUser',
+                  "You haven't added any interests yet."
+                )
+              : t(
+                  'interests.emptyOtherUser',
+                  "This user hasn't added any interests yet."
+                )}
           </div>
-        ))}
+        )}
       </CardContent>
 
       {/* Edit Modal */}
@@ -467,48 +560,72 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
           <div className="space-y-4 my-4">
             <div className="relative">
               <Input
-                placeholder={t('interests.searchPlaceholder', 'Search interests or add your own...')}
+                placeholder={t(
+                  'interests.searchPlaceholder',
+                  'Search interests or add your own...'
+                )}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full rounded-md border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
               />
-              <div className={`absolute w-full mt-1 max-h-80 overflow-auto rounded-md border bg-white shadow-lg z-10 ${!searchTerm && 'mb-4'}`}>
+              <div
+                className={`absolute w-full mt-1 max-h-80 overflow-auto rounded-md border bg-white shadow-lg z-10 ${!searchTerm && 'mb-4'}`}
+              >
                 {searchTerm.length >= 2 ? (
                   searchResults.length > 0 ? (
                     <div className="p-2">
-                      {searchResults.map(result => (
+                      {searchResults.map((result) => (
                         <div
                           key={result.id}
                           className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
                           onClick={() => handleAddInterest(result)}
                         >
                           <div className="flex items-center">
-                            {result.icon && <span className="mr-2 text-lg">{result.icon}</span>}
+                            {result.icon && (
+                              <span className="mr-2 text-lg">
+                                {result.icon}
+                              </span>
+                            )}
                             <span className="font-medium">{result.label}</span>
                           </div>
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{result.category}</span>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {result.category}
+                          </span>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-sm text-gray-500 mb-2">{t('interests.noResults', 'No results found')}</p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-1 text-primary border-primary/20 hover:bg-primary/5" 
+                      <p className="text-sm text-gray-500 mb-2">
+                        {t('interests.noResults', 'No results found')}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-1 text-primary border-primary/20 hover:bg-primary/5"
                         onClick={handleAddCustomInterest}
                       >
-                        {t('interests.addCustom', { defaultValue: 'Add "{{term}}" as custom interest', term: searchTerm })}
+                        {t('interests.addCustom', {
+                          defaultValue: 'Add "{{term}}" as custom interest',
+                          term: searchTerm,
+                        })}
                       </Button>
                     </div>
                   )
                 ) : (
                   <div className="p-1">
                     <div className="flex justify-between items-center border-b pb-2 mb-2">
-                      <h4 className="text-sm font-medium px-2 text-gray-700">{t('interests.editTitle', 'Edit Your Interests')}</h4>
+                      <h4 className="text-sm font-medium px-2 text-gray-700">
+                        {t('interests.editTitle', 'Edit Your Interests')}
+                      </h4>
                       <div className="flex px-2 bg-gray-50 rounded-md p-1 overflow-x-auto">
-                        {Array.from(new Set(availableInterests.map(interest => interest.category))).map((category) => {
+                        {Array.from(
+                          new Set(
+                            availableInterests.map(
+                              (interest) => interest.category
+                            )
+                          )
+                        ).map((category) => {
                           const categoryIcons = {
                             'Sport & Fitness': '🏃',
                             'Arts & Creativity': '🎨',
@@ -516,11 +633,11 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                             'Food & Drinks': '🍳',
                             'Lifestyle & Wellness': '🧘‍♂️',
                             'Entertainment & Pop Culture': '🎬',
-                            'Social Impact & Learning': '🌍'
+                            'Social Impact & Learning': '🌍',
                           };
 
                           return (
-                            <Button 
+                            <Button
                               key={category}
                               variant="ghost"
                               size="sm"
@@ -528,28 +645,40 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                               onClick={() => setActiveCategory(category)}
                               title={category}
                             >
-                              {categoryIcons[category as keyof typeof categoryIcons] || '⭐'}
+                              {categoryIcons[
+                                category as keyof typeof categoryIcons
+                              ] || '⭐'}
                             </Button>
                           );
                         })}
                       </div>
                     </div>
 
-                    <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">{activeCategory}</h4>
+                    <h4 className="text-sm font-medium px-2 py-2 text-gray-700 border-b mb-2">
+                      {activeCategory}
+                    </h4>
 
                     <div className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded-md">
                       {availableInterests
-                        .filter(interest => interest.category === activeCategory)
-                        .map(interest => (
+                        .filter(
+                          (interest) => interest.category === activeCategory
+                        )
+                        .map((interest) => (
                           <div
                             key={interest.id}
                             className="flex items-center justify-between p-2 hover:bg-primary/5 rounded-md cursor-pointer transition-colors"
                             onClick={() => handleAddInterest(interest)}
                           >
                             <div className="flex items-center gap-2">
-                              <span className="text-lg">{interest.icon || '⭐'}</span>
-                              <span className="text-sm font-medium">{interest.label}</span>
-                              <span className="text-xs text-gray-500">({interest.memberCount || 0})</span>
+                              <span className="text-lg">
+                                {interest.icon || '⭐'}
+                              </span>
+                              <span className="text-sm font-medium">
+                                {interest.label}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                ({interest.memberCount || 0})
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -568,21 +697,26 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             </h4>
             <div className="max-h-60 overflow-y-auto pr-1">
               {editableInterests.length > 0 ? (
-                editableInterests.map(interest => (
+                editableInterests.map((interest) => (
                   <InterestTag
                     key={interest.id}
                     interest={interest}
                     isPrimary={interest.isPrimary}
                     onRemove={() => handleRemoveInterest(interest.id)}
                     onTogglePrimary={() => handleTogglePrimary(interest.id)}
-                    onVisibilityChange={(visibility) => handleVisibilityChange(interest.id, visibility)}
+                    onVisibilityChange={(visibility) =>
+                      handleVisibilityChange(interest.id, visibility)
+                    }
                   />
                 ))
               ) : (
                 <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                   <div className="text-gray-500 flex flex-col items-center">
                     <Sparkles className="h-8 w-8 text-gray-300 mb-2" />
-                    {t('interests.noInterestsSelected', 'No interests selected yet. Browse or search above to add interests.')}
+                    {t(
+                      'interests.noInterestsSelected',
+                      'No interests selected yet. Browse or search above to add interests.'
+                    )}
                   </div>
                 </div>
               )}
@@ -592,7 +726,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
             {interests.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <h4 className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
-                  <span>{t('interests.yourCurrentInterests', 'Your Current Interests')}</span>
+                  <span>
+                    {t(
+                      'interests.yourCurrentInterests',
+                      'Your Current Interests'
+                    )}
+                  </span>
                   <span className="text-gray-400">({interests.length})</span>
                 </h4>
                 <div className="flex flex-wrap gap-1">
@@ -601,7 +740,9 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
                       key={interest.id}
                       className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
                     >
-                      {interest.icon && <span className="text-xs">{interest.icon}</span>}
+                      {interest.icon && (
+                        <span className="text-xs">{interest.icon}</span>
+                      )}
                       <span>{interest.customLabel || interest.label}</span>
                       <button
                         onClick={() => handleRemoveInterest(interest.id)}
@@ -618,7 +759,12 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ userId, isCurrentUs
 
             <div className="text-xs text-gray-500 mt-3 bg-yellow-50 p-2 rounded-md border border-yellow-100 flex items-start gap-2">
               <Sparkles className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-              <p>{t('interests.markPrimaryTip', 'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.')}</p>
+              <p>
+                {t(
+                  'interests.markPrimaryTip',
+                  'Tip: Mark up to 3 interests as primary (star icon) to highlight them on your profile.'
+                )}
+              </p>
             </div>
           </div>
 

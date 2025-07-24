@@ -3,15 +3,12 @@
  */
 import { Pool } from 'pg';
 import { db, pool } from './db';
-import {
-  employeeStatusTypes,
-  employeeStatuses
-} from '@shared/schema';
+import { employeeStatusTypes, employeeStatuses } from '@shared/schema';
 
 async function runEmployeeStatusMigration() {
   try {
     console.log('Starting employee status migration...');
-    
+
     // Create tables if they don't exist
     await pool.query(`
       CREATE TABLE IF NOT EXISTS employee_status_types (
@@ -41,7 +38,7 @@ async function runEmployeeStatusMigration() {
         created_by INTEGER REFERENCES users(id)
       );
     `);
-    
+
     // Add initial default status types
     await pool.query(`
       INSERT INTO employee_status_types 
@@ -55,7 +52,7 @@ async function runEmployeeStatusMigration() {
         ('New Hire', 'PartyPopper', 'Recently joined employee', '#3b82f6', 30, TRUE, NOW())
       ON CONFLICT (id) DO NOTHING;
     `);
-    
+
     console.log('Employee status migration completed successfully!');
   } catch (error) {
     console.error('Error during employee status migration:', error);

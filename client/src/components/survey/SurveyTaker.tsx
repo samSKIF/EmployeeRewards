@@ -1,41 +1,38 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { 
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { 
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import { 
-  RadioGroup,
-  RadioGroupItem
-} from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+  SelectValue,
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 
 interface SurveyQuestion {
   id: string;
@@ -63,33 +60,33 @@ interface SurveyTakerProps {
   preview?: boolean;
 }
 
-export default function SurveyTaker({ 
-  survey, 
-  questions, 
+export default function SurveyTaker({
+  survey,
+  questions,
   onSubmit,
   onComplete,
-  preview = false
+  preview = false,
 }: SurveyTakerProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Sort questions by order
   const sortedQuestions = [...questions].sort((a, b) => a.order - b.order);
   const currentQuestion = sortedQuestions[currentStep];
-  
+
   // Calculate progress percentage
   useEffect(() => {
     const percentage = Math.round((currentStep / sortedQuestions.length) * 100);
     setProgress(percentage);
   }, [currentStep, sortedQuestions.length]);
-  
+
   // Create form schema based on question type
   const getQuestionSchema = (question: SurveyQuestion) => {
     let schema;
-    
+
     switch (question?.questionType) {
       case 'text':
         schema = z.string();
@@ -98,7 +95,9 @@ export default function SurveyTaker({
         schema = z.string();
         break;
       case 'multiple':
-        schema = z.array(z.string()).min(1, 'Please select at least one option');
+        schema = z
+          .array(z.string())
+          .min(1, 'Please select at least one option');
         break;
       case 'rating':
         schema = z.number().min(1).max(5);
@@ -118,7 +117,7 @@ export default function SurveyTaker({
       default:
         schema = z.string();
     }
-    
+
     // Apply required validation if needed
     if (question?.isRequired) {
       // For text questions, require at least one character
@@ -130,24 +129,24 @@ export default function SurveyTaker({
       // Make the field optional for non-required questions
       schema = schema.optional();
     }
-    
+
     return z.object({
-      [`question_${question?.id}`]: schema
+      [`question_${question?.id}`]: schema,
     });
   };
-  
+
   // Get default value based on question type
   const getDefaultValue = (question: SurveyQuestion | undefined) => {
     if (!question) return '';
-    
+
     const savedAnswer = answers[`question_${question.id}`];
     if (savedAnswer !== undefined) return savedAnswer;
-    
+
     switch (question.questionType) {
       case 'multiple':
         return [];
       case 'ranking':
-        return question.options || ["Samir", "SKIF", "Karim", "Rakim"];
+        return question.options || ['Samir', 'SKIF', 'Karim', 'Rakim'];
       default:
         return '';
     }
@@ -155,99 +154,104 @@ export default function SurveyTaker({
 
   // Initialize form
   const form = useForm({
-    resolver: zodResolver(currentQuestion ? getQuestionSchema(currentQuestion) : z.object({})),
+    resolver: zodResolver(
+      currentQuestion ? getQuestionSchema(currentQuestion) : z.object({})
+    ),
     defaultValues: {
-      [`question_${currentQuestion?.id}`]: getDefaultValue(currentQuestion)
-    }
+      [`question_${currentQuestion?.id}`]: getDefaultValue(currentQuestion),
+    },
   });
-  
+
   // Update form when question changes
   useEffect(() => {
     if (currentQuestion) {
       form.reset({
-        [`question_${currentQuestion.id}`]: getDefaultValue(currentQuestion)
+        [`question_${currentQuestion.id}`]: getDefaultValue(currentQuestion),
       });
     }
   }, [currentQuestion, form, answers]);
-  
+
   // Handle moving to next question
   const handleNext = async (data: Record<string, any>) => {
     // Update answers
-    setAnswers(prev => ({
+    setAnswers((prev) => ({
       ...prev,
-      ...data
+      ...data,
     }));
-    
+
     // Save answer if not in preview mode
     if (!preview && onSubmit) {
       onSubmit({
-        ...data
+        ...data,
       });
     }
-    
+
     // If this is the last question, submit all answers
     if (currentStep === sortedQuestions.length - 1) {
       if (preview) {
         toast({
-          title: "Preview completed",
-          description: "In a real survey, responses would be submitted now."
+          title: 'Preview completed',
+          description: 'In a real survey, responses would be submitted now.',
         });
-        
+
         if (onComplete) {
           onComplete();
         }
         return;
       }
-      
+
       setIsSubmitting(true);
-      
+
       try {
         // In a real implementation, submit all answers to backend
         toast({
-          title: "Survey completed",
-          description: `Thank you for completing the survey. ${survey.pointsAwarded > 0 ? `You've earned ${survey.pointsAwarded} points!` : ''}`
+          title: 'Survey completed',
+          description: `Thank you for completing the survey. ${survey.pointsAwarded > 0 ? `You've earned ${survey.pointsAwarded} points!` : ''}`,
         });
-        
+
         if (onComplete) {
           onComplete();
         }
       } catch (error) {
         toast({
-          title: "Error submitting survey",
-          description: "There was a problem submitting your responses. Please try again.",
-          variant: "destructive"
+          title: 'Error submitting survey',
+          description:
+            'There was a problem submitting your responses. Please try again.',
+          variant: 'destructive',
         });
       } finally {
         setIsSubmitting(false);
       }
     } else {
       // Move to next question
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
-  
+
   // Handle moving to previous question
   const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(0, prev - 1));
+    setCurrentStep((prev) => Math.max(0, prev - 1));
   };
-  
+
   // If no questions, show empty state
   if (!sortedQuestions.length) {
     return (
       <Card className="w-full max-w-3xl mx-auto">
         <CardContent className="pt-6">
           <div className="text-center py-12">
-            <p className="text-gray-500">This survey doesn't have any questions yet.</p>
+            <p className="text-gray-500">
+              This survey doesn't have any questions yet.
+            </p>
           </div>
         </CardContent>
       </Card>
     );
   }
-  
+
   // Render the current question based on its type
   const renderQuestionContent = () => {
     if (!currentQuestion) return null;
-    
+
     switch (currentQuestion.questionType) {
       case 'text':
         return (
@@ -268,7 +272,7 @@ export default function SurveyTaker({
             )}
           />
         );
-      
+
       case 'single':
         return (
           <FormField
@@ -302,7 +306,7 @@ export default function SurveyTaker({
             )}
           />
         );
-      
+
       case 'multiple':
         return (
           <FormField
@@ -360,11 +364,11 @@ export default function SurveyTaker({
               <FormItem>
                 <FormControl>
                   <div className="flex justify-between items-center space-x-2">
-                    {[1, 2, 3, 4, 5].map(rating => (
+                    {[1, 2, 3, 4, 5].map((rating) => (
                       <Button
                         key={rating}
                         type="button"
-                        variant={field.value === rating ? "default" : "outline"}
+                        variant={field.value === rating ? 'default' : 'outline'}
                         className="w-12 h-12 rounded-full"
                         onClick={() => field.onChange(rating)}
                       >
@@ -402,8 +406,8 @@ export default function SurveyTaker({
                         <Star
                           className={`h-8 w-8 ${
                             field.value >= value
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-gray-300"
+                              ? 'text-yellow-400 fill-yellow-400'
+                              : 'text-gray-300'
                           }`}
                         />
                       </button>
@@ -426,11 +430,13 @@ export default function SurveyTaker({
                 <FormControl>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                         <Button
                           key={value}
                           type="button"
-                          variant={field.value === value ? "default" : "outline"}
+                          variant={
+                            field.value === value ? 'default' : 'outline'
+                          }
                           className="w-9 h-9 rounded-full"
                           onClick={() => field.onChange(value)}
                         >
@@ -473,7 +479,7 @@ export default function SurveyTaker({
             )}
           />
         );
-        
+
       case 'ranking':
         return (
           <FormField
@@ -481,87 +487,102 @@ export default function SurveyTaker({
             name={`question_${currentQuestion.id}`}
             render={({ field }) => {
               // Initialize options array if not already set
-              const options = currentQuestion.options || ["Samir", "SKIF", "Karim", "Rakim"];
-              
+              const options = currentQuestion.options || [
+                'Samir',
+                'SKIF',
+                'Karim',
+                'Rakim',
+              ];
+
               // If field.value is not yet an array, initialize it with the options
               if (!Array.isArray(field.value) || field.value.length === 0) {
                 field.onChange([...options]);
               }
-              
+
               // Move item up in the ranking
               const moveItemUp = (index: number) => {
                 if (index <= 0) return;
                 const newValue = [...field.value];
-                [newValue[index], newValue[index - 1]] = [newValue[index - 1], newValue[index]];
+                [newValue[index], newValue[index - 1]] = [
+                  newValue[index - 1],
+                  newValue[index],
+                ];
                 field.onChange(newValue);
               };
-              
+
               // Move item down in the ranking
               const moveItemDown = (index: number) => {
                 if (index >= field.value.length - 1) return;
                 const newValue = [...field.value];
-                [newValue[index], newValue[index + 1]] = [newValue[index + 1], newValue[index]];
+                [newValue[index], newValue[index + 1]] = [
+                  newValue[index + 1],
+                  newValue[index],
+                ];
                 field.onChange(newValue);
               };
-              
+
               return (
                 <FormItem>
                   <FormControl>
                     <div className="space-y-2">
-                      {field.value && field.value.map((option: string, index: number) => (
-                        <div key={index} className="flex items-center border p-2 rounded-md bg-white">
-                          <span className="font-medium mr-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
-                            {index + 1}
-                          </span>
-                          <span>{option}</span>
-                          <div className="ml-auto flex items-center gap-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => moveItemUp(index)}
-                              disabled={index === 0}
-                            >
-                              <span className="sr-only">Move up</span>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
+                      {field.value &&
+                        field.value.map((option: string, index: number) => (
+                          <div
+                            key={index}
+                            className="flex items-center border p-2 rounded-md bg-white"
+                          >
+                            <span className="font-medium mr-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
+                              {index + 1}
+                            </span>
+                            <span>{option}</span>
+                            <div className="ml-auto flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => moveItemUp(index)}
+                                disabled={index === 0}
                               >
-                                <path d="m18 15-6-6-6 6"/>
-                              </svg>
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => moveItemDown(index)}
-                              disabled={index === field.value.length - 1}
-                            >
-                              <span className="sr-only">Move down</span>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
+                                <span className="sr-only">Move up</span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-4 w-4"
+                                >
+                                  <path d="m18 15-6-6-6 6" />
+                                </svg>
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => moveItemDown(index)}
+                                disabled={index === field.value.length - 1}
                               >
-                                <path d="m6 9 6 6 6-6"/>
-                              </svg>
-                            </Button>
+                                <span className="sr-only">Move down</span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-4 w-4"
+                                >
+                                  <path d="m6 9 6 6 6-6" />
+                                </svg>
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -570,7 +591,7 @@ export default function SurveyTaker({
             }}
           />
         );
-        
+
       case 'nps':
         return (
           <FormField
@@ -581,10 +602,10 @@ export default function SurveyTaker({
                 <FormControl>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
-                      let bgColor = "bg-red-500";
-                      if (n >= 7 && n <= 8) bgColor = "bg-yellow-400";
-                      if (n >= 9) bgColor = "bg-green-500";
-                      
+                      let bgColor = 'bg-red-500';
+                      if (n >= 7 && n <= 8) bgColor = 'bg-yellow-400';
+                      if (n >= 9) bgColor = 'bg-green-500';
+
                       return (
                         <button
                           key={n}
@@ -633,11 +654,13 @@ export default function SurveyTaker({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-500 mb-2">
-            <span>Question {currentStep + 1} of {sortedQuestions.length}</span>
+            <span>
+              Question {currentStep + 1} of {sortedQuestions.length}
+            </span>
             <span>{progress}% complete</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -654,7 +677,7 @@ export default function SurveyTaker({
               </h3>
               {renderQuestionContent()}
             </div>
-            
+
             <div className="flex justify-between pt-4">
               <Button
                 type="button"
@@ -664,17 +687,14 @@ export default function SurveyTaker({
               >
                 Previous
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {currentStep === sortedQuestions.length - 1 ? 'Submit' : 'Next'}
               </Button>
             </div>
           </form>
         </Form>
       </CardContent>
-      
+
       {preview && (
         <CardFooter className="bg-amber-50 border-t">
           <div className="text-sm text-amber-700 flex items-center">

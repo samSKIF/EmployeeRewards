@@ -1,54 +1,79 @@
-import { Router } from "express";
-import { z } from "zod";
-import { hash, compare } from "bcrypt";
-import { storage } from "../storage";
-import { generateToken, verifyToken, AuthenticatedRequest } from "../middleware/auth";
-import { db } from "../db";
-import { users, organizations, subscriptions, insertUserSchema } from "@shared/schema";
-import { eq, sql, and, desc, count } from "drizzle-orm";
-import { logger } from "@shared/logger";
-import jwt from "jsonwebtoken";
+import { Router } from 'express';
+import { z } from 'zod';
+import { hash, compare } from 'bcrypt';
+import { storage } from '../storage';
+import {
+  generateToken,
+  verifyToken,
+  AuthenticatedRequest,
+} from '../middleware/auth';
+import { db } from '../db';
+import {
+  users,
+  organizations,
+  subscriptions,
+  insertUserSchema,
+} from '@shared/schema';
+import { eq, sql, and, desc, count } from 'drizzle-orm';
+import { logger } from '@shared/logger';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
 // Helper function to check user count limits for organization
-async function checkUserCountLimit(organizationId: number): Promise<{ allowed: boolean; message?: string; currentCount?: number; subscribedUsers?: number }> {
+async function checkUserCountLimit(
+  organizationId: number
+): Promise<{
+  allowed: boolean;
+  message?: string;
+  currentCount?: number;
+  subscribedUsers?: number;
+}> {
   try {
     // Get organization's current subscription
-    const [organization] = await db.select({
-      id: organizations.id,
-      currentSubscriptionId: organizations.currentSubscriptionId
-    }).from(organizations).where(eq(organizations.id, organizationId));
+    const [organization] = await db
+      .select({
+        id: organizations.id,
+        currentSubscriptionId: organizations.currentSubscriptionId,
+      })
+      .from(organizations)
+      .where(eq(organizations.id, organizationId));
 
     if (!organization) {
-      return { allowed: false, message: "Organization not found" };
+      return { allowed: false, message: 'Organization not found' };
     }
 
     // Get current ACTIVE user count only (for subscription validation)
-    const [userCountResult] = await db.select({ count: count() })
+    const [userCountResult] = await db
+      .select({ count: count() })
       .from(users)
-      .where(and(
-        eq(users.organizationId, organizationId),
-        eq(users.status, 'active')
-      ));
-    
+      .where(
+        and(
+          eq(users.organizationId, organizationId),
+          eq(users.status, 'active')
+        )
+      );
+
     const currentUserCount = userCountResult.count;
 
     // Get subscription subscribed users limit if there's an active subscription
     let subscribedUsersLimit = 50; // Default fallback
 
     if (organization.currentSubscriptionId) {
-      const [subscription] = await db.select({
-        subscribedUsers: subscriptions.subscribedUsers,
-        isActive: subscriptions.isActive,
-        expirationDate: subscriptions.expirationDate
-      }).from(subscriptions).where(eq(subscriptions.id, organization.currentSubscriptionId));
+      const [subscription] = await db
+        .select({
+          subscribedUsers: subscriptions.subscribedUsers,
+          isActive: subscriptions.isActive,
+          expirationDate: subscriptions.expirationDate,
+        })
+        .from(subscriptions)
+        .where(eq(subscriptions.id, organization.currentSubscriptionId));
 
       if (subscription && subscription.isActive) {
         // Check if subscription is still valid
         const now = new Date();
         const isExpired = new Date(subscription.expirationDate) <= now;
-        
+
         if (!isExpired && subscription.subscribedUsers) {
           subscribedUsersLimit = subscription.subscribedUsers;
         }
@@ -57,29 +82,29 @@ async function checkUserCountLimit(organizationId: number): Promise<{ allowed: b
 
     // Check if adding a new user would exceed the limit
     if (currentUserCount >= subscribedUsersLimit) {
-      return { 
-        allowed: false, 
+      return {
+        allowed: false,
         message: `Organization has reached its user limit of ${subscribedUsersLimit} users. Current count: ${currentUserCount}`,
         currentCount: currentUserCount,
-        subscribedUsers: subscribedUsersLimit
+        subscribedUsers: subscribedUsersLimit,
       };
     }
 
-    return { 
+    return {
       allowed: true,
       currentCount: currentUserCount,
-      subscribedUsers: subscribedUsersLimit
+      subscribedUsers: subscribedUsersLimit,
     };
   } catch (error) {
-    logger.error("Error checking user count limit:", error);
-    return { allowed: false, message: "Error checking user limits" };
+    logger.error('Error checking user count limit:', error);
+    return { allowed: false, message: 'Error checking user limits' };
   }
 }
 
 // User registration endpoint
-router.post("/register", async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    logger.info("REGISTRATION ATTEMPT - Raw body:", req.body);
+    logger.info('REGISTRATION ATTEMPT - Raw body:', req.body);
 
     // Check if this is a Firebase user registration
     const { firebaseUid, firebaseUser, ...userData } = req.body;
@@ -87,32 +112,39 @@ router.post("/register", async (req, res) => {
     // Validate user data using the insertUserSchema (or a subset for Firebase users)
     if (firebaseUid && firebaseUser) {
       // This is a Firebase user registration
-      logger.info("Processing Firebase user registration", firebaseUser);
+      logger.info('Processing Firebase user registration', firebaseUser);
 
       // Check if email already exists
-      const existingEmailUser = await storage.getUserByEmail(firebaseUser.email);
+      const existingEmailUser = await storage.getUserByEmail(
+        firebaseUser.email
+      );
       if (existingEmailUser) {
-        return res.status(409).json({ message: "Email already registered" });
+        return res.status(409).json({ message: 'Email already registered' });
       }
 
       // Create username from email if not provided
       const username = userData.username || firebaseUser.email.split('@')[0];
 
       // Check if username already exists
-      const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, username));
+      const [existingUsernameUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username));
       if (existingUsernameUser) {
-        return res.status(409).json({ message: "Username already taken" });
+        return res.status(409).json({ message: 'Username already taken' });
       }
 
       // Check user count limits for the organization
       if (userData.organizationId) {
-        const userLimitCheck = await checkUserCountLimit(userData.organizationId);
+        const userLimitCheck = await checkUserCountLimit(
+          userData.organizationId
+        );
         if (!userLimitCheck.allowed) {
-          return res.status(403).json({ 
+          return res.status(403).json({
             message: userLimitCheck.message,
-            error: "USER_LIMIT_EXCEEDED",
+            error: 'USER_LIMIT_EXCEEDED',
             currentCount: userLimitCheck.currentCount,
-            subscribedUsers: userLimitCheck.subscribedUsers
+            subscribedUsers: userLimitCheck.subscribedUsers,
           });
         }
       }
@@ -128,16 +160,19 @@ router.post("/register", async (req, res) => {
         password: await hash(Math.random().toString(36).substring(2, 15), 10),
         isAdmin: false, // Firebase users can't be admins by default
         status: 'active',
-        firebaseUid // Store the Firebase UID for future reference
+        firebaseUid, // Store the Firebase UID for future reference
       });
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
 
-      logger.info("Firebase user registration successful for:", userWithoutPassword);
+      logger.info(
+        'Firebase user registration successful for:',
+        userWithoutPassword
+      );
 
       res.status(201).json({
-        user: userWithoutPassword
+        user: userWithoutPassword,
       });
     } else {
       // This is a regular user registration
@@ -145,32 +180,41 @@ router.post("/register", async (req, res) => {
       const validatedUserData = insertUserSchema.parse(userData);
 
       // Check if email already exists
-      const existingEmailUser = await storage.getUserByEmail(validatedUserData.email);
+      const existingEmailUser = await storage.getUserByEmail(
+        validatedUserData.email
+      );
       if (existingEmailUser) {
-        return res.status(409).json({ message: "Email already registered" });
+        return res.status(409).json({ message: 'Email already registered' });
       }
 
       // Check if username already exists
-      const [existingUsernameUser] = await db.select().from(users).where(eq(users.username, validatedUserData.username));
+      const [existingUsernameUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, validatedUserData.username));
       if (existingUsernameUser) {
-        return res.status(409).json({ message: "Username already taken" });
+        return res.status(409).json({ message: 'Username already taken' });
       }
 
       // Check user count limits for the organization
       if (validatedUserData.organizationId) {
-        const userLimitCheck = await checkUserCountLimit(validatedUserData.organizationId);
+        const userLimitCheck = await checkUserCountLimit(
+          validatedUserData.organizationId
+        );
         if (!userLimitCheck.allowed) {
-          return res.status(403).json({ 
+          return res.status(403).json({
             message: userLimitCheck.message,
-            error: "USER_LIMIT_EXCEEDED",
+            error: 'USER_LIMIT_EXCEEDED',
             currentCount: userLimitCheck.currentCount,
-            subscribedUsers: userLimitCheck.subscribedUsers
+            subscribedUsers: userLimitCheck.subscribedUsers,
           });
         }
       }
 
       // PostgreSQL authentication only - no Firebase dependency
-      logger.info(`Creating user in PostgreSQL database: ${validatedUserData.email}`);
+      logger.info(
+        `Creating user in PostgreSQL database: ${validatedUserData.email}`
+      );
 
       // Create the user in the database
       const user = await storage.createUser(validatedUserData);
@@ -195,33 +239,35 @@ router.post("/register", async (req, res) => {
         status: user.status,
         avatarUrl: user.avatarUrl,
         hireDate: user.hireDate,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       });
 
-      logger.info("Standard registration successful for:", userWithoutPassword);
+      logger.info('Standard registration successful for:', userWithoutPassword);
 
       res.status(201).json({
         token,
-        user: userWithoutPassword
+        user: userWithoutPassword,
       });
     }
   } catch (error: any) {
-    logger.error("Registration error:", error);
-    res.status(400).json({ message: error.message || "Registration failed"});
+    logger.error('Registration error:', error);
+    res.status(400).json({ message: error.message || 'Registration failed' });
   }
 });
 
 // User login endpoint
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    logger.info("LOGIN ATTEMPT - Raw body:", req.body);
+    logger.info('LOGIN ATTEMPT - Raw body:', req.body);
 
     // Handle both email and username login attempts
     const { email, username, password } = req.body;
 
     if ((!email && !username) || !password) {
-      logger.warn("Missing authentication credentials");
-      return res.status(400).json({ message: "Email/username and password are required" });
+      logger.warn('Missing authentication credentials');
+      return res
+        .status(400)
+        .json({ message: 'Email/username and password are required' });
     }
 
     let user = null;
@@ -231,7 +277,10 @@ router.post("/login", async (req, res) => {
       logger.debug(`Looking up user with email: ${email}`);
 
       // Look up user directly in the main database (case-insensitive)
-      const [foundUser] = await db.select().from(users).where(sql`LOWER(${users.email}) = LOWER(${email})`);
+      const [foundUser] = await db
+        .select()
+        .from(users)
+        .where(sql`LOWER(${users.email}) = LOWER(${email})`);
       user = foundUser;
 
       if (user) {
@@ -244,37 +293,46 @@ router.post("/login", async (req, res) => {
     // Fallback to main database for username lookup
     if (!user && username) {
       logger.debug(`Looking up user with username: ${username}`);
-      const [foundUser] = await db.select().from(users).where(eq(users.username, username));
+      const [foundUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username));
       user = foundUser;
     }
 
     if (!user) {
-      logger.warn("No user found with provided credentials");
-      return res.status(401).json({ message: "Invalid credentials" });
+      logger.warn('No user found with provided credentials');
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     logger.debug(`User found: ${user.username}, verifying password`);
 
     const passwordMatch = await storage.verifyPassword(password, user.password);
 
-    logger.debug("Password verification result:", passwordMatch);
+    logger.debug('Password verification result:', passwordMatch);
 
     if (!passwordMatch) {
-      logger.warn("Password verification failed");
-      return res.status(401).json({ message: "Invalid credentials" });
+      logger.warn('Password verification failed');
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    logger.debug("Password verified, checking organization subscription status");
+    logger.debug(
+      'Password verified, checking organization subscription status'
+    );
 
     // Check if user's organization has an active subscription (skip for corporate admins)
     if (user.roleType !== 'corporate_admin' && user.organizationId) {
       try {
         // Get organization details
-        const [organization] = await db.select().from(organizations).where(eq(organizations.id, user.organizationId));
-        
+        const [organization] = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.id, user.organizationId));
+
         if (organization) {
           // Check for active subscription
-          const [activeSubscription] = await db.select()
+          const [activeSubscription] = await db
+            .select()
             .from(subscriptions)
             .where(
               and(
@@ -286,7 +344,7 @@ router.post("/login", async (req, res) => {
             .limit(1);
 
           let hasActiveSubscription = false;
-          
+
           if (activeSubscription) {
             const now = new Date();
             const expirationDate = new Date(activeSubscription.expirationDate);
@@ -295,35 +353,43 @@ router.post("/login", async (req, res) => {
 
           // If no active subscription, deny login with message
           if (!hasActiveSubscription) {
-            logger.warn(`Login denied for user ${user.username} - organization ${organization.name} has no active subscription`);
-            
+            logger.warn(
+              `Login denied for user ${user.username} - organization ${organization.name} has no active subscription`
+            );
+
             // Get organization admin email for contact info (prefer contactEmail over superuserEmail)
-            const adminEmail = organization.contactEmail || organization.superuserEmail || 'admin@thriviohr.com';
-            
-            return res.status(403).json({ 
+            const adminEmail =
+              organization.contactEmail ||
+              organization.superuserEmail ||
+              'admin@thriviohr.com';
+
+            return res.status(403).json({
               message: `The system is inactive please contact the admin: ${adminEmail}`,
               organizationStatus: 'inactive',
               contactEmail: adminEmail,
-              showPopup: true // Flag to trigger popup on frontend
+              showPopup: true, // Flag to trigger popup on frontend
             });
           }
 
-          logger.debug(`Organization ${organization.name} has active subscription, allowing login`);
+          logger.debug(
+            `Organization ${organization.name} has active subscription, allowing login`
+          );
         }
       } catch (error) {
-        logger.error("Error checking subscription status:", error);
+        logger.error('Error checking subscription status:', error);
         // Allow login on error to avoid blocking users due to system issues
       }
     }
 
     // Update last seen timestamp on successful authentication
     try {
-      await db.update(users)
+      await db
+        .update(users)
         .set({ lastSeenAt: new Date() })
         .where(eq(users.id, user.id));
       logger.debug(`Updated last seen for user ${user.id}`);
     } catch (error) {
-      logger.warn("Failed to update last seen on login:", error);
+      logger.warn('Failed to update last seen on login:', error);
     }
 
     // Create JWT token
@@ -343,35 +409,40 @@ router.post("/login", async (req, res) => {
       status: user.status,
       avatarUrl: user.avatarUrl,
       hireDate: user.hireDate,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     });
 
     // Don't send the password back to the client
     const { password: _, ...userWithoutPassword } = user;
 
-    logger.info("Login successful for:", userWithoutPassword);
+    logger.info('Login successful for:', userWithoutPassword);
 
     // For corporate admins, also generate a management token
-    let responseData: any = {
+    const responseData: any = {
       token,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     };
 
     if (user.roleType === 'corporate_admin') {
       // Generate management token using same user data
-      const MANAGEMENT_JWT_SECRET = process.env.MANAGEMENT_JWT_SECRET || 'management-secret-key';
-      const managementToken = jwt.sign({ id: user.id }, MANAGEMENT_JWT_SECRET, { expiresIn: '8h' });
-      
-      logger.info("Generated management token for corporate admin");
-      
+      const MANAGEMENT_JWT_SECRET =
+        process.env.MANAGEMENT_JWT_SECRET || 'management-secret-key';
+      const managementToken = jwt.sign({ id: user.id }, MANAGEMENT_JWT_SECRET, {
+        expiresIn: '8h',
+      });
+
+      logger.info('Generated management token for corporate admin');
+
       // Use the main token as the management token since our backend now supports both
       responseData.managementToken = token;
     }
 
     res.status(200).json(responseData);
   } catch (error: any) {
-    logger.error("Login error:", error);
-    res.status(500).json({ message: error.message || "An error occurred during login" });
+    logger.error('Login error:', error);
+    res
+      .status(500)
+      .json({ message: error.message || 'An error occurred during login' });
   }
 });
 

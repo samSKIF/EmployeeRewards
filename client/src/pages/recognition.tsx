@@ -3,12 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { RecognitionForm } from '@/components/recognition/RecognitionForm';
 import { useTranslation } from 'react-i18next';
 import SocialLayout from '@/layouts/SocialLayout';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Card,
   CardContent,
@@ -33,12 +28,16 @@ const badgeIcons: Record<string, JSX.Element> = {
 // Recognition card component
 function RecognitionCard({ recognition }: { recognition: any }) {
   const { t } = useTranslation();
-  const badgeIcon = badgeIcons[recognition.badgeType] || <Star className="h-5 w-5" />;
-  const timeAgo = formatDistanceToNow(new Date(recognition.createdAt), { addSuffix: true });
-  
+  const badgeIcon = badgeIcons[recognition.badgeType] || (
+    <Star className="h-5 w-5" />
+  );
+  const timeAgo = formatDistanceToNow(new Date(recognition.createdAt), {
+    addSuffix: true,
+  });
+
   const isSent = !!recognition.recipient;
   const otherPerson = isSent ? recognition.recipient : recognition.recognizer;
-  
+
   return (
     <Card className="mb-4">
       <CardHeader className="pb-2">
@@ -46,16 +45,21 @@ function RecognitionCard({ recognition }: { recognition: any }) {
           <div className="flex items-center gap-2">
             <Avatar>
               <AvatarImage src={otherPerson?.avatarUrl} />
-              <AvatarFallback>{otherPerson?.name?.charAt(0) || '?'}</AvatarFallback>
+              <AvatarFallback>
+                {otherPerson?.name?.charAt(0) || '?'}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-medium">{otherPerson?.name} {otherPerson?.surname}</h3>
+              <h3 className="font-medium">
+                {otherPerson?.name} {otherPerson?.surname}
+              </h3>
               <p className="text-sm text-muted-foreground">{timeAgo}</p>
             </div>
           </div>
           <Badge className="flex items-center gap-1">
             {badgeIcon}
-            {recognition.badgeType.charAt(0).toUpperCase() + recognition.badgeType.slice(1)}
+            {recognition.badgeType.charAt(0).toUpperCase() +
+              recognition.badgeType.slice(1)}
           </Badge>
         </div>
       </CardHeader>
@@ -74,24 +78,26 @@ function RecognitionCard({ recognition }: { recognition: any }) {
 export default function RecognitionPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('form');
-  
+
   // Fetch sent recognitions
   const { data: sentRecognitions, isLoading: isLoadingSent } = useQuery({
     queryKey: ['/api/recognition/sent'],
     enabled: activeTab === 'sent',
   });
-  
+
   // Fetch received recognitions
-  const { data: receivedRecognitions, isLoading: isLoadingReceived } = useQuery({
-    queryKey: ['/api/recognition/received'],
-    enabled: activeTab === 'received',
-  });
-  
+  const { data: receivedRecognitions, isLoading: isLoadingReceived } = useQuery(
+    {
+      queryKey: ['/api/recognition/received'],
+      enabled: activeTab === 'received',
+    }
+  );
+
   const handleRecognitionSuccess = () => {
     // Switch to the sent tab after successfully sending a recognition
     setActiveTab('sent');
   };
-  
+
   return (
     <SocialLayout>
       <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -99,7 +105,7 @@ export default function RecognitionPage() {
           <Send className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">{t('recognition.peerToPeer')}</h1>
         </div>
-        
+
         <div className="grid md:grid-cols-12 gap-8">
           <div className="md:col-span-7">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -114,11 +120,11 @@ export default function RecognitionPage() {
                   {t('recognition.receivedRecognitions')}
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="form" className="mt-4">
                 <RecognitionForm onSuccess={handleRecognitionSuccess} />
               </TabsContent>
-              
+
               <TabsContent value="sent" className="mt-4">
                 {isLoadingSent ? (
                   <div className="flex justify-center py-8">
@@ -126,13 +132,18 @@ export default function RecognitionPage() {
                   </div>
                 ) : sentRecognitions && sentRecognitions.length > 0 ? (
                   sentRecognitions.map((recognition: any) => (
-                    <RecognitionCard key={recognition.id} recognition={recognition} />
+                    <RecognitionCard
+                      key={recognition.id}
+                      recognition={recognition}
+                    />
                   ))
                 ) : (
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-8">
                       <Send className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium mb-1">{t('recognition.noSentRecognitions')}</p>
+                      <p className="text-lg font-medium mb-1">
+                        {t('recognition.noSentRecognitions')}
+                      </p>
                       <p className="text-sm text-muted-foreground mb-4">
                         {t('recognition.recognizeColleaguesPrompt')}
                       </p>
@@ -140,7 +151,7 @@ export default function RecognitionPage() {
                   </Card>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="received" className="mt-4">
                 {isLoadingReceived ? (
                   <div className="flex justify-center py-8">
@@ -148,13 +159,18 @@ export default function RecognitionPage() {
                   </div>
                 ) : receivedRecognitions && receivedRecognitions.length > 0 ? (
                   receivedRecognitions.map((recognition: any) => (
-                    <RecognitionCard key={recognition.id} recognition={recognition} />
+                    <RecognitionCard
+                      key={recognition.id}
+                      recognition={recognition}
+                    />
                   ))
                 ) : (
                   <Card>
                     <CardContent className="flex flex-col items-center justify-center py-8">
                       <Star className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium mb-1">{t('recognition.noReceivedRecognitions')}</p>
+                      <p className="text-lg font-medium mb-1">
+                        {t('recognition.noReceivedRecognitions')}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {t('recognition.receivedRecognitionsDescription')}
                       </p>
@@ -164,7 +180,7 @@ export default function RecognitionPage() {
               </TabsContent>
             </Tabs>
           </div>
-          
+
           <div className="md:col-span-5">
             <Card>
               <CardHeader>
@@ -178,27 +194,33 @@ export default function RecognitionPage() {
                   <div className="flex items-start gap-2">
                     <ThumbsUp className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">{t('recognition.appreciatePeers')}</h4>
+                      <h4 className="font-medium">
+                        {t('recognition.appreciatePeers')}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         {t('recognition.appreciatePeersDescription')}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-2">
                     <Gift className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">{t('recognition.sharePoints')}</h4>
+                      <h4 className="font-medium">
+                        {t('recognition.sharePoints')}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         {t('recognition.sharePointsDescription')}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-2">
                     <Star className="h-5 w-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium">{t('recognition.fosterTeamSpirit')}</h4>
+                      <h4 className="font-medium">
+                        {t('recognition.fosterTeamSpirit')}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         {t('recognition.fosterTeamSpiritDescription')}
                       </p>

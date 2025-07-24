@@ -1,14 +1,21 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Copy, FileText, Clock, PlusCircle } from "lucide-react";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Copy, FileText, Clock, PlusCircle } from 'lucide-react';
 
 export default function OnboardingTemplatesPage() {
   const [, navigate] = useLocation();
-  
+
   // Fetch templates - this will be connected to API later
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['/api/onboarding/templates'],
@@ -17,81 +24,90 @@ export default function OnboardingTemplatesPage() {
       return [
         {
           id: 101,
-          title: "New Sales Representative Onboarding",
-          description: "Complete onboarding process for new sales team members",
+          title: 'New Sales Representative Onboarding',
+          description: 'Complete onboarding process for new sales team members',
           departmentId: 103,
           duration: 21,
           missionCount: 4,
-          popularity: "High"
+          popularity: 'High',
         },
         {
           id: 102,
-          title: "Technical Support Specialist Onboarding",
-          description: "Training program for customer support specialists focused on technical troubleshooting",
+          title: 'Technical Support Specialist Onboarding',
+          description:
+            'Training program for customer support specialists focused on technical troubleshooting',
           departmentId: 105,
           duration: 30,
           missionCount: 7,
-          popularity: "Medium"
+          popularity: 'Medium',
         },
         {
           id: 103,
-          title: "Finance Team Member Onboarding",
-          description: "Comprehensive onboarding for finance and accounting personnel",
+          title: 'Finance Team Member Onboarding',
+          description:
+            'Comprehensive onboarding for finance and accounting personnel',
           departmentId: 106,
           duration: 45,
           missionCount: 8,
-          popularity: "Low"
+          popularity: 'Low',
         },
         {
           id: 104,
-          title: "Marketing Intern Onboarding",
-          description: "Streamlined onboarding process for marketing interns",
+          title: 'Marketing Intern Onboarding',
+          description: 'Streamlined onboarding process for marketing interns',
           departmentId: 101,
           duration: 14,
           missionCount: 3,
-          popularity: "Medium"
+          popularity: 'Medium',
         },
         {
           id: 105,
-          title: "Junior Developer Onboarding",
-          description: "Technical onboarding for junior software engineers",
+          title: 'Junior Developer Onboarding',
+          description: 'Technical onboarding for junior software engineers',
           departmentId: 102,
           duration: 60,
           missionCount: 10,
-          popularity: "High"
-        }
+          popularity: 'High',
+        },
       ];
-    }
+    },
   });
-  
+
   const getPopularityBadge = (popularity: string) => {
     switch (popularity) {
-      case 'High': return 'bg-green-100 text-green-800';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800';
-      case 'Low': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'High':
+        return 'bg-green-100 text-green-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Low':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
     }
   };
-  
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate("/admin/onboarding")}
+          onClick={() => navigate('/admin/onboarding')}
           className="mr-2"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Plans
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">Onboarding Templates</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Onboarding Templates
+        </h1>
       </div>
-      
+
       <p className="text-gray-600 mb-8">
-        Choose from these pre-built templates to quickly create an onboarding plan for your employees.
-        Each template can be customized to fit your organization's specific needs.
+        Choose from these pre-built templates to quickly create an onboarding
+        plan for your employees. Each template can be customized to fit your
+        organization's specific needs.
       </p>
-      
+
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4].map((i) => (
@@ -130,7 +146,7 @@ export default function OnboardingTemplatesPage() {
                 <p className="text-sm text-gray-600 line-clamp-2 mb-4">
                   {template.description}
                 </p>
-                
+
                 <div className="grid grid-cols-2 gap-2 text-xs mt-4">
                   <div className="flex items-center">
                     <Clock className="h-3 w-3 mr-1 text-blue-500" />
@@ -144,9 +160,11 @@ export default function OnboardingTemplatesPage() {
               </CardContent>
               <CardFooter className="bg-gray-50 border-t pt-3 pb-3">
                 <div className="w-full">
-                  <Button 
-                    className="w-full" 
-                    onClick={() => navigate(`/admin/onboarding/templates/${template.id}`)}
+                  <Button
+                    className="w-full"
+                    onClick={() =>
+                      navigate(`/admin/onboarding/templates/${template.id}`)
+                    }
                   >
                     <Copy className="mr-2 h-4 w-4" />
                     Use This Template
@@ -155,7 +173,7 @@ export default function OnboardingTemplatesPage() {
               </CardFooter>
             </Card>
           ))}
-          
+
           {/* Create from scratch card */}
           <Card className="border-dashed border-2 bg-gray-50">
             <CardHeader className="pb-2">
@@ -166,15 +184,16 @@ export default function OnboardingTemplatesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">
-                Design your own onboarding process with custom missions, tasks, and timelines.
+                Design your own onboarding process with custom missions, tasks,
+                and timelines.
               </p>
             </CardContent>
             <CardFooter className="bg-gray-50 pt-3 pb-3">
               <div className="w-full">
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={() => navigate("/admin/onboarding/new")}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/admin/onboarding/new')}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Start From Scratch
@@ -191,13 +210,13 @@ export default function OnboardingTemplatesPage() {
 // Helper function to get department name from ID
 function getDepartmentName(id: number): string {
   const departments: Record<number, string> = {
-    101: "Marketing",
-    102: "Engineering",
-    103: "Sales",
-    104: "Human Resources",
-    105: "Customer Support",
-    106: "Finance"
+    101: 'Marketing',
+    102: 'Engineering',
+    103: 'Sales',
+    104: 'Human Resources',
+    105: 'Customer Support',
+    106: 'Finance',
   };
-  
-  return departments[id] || "General";
+
+  return departments[id] || 'General';
 }

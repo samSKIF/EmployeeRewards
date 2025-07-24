@@ -17,14 +17,14 @@ class RedisCache {
 
   private async connect() {
     if (!this.isEnabled) return;
-    
+
     try {
       this.client = Redis.createClient({
         url: process.env.REDIS_URL!,
         socket: {
           connectTimeout: 5000,
-          lazyConnect: true
-        }
+          lazyConnect: true,
+        },
       });
 
       this.client.on('error', (err: any) => {
@@ -68,7 +68,11 @@ class RedisCache {
     }
   }
 
-  async set(key: string, value: any, expirationSeconds: number = 300): Promise<boolean> {
+  async set(
+    key: string,
+    value: any,
+    expirationSeconds: number = 300
+  ): Promise<boolean> {
     if (!this.isEnabled || !this.isConnected || !this.client) {
       return false;
     }

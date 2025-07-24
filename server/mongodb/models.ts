@@ -11,7 +11,7 @@ export interface SocialPost {
   imageUrl?: string;
   type: 'text' | 'image' | 'poll' | 'recognition' | 'announcement';
   visibility: 'public' | 'team' | 'department';
-  
+
   // Poll specific fields
   pollOptions?: string[];
   pollVotes?: Array<{
@@ -21,7 +21,7 @@ export interface SocialPost {
     votedAt: Date;
   }>;
   pollExpiresAt?: Date;
-  
+
   // Recognition specific fields
   recognitionData?: {
     recipientId: number;
@@ -30,7 +30,7 @@ export interface SocialPost {
     category: string;
     badgeType: string;
   };
-  
+
   // Engagement metrics
   reactions: Array<{
     userId: number;
@@ -38,11 +38,11 @@ export interface SocialPost {
     type: 'like' | 'love' | 'celebrate' | 'support' | 'insightful';
     createdAt: Date;
   }>;
-  
+
   commentsCount: number;
   sharesCount: number;
   viewsCount: number;
-  
+
   // Metadata
   isPinned: boolean;
   createdAt: Date;
@@ -50,7 +50,7 @@ export interface SocialPost {
   isDeleted: boolean;
   deletedAt?: Date;
   deletedBy?: number;
-  
+
   // Indexing fields
   tags?: string[];
   mentions?: Array<{
@@ -69,19 +69,19 @@ export interface Comment {
   organizationId: number;
   content: string;
   parentCommentId?: ObjectId; // For nested comments
-  
+
   reactions: Array<{
     userId: number;
     userName: string;
     type: 'like' | 'love' | 'celebrate' | 'support';
     createdAt: Date;
   }>;
-  
+
   mentions?: Array<{
     userId: number;
     userName: string;
   }>;
-  
+
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
@@ -94,15 +94,23 @@ export interface Notification {
   _id?: ObjectId;
   userId: number;
   organizationId: number;
-  type: 'post_like' | 'post_comment' | 'comment_like' | 'mention' | 'recognition' | 'birthday' | 'anniversary' | 'system';
+  type:
+    | 'post_like'
+    | 'post_comment'
+    | 'comment_like'
+    | 'mention'
+    | 'recognition'
+    | 'birthday'
+    | 'anniversary'
+    | 'system';
   title: string;
   message: string;
-  
+
   // Related entity references
   relatedPostId?: ObjectId;
   relatedCommentId?: ObjectId;
   relatedUserId?: number;
-  
+
   // Action data
   actionData?: {
     url?: string;
@@ -110,7 +118,7 @@ export interface Notification {
     points?: number;
     recognitionType?: string;
   };
-  
+
   isRead: boolean;
   readAt?: Date;
   createdAt: Date;
@@ -122,17 +130,22 @@ export interface ActivityFeed {
   _id?: ObjectId;
   userId: number;
   organizationId: number;
-  activityType: 'post_created' | 'comment_added' | 'reaction_given' | 'recognition_sent' | 'recognition_received';
-  
+  activityType:
+    | 'post_created'
+    | 'comment_added'
+    | 'reaction_given'
+    | 'recognition_sent'
+    | 'recognition_received';
+
   // Activity details
   entityId: ObjectId; // Post ID, Comment ID, etc.
   entityType: 'post' | 'comment' | 'recognition';
   description: string;
-  
+
   // Related users
   targetUserId?: number; // For activities involving other users
   targetUserName?: string;
-  
+
   points?: number; // If activity involves points
   createdAt: Date;
 }
@@ -143,14 +156,14 @@ export interface SocialStatsDaily {
   userId: number;
   organizationId: number;
   date: string; // YYYY-MM-DD format
-  
+
   postsCreated: number;
   commentsAdded: number;
   reactionsGiven: number;
   recognitionsSent: number;
   recognitionsReceived: number;
   pointsEarned: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }

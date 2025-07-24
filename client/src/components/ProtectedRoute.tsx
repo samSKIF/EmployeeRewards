@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { Route, useLocation } from "wouter";
-import { Loader2 } from "lucide-react";
+import { useEffect } from 'react';
+import { Route, useLocation } from 'wouter';
+import { Loader2 } from 'lucide-react';
 // Firebase authentication removed - using custom auth
 
 interface ProtectedRouteProps {
@@ -8,19 +8,22 @@ interface ProtectedRouteProps {
   component: React.ComponentType;
 }
 
-export function ProtectedRoute({ path, component: Component }: ProtectedRouteProps) {
+export function ProtectedRoute({
+  path,
+  component: Component,
+}: ProtectedRouteProps) {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     // Redirect if no token found
     if (!token) {
-      console.log("No authentication found, redirecting to /auth");
-      setLocation("/auth");
+      console.log('No authentication found, redirecting to /auth');
+      setLocation('/auth');
     }
   }, [setLocation]);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
 
   return (
     <Route path={path}>

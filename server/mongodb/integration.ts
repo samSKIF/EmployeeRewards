@@ -4,15 +4,17 @@ import { runSocialMigration } from './migration';
 export async function initializeMongoDB() {
   try {
     console.log('Initializing MongoDB for social features...');
-    
+
     // Connect to MongoDB
     const db = await connectToMongoDB();
-    
+
     if (db) {
       console.log('MongoDB connected successfully');
       return true;
     } else {
-      console.log('MongoDB not available, continuing with PostgreSQL for social features');
+      console.log(
+        'MongoDB not available, continuing with PostgreSQL for social features'
+      );
       return false;
     }
   } catch (error) {

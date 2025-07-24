@@ -1,7 +1,13 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from 'react';
+import { apiRequest } from '@/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 // import { useFirebaseAuth } from "@/context/FirebaseAuthContext";
 
 export type AuthUser = {
@@ -46,73 +52,73 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
 
   // const { currentUser, loading: firebaseLoading } = useFirebaseAuth();
-  
+
   // Check for authentication on component mount and when token changes
   useEffect(() => {
-    console.log("useAuth: useEffect running - this should always appear!");
-    
+    console.log('useAuth: useEffect running - this should always appear!');
+
     const initAuth = async () => {
-      console.log("useAuth: initAuth function starting");
+      console.log('useAuth: initAuth function starting');
       setIsLoading(true);
-      
+
       try {
-        const token = localStorage.getItem("token");
-        console.log("useAuth: Token check:", token ? "FOUND" : "NOT FOUND");
-        
+        const token = localStorage.getItem('token');
+        console.log('useAuth: Token check:', token ? 'FOUND' : 'NOT FOUND');
+
         if (token) {
-          console.log("useAuth: Making API call to /api/users/me");
-          const response = await fetch("/api/users/me", {
-            headers: { "Authorization": `Bearer ${token}` }
+          console.log('useAuth: Making API call to /api/users/me');
+          const response = await fetch('/api/users/me', {
+            headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           if (response.ok) {
             const userData = await response.json();
-            console.log("useAuth: API SUCCESS - User data:", userData);
-            
+            console.log('useAuth: API SUCCESS - User data:', userData);
+
             const user = {
               id: userData.id,
-              name: userData.name || "User",
-              email: userData.email || "",
+              name: userData.name || 'User',
+              email: userData.email || '',
               isAdmin: userData.isAdmin === true,
               department: userData.department,
-              avatarUrl: userData.avatarUrl
+              avatarUrl: userData.avatarUrl,
             };
-            
-            console.log("useAuth: Setting user state:", user);
+
+            console.log('useAuth: Setting user state:', user);
             setUser(user);
           } else {
-            console.log("useAuth: API FAILED - clearing state");
-            localStorage.removeItem("firebaseToken");
+            console.log('useAuth: API FAILED - clearing state');
+            localStorage.removeItem('firebaseToken');
             setUser(null);
           }
         } else {
-          console.log("useAuth: No token - setting user to null");
+          console.log('useAuth: No token - setting user to null');
           setUser(null);
         }
       } catch (error) {
-        console.error("useAuth: ERROR:", error);
+        console.error('useAuth: ERROR:', error);
         setUser(null);
       } finally {
         setIsLoading(false);
-        console.log("useAuth: initAuth complete");
+        console.log('useAuth: initAuth complete');
       }
     };
-    
+
     initAuth();
   }, []); // Run once on mount
 
   const fetchUserProfile = async () => {
     try {
       setIsLoading(true);
-      
-      const token = localStorage.getItem("firebaseToken");
+
+      const token = localStorage.getItem('firebaseToken');
       if (token) {
-        const response = await fetch("/api/users/me", {
+        const response = await fetch('/api/users/me', {
           headers: {
-            "Authorization": `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
+
         if (response.ok) {
           const userData = await response.json();
           setUser({
@@ -120,18 +126,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             name: userData.name,
             email: userData.email,
             isAdmin: userData.isAdmin === true,
-            department: userData.department
+            department: userData.department,
           });
         } else {
-          localStorage.removeItem("firebaseToken");
+          localStorage.removeItem('firebaseToken');
           setUser(null);
         }
       } else {
         setUser(null);
       }
     } catch (error) {
-      console.error("Failed in fetchUserProfile:", error);
-      localStorage.removeItem("firebaseToken");
+      console.error('Failed in fetchUserProfile:', error);
+      localStorage.removeItem('firebaseToken');
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -141,90 +147,98 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      console.log("Attempting login with:", { email, password });
-      
+
+      console.log('Attempting login with:', { email, password });
+
       try {
         // Direct attempt to the auth endpoint to check if it's valid
-        const testResponse = await fetch("/api/auth/login", {
-          method: "HEAD"
+        const testResponse = await fetch('/api/auth/login', {
+          method: 'HEAD',
         });
-        console.log("Auth endpoint check:", testResponse.status, testResponse.statusText);
+        console.log(
+          'Auth endpoint check:',
+          testResponse.status,
+          testResponse.statusText
+        );
       } catch (err) {
-        console.error("Auth endpoint test failed:", err);
+        console.error('Auth endpoint test failed:', err);
       }
-      
+
       // Use provided credentials for authentication
-      const loginData = { 
-        username: email.includes('@') ? email : email, 
-        password: password 
+      const loginData = {
+        username: email.includes('@') ? email : email,
+        password: password,
       };
-      
-      console.log("Sending login data:", loginData);
-      
+
+      console.log('Sending login data:', loginData);
+
       // Using fetch directly for debugging purposes
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(loginData),
-        credentials: "include"
+        credentials: 'include',
       });
-      
-      console.log("Login response status:", response.status, response.statusText);
-      
+
+      console.log(
+        'Login response status:',
+        response.status,
+        response.statusText
+      );
+
       const responseText = await response.text();
-      console.log("Raw response:", responseText);
-      
+      console.log('Raw response:', responseText);
+
       if (!response.ok) {
-        console.error("Login error response:", responseText);
+        console.error('Login error response:', responseText);
         throw new Error(`Login failed: ${response.status} ${responseText}`);
       }
-      
+
       // Try to parse the response as JSON
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log("Login success response:", data);
+        console.log('Login success response:', data);
       } catch (err) {
-        console.error("Failed to parse JSON response:", err);
-        throw new Error("Invalid response format from server");
+        console.error('Failed to parse JSON response:', err);
+        throw new Error('Invalid response format from server');
       }
-      
+
       if (!data.token || !data.user) {
-        console.error("Invalid response structure:", data);
-        throw new Error("Server response missing required fields");
+        console.error('Invalid response structure:', data);
+        throw new Error('Server response missing required fields');
       }
-      
-      localStorage.setItem("firebaseToken", data.token);
-      
+
+      localStorage.setItem('firebaseToken', data.token);
+
       setUser({
         id: data.user.id,
         name: data.user.name,
         email: data.user.email,
         isAdmin: data.user.isAdmin || false,
-        department: data.user.department
+        department: data.user.department,
       });
-      
+
       // Invalidate all queries to refresh data
       await queryClient.invalidateQueries();
-      
+
       toast({
-        title: "Success",
-        description: "You have been logged in successfully",
+        title: 'Success',
+        description: 'You have been logged in successfully',
       });
-      
+
       return true;
     } catch (error) {
-      console.error("Login failed:", error);
-      
+      console.error('Login failed:', error);
+
       toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: "Invalid email or password. Please try again.",
+        variant: 'destructive',
+        title: 'Login failed',
+        description: 'Invalid email or password. Please try again.',
       });
-      
+
       return false;
     } finally {
       setIsLoading(false);
@@ -233,35 +247,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      console.log("Dashboard: Starting logout process");
-      
+      console.log('Dashboard: Starting logout process');
+
       // Remove authentication token
-      localStorage.removeItem("token");
-      
+      localStorage.removeItem('token');
+
       // Set sessionStorage to prevent auto-login on auth page
-      sessionStorage.setItem("skipAutoLogin", "true");
-      
+      sessionStorage.setItem('skipAutoLogin', 'true');
+
       // Clear all cached queries
       queryClient.clear();
-      
+
       // Reset local state
       setUser(null);
-      
-      console.log("Dashboard: Logout completed successfully");
-      
+
+      console.log('Dashboard: Logout completed successfully');
+
       toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
+        title: 'Logged out',
+        description: 'You have been logged out successfully',
       });
-      
+
       // Redirect to auth page
-      window.location.href = "/auth";
+      window.location.href = '/auth';
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error('Logout failed:', error);
       toast({
-        variant: "destructive",
-        title: "Logout failed",
-        description: "There was a problem logging out. Please try again.",
+        variant: 'destructive',
+        title: 'Logout failed',
+        description: 'There was a problem logging out. Please try again.',
       });
     }
   };
@@ -269,27 +283,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Function to refresh user data from server
   const refreshUser = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (token) {
-        const response = await fetch("/api/users/me", {
-          headers: { "Authorization": `Bearer ${token}` }
+        const response = await fetch('/api/users/me', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         if (response.ok) {
           const userData = await response.json();
           const user = {
             id: userData.id,
-            name: userData.name || "User",
-            email: userData.email || "",
+            name: userData.name || 'User',
+            email: userData.email || '',
             isAdmin: userData.isAdmin === true,
             department: userData.department,
-            avatarUrl: userData.avatarUrl
+            avatarUrl: userData.avatarUrl,
           };
           setUser(user);
         }
       }
     } catch (error) {
-      console.error("Error refreshing user data:", error);
+      console.error('Error refreshing user data:', error);
     }
   };
 
@@ -299,13 +313,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!user,
     login,
     logout,
-    refreshUser
+    refreshUser,
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

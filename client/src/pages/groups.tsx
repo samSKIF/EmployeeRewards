@@ -1,11 +1,23 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Users, Search, MessageCircle, Calendar, TrendingUp } from 'lucide-react';
+import {
+  Users,
+  Search,
+  MessageCircle,
+  Calendar,
+  TrendingUp,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Group {
@@ -34,28 +46,42 @@ export default function GroupsPage() {
   // Fetch all groups
   const { data: allGroups, isLoading: isLoadingAll } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
-    enabled: true
+    enabled: true,
   });
 
   // Fetch user's groups
   const { data: myGroups, isLoading: isLoadingMy } = useQuery<MyGroup[]>({
     queryKey: ['/api/groups/my-groups'],
-    enabled: true
+    enabled: true,
   });
 
   // Filter groups based on search and category
-  const filteredGroups = allGroups?.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.interest.label.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || group.interest.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }) || [];
+  const filteredGroups =
+    allGroups?.filter((group) => {
+      const matchesSearch =
+        group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.interest.label.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategory === 'all' ||
+        group.interest.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    }) || [];
 
   // Get unique categories
-  const categories = Array.from(new Set(allGroups?.map(g => g.interest.category) || []));
+  const categories = Array.from(
+    new Set(allGroups?.map((g) => g.interest.category) || [])
+  );
 
-  const GroupCard = ({ group, isJoined = false, userRole }: { group: Group; isJoined?: boolean; userRole?: string }) => (
+  const GroupCard = ({
+    group,
+    isJoined = false,
+    userRole,
+  }: {
+    group: Group;
+    isJoined?: boolean;
+    userRole?: string;
+  }) => (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -91,11 +117,7 @@ export default function GroupsPage() {
               <MessageCircle className="h-4 w-4 mr-1" />
               View
             </Button>
-            {!isJoined && (
-              <Button size="sm">
-                Join Group
-              </Button>
-            )}
+            {!isJoined && <Button size="sm">Join Group</Button>}
           </div>
         </div>
       </CardContent>
@@ -132,7 +154,9 @@ export default function GroupsPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Interest Groups</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">
+          Interest Groups
+        </h1>
         <p className="text-muted-foreground">
           Connect with colleagues who share your interests and hobbies
         </p>
@@ -171,9 +195,7 @@ export default function GroupsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{categories.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Interest categories
-            </p>
+            <p className="text-xs text-muted-foreground">Interest categories</p>
           </CardContent>
         </Card>
       </div>
@@ -202,8 +224,10 @@ export default function GroupsPage() {
               className="px-3 py-2 border border-input bg-background rounded-md text-sm"
             >
               <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
           </div>
@@ -213,14 +237,10 @@ export default function GroupsPage() {
             <LoadingSkeleton />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredGroups.map(group => {
-                const isJoined = myGroups?.some(mg => mg.id === group.id);
+              {filteredGroups.map((group) => {
+                const isJoined = myGroups?.some((mg) => mg.id === group.id);
                 return (
-                  <GroupCard
-                    key={group.id}
-                    group={group}
-                    isJoined={isJoined}
-                  />
+                  <GroupCard key={group.id} group={group} isJoined={isJoined} />
                 );
               })}
             </div>
@@ -231,7 +251,7 @@ export default function GroupsPage() {
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">No groups found</h3>
               <p className="text-muted-foreground">
-                {searchTerm || selectedCategory !== 'all' 
+                {searchTerm || selectedCategory !== 'all'
                   ? 'Try adjusting your search or filter criteria'
                   : 'No groups have been created yet. Add interests to your profile to start creating groups!'}
               </p>
@@ -244,7 +264,7 @@ export default function GroupsPage() {
             <LoadingSkeleton />
           ) : myGroups && myGroups.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {myGroups.map(group => (
+              {myGroups.map((group) => (
                 <GroupCard
                   key={group.id}
                   group={group}
@@ -256,13 +276,14 @@ export default function GroupsPage() {
           ) : (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">You haven't joined any groups yet</h3>
+              <h3 className="text-lg font-medium mb-2">
+                You haven't joined any groups yet
+              </h3>
               <p className="text-muted-foreground mb-4">
-                Add interests to your profile to automatically join related groups and connect with colleagues
+                Add interests to your profile to automatically join related
+                groups and connect with colleagues
               </p>
-              <Button>
-                Explore Groups
-              </Button>
+              <Button>Explore Groups</Button>
             </div>
           )}
         </TabsContent>

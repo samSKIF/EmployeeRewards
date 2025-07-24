@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { TransactionWithDetails } from "@shared/types";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { TransactionWithDetails } from '@shared/types';
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 const TransactionTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,13 +17,13 @@ const TransactionTable = () => {
 
   // Fetch all transactions
   const { data: transactions, isLoading } = useQuery<TransactionWithDetails[]>({
-    queryKey: ["/api/transactions"],
+    queryKey: ['/api/transactions'],
   });
 
   // Paginate transactions
   const totalTransactions = transactions?.length || 0;
   const totalPages = Math.ceil(totalTransactions / itemsPerPage);
-  
+
   const paginatedTransactions = transactions
     ? transactions.slice(
         (currentPage - 1) * itemsPerPage,
@@ -60,44 +60,44 @@ const TransactionTable = () => {
             paginatedTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell className="whitespace-nowrap">
-                  {format(new Date(transaction.createdAt), "MMM dd, yyyy")}
+                  {format(new Date(transaction.createdAt), 'MMM dd, yyyy')}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {transaction.userName || "System"}
+                  {transaction.userName || 'System'}
                 </TableCell>
                 <TableCell>
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      transaction.reason === "birthday_bonus"
-                        ? "bg-indigo-100 text-indigo-800"
+                      transaction.reason === 'birthday_bonus'
+                        ? 'bg-indigo-100 text-indigo-800'
                         : transaction.isDebit
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800"
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-800'
                     }`}
                   >
-                    {transaction.reason === "birthday_bonus"
-                      ? "Birthday"
-                      : transaction.reason === "product_redemption"
-                      ? "Redemption"
-                      : transaction.reason || "Award"}
+                    {transaction.reason === 'birthday_bonus'
+                      ? 'Birthday'
+                      : transaction.reason === 'product_redemption'
+                        ? 'Redemption'
+                        : transaction.reason || 'Award'}
                   </span>
                 </TableCell>
-                <TableCell>
-                  {transaction.description}
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell
+                  className={`font-medium ${
+                    transaction.isDebit ? 'text-red-500' : 'text-green-500'
+                  }`}
+                >
+                  {transaction.isDebit ? '-' : '+'}
+                  {transaction.amount}
                 </TableCell>
-                <TableCell className={`font-medium ${
-                  transaction.isDebit ? "text-red-500" : "text-green-500"
-                }`}>
-                  {transaction.isDebit ? "-" : "+"}{transaction.amount}
-                </TableCell>
                 <TableCell>
-                  {transaction.creatorName || (
-                    transaction.reason === "birthday_bonus" ? (
+                  {transaction.creatorName ||
+                    (transaction.reason === 'birthday_bonus' ? (
                       <span className="italic text-gray-400">Automated</span>
                     ) : (
-                      "System"
-                    )
-                  )}
+                      'System'
+                    ))}
                 </TableCell>
               </TableRow>
             ))
@@ -110,16 +110,21 @@ const TransactionTable = () => {
           )}
         </TableBody>
       </Table>
-      
+
       {totalTransactions > 0 && (
         <div className="px-6 py-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+              Showing{' '}
+              <span className="font-medium">
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{' '}
+              to{' '}
               <span className="font-medium">
                 {Math.min(currentPage * itemsPerPage, totalTransactions)}
-              </span>{" "}
-              of <span className="font-medium">{totalTransactions}</span> results
+              </span>{' '}
+              of <span className="font-medium">{totalTransactions}</span>{' '}
+              results
             </div>
             <div className="flex space-x-2">
               <button

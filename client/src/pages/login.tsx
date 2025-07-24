@@ -1,77 +1,84 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "wouter";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Award } from "lucide-react";
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'wouter';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Award } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    console.log("Login form submitted with:", { email, password });
+    setError('');
+    console.log('Login form submitted with:', { email, password });
 
     try {
-      console.log("Calling login function...");
+      console.log('Calling login function...');
       const success = await login(email, password);
-      console.log("Login result:", success);
+      console.log('Login result:', success);
       if (success) {
-        console.log("Login successful, redirecting to dashboard");
-        setLocation("/dashboard");
+        console.log('Login successful, redirecting to dashboard');
+        setLocation('/dashboard');
       } else {
         console.log("Login failed but didn't throw an error");
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Invalid email or password");
+      console.error('Login error:', err);
+      setError('Invalid email or password');
     }
   };
-  
+
   const handleDirectLogin = async () => {
-    setError("");
-    
+    setError('');
+
     try {
       // First, clear any existing tokens
-      localStorage.removeItem("token");
-      
-      console.log("Using direct API login (hardcoded admin credentials)");
-      
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
+      localStorage.removeItem('token');
+
+      console.log('Using direct API login (hardcoded admin credentials)');
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          username: "admin", 
-          password: "admin123" 
+        body: JSON.stringify({
+          username: 'admin',
+          password: 'admin123',
         }),
-        credentials: "include"
+        credentials: 'include',
       });
-      
-      console.log("Direct login response:", response.status);
-      
+
+      console.log('Direct login response:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Direct login failed:", errorText);
-        setError("Direct login failed");
+        console.error('Direct login failed:', errorText);
+        setError('Direct login failed');
         return;
       }
-      
+
       const data = await response.json();
-      console.log("Login success:", data);
-      
-      // Manually store token 
-      localStorage.setItem("token", data.token);
-      
+      console.log('Login success:', data);
+
+      // Manually store token
+      localStorage.setItem('token', data.token);
+
       // Create a temporary loading state
       document.body.innerHTML = `
         <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
@@ -82,16 +89,15 @@ const Login = () => {
           </style>
         </div>
       `;
-      
+
       // Give a short delay to ensure token is stored
       setTimeout(() => {
         // Then do a full page reload to the dashboard
-        window.location.href = "/dashboard";
+        window.location.href = '/dashboard';
       }, 1000);
-      
     } catch (error) {
-      console.error("Direct login error:", error);
-      setError("Failed to login directly");
+      console.error('Direct login error:', error);
+      setError('Failed to login directly');
     }
   };
 
@@ -102,7 +108,9 @@ const Login = () => {
           <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary mb-2">
             <Award className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">RewardHub</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            RewardHub
+          </CardTitle>
           <CardDescription className="text-center">
             Sign in to access your employee rewards
           </CardDescription>
@@ -131,13 +139,11 @@ const Login = () => {
                 required
               />
             </div>
-            {error && (
-              <div className="text-sm text-red-500 mt-2">{error}</div>
-            )}
+            {error && <div className="text-sm text-red-500 mt-2">{error}</div>}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
-            
+
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -146,9 +152,9 @@ const Login = () => {
                 <span className="px-2 bg-white text-gray-500">Or</span>
               </div>
             </div>
-            
-            <Button 
-              type="button" 
+
+            <Button
+              type="button"
               className="w-full bg-green-600 hover:bg-green-700"
               onClick={handleDirectLogin}
             >

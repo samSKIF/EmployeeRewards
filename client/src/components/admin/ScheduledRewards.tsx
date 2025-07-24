@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -6,8 +6,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -16,22 +16,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 // Currently just showing the birthday job as this is all we've implemented in the backend
 const ScheduledRewards = () => {
   const [showNewScheduleDialog, setShowNewScheduleDialog] = useState(false);
-  
+
   return (
     <>
       <Table>
@@ -61,24 +61,33 @@ const ScheduledRewards = () => {
               </span>
             </TableCell>
             <TableCell>
-              <Button variant="link" className="text-primary hover:text-indigo-800 h-auto p-0">
+              <Button
+                variant="link"
+                className="text-primary hover:text-indigo-800 h-auto p-0"
+              >
                 Edit
               </Button>
-              <Button variant="link" className="text-red-500 hover:text-red-700 ml-3 h-auto p-0">
+              <Button
+                variant="link"
+                className="text-red-500 hover:text-red-700 ml-3 h-auto p-0"
+              >
                 Disable
               </Button>
             </TableCell>
           </TableRow>
         </TableBody>
       </Table>
-      
+
       <div className="p-6 border-t border-gray-200">
         <Button onClick={() => setShowNewScheduleDialog(true)}>
           Create New Scheduled Reward
         </Button>
       </div>
-      
-      <Dialog open={showNewScheduleDialog} onOpenChange={setShowNewScheduleDialog}>
+
+      <Dialog
+        open={showNewScheduleDialog}
+        onOpenChange={setShowNewScheduleDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Scheduled Reward</DialogTitle>
@@ -86,7 +95,7 @@ const ScheduledRewards = () => {
               Set up automated rewards for employees based on criteria.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div>
               <Label htmlFor="reward-type">Reward Type</Label>
@@ -102,7 +111,7 @@ const ScheduledRewards = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="schedule">Schedule</Label>
               <Select>
@@ -117,20 +126,26 @@ const ScheduledRewards = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="points">Points Amount</Label>
               <Input id="points" type="number" min="1" placeholder="100" />
             </div>
-            
+
             <div>
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Reward description that employees will see" />
+              <Textarea
+                id="description"
+                placeholder="Reward description that employees will see"
+              />
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewScheduleDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewScheduleDialog(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">Save Scheduled Reward</Button>

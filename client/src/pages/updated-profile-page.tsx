@@ -1,27 +1,47 @@
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useTranslation } from "react-i18next";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { useParams } from "wouter";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useParams } from 'wouter';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Edit, Camera, Mail, Phone, MapPin, Calendar, Award, 
-  History, User, Home, ShoppingBag, Trophy, FileText, 
-  Zap, Heart, ImageIcon, Camera as CameraIcon
-} from "lucide-react";
-import { User as BaseUserType } from "@shared/types";
-import { CompactInterestsSection } from "@/components/profile/CompactInterestsSection";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import {
+  Edit,
+  Camera,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Award,
+  History,
+  User,
+  Home,
+  ShoppingBag,
+  Trophy,
+  FileText,
+  Zap,
+  Heart,
+  ImageIcon,
+  Camera as CameraIcon,
+} from 'lucide-react';
+import { User as BaseUserType } from '@shared/types';
+import { CompactInterestsSection } from '@/components/profile/CompactInterestsSection';
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {
@@ -46,7 +66,7 @@ const UpdatedProfilePage = () => {
     department: '',
     location: '',
     responsibilities: '',
-    aboutMe: ''
+    aboutMe: '',
   });
 
   // Check if viewing own profile or another user's profile
@@ -54,8 +74,8 @@ const UpdatedProfilePage = () => {
 
   // Fetch user data - either current user or specific user by ID
   const { data: user, isLoading: userLoading } = useQuery<UserType>({
-    queryKey: isOwnProfile ? ["/api/users/me"] : [`/api/users/${userId}`],
-    retry: false
+    queryKey: isOwnProfile ? ['/api/users/me'] : [`/api/users/${userId}`],
+    retry: false,
   });
 
   // Update form values when user data is fetched
@@ -68,59 +88,60 @@ const UpdatedProfilePage = () => {
         department: user.department || '',
         location: user.location || '',
         responsibilities: user.responsibilities || '',
-        aboutMe: user.aboutMe || ''
+        aboutMe: user.aboutMe || '',
       });
     }
   }, [user]);
 
   // Mock data for profile sections
   const personalityType = {
-    title: "The Champion",
-    description: "Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs."
+    title: 'The Champion',
+    description:
+      'Enthusiastic, involved team member who is interested in exploring the possibilities for innovation. Little interest in rules, and will encourage team mates to think outside the box to create a solution that is uniquely theirs.',
   };
 
   const interests = [
-    { id: 1, name: "Camping", count: 5 },
-    { id: 2, name: "Parties", count: 9 },
-    { id: 3, name: "Photography", count: 3 },
-    { id: 4, name: "Politics", count: 1 },
-    { id: 5, name: "Sci-fi", count: 5 }
+    { id: 1, name: 'Camping', count: 5 },
+    { id: 2, name: 'Parties', count: 9 },
+    { id: 3, name: 'Photography', count: 3 },
+    { id: 4, name: 'Politics', count: 1 },
+    { id: 5, name: 'Sci-fi', count: 5 },
   ];
 
   const strengths = [
-    { id: 1, name: "Belief", count: 6 },
-    { id: 2, name: "Ideation", count: 2 },
-    { id: 3, name: "Includer", count: 3 },
-    { id: 4, name: "Input", count: 4 }
+    { id: 1, name: 'Belief', count: 6 },
+    { id: 2, name: 'Ideation', count: 2 },
+    { id: 3, name: 'Includer', count: 3 },
+    { id: 4, name: 'Input', count: 4 },
   ];
 
   const similarPeople = [
-    { id: 101, name: "John Smith", avatar: "/avatars/john.jpg" },
-    { id: 102, name: "Sarah Lee", avatar: "/avatars/sarah.jpg" },
-    { id: 103, name: "Mike Chen", avatar: "/avatars/mike.jpg" }
+    { id: 101, name: 'John Smith', avatar: '/avatars/john.jpg' },
+    { id: 102, name: 'Sarah Lee', avatar: '/avatars/sarah.jpg' },
+    { id: 103, name: 'Mike Chen', avatar: '/avatars/mike.jpg' },
   ];
 
   // Format dates properly
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   // User details (use real database values only)
   const userDetails = {
-    email: user?.email || "",
-    title: user?.jobTitle || "",
-    location: user?.location || "", 
-    department: user?.department || "",
-    responsibilities: user?.responsibilities || "",
+    email: user?.email || '',
+    title: user?.jobTitle || '',
+    location: user?.location || '',
+    department: user?.department || '',
+    responsibilities: user?.responsibilities || '',
     hireDate: formatDate((user as any)?.hireDate || (user as any)?.hire_date),
     birthday: formatDate((user as any)?.birthDate || (user as any)?.birth_date),
-    profileStatus: 89 // This can remain as a calculated value
+    profileStatus: 89, // This can remain as a calculated value
   };
 
   // Avatar upload mutation
@@ -131,21 +152,21 @@ const UpdatedProfilePage = () => {
         reader.onloadend = async () => {
           try {
             const base64Data = reader.result as string;
-            
-            const res = await fetch("/api/users/avatar", {
-              method: "POST",
+
+            const res = await fetch('/api/users/avatar', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
               },
-              body: JSON.stringify({ avatarUrl: base64Data })
+              body: JSON.stringify({ avatarUrl: base64Data }),
             });
-            
+
             if (!res.ok) {
               const error = await res.json();
-              throw new Error(error.message || "Failed to upload avatar");
+              throw new Error(error.message || 'Failed to upload avatar');
             }
-            
+
             const data = await res.json();
             resolve(data.user.avatarUrl);
           } catch (error: any) {
@@ -153,28 +174,28 @@ const UpdatedProfilePage = () => {
           }
         };
         reader.onerror = () => {
-          reject(new Error("Failed to read file"));
+          reject(new Error('Failed to read file'));
         };
         reader.readAsDataURL(file);
       });
     },
     onSuccess: async (avatarUrl) => {
       // Invalidate and refetch user data to ensure fresh avatar displays
-      queryClient.invalidateQueries({ queryKey: ["/api/users/me"] });
-      
+      queryClient.invalidateQueries({ queryKey: ['/api/users/me'] });
+
       // Refresh auth context to update navigation avatar immediately
       await refreshUser();
-      
+
       toast({
-        title: "Avatar uploaded",
-        description: "Your profile picture has been updated successfully.",
+        title: 'Avatar uploaded',
+        description: 'Your profile picture has been updated successfully.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload avatar",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload avatar',
+        variant: 'destructive',
       });
     },
   });
@@ -183,7 +204,7 @@ const UpdatedProfilePage = () => {
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Compress image before uploading
     const compressImage = (file: File): Promise<File> => {
       return new Promise((resolve, reject) => {
@@ -192,16 +213,16 @@ const UpdatedProfilePage = () => {
         reader.onload = (event) => {
           const img = new Image();
           img.src = event.target?.result as string;
-          
+
           img.onload = () => {
             const canvas = document.createElement('canvas');
             // Max dimensions while maintaining aspect ratio
             const MAX_WIDTH = 400;
             const MAX_HEIGHT = 400;
-            
+
             let width = img.width;
             let height = img.height;
-            
+
             // Calculate new dimensions
             if (width > height) {
               if (width > MAX_WIDTH) {
@@ -214,51 +235,55 @@ const UpdatedProfilePage = () => {
                 height = MAX_HEIGHT;
               }
             }
-            
+
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(img, 0, 0, width, height);
-            
+
             // Convert to Blob with reduced quality
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                reject(new Error('Failed to compress image'));
-                return;
-              }
-              
-              // Create new file from blob
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now()
-              });
-              
-              resolve(compressedFile);
-            }, 'image/jpeg', 0.7); // 70% quality
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Failed to compress image'));
+                  return;
+                }
+
+                // Create new file from blob
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+
+                resolve(compressedFile);
+              },
+              'image/jpeg',
+              0.7
+            ); // 70% quality
           };
-          
+
           img.onerror = () => {
             reject(new Error('Failed to load image'));
           };
         };
-        
+
         reader.onerror = () => {
           reject(new Error('Failed to read file'));
         };
       });
     };
-    
+
     // Process and upload the compressed image
     compressImage(file)
-      .then(compressedFile => {
+      .then((compressedFile) => {
         avatarUploadMutation.mutate(compressedFile);
       })
-      .catch(error => {
+      .catch((error) => {
         toast({
-          title: "Error processing image",
-          description: error.message || "Failed to process image for upload",
-          variant: "destructive"
+          title: 'Error processing image',
+          description: error.message || 'Failed to process image for upload',
+          variant: 'destructive',
         });
       });
   };
@@ -266,51 +291,51 @@ const UpdatedProfilePage = () => {
   // Cover photo upload mutation
   const updateCoverPhotoMutation = useMutation({
     mutationFn: async (data: { coverPhotoUrl: string }) => {
-      const res = await fetch("/api/users/cover-photo", {
-        method: "POST",
+      const res = await fetch('/api/users/cover-photo', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to upload cover photo");
+        throw new Error(errorData.message || 'Failed to upload cover photo');
       }
-      
+
       return await res.json();
     },
     onSuccess: (data) => {
       // Update the user data in the cache with the new cover photo URL
-      const currentUser = queryClient.getQueryData<UserType>(["/api/users/me"]);
+      const currentUser = queryClient.getQueryData<UserType>(['/api/users/me']);
       if (currentUser) {
-        queryClient.setQueryData(["/api/users/me"], {
+        queryClient.setQueryData(['/api/users/me'], {
           ...currentUser,
-          coverPhotoUrl: data.user.coverPhotoUrl
+          coverPhotoUrl: data.user.coverPhotoUrl,
         });
       }
-      
+
       toast({
-        title: "Cover photo updated",
-        description: "Your cover photo has been updated successfully.",
+        title: 'Cover photo updated',
+        description: 'Your cover photo has been updated successfully.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload cover photo",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload cover photo',
+        variant: 'destructive',
       });
-    }
+    },
   });
-  
+
   // Handle cover photo upload
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Compress image before uploading
     const compressImage = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -319,16 +344,16 @@ const UpdatedProfilePage = () => {
         reader.onload = (event) => {
           const img = new Image();
           img.src = event.target?.result as string;
-          
+
           img.onload = () => {
             const canvas = document.createElement('canvas');
             // Cover photos should be wider
             const MAX_WIDTH = 1200;
             const MAX_HEIGHT = 400;
-            
+
             let width = img.width;
             let height = img.height;
-            
+
             // Calculate new dimensions
             if (width > height) {
               if (width > MAX_WIDTH) {
@@ -341,38 +366,38 @@ const UpdatedProfilePage = () => {
                 height = MAX_HEIGHT;
               }
             }
-            
+
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(img, 0, 0, width, height);
-            
+
             // Convert to base64 with reduced quality
             resolve(canvas.toDataURL('image/jpeg', 0.7));
           };
-          
+
           img.onerror = () => {
             reject(new Error('Failed to load image'));
           };
         };
-        
+
         reader.onerror = () => {
           reject(new Error('Failed to read file'));
         };
       });
     };
-    
+
     // Process and upload the compressed image
     compressImage(file)
-      .then(base64Data => {
+      .then((base64Data) => {
         updateCoverPhotoMutation.mutate({ coverPhotoUrl: base64Data });
       })
-      .catch(error => {
+      .catch((error) => {
         toast({
-          title: "Error processing image",
-          description: error.message || "Failed to process image for upload",
-          variant: "destructive"
+          title: 'Error processing image',
+          description: error.message || 'Failed to process image for upload',
+          variant: 'destructive',
         });
       });
   };
@@ -380,47 +405,49 @@ const UpdatedProfilePage = () => {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (userData: Partial<UserType>) => {
-      const res = await apiRequest("PATCH", "/api/users/me", userData);
+      const res = await apiRequest('PATCH', '/api/users/me', userData);
       return res.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["/api/users/me"], data);
+      queryClient.setQueryData(['/api/users/me'], data);
       setIsEditing(false);
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: 'Profile updated',
+        description: 'Your profile has been updated successfully.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to update profile',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({
+    setFormValues((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Only send the editable fields to the server
     const editableData = {
       responsibilities: formValues.responsibilities,
-      aboutMe: formValues.aboutMe
+      aboutMe: formValues.aboutMe,
     };
-    
+
     updateProfileMutation.mutate(editableData);
   };
 
@@ -445,8 +472,8 @@ const UpdatedProfilePage = () => {
               className="h-48 bg-gradient-to-r from-teal-400 to-teal-500 relative"
               style={{
                 backgroundImage: `url('${user?.coverPhotoUrl || '/assets/cover-background.jpg'}')`,
-                backgroundSize: "cover",
-                backgroundPosition: "center"
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
               }}
             >
               {/* Edit Button - only show for own profile */}
@@ -456,38 +483,46 @@ const UpdatedProfilePage = () => {
                     variant="outline"
                     size="sm"
                     className="bg-white/80 hover:bg-white"
-                    onClick={() => document.getElementById('cover-photo-upload')?.click()}
+                    onClick={() =>
+                      document.getElementById('cover-photo-upload')?.click()
+                    }
                   >
                     <ImageIcon className="h-4 w-4 mr-2" />
-                    {t("profile.uploadCover")}
-                    <input 
+                    {t('profile.uploadCover')}
+                    <input
                       type="file"
                       id="cover-photo-upload"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleCoverPhotoUpload}
-                  />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/80 hover:bg-white"
-                  onClick={handleEditToggle}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  {isEditing ? t("common.cancel") : t("profile.editProfile")}
-                </Button>
-              </div>
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleCoverPhotoUpload}
+                    />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/80 hover:bg-white"
+                    onClick={handleEditToggle}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {isEditing ? t('common.cancel') : t('profile.editProfile')}
+                  </Button>
+                </div>
               )}
-              
+
               {/* Profile Image */}
               <div className="absolute -bottom-12 left-8">
                 <div className="relative">
                   <Avatar className="h-24 w-24 border-4 border-white">
                     <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">
-                      {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'AU'}
+                      {user?.name
+                        ?.split(' ')
+                        .map((n: string) => n[0])
+                        .join('') || 'AU'}
                     </AvatarFallback>
-                    <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+                    <AvatarImage
+                      src={user?.avatarUrl}
+                      alt={user?.name || 'User'}
+                    />
                   </Avatar>
                   {user?.isAdmin && (
                     <Badge className="absolute -top-2 -right-2 bg-red-100 text-red-800 text-xs">
@@ -499,10 +534,12 @@ const UpdatedProfilePage = () => {
                       variant="outline"
                       size="icon"
                       className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-white shadow-sm"
-                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                      onClick={() =>
+                        document.getElementById('avatar-upload')?.click()
+                      }
                     >
                       <Camera className="h-4 w-4" />
-                      <input 
+                      <input
                         type="file"
                         id="avatar-upload"
                         className="hidden"
@@ -514,32 +551,39 @@ const UpdatedProfilePage = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Profile Information */}
             <div className="pt-14 px-8 pb-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-2xl font-bold">{user?.name || "User"}</h1>
+                  <h1 className="text-2xl font-bold">{user?.name || 'User'}</h1>
                   <p className="text-gray-600">{userDetails.title}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">{t('profile.profileStatus')} {userDetails.profileStatus}%</div>
+                  <div className="text-sm text-gray-500">
+                    {t('profile.profileStatus')} {userDetails.profileStatus}%
+                  </div>
                   <div className="w-48 mt-1">
-                    <Progress value={userDetails.profileStatus} className="h-2" />
+                    <Progress
+                      value={userDetails.profileStatus}
+                      className="h-2"
+                    />
                   </div>
                   {isEditing && (
-                    <Button 
-                      className="mt-3" 
-                      onClick={handleSaveProfile} 
+                    <Button
+                      className="mt-3"
+                      onClick={handleSaveProfile}
                       disabled={updateProfileMutation.isPending}
                     >
-                      {updateProfileMutation.isPending ? "Saving..." : "Save Profile"}
+                      {updateProfileMutation.isPending
+                        ? 'Saving...'
+                        : 'Save Profile'}
                     </Button>
                   )}
                 </div>
               </div>
             </div>
-            
+
             {/* Profile Tabs */}
             <div className="border-t border-gray-100">
               <Tabs defaultValue="about" className="w-full">
@@ -563,7 +607,7 @@ const UpdatedProfilePage = () => {
                     {t('profile.highlights')}
                   </TabsTrigger>
                 </TabsList>
-                
+
                 {/* About Me Content */}
                 <TabsContent value="about" className="px-8 py-6">
                   <div className="space-y-6">
@@ -583,23 +627,27 @@ const UpdatedProfilePage = () => {
                           />
                         </div>
                       ) : (
-                        <p className="text-sm">{formValues.aboutMe || "No information provided yet."}</p>
+                        <p className="text-sm">
+                          {formValues.aboutMe || 'No information provided yet.'}
+                        </p>
                       )}
                     </div>
                   </div>
                 </TabsContent>
-                
+
                 {/* Appreciations Tab Content */}
                 <TabsContent value="appreciations" className="px-8 py-6">
                   <div className="min-h-[200px] flex items-center justify-center">
                     <div className="text-center text-gray-500">
                       <Award className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                      <h3 className="text-lg font-medium">No appreciations yet</h3>
+                      <h3 className="text-lg font-medium">
+                        No appreciations yet
+                      </h3>
                       <p>Your recognitions and kudos will appear here</p>
                     </div>
                   </div>
                 </TabsContent>
-                
+
                 {/* Highlights Tab Content */}
                 <TabsContent value="highlights" className="px-8 py-6">
                   <div className="min-h-[200px] flex items-center justify-center">
@@ -613,20 +661,24 @@ const UpdatedProfilePage = () => {
               </Tabs>
             </div>
           </Card>
-          
+
           {/* Contact, Bio, & Responsibilities - Combined in one card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle>{t('profile.profileDetails')}</CardTitle>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {/* Contact Information */}
               <div>
-                <h3 className="text-md font-medium mb-4">{t('profile.contactInformation')}</h3>
+                <h3 className="text-md font-medium mb-4">
+                  {t('profile.contactInformation')}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label htmlFor="email" className="text-sm text-gray-500">{t('profile.email')}:</Label>
+                    <Label htmlFor="email" className="text-sm text-gray-500">
+                      {t('profile.email')}:
+                    </Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
@@ -640,13 +692,17 @@ const UpdatedProfilePage = () => {
                     ) : (
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                        <span className="text-blue-500">{userDetails.email}</span>
+                        <span className="text-blue-500">
+                          {userDetails.email}
+                        </span>
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-1">
-                    <Label htmlFor="title" className="text-sm text-gray-500">{t('profile.title')}:</Label>
+                    <Label htmlFor="title" className="text-sm text-gray-500">
+                      {t('profile.title')}:
+                    </Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-2 text-gray-500" />
@@ -665,9 +721,14 @@ const UpdatedProfilePage = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-1">
-                    <Label htmlFor="department" className="text-sm text-gray-500">{t('profile.department')}:</Label>
+                    <Label
+                      htmlFor="department"
+                      className="text-sm text-gray-500"
+                    >
+                      {t('profile.department')}:
+                    </Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <Award className="h-4 w-4 mr-2 text-gray-500" />
@@ -686,9 +747,11 @@ const UpdatedProfilePage = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-1">
-                    <Label htmlFor="location" className="text-sm text-gray-500">{t('profile.location')}:</Label>
+                    <Label htmlFor="location" className="text-sm text-gray-500">
+                      {t('profile.location')}:
+                    </Label>
                     {isEditing ? (
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-2 text-gray-500" />
@@ -709,26 +772,30 @@ const UpdatedProfilePage = () => {
                   </div>
                 </div>
               </div>
-              
-              <Separator />
-              
 
-              
+              <Separator />
+
               {/* Biographical Information */}
               <div>
-                <h3 className="text-md font-medium mb-4">Biographical Information</h3>
+                <h3 className="text-md font-medium mb-4">
+                  Biographical Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                     <div>
-                      <span className="text-sm text-gray-500 block">Hire Date:</span>
+                      <span className="text-sm text-gray-500 block">
+                        Hire Date:
+                      </span>
                       <span>{userDetails.hireDate}</span>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                     <div>
-                      <span className="text-sm text-gray-500 block">Birthday:</span>
+                      <span className="text-sm text-gray-500 block">
+                        Birthday:
+                      </span>
                       <span>{userDetails.birthday}</span>
                     </div>
                   </div>
@@ -736,7 +803,7 @@ const UpdatedProfilePage = () => {
               </div>
 
               <Separator />
-              
+
               {/* Responsibilities */}
               <div>
                 <h3 className="text-md font-medium mb-4">Responsibilities</h3>
@@ -755,7 +822,7 @@ const UpdatedProfilePage = () => {
                   <p className="text-sm">{userDetails.responsibilities}</p>
                 )}
               </div>
-              
+
               {/* Save/Cancel buttons when editing */}
               {isEditing && (
                 <div className="flex justify-end space-x-2 pt-4">
@@ -777,9 +844,12 @@ const UpdatedProfilePage = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Right sidebar - 3/12 columns matching front page layout */}
-        <div className="lg:col-span-3 w-full mt-6 lg:mt-0 space-y-6" style={{ maxWidth: "400px" }}>
+        <div
+          className="lg:col-span-3 w-full mt-6 lg:mt-0 space-y-6"
+          style={{ maxWidth: '400px' }}
+        >
           {/* Personality Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
@@ -792,14 +862,22 @@ const UpdatedProfilePage = () => {
               <p className="text-sm text-gray-700">
                 {personalityType.description}
               </p>
-              
+
               <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">People most like {user?.name?.split(' ')[0] || 'you'}</h4>
+                <h4 className="text-sm font-medium mb-2">
+                  People most like {user?.name?.split(' ')[0] || 'you'}
+                </h4>
                 <div className="flex gap-2">
-                  {similarPeople.map(person => (
-                    <Avatar key={person.id} className="h-9 w-9 border border-gray-200">
+                  {similarPeople.map((person) => (
+                    <Avatar
+                      key={person.id}
+                      className="h-9 w-9 border border-gray-200"
+                    >
                       <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
-                        {person.name.split(' ').map(n => n[0]).join('')}
+                        {person.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
                       </AvatarFallback>
                     </Avatar>
                   ))}
@@ -807,14 +885,14 @@ const UpdatedProfilePage = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Interests Section */}
-          <CompactInterestsSection 
+          <CompactInterestsSection
             interests={[]}
             isEditing={isEditing}
             onInterestsChange={() => {}}
           />
-          
+
           {/* Strengths Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
@@ -822,9 +900,9 @@ const UpdatedProfilePage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                {strengths.map(strength => (
-                  <div 
-                    key={strength.id} 
+                {strengths.map((strength) => (
+                  <div
+                    key={strength.id}
                     className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2"
                   >
                     <div className="flex-shrink-0 w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center">

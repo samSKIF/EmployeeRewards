@@ -9,17 +9,15 @@ const router = express.Router();
 async function getAnalyticsData(organizationId: number = 1) {
   try {
     // Get total employee count from all users in the system
-    const totalEmployees = await db
-      .select({ count: count() })
-      .from(users);
-    
+    const totalEmployees = await db.select({ count: count() }).from(users);
+
     // Get basic recognition stats for the organization
     const totalRecognitions = await db
       .select({ count: count() })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
       .where(eq(users.organizationId, organizationId));
-    
+
     // Get department stats with employee counts from all users
     const departmentStats = await db
       .select({
@@ -38,10 +36,12 @@ async function getAnalyticsData(organizationId: number = 1) {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(and(
-        sql`${users.department} IS NOT NULL`,
-        eq(users.organizationId, organizationId)
-      ))
+      .where(
+        and(
+          sql`${users.department} IS NOT NULL`,
+          eq(users.organizationId, organizationId)
+        )
+      )
       .groupBy(users.department);
 
     // Get monthly trends (last 6 months) for the organization
@@ -52,10 +52,12 @@ async function getAnalyticsData(organizationId: number = 1) {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(and(
-        gte(recognitions.createdAt, sql`NOW() - INTERVAL '6 months'`),
-        eq(users.organizationId, organizationId)
-      ))
+      .where(
+        and(
+          gte(recognitions.createdAt, sql`NOW() - INTERVAL '6 months'`),
+          eq(users.organizationId, organizationId)
+        )
+      )
       .groupBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`);
 
@@ -68,10 +70,12 @@ async function getAnalyticsData(organizationId: number = 1) {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recognizerId, users.id))
-      .where(and(
-        sql`${users.name} IS NOT NULL`,
-        eq(users.organizationId, organizationId)
-      ))
+      .where(
+        and(
+          sql`${users.name} IS NOT NULL`,
+          eq(users.organizationId, organizationId)
+        )
+      )
       .groupBy(users.id, users.name, users.department)
       .orderBy(desc(count(recognitions.id)))
       .limit(10);
@@ -85,10 +89,12 @@ async function getAnalyticsData(organizationId: number = 1) {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(and(
-        sql`${users.name} IS NOT NULL`,
-        eq(users.organizationId, organizationId)
-      ))
+      .where(
+        and(
+          sql`${users.name} IS NOT NULL`,
+          eq(users.organizationId, organizationId)
+        )
+      )
       .groupBy(users.id, users.name, users.department)
       .orderBy(desc(count(recognitions.id)))
       .limit(10);
@@ -111,51 +117,59 @@ async function getAnalyticsData(organizationId: number = 1) {
 // Function to generate chart data based on AI response
 function generateChartConfig(question: string, data: any) {
   const lowerQuestion = question.toLowerCase();
-  
-  if (lowerQuestion.includes('department') && lowerQuestion.includes('engagement')) {
+
+  if (
+    lowerQuestion.includes('department') &&
+    lowerQuestion.includes('engagement')
+  ) {
     return {
       type: 'bar',
       data: {
         labels: data.departmentStats?.map((d: any) => d.department) || [],
-        datasets: [{
-          label: 'Recognition Count',
-          data: data.departmentStats?.map((d: any) => d.recognitionCount) || [],
-          backgroundColor: '#8884d8'
-        }]
+        datasets: [
+          {
+            label: 'Recognition Count',
+            data:
+              data.departmentStats?.map((d: any) => d.recognitionCount) || [],
+            backgroundColor: '#8884d8',
+          },
+        ],
       },
       options: {
         responsive: true,
         plugins: {
           title: {
             display: true,
-            text: 'Recognition Count by Department'
-          }
-        }
-      }
+            text: 'Recognition Count by Department',
+          },
+        },
+      },
     };
   }
-  
+
   if (lowerQuestion.includes('trend') || lowerQuestion.includes('time')) {
     return {
       type: 'line',
       data: {
         labels: data.monthlyTrends?.map((d: any) => d.month) || [],
-        datasets: [{
-          label: 'Monthly Recognitions',
-          data: data.monthlyTrends?.map((d: any) => d.count) || [],
-          borderColor: '#82ca9d',
-          fill: false
-        }]
+        datasets: [
+          {
+            label: 'Monthly Recognitions',
+            data: data.monthlyTrends?.map((d: any) => d.count) || [],
+            borderColor: '#82ca9d',
+            fill: false,
+          },
+        ],
       },
       options: {
         responsive: true,
         plugins: {
           title: {
             display: true,
-            text: 'Recognition Trends Over Time'
-          }
-        }
-      }
+            text: 'Recognition Trends Over Time',
+          },
+        },
+      },
     };
   }
 
@@ -164,21 +178,26 @@ function generateChartConfig(question: string, data: any) {
       type: 'bar',
       data: {
         labels: data.topRecognizers?.slice(0, 5).map((d: any) => d.name) || [],
-        datasets: [{
-          label: 'Recognitions Given',
-          data: data.topRecognizers?.slice(0, 5).map((d: any) => d.recognitionCount) || [],
-          backgroundColor: '#ffc658'
-        }]
+        datasets: [
+          {
+            label: 'Recognitions Given',
+            data:
+              data.topRecognizers
+                ?.slice(0, 5)
+                .map((d: any) => d.recognitionCount) || [],
+            backgroundColor: '#ffc658',
+          },
+        ],
       },
       options: {
         responsive: true,
         plugins: {
           title: {
             display: true,
-            text: 'Top 5 Recognizers'
-          }
-        }
-      }
+            text: 'Top 5 Recognizers',
+          },
+        },
+      },
     };
   }
 
@@ -200,7 +219,7 @@ router.post('/ask', async (req, res) => {
 
     // Get current analytics data for the user's organization
     const analyticsData = await getAnalyticsData(organizationId);
-    
+
     if (!analyticsData) {
       return res.status(500).json({ error: 'Failed to fetch analytics data' });
     }
@@ -211,69 +230,114 @@ router.post('/ask', async (req, res) => {
     let insights = [];
 
     // Employee count questions
-    if (lowerQuestion.includes('employee') && (lowerQuestion.includes('count') || lowerQuestion.includes('many') || lowerQuestion.includes('total'))) {
+    if (
+      lowerQuestion.includes('employee') &&
+      (lowerQuestion.includes('count') ||
+        lowerQuestion.includes('many') ||
+        lowerQuestion.includes('total'))
+    ) {
       answer = `Your company has ${analyticsData.totalEmployees} total employees across all departments.`;
-      insights = [`Company size: ${analyticsData.totalEmployees} employees`, 'This represents your current workforce'];
+      insights = [
+        `Company size: ${analyticsData.totalEmployees} employees`,
+        'This represents your current workforce',
+      ];
     }
-    
+
     // Department questions
     else if (lowerQuestion.includes('department')) {
       if (lowerQuestion.includes('most') || lowerQuestion.includes('largest')) {
-        const largestDept = analyticsData.departmentStats?.reduce((max, dept) => 
-          dept.employeeCount > (max?.employeeCount || 0) ? dept : max
+        const largestDept = analyticsData.departmentStats?.reduce(
+          (max, dept) =>
+            dept.employeeCount > (max?.employeeCount || 0) ? dept : max
         );
-        answer = largestDept ? 
-          `${largestDept.department} is your largest department with ${largestDept.employeeCount} employees.` :
-          'Department data is not available at the moment.';
-        insights = largestDept ? [`${largestDept.department}: ${largestDept.employeeCount} employees`, 'This department may need more recognition focus'] : [];
+        answer = largestDept
+          ? `${largestDept.department} is your largest department with ${largestDept.employeeCount} employees.`
+          : 'Department data is not available at the moment.';
+        insights = largestDept
+          ? [
+              `${largestDept.department}: ${largestDept.employeeCount} employees`,
+              'This department may need more recognition focus',
+            ]
+          : [];
       } else {
-        const deptList = analyticsData.departmentStats?.map(d => `${d.department}: ${d.employeeCount} employees`).join(', ') || 'No department data available';
+        const deptList =
+          analyticsData.departmentStats
+            ?.map((d) => `${d.department}: ${d.employeeCount} employees`)
+            .join(', ') || 'No department data available';
         answer = `Here's your department breakdown: ${deptList}`;
-        insights = ['Department distribution shows organizational structure', 'Consider recognition balance across departments'];
+        insights = [
+          'Department distribution shows organizational structure',
+          'Consider recognition balance across departments',
+        ];
       }
     }
-    
+
     // Recognition questions
-    else if (lowerQuestion.includes('recognition') && (lowerQuestion.includes('total') || lowerQuestion.includes('many'))) {
+    else if (
+      lowerQuestion.includes('recognition') &&
+      (lowerQuestion.includes('total') || lowerQuestion.includes('many'))
+    ) {
       answer = `Your company has recorded ${analyticsData.totalRecognitions} total recognitions so far.`;
-      insights = [`Total recognitions: ${analyticsData.totalRecognitions}`, 'This shows your recognition culture activity'];
+      insights = [
+        `Total recognitions: ${analyticsData.totalRecognitions}`,
+        'This shows your recognition culture activity',
+      ];
     }
-    
+
     // Top recognizer questions
-    else if (lowerQuestion.includes('top') && (lowerQuestion.includes('recognizer') || lowerQuestion.includes('giver'))) {
+    else if (
+      lowerQuestion.includes('top') &&
+      (lowerQuestion.includes('recognizer') || lowerQuestion.includes('giver'))
+    ) {
       const topRecognizer = analyticsData.topRecognizers?.[0];
-      answer = topRecognizer ? 
-        `${topRecognizer.name} from ${topRecognizer.department} is your top recognizer with ${topRecognizer.recognitionCount} recognitions given.` :
-        'Recognition data is not available at the moment.';
-      insights = topRecognizer ? [`${topRecognizer.name}: ${topRecognizer.recognitionCount} recognitions given`, 'This employee shows strong peer appreciation'] : [];
+      answer = topRecognizer
+        ? `${topRecognizer.name} from ${topRecognizer.department} is your top recognizer with ${topRecognizer.recognitionCount} recognitions given.`
+        : 'Recognition data is not available at the moment.';
+      insights = topRecognizer
+        ? [
+            `${topRecognizer.name}: ${topRecognizer.recognitionCount} recognitions given`,
+            'This employee shows strong peer appreciation',
+          ]
+        : [];
     }
-    
+
     // Trends questions
-    else if (lowerQuestion.includes('trend') || lowerQuestion.includes('pattern')) {
+    else if (
+      lowerQuestion.includes('trend') ||
+      lowerQuestion.includes('pattern')
+    ) {
       const recentTrend = analyticsData.monthlyTrends?.slice(-2);
       if (recentTrend && recentTrend.length >= 2) {
         const change = recentTrend[1].count - recentTrend[0].count;
-        const direction = change > 0 ? 'increased' : change < 0 ? 'decreased' : 'remained stable';
+        const direction =
+          change > 0
+            ? 'increased'
+            : change < 0
+              ? 'decreased'
+              : 'remained stable';
         answer = `Recognition activity has ${direction} recently. Last month: ${recentTrend[1].count} recognitions vs previous month: ${recentTrend[0].count}.`;
-        insights = [`Monthly change: ${change > 0 ? '+' : ''}${change}`, `Trend direction: ${direction}`];
+        insights = [
+          `Monthly change: ${change > 0 ? '+' : ''}${change}`,
+          `Trend direction: ${direction}`,
+        ];
       } else {
         answer = 'Trend data is not available for analysis at the moment.';
         insights = [];
       }
     }
-    
+
     // Default response for other questions
     else {
       answer = `I can help you analyze your recognition data! Here's a quick overview: You have ${analyticsData.totalEmployees} employees with ${analyticsData.totalRecognitions} total recognitions. Try asking specific questions about departments, top performers, or recognition trends.`;
       insights = [
         `${analyticsData.totalEmployees} total employees`,
         `${analyticsData.totalRecognitions} total recognitions`,
-        'Ask about departments, trends, or top performers'
+        'Ask about departments, trends, or top performers',
       ];
     }
 
     const aiResponse = { answer, insights };
-    
+
     // Generate chart configuration if applicable
     const chartConfig = generateChartConfig(question, analyticsData);
 
@@ -282,14 +346,13 @@ router.post('/ask', async (req, res) => {
       insights: aiResponse.insights || [],
       chartConfig,
       rawData: analyticsData,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Error in AI conversation:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to process question',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -297,14 +360,14 @@ router.post('/ask', async (req, res) => {
 // Get suggested questions
 router.get('/suggestions', (req, res) => {
   const suggestions = [
-    "Which department has the most engagement this month?",
-    "Show me sentiment trends in Sales over last quarter",
-    "Who are our top 5 recognizers?",
+    'Which department has the most engagement this month?',
+    'Show me sentiment trends in Sales over last quarter',
+    'Who are our top 5 recognizers?',
     "What's the recognition trend for the last 6 months?",
-    "Which team needs more recognition?",
-    "How does Engineering compare to other departments?",
-    "What are the key insights from our recognition data?",
-    "Show me monthly recognition patterns"
+    'Which team needs more recognition?',
+    'How does Engineering compare to other departments?',
+    'What are the key insights from our recognition data?',
+    'Show me monthly recognition patterns',
   ];
 
   res.json({ suggestions });

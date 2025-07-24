@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useBranding } from '@/context/BrandingContext';
-import { 
-  ShoppingCart, 
-  Shield, 
-  Settings, 
-  ChevronDown, 
-  Users, 
-  ClipboardList, 
-  Store, 
+import {
+  ShoppingCart,
+  Shield,
+  Settings,
+  ChevronDown,
+  Users,
+  ClipboardList,
+  Store,
   BarChart2,
   Home,
   Award,
@@ -20,7 +20,7 @@ import {
   Briefcase,
   UserCheck,
   LucideIcon,
-  MessageCircle
+  MessageCircle,
 } from 'lucide-react';
 import { SpacesDiscoveryWidget } from '@/components/spaces/SpacesDiscoveryWidget';
 
@@ -45,7 +45,14 @@ interface MenuItemProps {
   className?: string;
 }
 
-const MenuItem = ({ icon: Icon, label, onClick, isActive, badge, className }: MenuItemProps) => (
+const MenuItem = ({
+  icon: Icon,
+  label,
+  onClick,
+  isActive,
+  badge,
+  className,
+}: MenuItemProps) => (
   <button
     onClick={onClick}
     className={`flex items-center text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100 ${
@@ -55,7 +62,9 @@ const MenuItem = ({ icon: Icon, label, onClick, isActive, badge, className }: Me
     <Icon className="w-5 h-5 mr-3" />
     <span>{label}</span>
     {badge && (
-      <span className="ml-auto bg-gray-200 text-xs rounded-full px-2 py-0.5">{badge}</span>
+      <span className="ml-auto bg-gray-200 text-xs rounded-full px-2 py-0.5">
+        {badge}
+      </span>
     )}
   </button>
 );
@@ -74,7 +83,7 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
   // Check if any admin console page is active
   const isOnAdminPage = location.startsWith('/admin/');
-  
+
   // If we're on admin page, ensure the admin console is open
   if (isOnAdminPage && !isAdminConsoleOpen) {
     setIsAdminConsoleOpen(true);
@@ -82,83 +91,123 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("firebaseToken");
-    sessionStorage.setItem("skipAutoLogin", "true");
-    window.location.href = "/auth";
+    localStorage.removeItem('firebaseToken');
+    sessionStorage.setItem('skipAutoLogin', 'true');
+    window.location.href = '/auth';
   };
 
   // Main menu items
   const mainMenuItems = [
-    { icon: Home, label: "Home", onClick: () => navigateTo('/social'), isActive: location === '/social' },
-    { icon: Award, label: "Recognition", onClick: () => navigateTo('/recognition'), isActive: location === '/recognition' },
-    { icon: MessageCircle, label: "Spaces", onClick: () => navigateTo('/spaces'), isActive: location === '/spaces' },
-    { icon: CircleDollarSign, label: "Reward Budgets", onClick: () => navigateTo('/budgets'), isActive: location === '/budgets' },
-    { icon: ShoppingCart, label: "Rewards", onClick: () => navigateTo('/social/shop'), isActive: location === '/social/shop' },
-    { icon: BarChart2, label: "Leaderboard", onClick: () => navigateTo('/leaderboard'), isActive: location === '/leaderboard' },
-    { icon: FileText, label: "Surveys", onClick: () => navigateTo('/user/surveys'), isActive: location === '/user/surveys' },
-    { icon: Users, label: "Groups", onClick: () => navigateTo('/groups'), isActive: location === '/groups' },
+    {
+      icon: Home,
+      label: 'Home',
+      onClick: () => navigateTo('/social'),
+      isActive: location === '/social',
+    },
+    {
+      icon: Award,
+      label: 'Recognition',
+      onClick: () => navigateTo('/recognition'),
+      isActive: location === '/recognition',
+    },
+    {
+      icon: MessageCircle,
+      label: 'Spaces',
+      onClick: () => navigateTo('/spaces'),
+      isActive: location === '/spaces',
+    },
+    {
+      icon: CircleDollarSign,
+      label: 'Reward Budgets',
+      onClick: () => navigateTo('/budgets'),
+      isActive: location === '/budgets',
+    },
+    {
+      icon: ShoppingCart,
+      label: 'Rewards',
+      onClick: () => navigateTo('/social/shop'),
+      isActive: location === '/social/shop',
+    },
+    {
+      icon: BarChart2,
+      label: 'Leaderboard',
+      onClick: () => navigateTo('/leaderboard'),
+      isActive: location === '/leaderboard',
+    },
+    {
+      icon: FileText,
+      label: 'Surveys',
+      onClick: () => navigateTo('/user/surveys'),
+      isActive: location === '/user/surveys',
+    },
+    {
+      icon: Users,
+      label: 'Groups',
+      onClick: () => navigateTo('/groups'),
+      isActive: location === '/groups',
+    },
   ];
 
   // Admin console menu items (only shown to admins)
   const adminConsoleItems = [
-    { 
-      icon: Shield, 
-      label: "Admin Dashboard", 
+    {
+      icon: Shield,
+      label: 'Admin Dashboard',
       onClick: () => navigateTo('/admin/dashboard'),
       isActive: location === '/admin/dashboard',
     },
-    { 
-      icon: Users, 
-      label: "Team Management", 
+    {
+      icon: Users,
+      label: 'Team Management',
       onClick: () => navigateTo('/admin/employees'),
       isActive: location === '/admin/employees',
-      className: "whitespace-nowrap",
+      className: 'whitespace-nowrap',
     },
-    { 
-      icon: Settings, 
-      label: "Admin Permissions", 
+    {
+      icon: Settings,
+      label: 'Admin Permissions',
       onClick: () => navigateTo('/admin/permissions'),
       isActive: location === '/admin/permissions',
-      className: "whitespace-nowrap",
+      className: 'whitespace-nowrap',
     },
-    { 
-      icon: UserCheck, 
-      label: "Team Promotion", 
+    {
+      icon: UserCheck,
+      label: 'Team Promotion',
       onClick: () => navigateTo('/admin/employee-promotion'),
       isActive: location === '/admin/employee-promotion',
-      className: "whitespace-nowrap",
+      className: 'whitespace-nowrap',
     },
-    { 
-      icon: Award, 
-      label: "Recognition Settings", 
+    {
+      icon: Award,
+      label: 'Recognition Settings',
       onClick: () => navigateTo('/admin/recognition-settings'),
       isActive: location === '/admin/recognition-settings',
-      className: "whitespace-nowrap",
+      className: 'whitespace-nowrap',
     },
-    { 
-      icon: Briefcase, 
-      label: "Onboarding", 
+    {
+      icon: Briefcase,
+      label: 'Onboarding',
       onClick: () => navigateTo('/admin/onboarding'),
       isActive: location === '/admin/onboarding',
     },
-    { 
-      icon: Palette, 
-      label: "Brand Identity", 
+    {
+      icon: Palette,
+      label: 'Brand Identity',
       onClick: () => navigateTo('/admin/branding'),
       isActive: location === '/admin/branding',
     },
-    { 
-      icon: Store, 
-      label: "Shop Configuration", 
+    {
+      icon: Store,
+      label: 'Shop Configuration',
       onClick: () => navigateTo('/admin/shop/config'),
       isActive: location === '/admin/shop/config',
     },
-    { 
-      icon: ClipboardList, 
-      label: "Surveys", 
+    {
+      icon: ClipboardList,
+      label: 'Surveys',
       onClick: () => navigateTo('/admin/surveys'),
       isActive: location === '/admin/surveys',
-    }
+    },
   ];
 
   return (
@@ -166,34 +215,68 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       {/* Logo/Brand area */}
       <div className="flex items-center mb-6 pl-2">
         {branding?.logoUrl ? (
-          <img 
-            src={branding.logoUrl} 
-            alt={branding.organizationName || "Company Logo"} 
-            className="h-8 w-8 mr-2 object-contain" 
+          <img
+            src={branding.logoUrl}
+            alt={branding.organizationName || 'Company Logo'}
+            className="h-8 w-8 mr-2 object-contain"
           />
         ) : (
           <div className="text-teal-500 mr-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M9 9H9.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M15 9H15.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 9H9.01"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15 9H15.01"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
         )}
-        <h1 className="font-bold text-xl">{branding?.organizationName || "ThrivioHR"}</h1>
+        <h1 className="font-bold text-xl">
+          {branding?.organizationName || 'ThrivioHR'}
+        </h1>
       </div>
 
       {/* User profile summary */}
       <div className="flex items-center mb-6 bg-gray-50 p-3 rounded-lg">
         <Avatar className="h-10 w-10 border-2 border-gray-100 flex-shrink-0">
-          <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+          <AvatarImage src={user?.avatarUrl} alt={user?.name || 'User'} />
           <AvatarFallback className="bg-teal-100 text-teal-700">
             {user?.name?.charAt(0) || 'A'}
           </AvatarFallback>
         </Avatar>
         <div className="ml-3">
-          <p className="text-gray-800 font-medium">{user?.name || 'Admin User'}</p>
+          <p className="text-gray-800 font-medium">
+            {user?.name || 'Admin User'}
+          </p>
           <p className="text-xs text-amber-500 flex items-center">
             <span className="mr-1">★</span>
             <span>580</span>
@@ -225,9 +308,11 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
                 <Settings className="w-5 h-5 mr-3" />
                 <span>Admin Console</span>
               </div>
-              <ChevronDown className={`w-4 h-4 transition-transform ${isAdminConsoleOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isAdminConsoleOpen ? 'rotate-180' : ''}`}
+              />
             </button>
-            
+
             {isAdminConsoleOpen && (
               <div className="ml-6 space-y-1 py-1">
                 {/* Admin Console Sub-menu Items */}
@@ -245,15 +330,13 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
             )}
           </div>
         )}
-        
-
       </div>
 
       {/* Groups Discovery Widget */}
       <div className="mt-8 px-3">
         <SpacesDiscoveryWidget />
       </div>
-      
+
       {/* Logout button */}
       <div className="mt-8 border-t border-gray-200 pt-4">
         <button

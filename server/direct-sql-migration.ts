@@ -3,14 +3,14 @@
  * directly using PostgreSQL client
  */
 import { Pool, neonConfig } from '@neondatabase/serverless';
-import ws from "ws";
+import ws from 'ws';
 
 // Configure Neon to use WebSocket
 neonConfig.webSocketConstructor = ws;
 
 async function runLeaveMigration() {
   console.log('Running leave management database migration...');
-  
+
   // Create a direct connection to the database
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

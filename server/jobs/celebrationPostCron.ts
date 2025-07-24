@@ -13,8 +13,9 @@ import { logger } from '@shared/logger';
 export function startCelebrationPostCron() {
   // Schedule: "0 6 * * *" means 6:00 AM every day
   // For testing, use "*/5 * * * *" to run every 5 minutes
-  const schedule = process.env.NODE_ENV === 'development' ? '0 6 * * *' : '0 6 * * *';
-  
+  const schedule =
+    process.env.NODE_ENV === 'development' ? '0 6 * * *' : '0 6 * * *';
+
   cron.schedule(schedule, async () => {
     try {
       logger.info('🎉 Starting scheduled celebration post generation...');
@@ -24,7 +25,7 @@ export function startCelebrationPostCron() {
       logger.error('❌ Error in scheduled celebration post generation:', error);
     }
   });
-  
+
   logger.info(`🕒 Celebration post cron job scheduled: ${schedule}`);
 }
 

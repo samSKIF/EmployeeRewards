@@ -1,15 +1,15 @@
-import { useState, FormEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { 
+import { useState, FormEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
+  SelectValue,
+} from '@/components/ui/select';
 
 interface TransactionFiltersProps {
   onApplyFilters: (filters: {
@@ -20,16 +20,16 @@ interface TransactionFiltersProps {
 }
 
 const TransactionFilters = ({ onApplyFilters }: TransactionFiltersProps) => {
-  const [type, setType] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [type, setType] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onApplyFilters({
       type,
       dateFrom,
-      dateTo
+      dateTo,
     });
   };
 
@@ -51,7 +51,7 @@ const TransactionFilters = ({ onApplyFilters }: TransactionFiltersProps) => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="dateFrom">Date From</Label>
               <Input
@@ -61,7 +61,7 @@ const TransactionFilters = ({ onApplyFilters }: TransactionFiltersProps) => {
                 onChange={(e) => setDateFrom(e.target.value)}
               />
             </div>
-            
+
             <div>
               <Label htmlFor="dateTo">Date To</Label>
               <Input
@@ -71,7 +71,7 @@ const TransactionFilters = ({ onApplyFilters }: TransactionFiltersProps) => {
                 onChange={(e) => setDateTo(e.target.value)}
               />
             </div>
-            
+
             <div className="flex items-end">
               <Button type="submit" className="w-full">
                 Apply Filters

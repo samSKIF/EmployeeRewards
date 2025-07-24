@@ -10,7 +10,8 @@ export class CacheService {
     SOCIAL_POSTS: (orgId: number) => `social:posts:org:${orgId}`,
     SOCIAL_STATS: (orgId: number) => `social:stats:org:${orgId}`,
     CELEBRATIONS_TODAY: (orgId: number) => `celebrations:today:org:${orgId}`,
-    CELEBRATIONS_UPCOMING: (orgId: number) => `celebrations:upcoming:org:${orgId}`,
+    CELEBRATIONS_UPCOMING: (orgId: number) =>
+      `celebrations:upcoming:org:${orgId}`,
     USER_POINTS: (userId: number) => `points:user:${userId}`,
   };
 
@@ -43,10 +44,10 @@ export class CacheService {
       console.log(`Cache MISS for key: ${key}`);
       // Fetch from database
       const data = await fetchFunction();
-      
+
       // Store in cache for next time
       await redisCache.set(key, data, expirationSeconds);
-      
+
       return data;
     } catch (error) {
       console.log(`Cache error for key ${key}:`, error);
@@ -59,7 +60,7 @@ export class CacheService {
   static async invalidateUserCache(userId: number, orgId?: number) {
     await redisCache.del(this.KEYS.USER(userId));
     await redisCache.del(this.KEYS.USER_POINTS(userId));
-    
+
     if (orgId) {
       await redisCache.del(this.KEYS.USERS_LIST(orgId));
     }
@@ -94,7 +95,11 @@ export class CacheService {
     }
   }
 
-  static async set(key: string, value: any, expirationSeconds: number = 300): Promise<void> {
+  static async set(
+    key: string,
+    value: any,
+    expirationSeconds: number = 300
+  ): Promise<void> {
     try {
       await redisCache.set(key, value, expirationSeconds);
     } catch (error) {

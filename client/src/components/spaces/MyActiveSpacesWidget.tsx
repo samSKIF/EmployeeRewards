@@ -1,10 +1,25 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Users, ArrowRight, Building, MapPin, Heart, Briefcase, Coffee } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  MessageCircle,
+  Users,
+  ArrowRight,
+  Building,
+  MapPin,
+  Heart,
+  Briefcase,
+  Coffee,
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
 
 interface Space {
   id: number;
@@ -17,12 +32,18 @@ interface Space {
 
 const getChannelIcon = (type: string) => {
   switch (type) {
-    case 'department': return <Building className="h-4 w-4" />;
-    case 'site': return <MapPin className="h-4 w-4" />;
-    case 'interest': return <Heart className="h-4 w-4" />;
-    case 'project': return <Briefcase className="h-4 w-4" />;
-    case 'social': return <Coffee className="h-4 w-4" />;
-    default: return <MessageCircle className="h-4 w-4" />;
+    case 'department':
+      return <Building className="h-4 w-4" />;
+    case 'site':
+      return <MapPin className="h-4 w-4" />;
+    case 'interest':
+      return <Heart className="h-4 w-4" />;
+    case 'project':
+      return <Briefcase className="h-4 w-4" />;
+    case 'social':
+      return <Coffee className="h-4 w-4" />;
+    default:
+      return <MessageCircle className="h-4 w-4" />;
   }
 };
 
@@ -75,7 +96,9 @@ export function MyActiveSpacesWidget() {
         {activeSpaces.length === 0 ? (
           <div className="text-center py-8">
             <MessageCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 mb-3">You haven't joined any spaces yet</p>
+            <p className="text-sm text-gray-600 mb-3">
+              You haven't joined any spaces yet
+            </p>
             <Link href="/spaces">
               <Button size="sm" variant="outline">
                 Discover Spaces
@@ -85,7 +108,11 @@ export function MyActiveSpacesWidget() {
         ) : (
           <>
             {activeSpaces.map((space) => (
-              <Link key={space.id} href={`/spaces/${space.id}`} className="block">
+              <Link
+                key={space.id}
+                href={`/spaces/${space.id}`}
+                className="block"
+              >
                 <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 hover:border-blue-200 transition-all cursor-pointer group">
                   <div className="flex items-center space-x-3 flex-1">
                     <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
@@ -119,7 +146,7 @@ export function MyActiveSpacesWidget() {
                 </div>
               </Link>
             ))}
-            
+
             {mySpaces.length > 6 && (
               <div className="pt-2 border-t">
                 <Link href="/spaces">

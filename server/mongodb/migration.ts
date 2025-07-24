@@ -52,7 +52,7 @@ export class SocialDataMigration {
         isPinned: posts.isPinned,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
-        organizationId: users.organizationId
+        organizationId: users.organizationId,
       })
       .from(posts)
       .innerJoin(users, eq(posts.userId, users.id))
@@ -80,7 +80,7 @@ export class SocialDataMigration {
           commentsCount: 0,
           sharesCount: 0,
           viewsCount: 0,
-          isDeleted: false
+          isDeleted: false,
         };
 
         await this.socialService.createPost(mongoPost);
@@ -107,7 +107,7 @@ export class SocialDataMigration {
         content: comments.content,
         createdAt: comments.createdAt,
         updatedAt: comments.updatedAt,
-        organizationId: users.organizationId
+        organizationId: users.organizationId,
       })
       .from(comments)
       .innerJoin(users, eq(comments.userId, users.id))
@@ -118,7 +118,7 @@ export class SocialDataMigration {
     // Get MongoDB posts to map MySQL post IDs to MongoDB ObjectIds
     const mongoPosts = await this.socialService.getPosts(1, 1000); // Get first 1000 posts
     const postIdMap = new Map();
-    
+
     // Create mapping based on creation time and author (best effort matching)
     for (const mongoPost of mongoPosts) {
       const key = `${mongoPost.authorId}-${mongoPost.createdAt.getTime()}`;
@@ -133,7 +133,9 @@ export class SocialDataMigration {
         const mongoPostId = postIdMap.get(postKey);
 
         if (!mongoPostId) {
-          console.warn(`Could not find MongoDB post for comment ${comment.id}, skipping`);
+          console.warn(
+            `Could not find MongoDB post for comment ${comment.id}, skipping`
+          );
           continue;
         }
 
@@ -146,7 +148,7 @@ export class SocialDataMigration {
           createdAt: comment.createdAt,
           updatedAt: comment.updatedAt || comment.createdAt,
           reactions: [],
-          isDeleted: false
+          isDeleted: false,
         };
 
         await this.socialService.createComment(mongoComment);
@@ -171,7 +173,7 @@ export class SocialDataMigration {
         userName: users.name,
         userSurname: users.surname,
         type: reactions.type,
-        createdAt: reactions.createdAt
+        createdAt: reactions.createdAt,
       })
       .from(reactions)
       .innerJoin(users, eq(reactions.userId, users.id))
@@ -182,7 +184,7 @@ export class SocialDataMigration {
     // Get MongoDB posts for mapping
     const mongoPosts = await this.socialService.getPosts(1, 1000);
     const postIdMap = new Map();
-    
+
     for (const mongoPost of mongoPosts) {
       const key = `${mongoPost.authorId}-${mongoPost.createdAt.getTime()}`;
       postIdMap.set(key, mongoPost._id);
@@ -195,12 +197,15 @@ export class SocialDataMigration {
         const mongoPostId = postIdMap.get(postKey);
 
         if (!mongoPostId) {
-          console.warn(`Could not find MongoDB post for reaction ${reaction.id}, skipping`);
+          console.warn(
+            `Could not find MongoDB post for reaction ${reaction.id}, skipping`
+          );
           continue;
         }
 
-        const userName = `${reaction.userName} ${reaction.userSurname || ''}`.trim();
-        
+        const userName =
+          `${reaction.userName} ${reaction.userSurname || ''}`.trim();
+
         await this.socialService.addReactionToPost(
           mongoPostId.toString(),
           reaction.userId,
@@ -217,24 +222,39 @@ export class SocialDataMigration {
     console.log('Reactions migration completed');
   }
 
-  private mapPostType(mysqlType: string): 'text' | 'image' | 'poll' | 'recognition' | 'announcement' {
+  private mapPostType(
+    mysqlType: string
+  ): 'text' | 'image' | 'poll' | 'recognition' | 'announcement' {
     switch (mysqlType) {
-      case 'standard': return 'text';
-      case 'poll': return 'poll';
-      case 'announcement': return 'announcement';
-      case 'recognition': return 'recognition';
-      default: return 'text';
+      case 'standard':
+        return 'text';
+      case 'poll':
+        return 'poll';
+      case 'announcement':
+        return 'announcement';
+      case 'recognition':
+        return 'recognition';
+      default:
+        return 'text';
     }
   }
 
-  private mapReactionType(mysqlType: string): 'like' | 'love' | 'celebrate' | 'support' | 'insightful' {
+  private mapReactionType(
+    mysqlType: string
+  ): 'like' | 'love' | 'celebrate' | 'support' | 'insightful' {
     switch (mysqlType) {
-      case 'like': return 'like';
-      case 'love': return 'love';
-      case 'celebrate': return 'celebrate';
-      case 'support': return 'support';
-      case 'insightful': return 'insightful';
-      default: return 'like';
+      case 'like':
+        return 'like';
+      case 'love':
+        return 'love';
+      case 'celebrate':
+        return 'celebrate';
+      case 'support':
+        return 'support';
+      case 'insightful':
+        return 'insightful';
+      default:
+        return 'like';
     }
   }
 }

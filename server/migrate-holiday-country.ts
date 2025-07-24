@@ -1,12 +1,12 @@
 /**
  * This migration adds the country column to the holidays table
  */
-import { db } from "./db";
-import { sql } from "drizzle-orm";
+import { db } from './db';
+import { sql } from 'drizzle-orm';
 
 async function runHolidayCountryMigration() {
   try {
-    console.log("Starting holiday country migration...");
+    console.log('Starting holiday country migration...');
 
     // Check if column exists first to avoid errors on repeat runs
     const columnCheckResult = await db.execute(sql`
@@ -21,9 +21,9 @@ async function runHolidayCountryMigration() {
         ALTER TABLE holidays 
         ADD COLUMN country TEXT NOT NULL DEFAULT 'Global'
       `);
-      console.log("Added country column to holidays table");
+      console.log('Added country column to holidays table');
     } else {
-      console.log("Country column already exists in holidays table");
+      console.log('Country column already exists in holidays table');
     }
 
     // Check if column exists first to avoid errors on repeat runs
@@ -39,14 +39,16 @@ async function runHolidayCountryMigration() {
         ALTER TABLE holidays 
         ADD COLUMN is_recurring_yearly BOOLEAN NOT NULL DEFAULT false
       `);
-      console.log("Added is_recurring_yearly column to holidays table");
+      console.log('Added is_recurring_yearly column to holidays table');
     } else {
-      console.log("is_recurring_yearly column already exists in holidays table");
+      console.log(
+        'is_recurring_yearly column already exists in holidays table'
+      );
     }
 
-    console.log("Holiday country migration completed successfully!");
+    console.log('Holiday country migration completed successfully!');
   } catch (error) {
-    console.error("Error during holiday country migration:", error);
+    console.error('Error during holiday country migration:', error);
     throw error;
   }
 }
@@ -54,10 +56,10 @@ async function runHolidayCountryMigration() {
 // Run the migration immediately
 runHolidayCountryMigration()
   .then(() => {
-    console.log("Migration completed successfully!");
+    console.log('Migration completed successfully!');
     process.exit(0);
   })
   .catch((error) => {
-    console.error("Migration failed:", error);
+    console.error('Migration failed:', error);
     process.exit(1);
   });

@@ -5,7 +5,11 @@
 
 import { Request, Response } from 'express';
 import { db } from '../../db';
-import { users, employeeStatusTypes, employeeStatuses } from '../../../shared/schema';
+import {
+  users,
+  employeeStatusTypes,
+  employeeStatuses,
+} from '../../../shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { verifyToken } from '../../middleware/auth';
 
@@ -19,10 +23,12 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
     const employeesWithBirthday = await db
       .select()
       .from(users)
-      .where(and(
-        sql`EXTRACT(MONTH FROM birth_date) = ${today.getMonth() + 1}`,
-        sql`EXTRACT(DAY FROM birth_date) = ${today.getDate()}`
-      ));
+      .where(
+        and(
+          sql`EXTRACT(MONTH FROM birth_date) = ${today.getMonth() + 1}`,
+          sql`EXTRACT(DAY FROM birth_date) = ${today.getDate()}`
+        )
+      );
 
     // Get the Birthday status type
     const birthdayStatusType = await db
@@ -43,31 +49,31 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
       const existingStatus = await db
         .select()
         .from(employeeStatuses)
-        .where(and(
-          eq(employeeStatuses.userId, employee.id),
-          eq(employeeStatuses.statusTypeId, statusTypeId),
-          eq(employeeStatuses.startDate, todayFormatted)
-        ));
+        .where(
+          and(
+            eq(employeeStatuses.userId, employee.id),
+            eq(employeeStatuses.statusTypeId, statusTypeId),
+            eq(employeeStatuses.startDate, todayFormatted)
+          )
+        );
 
       if (existingStatus.length === 0) {
         // Assign birthday status for today only
-        await db
-          .insert(employeeStatuses)
-          .values({
-            userId: employee.id,
-            statusTypeId: statusTypeId,
-            startDate: todayFormatted,
-            endDate: todayFormatted,
-            notes: 'Happy Birthday! 🎉',
-            createdBy: 1, // System
-            updatedAt: new Date()
-          });
+        await db.insert(employeeStatuses).values({
+          userId: employee.id,
+          statusTypeId: statusTypeId,
+          startDate: todayFormatted,
+          endDate: todayFormatted,
+          notes: 'Happy Birthday! 🎉',
+          createdBy: 1, // System
+          updatedAt: new Date(),
+        });
       }
     }
 
-    res.json({ 
+    res.json({
       message: 'Birthday statuses checked and assigned',
-      employeesProcessed: employeesWithBirthday.length
+      employeesProcessed: employeesWithBirthday.length,
     });
   } catch (error) {
     console.error('Error checking birthday statuses:', error);
@@ -105,7 +111,7 @@ export async function assignBirthdayStatus(req: Request, res: Response) {
         endDate: targetDate,
         notes: 'Happy Birthday! 🎉',
         createdBy: req.user?.id || 1,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .returning();
 
@@ -119,5 +125,9 @@ export async function assignBirthdayStatus(req: Request, res: Response) {
 // Setup routes
 export function setupBirthdayStatusRoutes(app: any) {
   app.post('/api/birthday-status/check', verifyToken, checkBirthdayStatuses);
-  app.post('/api/birthday-status/assign/:userId', verifyToken, assignBirthdayStatus);
+  app.post(
+    '/api/birthday-status/assign/:userId',
+    verifyToken,
+    assignBirthdayStatus
+  );
 }

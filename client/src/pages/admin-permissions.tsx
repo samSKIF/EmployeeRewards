@@ -1,11 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Save, Users, Building, MapPin, Crown } from 'lucide-react';
+import {
+  Trash2,
+  Plus,
+  Save,
+  Users,
+  Building,
+  MapPin,
+  Crown,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
@@ -40,16 +60,19 @@ export default function AdminPermissions() {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch admin users",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch admin users',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const updateAdminPermissions = async (userId: number, updates: Partial<AdminUser>) => {
+  const updateAdminPermissions = async (
+    userId: number,
+    updates: Partial<AdminUser>
+  ) => {
     try {
       const response = await fetch(`/api/admin/permissions/${userId}`, {
         method: 'PUT',
@@ -59,8 +82,8 @@ export default function AdminPermissions() {
 
       if (response.ok) {
         toast({
-          title: "Success",
-          description: "Admin permissions updated successfully",
+          title: 'Success',
+          description: 'Admin permissions updated successfully',
         });
         fetchAdminUsers();
         setEditingUser(null);
@@ -69,9 +92,9 @@ export default function AdminPermissions() {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update admin permissions",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update admin permissions',
+        variant: 'destructive',
       });
     }
   };
@@ -80,7 +103,7 @@ export default function AdminPermissions() {
     if (newSite && !user.allowedSites.includes(newSite)) {
       const updatedUser = {
         ...user,
-        allowedSites: [...user.allowedSites, newSite]
+        allowedSites: [...user.allowedSites, newSite],
       };
       setEditingUser(updatedUser);
       setNewSite('');
@@ -91,7 +114,7 @@ export default function AdminPermissions() {
     if (newDepartment && !user.allowedDepartments.includes(newDepartment)) {
       const updatedUser = {
         ...user,
-        allowedDepartments: [...user.allowedDepartments, newDepartment]
+        allowedDepartments: [...user.allowedDepartments, newDepartment],
       };
       setEditingUser(updatedUser);
       setNewDepartment('');
@@ -101,7 +124,7 @@ export default function AdminPermissions() {
   const removeSiteFromUser = (user: AdminUser, site: string) => {
     const updatedUser = {
       ...user,
-      allowedSites: user.allowedSites.filter(s => s !== site)
+      allowedSites: user.allowedSites.filter((s) => s !== site),
     };
     setEditingUser(updatedUser);
   };
@@ -109,33 +132,47 @@ export default function AdminPermissions() {
   const removeDepartmentFromUser = (user: AdminUser, department: string) => {
     const updatedUser = {
       ...user,
-      allowedDepartments: user.allowedDepartments.filter(d => d !== department)
+      allowedDepartments: user.allowedDepartments.filter(
+        (d) => d !== department
+      ),
     };
     setEditingUser(updatedUser);
   };
 
   const getScopeIcon = (scope: string) => {
     switch (scope) {
-      case 'super': return <Crown className="h-4 w-4" />;
-      case 'site': return <Building className="h-4 w-4" />;
-      case 'department': return <Users className="h-4 w-4" />;
-      case 'hybrid': return <MapPin className="h-4 w-4" />;
-      default: return null;
+      case 'super':
+        return <Crown className="h-4 w-4" />;
+      case 'site':
+        return <Building className="h-4 w-4" />;
+      case 'department':
+        return <Users className="h-4 w-4" />;
+      case 'hybrid':
+        return <MapPin className="h-4 w-4" />;
+      default:
+        return null;
     }
   };
 
   const getScopeColor = (scope: string) => {
     switch (scope) {
-      case 'super': return 'bg-red-100 text-red-800';
-      case 'site': return 'bg-blue-100 text-blue-800';
-      case 'department': return 'bg-green-100 text-green-800';
-      case 'hybrid': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'super':
+        return 'bg-red-100 text-red-800';
+      case 'site':
+        return 'bg-blue-100 text-blue-800';
+      case 'department':
+        return 'bg-green-100 text-green-800';
+      case 'hybrid':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">Loading...</div>
+    );
   }
 
   return (
@@ -185,12 +222,16 @@ export default function AdminPermissions() {
                       </Badge>
                     ))}
                     {(!user.allowedSites || user.allowedSites.length === 0) && (
-                      <span className="text-sm text-muted-foreground">All sites</span>
+                      <span className="text-sm text-muted-foreground">
+                        All sites
+                      </span>
                     )}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Allowed Departments</Label>
+                  <Label className="text-sm font-medium">
+                    Allowed Departments
+                  </Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {user.allowedDepartments?.map((dept) => (
                       <Badge key={dept} variant="secondary">
@@ -198,8 +239,11 @@ export default function AdminPermissions() {
                         {dept}
                       </Badge>
                     ))}
-                    {(!user.allowedDepartments || user.allowedDepartments.length === 0) && (
-                      <span className="text-sm text-muted-foreground">All departments</span>
+                    {(!user.allowedDepartments ||
+                      user.allowedDepartments.length === 0) && (
+                      <span className="text-sm text-muted-foreground">
+                        All departments
+                      </span>
                     )}
                   </div>
                 </div>
@@ -222,27 +266,42 @@ export default function AdminPermissions() {
                 <Label>Admin Scope</Label>
                 <Select
                   value={editingUser.adminScope}
-                  onValueChange={(value) => setEditingUser({...editingUser, adminScope: value})}
+                  onValueChange={(value) =>
+                    setEditingUser({ ...editingUser, adminScope: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="super">Super Admin (Full Company Access)</SelectItem>
-                    <SelectItem value="site">Site Admin (Multiple Sites Management)</SelectItem>
-                    <SelectItem value="department">Department Admin (Multiple Departments Management)</SelectItem>
-                    <SelectItem value="hybrid">Hybrid Admin (Sites + Departments)</SelectItem>
+                    <SelectItem value="super">
+                      Super Admin (Full Company Access)
+                    </SelectItem>
+                    <SelectItem value="site">
+                      Site Admin (Multiple Sites Management)
+                    </SelectItem>
+                    <SelectItem value="department">
+                      Department Admin (Multiple Departments Management)
+                    </SelectItem>
+                    <SelectItem value="hybrid">
+                      Hybrid Admin (Sites + Departments)
+                    </SelectItem>
                     <SelectItem value="none">No Admin Access</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {(editingUser.adminScope === 'site' || editingUser.adminScope === 'hybrid') && (
+              {(editingUser.adminScope === 'site' ||
+                editingUser.adminScope === 'hybrid') && (
                 <div>
                   <Label>Allowed Sites</Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {editingUser.allowedSites?.map((site) => (
-                      <Badge key={site} variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        key={site}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         {site}
                         <Button
                           variant="ghost"
@@ -268,18 +327,25 @@ export default function AdminPermissions() {
                 </div>
               )}
 
-              {(editingUser.adminScope === 'department' || editingUser.adminScope === 'hybrid') && (
+              {(editingUser.adminScope === 'department' ||
+                editingUser.adminScope === 'hybrid') && (
                 <div>
                   <Label>Allowed Departments</Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {editingUser.allowedDepartments?.map((dept) => (
-                      <Badge key={dept} variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        key={dept}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         {dept}
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-4 w-4 p-0"
-                          onClick={() => removeDepartmentFromUser(editingUser, dept)}
+                          onClick={() =>
+                            removeDepartmentFromUser(editingUser, dept)
+                          }
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -303,7 +369,11 @@ export default function AdminPermissions() {
                 <Button variant="outline" onClick={() => setEditingUser(null)}>
                   Cancel
                 </Button>
-                <Button onClick={() => updateAdminPermissions(editingUser.id, editingUser)}>
+                <Button
+                  onClick={() =>
+                    updateAdminPermissions(editingUser.id, editingUser)
+                  }
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>

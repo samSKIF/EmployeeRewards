@@ -3,10 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Plus, Users, Search, X, Edit, MessageCircle, ArrowRight } from 'lucide-react';
+import {
+  Heart,
+  Plus,
+  Users,
+  Search,
+  X,
+  Edit,
+  MessageCircle,
+  ArrowRight,
+} from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,7 +50,11 @@ interface DatabaseInterest {
   icon?: string;
 }
 
-export function CompactInterestsSection({ interests, isEditing, onInterestsChange }: CompactInterestsSectionProps) {
+export function CompactInterestsSection({
+  interests,
+  isEditing,
+  onInterestsChange,
+}: CompactInterestsSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('popular');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -45,13 +64,13 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
   // Fetch interest statistics
   const { data: interestStats } = useQuery({
     queryKey: ['/api/interests/stats'],
-    enabled: !isEditing
+    enabled: !isEditing,
   });
 
   // Fetch all available interests from database
   const { data: allInterests } = useQuery({
     queryKey: ['/api/interests'],
-    enabled: !isEditing
+    enabled: !isEditing,
   });
 
   // Fetch user's selected interests
@@ -61,50 +80,55 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
       if (!user?.id) return [];
       const response = await fetch(`/api/employees/${user.id}/interests`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
       if (!response.ok) return [];
       return response.json();
     },
-    enabled: !isEditing && !!user?.id
+    enabled: !isEditing && !!user?.id,
   });
 
   // Add interest mutation
   const addInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
       if (!user?.id) throw new Error('User not authenticated');
-      
+
       // Get current interests first
-      const currentInterestsResponse = await fetch(`/api/employees/${user.id}/interests`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const currentInterestsResponse = await fetch(
+        `/api/employees/${user.id}/interests`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
-      
+      );
+
       let currentInterestIds: number[] = [];
       if (currentInterestsResponse.ok) {
         const currentInterests = await currentInterestsResponse.json();
-        currentInterestIds = currentInterests.map((interest: any) => interest.id);
+        currentInterestIds = currentInterests.map(
+          (interest: any) => interest.id
+        );
       }
-      
+
       // Check if interest already exists
       if (currentInterestIds.includes(interestId)) {
         return { message: 'Interest already in your profile' };
       }
-      
+
       // Add the new interest to the existing ones
       const updatedInterestIds = [...currentInterestIds, interestId];
-      
+
       const response = await fetch(`/api/employees/${user.id}/interests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ interestIds: updatedInterestIds })
+        body: JSON.stringify({ interestIds: updatedInterestIds }),
       });
-      
+
       if (!response.ok) {
         let errorMessage = 'Failed to add interest';
         try {
@@ -120,63 +144,88 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/interests/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/employees', user?.id, 'interests'] });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/employees', user?.id, 'interests'],
+      });
       // Keep dialog open after adding interest
-    }
+    },
   });
 
   // Remove interest mutation
   const removeInterestMutation = useMutation({
     mutationFn: async (interestId: number) => {
       if (!user?.id) throw new Error('User not authenticated');
-      const response = await fetch(`/api/employees/${user.id}/interests/${interestId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `/api/employees/${user.id}/interests/${interestId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
+      );
       if (!response.ok) throw new Error('Failed to remove interest');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/interests/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/employees', user?.id, 'interests'] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ['/api/employees', user?.id, 'interests'],
+      });
+    },
   });
 
   const getInterestStats = (interestName: string): InterestStats => {
-    if (!interestStats || typeof interestStats !== 'object') return { memberCount: 0, isMember: false };
-    return (interestStats as Record<string, InterestStats>)[interestName] || { memberCount: 0, isMember: false };
+    if (!interestStats || typeof interestStats !== 'object')
+      return { memberCount: 0, isMember: false };
+    return (
+      (interestStats as Record<string, InterestStats>)[interestName] || {
+        memberCount: 0,
+        isMember: false,
+      }
+    );
   };
 
   // Get unique categories from database interests
-  const allInterestsArray = (allInterests as DatabaseInterest[] || []);
-  const categorySet = new Set(allInterestsArray.map(i => i.category));
+  const allInterestsArray = (allInterests as DatabaseInterest[]) || [];
+  const categorySet = new Set(allInterestsArray.map((i) => i.category));
   const categories = ['popular', ...Array.from(categorySet)];
 
   // Filter interests based on search and category
-  const filteredInterests = allInterestsArray.filter(interest => {
-    const matchesSearch = interest.label.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'popular' || interest.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
-    // Sort by member count descending for popular tab
-    if (selectedCategory === 'popular') {
-      const statsA = getInterestStats(a.label);
-      const statsB = getInterestStats(b.label);
-      return statsB.memberCount - statsA.memberCount;
-    }
-    return 0;
-  });
+  const filteredInterests = allInterestsArray
+    .filter((interest) => {
+      const matchesSearch = interest.label
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === 'popular' ||
+        interest.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      // Sort by member count descending for popular tab
+      if (selectedCategory === 'popular') {
+        const statsA = getInterestStats(a.label);
+        const statsB = getInterestStats(b.label);
+        return statsB.memberCount - statsA.memberCount;
+      }
+      return 0;
+    });
 
   // Check if user has an interest
   const hasInterest = (interestLabel: string) => {
-    return interests.some(userInterest => userInterest.name === interestLabel);
+    return interests.some(
+      (userInterest) => userInterest.name === interestLabel
+    );
   };
 
   // Find database interest by label
-  const findDatabaseInterest = (label: string): DatabaseInterest | undefined => {
-    return (allInterests as DatabaseInterest[] || []).find(i => i.label === label);
+  const findDatabaseInterest = (
+    label: string
+  ): DatabaseInterest | undefined => {
+    return ((allInterests as DatabaseInterest[]) || []).find(
+      (i) => i.label === label
+    );
   };
 
   const handleAddInterest = async (interest: DatabaseInterest) => {
@@ -185,7 +234,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     const newInterest: Interest = {
       id: interest.id,
       name: interest.label,
-      category: interest.category
+      category: interest.category,
     };
     onInterestsChange([...interests, newInterest]);
   };
@@ -195,7 +244,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
     if (dbInterest) {
       await removeInterestMutation.mutateAsync(dbInterest.id);
       // Update local state
-      onInterestsChange(interests.filter(i => i.name !== interestName));
+      onInterestsChange(interests.filter((i) => i.name !== interestName));
     }
   };
 
@@ -207,7 +256,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
             <Heart className="h-5 w-5 text-pink-500" />
             Interests & Hobbies
           </CardTitle>
-          
+
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="h-8">
@@ -218,7 +267,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
               <DialogHeader>
                 <DialogTitle>Add New Interest</DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
@@ -232,47 +281,98 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                   </div>
                 </div>
 
-                <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Tabs
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <div className="overflow-x-auto">
                     <TabsList className="flex w-max min-w-full mb-2">
-                      <TabsTrigger value="popular" className="text-xs whitespace-nowrap">Popular</TabsTrigger>
-                      <TabsTrigger value="Sport & Fitness" className="text-xs whitespace-nowrap">Sports</TabsTrigger>
-                      <TabsTrigger value="Technology & Gaming" className="text-xs whitespace-nowrap">Tech</TabsTrigger>
-                      <TabsTrigger value="Arts & Creativity" className="text-xs whitespace-nowrap">Arts</TabsTrigger>
-                      <TabsTrigger value="Food & Drinks" className="text-xs whitespace-nowrap">Food</TabsTrigger>
-                      <TabsTrigger value="Lifestyle & Wellness" className="text-xs whitespace-nowrap">Lifestyle</TabsTrigger>
-                      <TabsTrigger value="Entertainment & Pop Culture" className="text-xs whitespace-nowrap">Entertainment</TabsTrigger>
-                      <TabsTrigger value="Social Impact & Learning" className="text-xs whitespace-nowrap">Social Impact</TabsTrigger>
+                      <TabsTrigger
+                        value="popular"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Popular
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Sport & Fitness"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Sports
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Technology & Gaming"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Tech
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Arts & Creativity"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Arts
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Food & Drinks"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Food
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Lifestyle & Wellness"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Lifestyle
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Entertainment & Pop Culture"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Entertainment
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="Social Impact & Learning"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Social Impact
+                      </TabsTrigger>
                     </TabsList>
                   </div>
-                  
+
                   <ScrollArea className="h-64 mt-4">
                     <div className="flex flex-wrap gap-2 p-1">
-                      {filteredInterests.filter(interest => !hasInterest(interest.label)).map((interest) => {
-                        const stats = getInterestStats(interest.label);
-                        
-                        return (
-                          <div
-                            key={interest.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
-                            onClick={() => handleAddInterest(interest)}
-                          >
-                            <span className="text-sm">{interest.icon || '📌'}</span>
-                            <span className="text-xs font-medium whitespace-nowrap">{interest.label}</span>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Users className="h-2 w-2" />
-                              <span>{stats.memberCount}</span>
+                      {filteredInterests
+                        .filter((interest) => !hasInterest(interest.label))
+                        .map((interest) => {
+                          const stats = getInterestStats(interest.label);
+
+                          return (
+                            <div
+                              key={interest.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                              onClick={() => handleAddInterest(interest)}
+                            >
+                              <span className="text-sm">
+                                {interest.icon || '📌'}
+                              </span>
+                              <span className="text-xs font-medium whitespace-nowrap">
+                                {interest.label}
+                              </span>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Users className="h-2 w-2" />
+                                <span>{stats.memberCount}</span>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </ScrollArea>
                 </Tabs>
 
                 {/* Selected Interests Section - Bottom */}
                 <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Your Selected Interests</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    Your Selected Interests
+                  </h4>
                   {userInterests && userInterests.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {userInterests.map((interest: any) => {
@@ -281,11 +381,17 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                           <div
                             key={interest.id}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm cursor-pointer hover:bg-red-50 hover:border-red-200 transition-colors"
-                            onClick={() => removeInterestMutation.mutate(interest.id)}
+                            onClick={() =>
+                              removeInterestMutation.mutate(interest.id)
+                            }
                             title="Click to remove"
                           >
-                            <span className="text-sm">{interest.icon || '📌'}</span>
-                            <span className="font-medium whitespace-nowrap">{interest.label}</span>
+                            <span className="text-sm">
+                              {interest.icon || '📌'}
+                            </span>
+                            <span className="font-medium whitespace-nowrap">
+                              {interest.label}
+                            </span>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Users className="h-3 w-3" />
                               <span>{stats.memberCount}</span>
@@ -297,7 +403,8 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
                     </div>
                   ) : (
                     <div className="text-sm text-muted-foreground py-2">
-                      No interests selected yet. Click interests above to add them.
+                      No interests selected yet. Click interests above to add
+                      them.
                     </div>
                   )}
                 </div>
@@ -306,7 +413,7 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
           </Dialog>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-0">
         {userInterests && userInterests.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -314,22 +421,26 @@ export function CompactInterestsSection({ interests, isEditing, onInterestsChang
               const stats = getInterestStats(interest.label);
               return (
                 <div key={interest.id} className="flex items-center gap-2">
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className="flex items-center gap-2 px-3 py-1 text-black border-gray-300"
                   >
                     <span className="text-sm">{interest.icon || '📌'}</span>
                     <span>{interest.label}</span>
                     <div className="flex items-center gap-1 ml-1">
                       <Users className="h-3 w-3 text-gray-500" />
-                      <span className="text-xs text-gray-500">{stats.memberCount}</span>
+                      <span className="text-xs text-gray-500">
+                        {stats.memberCount}
+                      </span>
                     </div>
                   </Badge>
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-6 px-2 text-xs text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                    onClick={() => window.location.href = `/groups?interest=${encodeURIComponent(interest.label)}`}
+                    onClick={() =>
+                      (window.location.href = `/groups?interest=${encodeURIComponent(interest.label)}`)
+                    }
                   >
                     <MessageCircle className="h-3 w-3 mr-1" />
                     Join Group

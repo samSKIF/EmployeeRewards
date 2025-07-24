@@ -1,9 +1,11 @@
-
 import { hybridDb } from './hybrid-db';
 import { mysqlDb } from './db-mysql';
 import { mongoDb } from './db-mongodb';
 import { redisCache } from './db-redis';
-import { users as mysqlUsers, organizations as mysqlOrgs } from '@shared/mysql-schema';
+import {
+  users as mysqlUsers,
+  organizations as mysqlOrgs,
+} from '@shared/mysql-schema';
 import { COLLECTIONS } from '@shared/mongodb-schemas';
 
 async function checkMigrationStatus() {
@@ -26,9 +28,15 @@ async function checkMigrationStatus() {
     console.log(`MySQL Organizations: ${mysqlOrgsCount.length}`);
 
     // Check MongoDB data
-    const mongoPostsCount = await mongodb.collection(COLLECTIONS.POSTS).countDocuments();
-    const mongoCommentsCount = await mongodb.collection(COLLECTIONS.COMMENTS).countDocuments();
-    const mongoNotificationsCount = await mongodb.collection(COLLECTIONS.NOTIFICATIONS).countDocuments();
+    const mongoPostsCount = await mongodb
+      .collection(COLLECTIONS.POSTS)
+      .countDocuments();
+    const mongoCommentsCount = await mongodb
+      .collection(COLLECTIONS.COMMENTS)
+      .countDocuments();
+    const mongoNotificationsCount = await mongodb
+      .collection(COLLECTIONS.NOTIFICATIONS)
+      .countDocuments();
 
     console.log(`MongoDB Posts: ${mongoPostsCount}`);
     console.log(`MongoDB Comments: ${mongoCommentsCount}`);
@@ -36,7 +44,9 @@ async function checkMigrationStatus() {
 
     // Check Redis cache
     const redisInfo = await redisCache.getClient().info('memory');
-    console.log(`Redis: Connected (${redisInfo.includes('used_memory') ? 'Active' : 'Inactive'})`);
+    console.log(
+      `Redis: Connected (${redisInfo.includes('used_memory') ? 'Active' : 'Inactive'})`
+    );
 
     // Health check
     console.log('\n🏥 System Health:');
@@ -46,8 +56,10 @@ async function checkMigrationStatus() {
       console.log(`${service}: ${status ? '✅ Healthy' : '❌ Unhealthy'}`);
     });
 
-    const allHealthy = Object.values(health).every(status => status);
-    console.log(`\n🎯 Overall Status: ${allHealthy ? '✅ All Systems Operational' : '⚠️  Some Issues Detected'}`);
+    const allHealthy = Object.values(health).every((status) => status);
+    console.log(
+      `\n🎯 Overall Status: ${allHealthy ? '✅ All Systems Operational' : '⚠️  Some Issues Detected'}`
+    );
 
     // Migration recommendations
     console.log('\n📝 Next Steps:');
@@ -58,7 +70,6 @@ async function checkMigrationStatus() {
       console.log('• Migration appears complete ✅');
       console.log('• Start application: Click "Run" button');
     }
-
   } catch (error) {
     console.error('❌ Status check failed:', error);
     console.log('\n💡 Troubleshooting:');

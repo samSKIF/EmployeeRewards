@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { FileTemplate } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { FileTemplate } from '@shared/schema';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 import {
   Card,
   CardContent,
@@ -10,9 +10,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -28,16 +28,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { 
-  Plus, 
-  FileText, 
-  Download, 
-  Edit, 
-  RefreshCw
-} from "lucide-react";
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Plus, FileText, Download, Edit, RefreshCw } from 'lucide-react';
 
 interface TemplateManagerProps {
   readOnly: boolean;
@@ -46,115 +40,124 @@ interface TemplateManagerProps {
 export function TemplateManager({ readOnly }: TemplateManagerProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState<FileTemplate | null>(null);
+  const [currentTemplate, setCurrentTemplate] = useState<FileTemplate | null>(
+    null
+  );
   const [templateForm, setTemplateForm] = useState({
-    name: "",
-    fileName: "",
-    contentType: "text/plain",
-    content: "",
-    description: ""
+    name: '',
+    fileName: '',
+    contentType: 'text/plain',
+    content: '',
+    description: '',
   });
 
   const { toast } = useToast();
 
   // Fetch templates
   const { data: templates = [], isLoading } = useQuery<FileTemplate[]>({
-    queryKey: ["/api/file-templates"],
+    queryKey: ['/api/file-templates'],
     enabled: !readOnly, // Only fetch if not in read-only mode
   });
 
   // Create template mutation
   const createTemplateMutation = useMutation({
-    mutationFn: async (template: Omit<FileTemplate, "id" | "createdAt" | "updatedAt" | "createdBy">) => {
-      const res = await fetch("/api/file-templates", {
-        method: "POST",
+    mutationFn: async (
+      template: Omit<
+        FileTemplate,
+        'id' | 'createdAt' | 'updatedAt' | 'createdBy'
+      >
+    ) => {
+      const res = await fetch('/api/file-templates', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('firebaseToken')}`,
         },
-        body: JSON.stringify(template)
+        body: JSON.stringify(template),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create template");
+        throw new Error(errorData.message || 'Failed to create template');
       }
 
       return res.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Template created successfully",
+        title: 'Success',
+        description: 'Template created successfully',
       });
       setIsAddDialogOpen(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ["/api/file-templates"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/file-templates'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create template",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to create template',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Update template mutation
   const updateTemplateMutation = useMutation({
     mutationFn: async (template: Partial<FileTemplate> & { name: string }) => {
       const res = await fetch(`/api/file-templates/${template.name}`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("firebaseToken")}`
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('firebaseToken')}`,
         },
-        body: JSON.stringify(template)
+        body: JSON.stringify(template),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to update template");
+        throw new Error(errorData.message || 'Failed to update template');
       }
 
       return res.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Template updated successfully",
+        title: 'Success',
+        description: 'Template updated successfully',
       });
       setIsEditDialogOpen(false);
       setCurrentTemplate(null);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ["/api/file-templates"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/file-templates'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update template",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to update template',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Reset form
   const resetForm = () => {
     setTemplateForm({
-      name: "",
-      fileName: "",
-      contentType: "text/plain",
-      content: "",
-      description: ""
+      name: '',
+      fileName: '',
+      contentType: 'text/plain',
+      content: '',
+      description: '',
     });
   };
 
   // Handle form input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setTemplateForm(prev => ({
+    setTemplateForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -170,7 +173,7 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
     if (currentTemplate) {
       updateTemplateMutation.mutate({
         ...templateForm,
-        name: currentTemplate.name // Keep original name for lookup
+        name: currentTemplate.name, // Keep original name for lookup
       });
     }
   };
@@ -183,20 +186,20 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
       fileName: template.fileName,
       contentType: template.contentType,
       content: template.content,
-      description: template.description || ""
+      description: template.description || '',
     });
     setIsEditDialogOpen(true);
   };
 
   // Handle download template using native browser download
   const handleDownloadTemplate = (templateName: string) => {
-    const token = localStorage.getItem("firebaseToken");
+    const token = localStorage.getItem('firebaseToken');
     const downloadUrl = `/api/file-templates/${templateName}/download?token=${encodeURIComponent(token)}`;
     window.location.href = downloadUrl;
 
     toast({
-      title: "Download Started",
-      description: `Download of ${templateName} initiated`
+      title: 'Download Started',
+      description: `Download of ${templateName} initiated`,
     });
   };
 
@@ -239,7 +242,11 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
                     </TableCell>
                     <TableCell>{template.fileName}</TableCell>
                     <TableCell>
-                      {template.description || <span className="text-muted-foreground italic">No description</span>}
+                      {template.description || (
+                        <span className="text-muted-foreground italic">
+                          No description
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -370,7 +377,10 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
               </Button>
               <Button type="submit" disabled={createTemplateMutation.isPending}>
                 {createTemplateMutation.isPending ? (
-                  <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{' '}
+                    Creating...
+                  </>
                 ) : (
                   <>Create Template</>
                 )}
@@ -459,7 +469,10 @@ export function TemplateManager({ readOnly }: TemplateManagerProps) {
               </Button>
               <Button type="submit" disabled={updateTemplateMutation.isPending}>
                 {updateTemplateMutation.isPending ? (
-                  <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />{' '}
+                    Updating...
+                  </>
                 ) : (
                   <>Update Template</>
                 )}

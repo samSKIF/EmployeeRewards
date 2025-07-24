@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, Plus, TrendingUp, Sparkles } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Users, Plus, TrendingUp, Sparkles } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
 
 interface Space {
   id: number;
@@ -16,13 +16,21 @@ interface Space {
 }
 
 export function SpacesDiscoveryWidget() {
-  const { data: trendingSpaces = [], isLoading: trendingLoading, error: trendingError } = useQuery<Space[]>({
+  const {
+    data: trendingSpaces = [],
+    isLoading: trendingLoading,
+    error: trendingError,
+  } = useQuery<Space[]>({
     queryKey: ['/api/channels/trending'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
 
-  const { data: suggestedSpaces = [], isLoading: suggestedLoading, error: suggestedError } = useQuery<Space[]>({
+  const {
+    data: suggestedSpaces = [],
+    isLoading: suggestedLoading,
+    error: suggestedError,
+  } = useQuery<Space[]>({
     queryKey: ['/api/channels/suggestions'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
@@ -42,7 +50,10 @@ export function SpacesDiscoveryWidget() {
           {trendingLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center space-between animate-pulse">
+                <div
+                  key={i}
+                  className="flex items-center space-between animate-pulse"
+                >
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded w-1/2"></div>
@@ -51,7 +62,9 @@ export function SpacesDiscoveryWidget() {
               ))}
             </div>
           ) : trendingError ? (
-            <p className="text-sm text-red-500">Failed to load trending spaces</p>
+            <p className="text-sm text-red-500">
+              Failed to load trending spaces
+            </p>
           ) : trendingSpaces?.length > 0 ? (
             trendingSpaces.slice(0, 3).map((space: Space) => (
               <div key={space.id} className="flex items-center justify-between">
@@ -64,7 +77,9 @@ export function SpacesDiscoveryWidget() {
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex items-center gap-1">
                       <Users className="w-3 h-3 text-gray-500" />
-                      <span className="text-xs text-gray-500">{space.memberCount}</span>
+                      <span className="text-xs text-gray-500">
+                        {space.memberCount}
+                      </span>
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       {space.channelType}
@@ -91,7 +106,10 @@ export function SpacesDiscoveryWidget() {
           {suggestedLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between animate-pulse">
+                <div
+                  key={i}
+                  className="flex items-center justify-between animate-pulse"
+                >
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
@@ -102,7 +120,9 @@ export function SpacesDiscoveryWidget() {
               ))}
             </div>
           ) : suggestedError ? (
-            <p className="text-sm text-red-500">Failed to load suggested spaces</p>
+            <p className="text-sm text-red-500">
+              Failed to load suggested spaces
+            </p>
           ) : suggestedSpaces?.length > 0 ? (
             suggestedSpaces.slice(0, 3).map((space: Space) => (
               <div key={space.id} className="flex items-center justify-between">
@@ -112,11 +132,15 @@ export function SpacesDiscoveryWidget() {
                       {space.name}
                     </p>
                   </Link>
-                  <p className="text-xs text-gray-500 truncate">{space.description}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {space.description}
+                  </p>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex items-center gap-1">
                       <Users className="w-3 h-3 text-gray-500" />
-                      <span className="text-xs text-gray-500">{space.memberCount}</span>
+                      <span className="text-xs text-gray-500">
+                        {space.memberCount}
+                      </span>
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       {space.channelType}

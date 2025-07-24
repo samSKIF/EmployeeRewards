@@ -1,27 +1,53 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Building2, 
-  Store, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
+import {
+  Building2,
+  Store,
+  Package,
+  ShoppingCart,
+  Users,
+  TrendingUp,
+  DollarSign,
   Settings,
   Plus,
   Eye,
@@ -30,7 +56,7 @@ import {
   Key,
   Calendar,
   Clock,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react';
 import { countries } from '@/data/countries';
 import { useLocation } from 'wouter';
@@ -144,36 +170,154 @@ const ACTIVITIES = [
   { label: 'Research & Development', value: 'research' },
   { label: 'Human Resources', value: 'hr' },
   { label: 'Facility Management', value: 'facility' },
-  { label: 'Security Services', value: 'security' }
+  { label: 'Security Services', value: 'security' },
 ];
 
 // Country-City mapping (simplified version)
 const COUNTRY_CITIES: Record<string, string[]> = {
-  'AE': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'],
-  'US': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'],
-  'GB': ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Newcastle', 'Sheffield', 'Bristol', 'Leicester', 'Edinburgh'],
-  'CA': ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
-  'AU': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Newcastle', 'Canberra', 'Sunshine Coast', 'Wollongong'],
-  'DE': ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Leipzig', 'Dortmund', 'Essen'],
-  'FR': ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Montpellier', 'Strasbourg', 'Bordeaux', 'Lille'],
-  'IN': ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat'],
-  'CN': ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Hangzhou', 'Wuhan', 'Xi\'an', 'Suzhou', 'Zhengzhou'],
-  'JP': ['Tokyo', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kyoto', 'Kawasaki', 'Saitama', 'Hiroshima'],
-  'BR': ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Salvador', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Goiânia'],
-  'global': ['Other/Not Listed']
+  AE: [
+    'Dubai',
+    'Abu Dhabi',
+    'Sharjah',
+    'Ajman',
+    'Ras Al Khaimah',
+    'Fujairah',
+    'Umm Al Quwain',
+  ],
+  US: [
+    'New York',
+    'Los Angeles',
+    'Chicago',
+    'Houston',
+    'Phoenix',
+    'Philadelphia',
+    'San Antonio',
+    'San Diego',
+    'Dallas',
+    'San Jose',
+  ],
+  GB: [
+    'London',
+    'Birmingham',
+    'Manchester',
+    'Glasgow',
+    'Liverpool',
+    'Newcastle',
+    'Sheffield',
+    'Bristol',
+    'Leicester',
+    'Edinburgh',
+  ],
+  CA: [
+    'Toronto',
+    'Montreal',
+    'Vancouver',
+    'Calgary',
+    'Edmonton',
+    'Ottawa',
+    'Winnipeg',
+    'Quebec City',
+    'Hamilton',
+    'Kitchener',
+  ],
+  AU: [
+    'Sydney',
+    'Melbourne',
+    'Brisbane',
+    'Perth',
+    'Adelaide',
+    'Gold Coast',
+    'Newcastle',
+    'Canberra',
+    'Sunshine Coast',
+    'Wollongong',
+  ],
+  DE: [
+    'Berlin',
+    'Hamburg',
+    'Munich',
+    'Cologne',
+    'Frankfurt',
+    'Stuttgart',
+    'Düsseldorf',
+    'Leipzig',
+    'Dortmund',
+    'Essen',
+  ],
+  FR: [
+    'Paris',
+    'Marseille',
+    'Lyon',
+    'Toulouse',
+    'Nice',
+    'Nantes',
+    'Montpellier',
+    'Strasbourg',
+    'Bordeaux',
+    'Lille',
+  ],
+  IN: [
+    'Mumbai',
+    'Delhi',
+    'Bangalore',
+    'Hyderabad',
+    'Chennai',
+    'Kolkata',
+    'Pune',
+    'Ahmedabad',
+    'Jaipur',
+    'Surat',
+  ],
+  CN: [
+    'Beijing',
+    'Shanghai',
+    'Guangzhou',
+    'Shenzhen',
+    'Chengdu',
+    'Hangzhou',
+    'Wuhan',
+    "Xi'an",
+    'Suzhou',
+    'Zhengzhou',
+  ],
+  JP: [
+    'Tokyo',
+    'Osaka',
+    'Nagoya',
+    'Sapporo',
+    'Fukuoka',
+    'Kobe',
+    'Kyoto',
+    'Kawasaki',
+    'Saitama',
+    'Hiroshima',
+  ],
+  BR: [
+    'São Paulo',
+    'Rio de Janeiro',
+    'Brasília',
+    'Salvador',
+    'Fortaleza',
+    'Belo Horizonte',
+    'Manaus',
+    'Curitiba',
+    'Recife',
+    'Goiânia',
+  ],
+  global: ['Other/Not Listed'],
 };
 
 // Form schemas
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
-  status: z.enum(['active', 'inactive', 'suspended']).default('active')
+  status: z.enum(['active', 'inactive', 'suspended']).default('active'),
 });
 
 const merchantSchema = z.object({
   name: z.string().min(1, 'Merchant name is required'),
   email: z.string().email('Valid email is required'),
   phone: z.string().optional(),
-  commissionRate: z.number().min(0).max(100)
+  commissionRate: z.number().min(0).max(100),
 });
 
 const productSchema = z.object({
@@ -183,7 +327,7 @@ const productSchema = z.object({
   price: z.number().min(0),
   pointsPrice: z.number().min(1),
   merchantId: z.number(),
-  stock: z.number().min(0).optional()
+  stock: z.number().min(0).optional(),
 });
 
 // Management Authentication Hook
@@ -195,7 +339,7 @@ const useManagementAuth = () => {
     const response = await fetch('/api/management/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     });
 
     if (!response.ok) throw new Error('Login failed');
@@ -223,34 +367,41 @@ const managementApi = (endpoint: string, options: RequestInit = {}) => {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Cache-Control': 'no-cache',
-      ...options.headers
-    }
-  }).then(async res => {
-    console.log(`API Response for ${endpoint}:`, { status: res.status, statusText: res.statusText });
-    
+      ...options.headers,
+    },
+  }).then(async (res) => {
+    console.log(`API Response for ${endpoint}:`, {
+      status: res.status,
+      statusText: res.statusText,
+    });
+
     if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
-    
+
     // For 304 responses, the cached data should be used by React Query
     if (res.status === 304) {
       console.log('304 response - using cached data');
       throw new Error('NOT_MODIFIED'); // This will trigger React Query to use cached data
     }
-    
+
     const contentType = res.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       const data = await res.json();
       console.log(`API Data for ${endpoint}:`, data);
       return data;
     }
-    
+
     return null;
   });
 };
 
 // Login Component
-const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: string) => Promise<void> }) => {
+const ManagementLogin = ({
+  onLogin,
+}: {
+  onLogin: (username: string, password: string) => Promise<void>;
+}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -262,9 +413,16 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
 
     try {
       await onLogin(username, password);
-      toast({ title: 'Login successful', description: 'Welcome to the management dashboard' });
+      toast({
+        title: 'Login successful',
+        description: 'Welcome to the management dashboard',
+      });
     } catch (error) {
-      toast({ title: 'Login failed', description: 'Invalid credentials', variant: 'destructive' });
+      toast({
+        title: 'Login failed',
+        description: 'Invalid credentials',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -274,7 +432,9 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">ThrivioHR Management</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            ThrivioHR Management
+          </CardTitle>
           <CardDescription className="text-center">
             Sign in to your management dashboard
           </CardDescription>
@@ -304,16 +464,16 @@ const ManagementLogin = ({ onLogin }: { onLogin: (username: string, password: st
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          
+
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-center text-sm text-gray-600 mb-4">
               Are you an organization member?
             </p>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               className="w-full"
-              onClick={() => window.location.href = '/auth'}
+              onClick={() => (window.location.href = '/auth')}
             >
               Sign in as Organization Member
             </Button>
@@ -331,16 +491,46 @@ const DashboardStats = () => {
     queryFn: async () => {
       const result = await managementApi('/analytics');
       return result;
-    }
+    },
   });
 
   const statCards = [
-    { title: 'Organizations', value: stats?.totals.organizations || 0, icon: Building2, color: 'bg-blue-500' },
-    { title: 'Users', value: stats?.totals.users || 0, icon: Users, color: 'bg-green-500' },
-    { title: 'Products', value: stats?.totals.products || 0, icon: Package, color: 'bg-purple-500' },
-    { title: 'Orders', value: stats?.totals.orders || 0, icon: ShoppingCart, color: 'bg-orange-500' },
-    { title: 'Revenue', value: `$${stats?.totals.revenue || '0'}`, icon: DollarSign, color: 'bg-red-500' },
-    { title: 'Period', value: stats?.period || 'All Time', icon: TrendingUp, color: 'bg-indigo-500' }
+    {
+      title: 'Organizations',
+      value: stats?.totals.organizations || 0,
+      icon: Building2,
+      color: 'bg-blue-500',
+    },
+    {
+      title: 'Users',
+      value: stats?.totals.users || 0,
+      icon: Users,
+      color: 'bg-green-500',
+    },
+    {
+      title: 'Products',
+      value: stats?.totals.products || 0,
+      icon: Package,
+      color: 'bg-purple-500',
+    },
+    {
+      title: 'Orders',
+      value: stats?.totals.orders || 0,
+      icon: ShoppingCart,
+      color: 'bg-orange-500',
+    },
+    {
+      title: 'Revenue',
+      value: `$${stats?.totals.revenue || '0'}`,
+      icon: DollarSign,
+      color: 'bg-red-500',
+    },
+    {
+      title: 'Period',
+      value: stats?.period || 'All Time',
+      icon: TrendingUp,
+      color: 'bg-indigo-500',
+    },
   ];
 
   return (
@@ -363,18 +553,18 @@ const DashboardStats = () => {
 };
 
 // Unified Organization Management Component
-const UnifiedOrganizationManager = ({ 
-  organization, 
-  onSuccess, 
-  onResetPassword, 
-  creditWalletMutation 
+const UnifiedOrganizationManager = ({
+  organization,
+  onSuccess,
+  onResetPassword,
+  creditWalletMutation,
 }: {
   organization: Organization;
   onSuccess: () => void;
   onResetPassword: () => void;
   creditWalletMutation: any;
 }) => {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState('details');
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -384,11 +574,14 @@ const UnifiedOrganizationManager = ({
         <TabsTrigger value="subscription">Subscription</TabsTrigger>
         <TabsTrigger value="wallet">Wallet</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="details" className="space-y-4">
-        <EditOrganizationForm organization={organization} onSuccess={onSuccess} />
+        <EditOrganizationForm
+          organization={organization}
+          onSuccess={onSuccess}
+        />
       </TabsContent>
-      
+
       <TabsContent value="admin" className="space-y-4">
         <Card>
           <CardHeader>
@@ -403,45 +596,66 @@ const UnifiedOrganizationManager = ({
               Reset Admin Password
             </Button>
             <p className="text-sm text-muted-foreground mt-2">
-              This will generate a new random password and display it once. Make sure to save it securely.
+              This will generate a new random password and display it once. Make
+              sure to save it securely.
             </p>
           </CardContent>
         </Card>
       </TabsContent>
-      
+
       <TabsContent value="subscription" className="space-y-4">
         <SubscriptionManagement organizationId={organization.id} />
       </TabsContent>
-      
+
       <TabsContent value="wallet" className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle>Credit Organization Wallet</CardTitle>
             <CardDescription>
-              Add funds to {organization.name}'s wallet for rewards and purchases
+              Add funds to {organization.name}'s wallet for rewards and
+              purchases
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              creditWalletMutation.mutate({
-                organizationId: organization.id,
-                amount: Number(formData.get('amount')),
-                description: formData.get('description') as string
-              });
-            }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                creditWalletMutation.mutate({
+                  organizationId: organization.id,
+                  amount: Number(formData.get('amount')),
+                  description: formData.get('description') as string,
+                });
+              }}
+              className="space-y-4"
+            >
               <div>
                 <Label htmlFor="amount">Amount ($)</Label>
-                <Input name="amount" type="number" step="0.01" required placeholder="100.00" />
+                <Input
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="100.00"
+                />
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Input name="description" placeholder="e.g., Monthly credit allocation" required />
+                <Input
+                  name="description"
+                  placeholder="e.g., Monthly credit allocation"
+                  required
+                />
               </div>
-              <Button type="submit" className="w-full" disabled={creditWalletMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={creditWalletMutation.isPending}
+              >
                 <CreditCard className="h-4 w-4 mr-2" />
-                {creditWalletMutation.isPending ? 'Processing...' : 'Credit Wallet'}
+                {creditWalletMutation.isPending
+                  ? 'Processing...'
+                  : 'Credit Wallet'}
               </Button>
             </form>
           </CardContent>
@@ -452,7 +666,11 @@ const UnifiedOrganizationManager = ({
 };
 
 // Subscription Management Component
-const SubscriptionManagement = ({ organizationId }: { organizationId: number }) => {
+const SubscriptionManagement = ({
+  organizationId,
+}: {
+  organizationId: number;
+}) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
@@ -461,9 +679,11 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
   const { data: subscriptionData, isLoading } = useQuery({
     queryKey: [`/api/management/organizations/${organizationId}/subscription`],
     queryFn: async () => {
-      const result = await managementApi(`/organizations/${organizationId}/subscription`);
+      const result = await managementApi(
+        `/organizations/${organizationId}/subscription`
+      );
       return result;
-    }
+    },
   });
 
   const subscriptionForm = useForm({
@@ -473,56 +693,97 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
       customDurationDays: 90,
       subscribedUsers: 50,
       pricePerUserPerMonth: 10.0,
-      totalMonthlyAmount: 500.0
-    }
+      totalMonthlyAmount: 500.0,
+    },
   });
 
   const createSubscription = useMutation({
-    mutationFn: (data: { lastPaymentDate: string; subscriptionPeriod: string; customDurationDays?: number }) =>
-      managementApi(`/organizations/${organizationId}/subscription`, { 
-        method: 'POST', 
-        body: JSON.stringify(data)
+    mutationFn: (data: {
+      lastPaymentDate: string;
+      subscriptionPeriod: string;
+      customDurationDays?: number;
+    }) =>
+      managementApi(`/organizations/${organizationId}/subscription`, {
+        method: 'POST',
+        body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          `/api/management/organizations/${organizationId}/subscription`,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/management/organizations'],
+      });
       toast({ title: 'Subscription created successfully' });
       setIsCreating(false);
     },
     onError: (error) => {
-      toast({ title: 'Failed to create subscription', description: error.message, variant: 'destructive' });
-    }
+      toast({
+        title: 'Failed to create subscription',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
   });
 
   const renewSubscription = useMutation({
-    mutationFn: (data: { lastPaymentDate: string; subscriptionPeriod: string; customDurationDays?: number }) =>
-      managementApi(`/organizations/${organizationId}/subscription/renew`, { 
-        method: 'POST', 
-        body: JSON.stringify(data)
+    mutationFn: (data: {
+      lastPaymentDate: string;
+      subscriptionPeriod: string;
+      customDurationDays?: number;
+    }) =>
+      managementApi(`/organizations/${organizationId}/subscription/renew`, {
+        method: 'POST',
+        body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          `/api/management/organizations/${organizationId}/subscription`,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/management/organizations'],
+      });
       toast({ title: 'Subscription renewed successfully' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to renew subscription', description: error.message, variant: 'destructive' });
-    }
+      toast({
+        title: 'Failed to renew subscription',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
   });
 
   const deactivateSubscription = useMutation({
     mutationFn: () =>
-      managementApi(`/organizations/${organizationId}/subscription/deactivate`, { 
-        method: 'POST'
-      }),
+      managementApi(
+        `/organizations/${organizationId}/subscription/deactivate`,
+        {
+          method: 'POST',
+        }
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/management/organizations/${organizationId}/subscription`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          `/api/management/organizations/${organizationId}/subscription`,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/management/organizations'],
+      });
       toast({ title: 'Subscription deactivated successfully' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to deactivate subscription', description: error.message, variant: 'destructive' });
-    }
+      toast({
+        title: 'Failed to deactivate subscription',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
   });
 
   const onSubmit = (data: any) => {
@@ -534,7 +795,9 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
   };
 
   if (isLoading) {
-    return <div className="text-center py-4">Loading subscription details...</div>;
+    return (
+      <div className="text-center py-4">Loading subscription details...</div>
+    );
   }
 
   const hasSubscription = subscriptionData?.subscriptionId;
@@ -552,64 +815,98 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label className="text-sm text-muted-foreground">Status</Label>
-                <Badge variant={isActive ? "default" : "secondary"}>
-                  {isActive ? "Active" : "Inactive"}
+                <Badge variant={isActive ? 'default' : 'secondary'}>
+                  {isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
               <div>
                 <Label className="text-sm text-muted-foreground">Period</Label>
-                <p className="text-sm font-medium">{subscriptionData.subscriptionPeriod}</p>
-              </div>
-              <div>
-                <Label className="text-sm text-muted-foreground">Last Payment</Label>
-                <p className="text-sm">
-                  {subscriptionData.lastPaymentDate ? 
-                    new Date(subscriptionData.lastPaymentDate).toLocaleDateString() : 'N/A'}
+                <p className="text-sm font-medium">
+                  {subscriptionData.subscriptionPeriod}
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-muted-foreground">Expiration</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Last Payment
+                </Label>
                 <p className="text-sm">
-                  {subscriptionData.expirationDate ? 
-                    new Date(subscriptionData.expirationDate).toLocaleDateString() : 'N/A'}
+                  {subscriptionData.lastPaymentDate
+                    ? new Date(
+                        subscriptionData.lastPaymentDate
+                      ).toLocaleDateString()
+                    : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">
+                  Expiration
+                </Label>
+                <p className="text-sm">
+                  {subscriptionData.expirationDate
+                    ? new Date(
+                        subscriptionData.expirationDate
+                      ).toLocaleDateString()
+                    : 'N/A'}
                 </p>
               </div>
             </div>
-            
+
             {/* Pricing Information */}
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium mb-3">Subscription Pricing</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-sm text-muted-foreground">Subscribed Users</Label>
-                  <p className="text-lg font-semibold">{subscriptionData.subscribedUsers || 'N/A'}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Price Per User/Month</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Subscribed Users
+                  </Label>
                   <p className="text-lg font-semibold">
-                    ${subscriptionData.pricePerUserPerMonth ? subscriptionData.pricePerUserPerMonth.toFixed(2) : 'N/A'}
+                    {subscriptionData.subscribedUsers || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm text-muted-foreground">Total Monthly Amount</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Price Per User/Month
+                  </Label>
+                  <p className="text-lg font-semibold">
+                    $
+                    {subscriptionData.pricePerUserPerMonth
+                      ? subscriptionData.pricePerUserPerMonth.toFixed(2)
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Total Monthly Amount
+                  </Label>
                   <p className="text-lg font-semibold text-green-600">
-                    ${subscriptionData.totalMonthlyAmount ? subscriptionData.totalMonthlyAmount.toFixed(2) : 'N/A'}
+                    $
+                    {subscriptionData.totalMonthlyAmount
+                      ? subscriptionData.totalMonthlyAmount.toFixed(2)
+                      : 'N/A'}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             {/* User Count Limit Display */}
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium mb-3">User Limits</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm text-muted-foreground">Current Users</Label>
-                  <p className="text-lg font-semibold">{subscriptionData.currentUserCount || 0}</p>
+                  <Label className="text-sm text-muted-foreground">
+                    Current Users
+                  </Label>
+                  <p className="text-lg font-semibold">
+                    {subscriptionData.currentUserCount || 0}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm text-muted-foreground">Subscribed Users</Label>
-                  <p className="text-lg font-semibold">{subscriptionData.subscribedUsers || 'N/A'}</p>
+                  <Label className="text-sm text-muted-foreground">
+                    Subscribed Users
+                  </Label>
+                  <p className="text-lg font-semibold">
+                    {subscriptionData.subscribedUsers || 'N/A'}
+                  </p>
                 </div>
               </div>
               {subscriptionData.subscribedUsers && (
@@ -617,40 +914,53 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   <div className="flex justify-between text-sm text-muted-foreground mb-1">
                     <span>Usage</span>
                     <span>
-                      {subscriptionData.currentUserCount || 0} / {subscriptionData.subscribedUsers}
+                      {subscriptionData.currentUserCount || 0} /{' '}
+                      {subscriptionData.subscribedUsers}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full transition-all ${
-                        ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.9 
-                          ? 'bg-red-500' 
-                          : ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.8 
-                          ? 'bg-orange-500' 
-                          : 'bg-green-500'
+                        (subscriptionData.currentUserCount || 0) /
+                          subscriptionData.subscribedUsers >=
+                        0.9
+                          ? 'bg-red-500'
+                          : (subscriptionData.currentUserCount || 0) /
+                                subscriptionData.subscribedUsers >=
+                              0.8
+                            ? 'bg-orange-500'
+                            : 'bg-green-500'
                       }`}
-                      style={{ 
-                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) * 100)}%` 
+                      style={{
+                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) * 100)}%`,
                       }}
                     />
                   </div>
-                  {((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) >= 0.9 && (
+                  {(subscriptionData.currentUserCount || 0) /
+                    subscriptionData.subscribedUsers >=
+                    0.9 && (
                     <p className="text-xs text-red-600 mt-1">
-                      ⚠️ Approaching user limit - new registrations may be blocked
+                      ⚠️ Approaching user limit - new registrations may be
+                      blocked
                     </p>
                   )}
                 </div>
               )}
             </div>
-            
+
             {subscriptionData.calculatedStatus && (
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full bg-${subscriptionData.calculatedStatus.color}-500`}></div>
-                  <span className="text-sm font-medium capitalize">{subscriptionData.calculatedStatus.status}</span>
+                  <div
+                    className={`h-2 w-2 rounded-full bg-${subscriptionData.calculatedStatus.color}-500`}
+                  ></div>
+                  <span className="text-sm font-medium capitalize">
+                    {subscriptionData.calculatedStatus.status}
+                  </span>
                   {subscriptionData.calculatedStatus.daysRemaining > 0 && (
                     <span className="text-sm text-muted-foreground">
-                      - {subscriptionData.calculatedStatus.daysRemaining} days remaining
+                      - {subscriptionData.calculatedStatus.daysRemaining} days
+                      remaining
                     </span>
                   )}
                 </div>
@@ -669,7 +979,10 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
         </CardHeader>
         <CardContent>
           <Form {...subscriptionForm}>
-            <form onSubmit={subscriptionForm.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={subscriptionForm.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={subscriptionForm.control}
                 name="lastPaymentDate"
@@ -683,7 +996,7 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={subscriptionForm.control}
                 name="subscriptionPeriod"
@@ -691,14 +1004,21 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   <FormItem>
                     <FormLabel>Subscription Period</FormLabel>
                     <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="quarter">Quarter (90 days)</SelectItem>
+                          <SelectItem value="quarter">
+                            Quarter (90 days)
+                          </SelectItem>
                           <SelectItem value="year">Year (365 days)</SelectItem>
-                          <SelectItem value="custom">Custom Duration</SelectItem>
+                          <SelectItem value="custom">
+                            Custom Duration
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -715,10 +1035,12 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                     <FormItem>
                       <FormLabel>Custom Duration (Days)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -735,16 +1057,22 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                     <FormItem>
                       <FormLabel>Subscribed Users</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
+                        <Input
+                          type="number"
                           placeholder="50"
-                          {...field} 
+                          {...field}
                           onChange={(e) => {
                             const users = Number(e.target.value);
                             field.onChange(users);
                             // Auto-calculate total monthly amount
-                            const pricePerUser = subscriptionForm.getValues('pricePerUserPerMonth') || 10;
-                            subscriptionForm.setValue('totalMonthlyAmount', users * pricePerUser);
+                            const pricePerUser =
+                              subscriptionForm.getValues(
+                                'pricePerUserPerMonth'
+                              ) || 10;
+                            subscriptionForm.setValue(
+                              'totalMonthlyAmount',
+                              users * pricePerUser
+                            );
                           }}
                         />
                       </FormControl>
@@ -760,17 +1088,22 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                     <FormItem>
                       <FormLabel>Price Per User/Month ($)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
+                        <Input
+                          type="number"
                           step="0.01"
                           placeholder="10.00"
-                          {...field} 
+                          {...field}
                           onChange={(e) => {
                             const price = Number(e.target.value);
                             field.onChange(price);
                             // Auto-calculate total monthly amount
-                            const users = subscriptionForm.getValues('subscribedUsers') || 50;
-                            subscriptionForm.setValue('totalMonthlyAmount', users * price);
+                            const users =
+                              subscriptionForm.getValues('subscribedUsers') ||
+                              50;
+                            subscriptionForm.setValue(
+                              'totalMonthlyAmount',
+                              users * price
+                            );
                           }}
                         />
                       </FormControl>
@@ -787,11 +1120,11 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                   <FormItem>
                     <FormLabel>Total Monthly Amount ($)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         step="0.01"
                         placeholder="500.00"
-                        {...field} 
+                        {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
@@ -800,15 +1133,18 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
                 )}
               />
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={createSubscription.isPending || renewSubscription.isPending}
-              >
-                {createSubscription.isPending || renewSubscription.isPending ? 
-                  'Processing...' : 
-                  hasSubscription ? 'Renew Subscription' : 'Create Subscription'
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  createSubscription.isPending || renewSubscription.isPending
                 }
+              >
+                {createSubscription.isPending || renewSubscription.isPending
+                  ? 'Processing...'
+                  : hasSubscription
+                    ? 'Renew Subscription'
+                    : 'Create Subscription'}
               </Button>
             </form>
           </Form>
@@ -822,12 +1158,14 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
             <CardTitle className="text-lg text-red-600">Danger Zone</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={() => deactivateSubscription.mutate()}
               disabled={deactivateSubscription.isPending}
             >
-              {deactivateSubscription.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
+              {deactivateSubscription.isPending
+                ? 'Deactivating...'
+                : 'Deactivate Subscription'}
             </Button>
           </CardContent>
         </Card>
@@ -837,7 +1175,13 @@ const SubscriptionManagement = ({ organizationId }: { organizationId: number }) 
 };
 
 // Edit Organization Form Component
-const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organization; onSuccess: () => void }) => {
+const EditOrganizationForm = ({
+  organization,
+  onSuccess,
+}: {
+  organization: Organization;
+  onSuccess: () => void;
+}) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
@@ -851,7 +1195,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
     queryFn: async () => {
       const result = await managementApi(`/organizations/${organization.id}`);
       return result;
-    }
+    },
   });
 
   console.log('Query state:', { isLoading, fullOrganization });
@@ -870,9 +1214,9 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         city: '',
         state: '',
         zipCode: '',
-        country: ''
-      }
-    }
+        country: '',
+      },
+    },
   });
 
   // Update form when data loads
@@ -887,15 +1231,22 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         contactName: fullOrganization.contactName || '',
         contactEmail: fullOrganization.contactEmail || '',
         contactPhone: fullOrganization.contactPhone || '',
-        superuserEmail: fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
+        superuserEmail:
+          fullOrganization.adminEmail || fullOrganization.superuserEmail || '',
         industry: fullOrganization.industry || '',
         address: {
-          street: fullOrganization.streetAddress || fullOrganization.address?.street || '',
+          street:
+            fullOrganization.streetAddress ||
+            fullOrganization.address?.street ||
+            '',
           city: fullOrganization.city || fullOrganization.address?.city || '',
-          state: fullOrganization.state || fullOrganization.address?.state || '',
-          zipCode: fullOrganization.zipCode || fullOrganization.address?.zipCode || '',
-          country: fullOrganization.country || fullOrganization.address?.country || ''
-        }
+          state:
+            fullOrganization.state || fullOrganization.address?.state || '',
+          zipCode:
+            fullOrganization.zipCode || fullOrganization.address?.zipCode || '',
+          country:
+            fullOrganization.country || fullOrganization.address?.country || '',
+        },
       };
       console.log('Processed form data:', formData);
 
@@ -919,8 +1270,8 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
           city: formData.address.city,
           state: formData.address.state,
           zipCode: formData.address.zipCode,
-          country: formData.address.country
-        }
+          country: formData.address.country,
+        },
       });
 
       console.log('Form values after setting:', form.getValues());
@@ -930,10 +1281,13 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      const response = await managementApi(`/organizations/${organization.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
+      const response = await managementApi(
+        `/organizations/${organization.id}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        }
+      );
 
       // managementApi returns the data directly, not a Response object
       if (response) {
@@ -943,7 +1297,10 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
         await fullOrgQuery.refetch();
         onSuccess();
       } else {
-        toast({ title: 'Failed to update organization', variant: 'destructive' });
+        toast({
+          title: 'Failed to update organization',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Update error:', error);
@@ -955,7 +1312,10 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4 max-h-[80vh] overflow-y-auto"
+      >
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -1094,7 +1454,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
               </FormItem>
             )}
           />
-          
+
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -1102,7 +1462,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Country *</FormLabel>
-                  <Select 
+                  <Select
                     onValueChange={(value) => {
                       field.onChange(value);
                       setSelectedCountry(value);
@@ -1136,7 +1496,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                 <FormItem>
                   <FormLabel>City</FormLabel>
                   {availableCities.length > 0 ? (
-                    <Select 
+                    <Select
                       onValueChange={field.onChange}
                       value={field.value}
                       disabled={!selectedCountry}
@@ -1157,7 +1517,7 @@ const EditOrganizationForm = ({ organization, onSuccess }: { organization: Organ
                     </Select>
                   ) : (
                     <FormControl>
-                      <Input 
+                      <Input
                         {...field}
                         placeholder="Enter city"
                         disabled={!selectedCountry}
@@ -1212,12 +1572,16 @@ const OrganizationsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: organizations, isLoading, error } = useQuery<Organization[]>({
+  const {
+    data: organizations,
+    isLoading,
+    error,
+  } = useQuery<Organization[]>({
     queryKey: ['/api/management/organizations'],
     queryFn: async () => {
       const result = await managementApi('/organizations');
       return result;
-    }
+    },
   });
 
   console.log('Organizations Query:', { isLoading, error, organizations });
@@ -1226,49 +1590,67 @@ const OrganizationsManagement = () => {
     resolver: zodResolver(organizationSchema),
     defaultValues: {
       name: '',
-      status: 'active'
-    }
+      status: 'active',
+    },
   });
 
   const createOrganizationMutation = useMutation({
-    mutationFn: (data: z.infer<typeof organizationSchema>) => 
-      managementApi('/organizations', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: z.infer<typeof organizationSchema>) =>
+      managementApi('/organizations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/management/organizations'],
+      });
       toast({ title: 'Organization created successfully' });
       form.reset();
     },
     onError: () => {
       toast({ title: 'Failed to create organization', variant: 'destructive' });
-    }
+    },
   });
 
   const creditWalletMutation = useMutation({
-    mutationFn: ({ organizationId, amount, description }: { organizationId: number; amount: number; description: string }) =>
-      managementApi(`/organizations/${organizationId}/credit`, { 
-        method: 'POST', 
-        body: JSON.stringify({ amount, description }) 
+    mutationFn: ({
+      organizationId,
+      amount,
+      description,
+    }: {
+      organizationId: number;
+      amount: number;
+      description: string;
+    }) =>
+      managementApi(`/organizations/${organizationId}/credit`, {
+        method: 'POST',
+        body: JSON.stringify({ amount, description }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/management/organizations'] });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/management/organizations'],
+      });
       toast({ title: 'Wallet credited successfully' });
-    }
+    },
   });
 
   const [, setLocation] = useLocation();
 
   const handleResetPassword = async (organizationId: number) => {
     try {
-      const response = await managementApi(`/organizations/${organizationId}/reset-password`, {
-        method: 'POST'
-      });
+      const response = await managementApi(
+        `/organizations/${organizationId}/reset-password`,
+        {
+          method: 'POST',
+        }
+      );
 
       if (response.ok) {
         const result = await response.json();
-        toast({ 
-          title: 'Password Reset Successfully', 
+        toast({
+          title: 'Password Reset Successfully',
           description: `New password: ${result.newPassword}`,
-          duration: 10000
+          duration: 10000,
         });
       } else {
         toast({ title: 'Failed to reset password', variant: 'destructive' });
@@ -1292,110 +1674,150 @@ const OrganizationsManagement = () => {
         {isLoading ? (
           <div className="text-center py-8">Loading organizations...</div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">Error loading organizations: {error.message}</div>
+          <div className="text-center py-8 text-red-500">
+            Error loading organizations: {error.message}
+          </div>
         ) : !organizations || organizations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No organizations found</div>
+          <div className="text-center py-8 text-gray-500">
+            No organizations found
+          </div>
         ) : (
           organizations.map((organization) => (
             <Card key={organization.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{organization.name}</CardTitle>
-                  <CardDescription>Status: {organization.status}</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={organization.status === 'active' ? 'default' : 'secondary'}>
-                    {organization.status}
-                  </Badge>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4 mr-1" />
-                        Manage Organization
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Manage {organization.name}</DialogTitle>
-                        <DialogDescription>
-                          Complete organization management for {organization.name}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="max-h-[75vh] overflow-y-auto">
-                        <UnifiedOrganizationManager 
-                          organization={organization} 
-                          onSuccess={async () => {
-                            await queryClient.invalidateQueries({ queryKey: ['/organizations'] });
-                            await queryClient.invalidateQueries({ queryKey: [`/organizations/${organization.id}`] });
-                            setSelectedOrg(null);
-                          }}
-                          onResetPassword={() => handleResetPassword(organization.id)}
-                          creditWalletMutation={creditWalletMutation}
-                        />
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">User Count</p>
-                  <p className="text-lg font-semibold">{organization.userCount}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Max Employees</p>
-                  <p className="text-lg font-semibold">{organization.subscribedUsers || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-sm">{new Date(organization.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Subscription</p>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>{organization.name}</CardTitle>
+                    <CardDescription>
+                      Status: {organization.status}
+                    </CardDescription>
+                  </div>
                   <div className="flex items-center gap-2">
-                    {organization.subscriptionActive ? (
-                      <>
-                        <Badge variant="default" className="text-xs">
-                          {organization.subscriptionPeriod || 'Active'}
-                        </Badge>
-                        {organization.daysRemaining !== undefined && (
-                          <span className={`text-xs ${
-                            organization.daysRemaining <= 30 ? 'text-orange-600' : 
-                            organization.daysRemaining <= 7 ? 'text-red-600' : 'text-green-600'
-                          }`}>
-                            {organization.daysRemaining}d left
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">No subscription</Badge>
-                    )}
+                    <Badge
+                      variant={
+                        organization.status === 'active'
+                          ? 'default'
+                          : 'secondary'
+                      }
+                    >
+                      {organization.status}
+                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Settings className="h-4 w-4 mr-1" />
+                          Manage Organization
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Manage {organization.name}</DialogTitle>
+                          <DialogDescription>
+                            Complete organization management for{' '}
+                            {organization.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[75vh] overflow-y-auto">
+                          <UnifiedOrganizationManager
+                            organization={organization}
+                            onSuccess={async () => {
+                              await queryClient.invalidateQueries({
+                                queryKey: ['/organizations'],
+                              });
+                              await queryClient.invalidateQueries({
+                                queryKey: [`/organizations/${organization.id}`],
+                              });
+                              setSelectedOrg(null);
+                            }}
+                            onResetPassword={() =>
+                              handleResetPassword(organization.id)
+                            }
+                            creditWalletMutation={creditWalletMutation}
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Last Payment</p>
-                  <p className="text-sm">
-                    {organization.lastPaymentDate ? 
-                      new Date(organization.lastPaymentDate).toLocaleDateString() : 
-                      'N/A'
-                    }
-                  </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">User Count</p>
+                    <p className="text-lg font-semibold">
+                      {organization.userCount}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Max Employees
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {organization.subscribedUsers || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Created</p>
+                    <p className="text-sm">
+                      {new Date(organization.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Subscription
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {organization.subscriptionActive ? (
+                        <>
+                          <Badge variant="default" className="text-xs">
+                            {organization.subscriptionPeriod || 'Active'}
+                          </Badge>
+                          {organization.daysRemaining !== undefined && (
+                            <span
+                              className={`text-xs ${
+                                organization.daysRemaining <= 30
+                                  ? 'text-orange-600'
+                                  : organization.daysRemaining <= 7
+                                    ? 'text-red-600'
+                                    : 'text-green-600'
+                              }`}
+                            >
+                              {organization.daysRemaining}d left
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          No subscription
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Last Payment
+                    </p>
+                    <p className="text-sm">
+                      {organization.lastPaymentDate
+                        ? new Date(
+                            organization.lastPaymentDate
+                          ).toLocaleDateString()
+                        : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Expiration</p>
+                    <p className="text-sm">
+                      {organization.expirationDate
+                        ? new Date(
+                            organization.expirationDate
+                          ).toLocaleDateString()
+                        : 'N/A'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Expiration</p>
-                  <p className="text-sm">
-                    {organization.expirationDate ? 
-                      new Date(organization.expirationDate).toLocaleDateString() : 
-                      'N/A'
-                    }
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
@@ -1417,12 +1839,20 @@ export default function ManagementDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">ThrivioHR Management</h1>
-              <p className="text-sm text-gray-500">SaaS Platform Administration</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                ThrivioHR Management
+              </h1>
+              <p className="text-sm text-gray-500">
+                SaaS Platform Administration
+              </p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.name}</span>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <span className="text-sm text-gray-600">
+                Welcome, {user?.name}
+              </span>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -1449,21 +1879,27 @@ export default function ManagementDashboard() {
           <TabsContent value="merchants">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Merchants</h2>
-              <p className="text-muted-foreground">Manage marketplace merchants and their products</p>
+              <p className="text-muted-foreground">
+                Manage marketplace merchants and their products
+              </p>
             </div>
           </TabsContent>
 
           <TabsContent value="products">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Products</h2>
-              <p className="text-muted-foreground">Manage marketplace product catalog</p>
+              <p className="text-muted-foreground">
+                Manage marketplace product catalog
+              </p>
             </div>
           </TabsContent>
 
           <TabsContent value="orders">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold">Orders</h2>
-              <p className="text-muted-foreground">Monitor and manage customer orders</p>
+              <p className="text-muted-foreground">
+                Monitor and manage customer orders
+              </p>
             </div>
           </TabsContent>
         </Tabs>

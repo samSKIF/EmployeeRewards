@@ -12,7 +12,9 @@ export async function connectToMongoDB(): Promise<Db | null> {
   const dbName = process.env.MONGODB_DB_NAME || 'employee_engagement_social';
 
   if (!uri) {
-    console.log('MongoDB URI not provided, social features will use PostgreSQL fallback');
+    console.log(
+      'MongoDB URI not provided, social features will use PostgreSQL fallback'
+    );
     return null;
   }
 
@@ -25,9 +27,9 @@ export async function connectToMongoDB(): Promise<Db | null> {
     // Connect with timeout
     await Promise.race([
       client.connect(),
-      new Promise((_, reject) => 
+      new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Connection timeout')), 8000)
-      )
+      ),
     ]);
 
     db = client.db(dbName);
@@ -48,28 +50,38 @@ export async function connectToMongoDB(): Promise<Db | null> {
 async function createIndexes() {
   try {
     // Optimized compound index for main posts query
-    await db.collection('social_posts').createIndex({ 
-      organizationId: 1, 
-      isDeleted: 1, 
-      isPinned: -1, 
-      createdAt: -1 
+    await db.collection('social_posts').createIndex({
+      organizationId: 1,
+      isDeleted: 1,
+      isPinned: -1,
+      createdAt: -1,
     });
 
     // Additional social posts indexes
-    await db.collection('social_posts').createIndex({ authorId: 1, createdAt: -1 });
-    await db.collection('social_posts').createIndex({ type: 1, organizationId: 1, createdAt: -1 });
+    await db
+      .collection('social_posts')
+      .createIndex({ authorId: 1, createdAt: -1 });
+    await db
+      .collection('social_posts')
+      .createIndex({ type: 1, organizationId: 1, createdAt: -1 });
     await db.collection('social_posts').createIndex({ tags: 1 });
     await db.collection('social_posts').createIndex({ mentions: 1 });
 
     // Comments indexes
     await db.collection('comments').createIndex({ postId: 1, createdAt: 1 });
     await db.collection('comments').createIndex({ authorId: 1, createdAt: -1 });
-    await db.collection('comments').createIndex({ organizationId: 1, createdAt: -1 });
+    await db
+      .collection('comments')
+      .createIndex({ organizationId: 1, createdAt: -1 });
     await db.collection('comments').createIndex({ isDeleted: 1 });
 
     // Notifications indexes
-    await db.collection('notifications').createIndex({ userId: 1, createdAt: -1 });
-    await db.collection('notifications').createIndex({ organizationId: 1, createdAt: -1 });
+    await db
+      .collection('notifications')
+      .createIndex({ userId: 1, createdAt: -1 });
+    await db
+      .collection('notifications')
+      .createIndex({ organizationId: 1, createdAt: -1 });
     await db.collection('notifications').createIndex({ isRead: 1, userId: 1 });
     await db.collection('notifications').createIndex({ type: 1, userId: 1 });
 

@@ -8,17 +8,65 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, XCircle, AlertTriangle, Plus, RefreshCw, Trash2, Edit, ShoppingBag, Package, Tag, Grid3X3 } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Edit,
+  ShoppingBag,
+  Package,
+  Tag,
+  Grid3X3,
+} from 'lucide-react';
 
 // Define shop configuration schema
 const shopConfigSchema = z.object({
@@ -38,17 +86,20 @@ type ShopConfigFormValues = z.infer<typeof shopConfigSchema>;
 // Define product schema
 const productSchema = z.object({
   name: z.string().min(2, {
-    message: "Product name must be at least 2 characters.",
+    message: 'Product name must be at least 2 characters.',
   }),
   description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
+    message: 'Description must be at least 10 characters.',
   }),
   price: z.coerce.number().positive({
-    message: "Price must be a positive number.",
+    message: 'Price must be a positive number.',
   }),
-  imageUrl: z.string().url({
-    message: "Please enter a valid URL for the image.",
-  }).optional(),
+  imageUrl: z
+    .string()
+    .url({
+      message: 'Please enter a valid URL for the image.',
+    })
+    .optional(),
   categoryId: z.string(),
   isActive: z.boolean().default(true),
   inStock: z.boolean().default(true),
@@ -84,13 +135,15 @@ const ShopConfigPage = () => {
     staleTime: 60000, // 1 minute
     select: (data) => {
       // Combine all products from all categories
-      return data?.categories?.flatMap(category => 
-        category.products.map(product => ({
-          ...product,
-          categoryName: category.name,
-          categoryId: category.id
-        }))
-      ) || [];
+      return (
+        data?.categories?.flatMap((category) =>
+          category.products.map((product) => ({
+            ...product,
+            categoryName: category.name,
+            categoryId: category.id,
+          }))
+        ) || []
+      );
     },
   });
 
@@ -178,15 +231,15 @@ const ShopConfigPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/shop/config'] });
       toast({
-        title: "Configuration saved",
-        description: "Shop configuration has been updated successfully.",
+        title: 'Configuration saved',
+        description: 'Shop configuration has been updated successfully.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Save failed",
+        title: 'Save failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -196,12 +249,12 @@ const ShopConfigPage = () => {
     mutationFn: async (data: ProductFormValues) => {
       let url = '/api/products';
       let method = 'POST';
-      
+
       if (selectedProduct) {
         url = `/api/products/${selectedProduct.id}`;
         method = 'PATCH';
       }
-      
+
       const res = await apiRequest(method, url, data);
       return await res.json();
     },
@@ -209,19 +262,19 @@ const ShopConfigPage = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/catalog'] });
       setProductModalOpen(false);
       setSelectedProduct(null);
-      
+
       toast({
-        title: selectedProduct ? "Product updated" : "Product created",
-        description: selectedProduct ? 
-          "Product has been updated successfully." : 
-          "New product has been created successfully.",
+        title: selectedProduct ? 'Product updated' : 'Product created',
+        description: selectedProduct
+          ? 'Product has been updated successfully.'
+          : 'New product has been created successfully.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Operation failed",
+        title: 'Operation failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -235,16 +288,17 @@ const ShopConfigPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/catalog'] });
       toast({
-        title: "Catalog refreshed",
-        description: "The product catalog has been refreshed with latest items.",
+        title: 'Catalog refreshed',
+        description:
+          'The product catalog has been refreshed with latest items.',
       });
       setRefreshLoading(false);
     },
     onError: (error) => {
       toast({
-        title: "Refresh failed",
+        title: 'Refresh failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
       setRefreshLoading(false);
     },
@@ -285,8 +339,10 @@ const ShopConfigPage = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Shop Configuration</h1>
-          <Button 
+          <h1 className="text-3xl font-bold text-gray-800">
+            Shop Configuration
+          </h1>
+          <Button
             onClick={handleRefreshProducts}
             disabled={refreshLoading}
             className="mt-4 sm:mt-0"
@@ -324,7 +380,10 @@ const ShopConfigPage = () => {
           {/* General Settings Tab */}
           <TabsContent value="general">
             <Form {...shopConfigForm}>
-              <form onSubmit={shopConfigForm.handleSubmit(onSubmitShopConfig)} className="space-y-8">
+              <form
+                onSubmit={shopConfigForm.handleSubmit(onSubmitShopConfig)}
+                className="space-y-8"
+              >
                 <Card>
                   <CardHeader>
                     <CardTitle>Shop Settings</CardTitle>
@@ -382,7 +441,10 @@ const ShopConfigPage = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Default Currency</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select a currency" />
@@ -415,7 +477,8 @@ const ShopConfigPage = () => {
                               <Input type="number" min="1" {...field} />
                             </FormControl>
                             <FormDescription>
-                              How many points equal one unit of currency (e.g., 100 points = $1)
+                              How many points equal one unit of currency (e.g.,
+                              100 points = $1)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -503,8 +566,8 @@ const ShopConfigPage = () => {
                     />
                   </CardContent>
                   <CardFooter className="flex justify-end">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={shopConfigMutation.isPending}
                       className="w-full sm:w-auto"
                     >
@@ -513,7 +576,9 @@ const ShopConfigPage = () => {
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Saving...
                         </>
-                      ) : 'Save Configuration'}
+                      ) : (
+                        'Save Configuration'
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -532,9 +597,12 @@ const ShopConfigPage = () => {
                       Manage products available in your reward shop.
                     </CardDescription>
                   </div>
-                  <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
+                  <Dialog
+                    open={productModalOpen}
+                    onOpenChange={setProductModalOpen}
+                  >
                     <DialogTrigger asChild>
-                      <Button 
+                      <Button
                         onClick={() => {
                           setSelectedProduct(null);
                           productForm.reset({
@@ -556,15 +624,20 @@ const ShopConfigPage = () => {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[600px]">
                       <DialogHeader>
-                        <DialogTitle>{selectedProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+                        <DialogTitle>
+                          {selectedProduct ? 'Edit Product' : 'Add New Product'}
+                        </DialogTitle>
                         <DialogDescription>
-                          {selectedProduct 
-                            ? 'Update the product information below.' 
+                          {selectedProduct
+                            ? 'Update the product information below.'
                             : 'Fill in the details for the new product.'}
                         </DialogDescription>
                       </DialogHeader>
                       <Form {...productForm}>
-                        <form onSubmit={productForm.handleSubmit(onSubmitProduct)} className="space-y-6">
+                        <form
+                          onSubmit={productForm.handleSubmit(onSubmitProduct)}
+                          className="space-y-6"
+                        >
                           <FormField
                             control={productForm.control}
                             name="name"
@@ -578,7 +651,7 @@ const ShopConfigPage = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={productForm.control}
                             name="description"
@@ -592,7 +665,7 @@ const ShopConfigPage = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormField
                               control={productForm.control}
@@ -607,14 +680,17 @@ const ShopConfigPage = () => {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={productForm.control}
                               name="categoryId"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Category</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
                                     <FormControl>
                                       <SelectTrigger>
                                         <SelectValue placeholder="Select a category" />
@@ -622,7 +698,10 @@ const ShopConfigPage = () => {
                                     </FormControl>
                                     <SelectContent>
                                       {categories?.map((category) => (
-                                        <SelectItem key={category.id} value={category.id}>
+                                        <SelectItem
+                                          key={category.id}
+                                          value={category.id}
+                                        >
                                           {category.name}
                                         </SelectItem>
                                       ))}
@@ -633,7 +712,7 @@ const ShopConfigPage = () => {
                               )}
                             />
                           </div>
-                          
+
                           <FormField
                             control={productForm.control}
                             name="imageUrl"
@@ -650,7 +729,7 @@ const ShopConfigPage = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <FormField
                               control={productForm.control}
@@ -667,7 +746,7 @@ const ShopConfigPage = () => {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={productForm.control}
                               name="inStock"
@@ -683,7 +762,7 @@ const ShopConfigPage = () => {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={productForm.control}
                               name="brandedProduct"
@@ -700,10 +779,10 @@ const ShopConfigPage = () => {
                               )}
                             />
                           </div>
-                          
+
                           <DialogFooter>
-                            <Button 
-                              type="submit" 
+                            <Button
+                              type="submit"
                               disabled={productMutation.isPending}
                             >
                               {productMutation.isPending ? (
@@ -711,7 +790,11 @@ const ShopConfigPage = () => {
                                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                                   Saving...
                                 </>
-                              ) : selectedProduct ? 'Update Product' : 'Add Product'}
+                              ) : selectedProduct ? (
+                                'Update Product'
+                              ) : (
+                                'Add Product'
+                              )}
                             </Button>
                           </DialogFooter>
                         </form>
@@ -730,7 +813,8 @@ const ShopConfigPage = () => {
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>No products found</AlertTitle>
                     <AlertDescription>
-                      There are no products in your shop yet. Add new products or refresh the catalog.
+                      There are no products in your shop yet. Add new products
+                      or refresh the catalog.
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -764,29 +848,44 @@ const ShopConfigPage = () => {
                                 <div>
                                   <div>{product.name}</div>
                                   {product.brandedProduct && (
-                                    <Badge variant="outline" className="text-xs">Branded</Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      Branded
+                                    </Badge>
                                   )}
                                 </div>
                               </div>
                             </TableCell>
+                            <TableCell>{product.categoryName}</TableCell>
                             <TableCell>
-                              {product.categoryName}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">{product.price} pts</Badge>
+                              <Badge variant="secondary">
+                                {product.price} pts
+                              </Badge>
                             </TableCell>
                             <TableCell>
                               {product.isActive ? (
-                                <Badge variant="outline" className="bg-green-100 text-green-800">
-                                  <CheckCircle className="h-3 w-3 mr-1" /> Active
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-100 text-green-800"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-1" />{' '}
+                                  Active
                                 </Badge>
                               ) : (
-                                <Badge variant="destructive" className="bg-red-100 text-red-800">
+                                <Badge
+                                  variant="destructive"
+                                  className="bg-red-100 text-red-800"
+                                >
                                   <XCircle className="h-3 w-3 mr-1" /> Inactive
                                 </Badge>
                               )}
                               {!product.inStock && (
-                                <Badge variant="outline" className="ml-1 bg-orange-100 text-orange-800">
+                                <Badge
+                                  variant="outline"
+                                  className="ml-1 bg-orange-100 text-orange-800"
+                                >
                                   Out of Stock
                                 </Badge>
                               )}
@@ -843,7 +942,9 @@ const ShopConfigPage = () => {
                               <div className="bg-primary/10 p-2 rounded-md">
                                 <Tag className="h-5 w-5 text-primary" />
                               </div>
-                              <CardTitle className="text-lg">{category.name}</CardTitle>
+                              <CardTitle className="text-lg">
+                                {category.name}
+                              </CardTitle>
                               <Badge variant="outline">
                                 {category.products?.length || 0} products
                               </Badge>

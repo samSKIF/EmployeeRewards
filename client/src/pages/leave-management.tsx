@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Briefcase, FileText, Calendar, PlusCircle, CheckCircle, XCircle, Clock, Settings } from 'lucide-react';
+import {
+  CalendarDays,
+  Briefcase,
+  FileText,
+  Calendar,
+  PlusCircle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Settings,
+} from 'lucide-react';
 import { format, parseISO, isAfter, isBefore, addMonths } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -11,21 +21,62 @@ import { useTranslation } from 'react-i18next';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -94,17 +145,17 @@ interface Holiday {
 
 // Leave request form schema
 const leaveRequestSchema = z.object({
-  leaveTypeId: z.string().min(1, "Leave type is required"),
+  leaveTypeId: z.string().min(1, 'Leave type is required'),
   startDate: z.date({
-    required_error: "Start date is required",
+    required_error: 'Start date is required',
   }),
   endDate: z.date({
-    required_error: "End date is required",
+    required_error: 'End date is required',
   }),
   startHalfDay: z.boolean().default(false),
   endHalfDay: z.boolean().default(false),
   notes: z.string().optional(),
-  approverId: z.string().min(1, "Approver is required"),
+  approverId: z.string().min(1, 'Approver is required'),
 });
 
 // Leave Management Page Component
@@ -120,31 +171,35 @@ export default function LeaveManagement() {
     queryKey: ['/api/leave/types'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/leave/types');
-      return await response.json() as LeaveType[];
+      return (await response.json()) as LeaveType[];
     },
   });
 
-  const { data: leaveEntitlements, isLoading: isLoadingEntitlements } = useQuery({
-    queryKey: ['/api/leave/entitlements'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/leave/entitlements');
-      return await response.json() as LeaveEntitlement[];
-    },
-  });
+  const { data: leaveEntitlements, isLoading: isLoadingEntitlements } =
+    useQuery({
+      queryKey: ['/api/leave/entitlements'],
+      queryFn: async () => {
+        const response = await apiRequest('GET', '/api/leave/entitlements');
+        return (await response.json()) as LeaveEntitlement[];
+      },
+    });
 
   const { data: leaveRequests, isLoading: isLoadingRequests } = useQuery({
     queryKey: ['/api/leave/requests'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/leave/requests');
-      return await response.json() as LeaveRequest[];
+      return (await response.json()) as LeaveRequest[];
     },
   });
 
   const { data: pendingApprovals, isLoading: isLoadingApprovals } = useQuery({
     queryKey: ['/api/leave/requests/pending-approval'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/leave/requests/pending-approval');
-      return await response.json() as LeaveRequest[];
+      const response = await apiRequest(
+        'GET',
+        '/api/leave/requests/pending-approval'
+      );
+      return (await response.json()) as LeaveRequest[];
     },
     enabled: user?.isManager || isAdmin,
   });
@@ -153,7 +208,7 @@ export default function LeaveManagement() {
     queryKey: ['/api/leave/holidays'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/leave/holidays');
-      return await response.json() as Holiday[];
+      return (await response.json()) as Holiday[];
     },
   });
 
@@ -165,7 +220,7 @@ export default function LeaveManagement() {
       // or use another way to fetch managers
       const response = await apiRequest('GET', '/api/users');
       const users = await response.json();
-      return users.filter(u => u.isManager || u.isAdmin);
+      return users.filter((u) => u.isManager || u.isAdmin);
     },
   });
 
@@ -177,8 +232,8 @@ export default function LeaveManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Leave request submitted",
-        description: "Your leave request has been successfully submitted",
+        title: 'Leave request submitted',
+        description: 'Your leave request has been successfully submitted',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/leave/requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/leave/entitlements'] });
@@ -186,50 +241,74 @@ export default function LeaveManagement() {
     },
     onError: (error) => {
       toast({
-        title: "Failed to submit leave request",
+        title: 'Failed to submit leave request',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Approve or reject leave request
   const updateLeaveStatusMutation = useMutation({
-    mutationFn: async ({ id, status, rejectionReason }: { id: number, status: string, rejectionReason?: string }) => {
-      const response = await apiRequest('PATCH', `/api/leave/requests/${id}/status`, {
-        status,
-        rejectionReason
-      });
+    mutationFn: async ({
+      id,
+      status,
+      rejectionReason,
+    }: {
+      id: number;
+      status: string;
+      rejectionReason?: string;
+    }) => {
+      const response = await apiRequest(
+        'PATCH',
+        `/api/leave/requests/${id}/status`,
+        {
+          status,
+          rejectionReason,
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Leave request updated",
-        description: "The leave request status has been updated",
+        title: 'Leave request updated',
+        description: 'The leave request status has been updated',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/leave/requests/pending-approval'] });
+      queryClient.invalidateQueries({
+        queryKey: ['/api/leave/requests/pending-approval'],
+      });
     },
     onError: (error) => {
       toast({
-        title: "Failed to update leave request",
+        title: 'Failed to update leave request',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Cancel leave request
   const cancelLeaveMutation = useMutation({
-    mutationFn: async ({ id, cancellationReason }: { id: number, cancellationReason: string }) => {
-      const response = await apiRequest('PATCH', `/api/leave/requests/${id}/cancel`, {
-        cancellationReason
-      });
+    mutationFn: async ({
+      id,
+      cancellationReason,
+    }: {
+      id: number;
+      cancellationReason: string;
+    }) => {
+      const response = await apiRequest(
+        'PATCH',
+        `/api/leave/requests/${id}/cancel`,
+        {
+          cancellationReason,
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Leave request cancelled",
-        description: "Your leave request has been cancelled",
+        title: 'Leave request cancelled',
+        description: 'Your leave request has been cancelled',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/leave/requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/leave/entitlements'] });
@@ -239,11 +318,11 @@ export default function LeaveManagement() {
     },
     onError: (error) => {
       toast({
-        title: "Failed to cancel leave request",
+        title: 'Failed to cancel leave request',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Form for new leave request
@@ -252,7 +331,7 @@ export default function LeaveManagement() {
     defaultValues: {
       startHalfDay: false,
       endHalfDay: false,
-      notes: "",
+      notes: '',
     },
   });
 
@@ -286,7 +365,7 @@ export default function LeaveManagement() {
 
   // Handle leave approval or rejection
   const handleApproveLeave = (leave: LeaveRequest) => {
-    updateLeaveStatusMutation.mutate({ id: leave.id, status: "APPROVED" });
+    updateLeaveStatusMutation.mutate({ id: leave.id, status: 'APPROVED' });
   };
 
   const handleRejectLeave = (leave: LeaveRequest) => {
@@ -298,7 +377,7 @@ export default function LeaveManagement() {
     if (leaveToReject) {
       updateLeaveStatusMutation.mutate({
         id: leaveToReject.id,
-        status: "REJECTED",
+        status: 'REJECTED',
         rejectionReason: rejectionReason,
       });
       setRejectionReason('');
@@ -320,13 +399,29 @@ export default function LeaveManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+            Pending
+          </Badge>
+        );
       case 'APPROVED':
-        return <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>;
+        return (
+          <Badge variant="outline" className="bg-green-100 text-green-800">
+            Approved
+          </Badge>
+        );
       case 'REJECTED':
-        return <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>;
+        return (
+          <Badge variant="outline" className="bg-red-100 text-red-800">
+            Rejected
+          </Badge>
+        );
       case 'CANCELLED':
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Cancelled</Badge>;
+        return (
+          <Badge variant="outline" className="bg-gray-100 text-gray-800">
+            Cancelled
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -345,8 +440,12 @@ export default function LeaveManagement() {
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('leave.leaveManagement')}</h1>
-            <p className="text-muted-foreground">{t('leave.manageLeaveRequests')}</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {t('leave.leaveManagement')}
+            </h1>
+            <p className="text-muted-foreground">
+              {t('leave.manageLeaveRequests')}
+            </p>
           </div>
           <Button onClick={() => setIsNewLeaveDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" /> {t('leave.requestLeave')}
@@ -386,7 +485,9 @@ export default function LeaveManagement() {
             <Card>
               <CardHeader>
                 <CardTitle>{t('leave.myLeaveRequests')}</CardTitle>
-                <CardDescription>{t('leave.viewManageLeaveRequests')}</CardDescription>
+                <CardDescription>
+                  {t('leave.viewManageLeaveRequests')}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoadingRequests ? (
@@ -411,18 +512,28 @@ export default function LeaveManagement() {
                       {leaveRequests.map((leave) => (
                         <TableRow key={leave.id}>
                           <TableCell>
-                            <div className="font-medium">{leave.leaveType?.name || 'Unknown'}</div>
+                            <div className="font-medium">
+                              {leave.leaveType?.name || 'Unknown'}
+                            </div>
                           </TableCell>
                           <TableCell>
-                            <div>{format(parseISO(leave.startDate), 'MMM dd, yyyy')}</div>
+                            <div>
+                              {format(
+                                parseISO(leave.startDate),
+                                'MMM dd, yyyy'
+                              )}
+                            </div>
                             <div className="text-sm text-muted-foreground">
-                              to {format(parseISO(leave.endDate), 'MMM dd, yyyy')}
+                              to{' '}
+                              {format(parseISO(leave.endDate), 'MMM dd, yyyy')}
                             </div>
                           </TableCell>
                           <TableCell>{leave.totalDays}</TableCell>
                           <TableCell>{getStatusBadge(leave.status)}</TableCell>
                           <TableCell>
-                            <div className="max-w-xs truncate">{leave.notes}</div>
+                            <div className="max-w-xs truncate">
+                              {leave.notes}
+                            </div>
                           </TableCell>
                           <TableCell>
                             {leave.status === 'PENDING' && (
@@ -442,9 +553,15 @@ export default function LeaveManagement() {
                 ) : (
                   <div className="text-center py-10">
                     <div className="text-6xl opacity-20 mb-3">🏝️</div>
-                    <h3 className="text-xl font-medium mb-2">{t('leave.noLeaveRequestsYet')}</h3>
-                    <p className="text-muted-foreground mb-4">{t('leave.noLeaveRequestsYetDescription')}</p>
-                    <Button onClick={() => setIsNewLeaveDialogOpen(true)}>{t('leave.requestLeaveButton')}</Button>
+                    <h3 className="text-xl font-medium mb-2">
+                      {t('leave.noLeaveRequestsYet')}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {t('leave.noLeaveRequestsYetDescription')}
+                    </p>
+                    <Button onClick={() => setIsNewLeaveDialogOpen(true)}>
+                      {t('leave.requestLeaveButton')}
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -457,7 +574,9 @@ export default function LeaveManagement() {
               <Card>
                 <CardHeader>
                   <CardTitle>{t('leave.approvalQueue')}</CardTitle>
-                  <CardDescription>{t('leave.manageLeaveRequests')}</CardDescription>
+                  <CardDescription>
+                    {t('leave.manageLeaveRequests')}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {isLoadingApprovals ? (
@@ -482,18 +601,33 @@ export default function LeaveManagement() {
                         {pendingApprovals.map((leave) => (
                           <TableRow key={leave.id}>
                             <TableCell>
-                              <div className="font-medium">{leave.user?.name || 'Unknown'}</div>
+                              <div className="font-medium">
+                                {leave.user?.name || 'Unknown'}
+                              </div>
                             </TableCell>
-                            <TableCell>{leave.leaveType?.name || 'Unknown'}</TableCell>
                             <TableCell>
-                              <div>{format(parseISO(leave.startDate), 'MMM dd, yyyy')}</div>
+                              {leave.leaveType?.name || 'Unknown'}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                {format(
+                                  parseISO(leave.startDate),
+                                  'MMM dd, yyyy'
+                                )}
+                              </div>
                               <div className="text-sm text-muted-foreground">
-                                to {format(parseISO(leave.endDate), 'MMM dd, yyyy')}
+                                to{' '}
+                                {format(
+                                  parseISO(leave.endDate),
+                                  'MMM dd, yyyy'
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>{leave.totalDays}</TableCell>
                             <TableCell>
-                              <div className="max-w-xs truncate">{leave.notes}</div>
+                              <div className="max-w-xs truncate">
+                                {leave.notes}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex space-x-2">
@@ -524,8 +658,12 @@ export default function LeaveManagement() {
                   ) : (
                     <div className="text-center py-10">
                       <div className="text-6xl opacity-20 mb-3">🎯</div>
-                      <h3 className="text-xl font-medium mb-2">No pending approvals</h3>
-                      <p className="text-muted-foreground">There are no leave requests waiting for your approval.</p>
+                      <h3 className="text-xl font-medium mb-2">
+                        No pending approvals
+                      </h3>
+                      <p className="text-muted-foreground">
+                        There are no leave requests waiting for your approval.
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -566,14 +704,21 @@ export default function LeaveManagement() {
                 leaveEntitlements?.map((entitlement) => (
                   <Card key={entitlement.id}>
                     <CardHeader className="pb-2">
-                      <CardTitle>{entitlement.leaveType?.name || 'Unknown'}</CardTitle>
+                      <CardTitle>
+                        {entitlement.leaveType?.name || 'Unknown'}
+                      </CardTitle>
                       <CardDescription>
-                        Valid until {format(parseISO(entitlement.periodEnd), 'MMM dd, yyyy')}
+                        Valid until{' '}
+                        {format(
+                          parseISO(entitlement.periodEnd),
+                          'MMM dd, yyyy'
+                        )}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {entitlement.remainingDays} / {entitlement.totalDays} days
+                        {entitlement.remainingDays} / {entitlement.totalDays}{' '}
+                        days
                       </div>
                       <div className="mt-2 h-2 w-full bg-secondary rounded-full overflow-hidden">
                         <div
@@ -587,7 +732,9 @@ export default function LeaveManagement() {
                     <CardFooter className="pt-0">
                       <p className="text-xs text-muted-foreground">
                         Used: {entitlement.usedDays} days
-                        {entitlement.adjustedDays ? ` (Adjusted: ${entitlement.adjustedDays > 0 ? '+' : ''}${entitlement.adjustedDays})` : ''}
+                        {entitlement.adjustedDays
+                          ? ` (Adjusted: ${entitlement.adjustedDays > 0 ? '+' : ''}${entitlement.adjustedDays})`
+                          : ''}
                       </p>
                     </CardFooter>
                   </Card>
@@ -601,13 +748,18 @@ export default function LeaveManagement() {
             <Card>
               <CardHeader>
                 <CardTitle>Leave Calendar</CardTitle>
-                <CardDescription>View approved leaves and holidays</CardDescription>
+                <CardDescription>
+                  View approved leaves and holidays
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="min-h-[400px]">
                   {/* A placeholder for a calendar component */}
                   <div className="border rounded-md p-4 text-center">
-                    <p className="text-muted-foreground">Calendar view will be implemented with a full-featured calendar component.</p>
+                    <p className="text-muted-foreground">
+                      Calendar view will be implemented with a full-featured
+                      calendar component.
+                    </p>
                   </div>
 
                   <div className="mt-6">
@@ -620,21 +772,38 @@ export default function LeaveManagement() {
                     ) : holidays && holidays.length > 0 ? (
                       <div className="space-y-2">
                         {holidays
-                          .filter(holiday => isAfter(parseISO(holiday.date), new Date()))
-                          .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
+                          .filter((holiday) =>
+                            isAfter(parseISO(holiday.date), new Date())
+                          )
+                          .sort(
+                            (a, b) =>
+                              parseISO(a.date).getTime() -
+                              parseISO(b.date).getTime()
+                          )
                           .slice(0, 5)
-                          .map(holiday => (
-                            <div key={holiday.id} className="flex justify-between items-center p-3 bg-muted rounded-md">
+                          .map((holiday) => (
+                            <div
+                              key={holiday.id}
+                              className="flex justify-between items-center p-3 bg-muted rounded-md"
+                            >
                               <div>
-                                <div className="font-medium">{holiday.name}</div>
-                                <div className="text-sm text-muted-foreground">{holiday.description}</div>
+                                <div className="font-medium">
+                                  {holiday.name}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {holiday.description}
+                                </div>
                               </div>
-                              <Badge variant="outline">{format(parseISO(holiday.date), 'MMMM d, yyyy')}</Badge>
+                              <Badge variant="outline">
+                                {format(parseISO(holiday.date), 'MMMM d, yyyy')}
+                              </Badge>
                             </div>
                           ))}
                       </div>
                     ) : (
-                      <p className="text-muted-foreground">No upcoming holidays found.</p>
+                      <p className="text-muted-foreground">
+                        No upcoming holidays found.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -648,7 +817,9 @@ export default function LeaveManagement() {
               <Card>
                 <CardHeader>
                   <CardTitle>Leave Settings</CardTitle>
-                  <CardDescription>Configure leave types, policies, and holidays</CardDescription>
+                  <CardDescription>
+                    Configure leave types, policies, and holidays
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="leave-types">
@@ -688,20 +859,30 @@ export default function LeaveManagement() {
                               <TableRow key={type.id}>
                                 <TableCell>
                                   <div className="font-medium">{type.name}</div>
-                                  <div className="text-sm text-muted-foreground">{type.description}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {type.description}
+                                  </div>
                                 </TableCell>
                                 <TableCell>{type.defaultDays}</TableCell>
-                                <TableCell>{type.requiresApproval ? 'Yes' : 'No'}</TableCell>
-                                <TableCell>{type.active ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>
-                                  <Button variant="ghost" size="sm">Edit</Button>
+                                  {type.requiresApproval ? 'Yes' : 'No'}
+                                </TableCell>
+                                <TableCell>
+                                  {type.active ? 'Yes' : 'No'}
+                                </TableCell>
+                                <TableCell>
+                                  <Button variant="ghost" size="sm">
+                                    Edit
+                                  </Button>
                                 </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
                       ) : (
-                        <p className="text-muted-foreground py-10 text-center">No leave types defined.</p>
+                        <p className="text-muted-foreground py-10 text-center">
+                          No leave types defined.
+                        </p>
                       )}
                     </TabsContent>
 
@@ -734,28 +915,45 @@ export default function LeaveManagement() {
                             {holidays.map((holiday) => (
                               <TableRow key={holiday.id}>
                                 <TableCell>
-                                  <div className="font-medium">{holiday.name}</div>
+                                  <div className="font-medium">
+                                    {holiday.name}
+                                  </div>
                                 </TableCell>
-                                <TableCell>{format(parseISO(holiday.date), 'MMMM d, yyyy')}</TableCell>
-                                <TableCell>{holiday.description}</TableCell>
-                                <TableCell>{holiday.recurring ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>
-                                  <Button variant="ghost" size="sm">Edit</Button>
+                                  {format(
+                                    parseISO(holiday.date),
+                                    'MMMM d, yyyy'
+                                  )}
+                                </TableCell>
+                                <TableCell>{holiday.description}</TableCell>
+                                <TableCell>
+                                  {holiday.recurring ? 'Yes' : 'No'}
+                                </TableCell>
+                                <TableCell>
+                                  <Button variant="ghost" size="sm">
+                                    Edit
+                                  </Button>
                                 </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
                       ) : (
-                        <p className="text-muted-foreground py-10 text-center">No holidays defined.</p>
+                        <p className="text-muted-foreground py-10 text-center">
+                          No holidays defined.
+                        </p>
                       )}
                     </TabsContent>
 
                     <TabsContent value="policies">
                       <div className="text-center py-10">
                         <div className="text-6xl opacity-20 mb-3">⚙️</div>
-                        <h3 className="text-xl font-medium mb-2">Leave Policies</h3>
-                        <p className="text-muted-foreground mb-4">Configure organization-wide leave policies.</p>
+                        <h3 className="text-xl font-medium mb-2">
+                          Leave Policies
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Configure organization-wide leave policies.
+                        </p>
                         <Button>
                           <PlusCircle className="mr-2 h-4 w-4" /> Create Policy
                         </Button>
@@ -769,7 +967,10 @@ export default function LeaveManagement() {
         </Tabs>
 
         {/* New Leave Request Dialog */}
-        <Dialog open={isNewLeaveDialogOpen} onOpenChange={setIsNewLeaveDialogOpen}>
+        <Dialog
+          open={isNewLeaveDialogOpen}
+          onOpenChange={setIsNewLeaveDialogOpen}
+        >
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
               <DialogTitle>{t('leave.requestLeave')}</DialogTitle>
@@ -778,22 +979,33 @@ export default function LeaveManagement() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="leaveTypeId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('leave.leaveType')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={t('leave.selectLeaveType')} />
+                            <SelectValue
+                              placeholder={t('leave.selectLeaveType')}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {leaveTypes?.map((type) => (
-                            <SelectItem key={type.id} value={type.id.toString()}>
+                            <SelectItem
+                              key={type.id}
+                              value={type.id.toString()}
+                            >
                               {type.name}
                             </SelectItem>
                           ))}
@@ -815,11 +1027,11 @@ export default function LeaveManagement() {
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
-                                variant={"outline"}
-                                className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}
+                                variant={'outline'}
+                                className={`w-full pl-3 text-left font-normal ${!field.value ? 'text-muted-foreground' : ''}`}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, 'PPP')
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
@@ -852,11 +1064,11 @@ export default function LeaveManagement() {
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
-                                variant={"outline"}
-                                className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}
+                                variant={'outline'}
+                                className={`w-full pl-3 text-left font-normal ${!field.value ? 'text-muted-foreground' : ''}`}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, 'PPP')
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
@@ -870,7 +1082,7 @@ export default function LeaveManagement() {
                               selected={field.value}
                               onSelect={field.onChange}
                               disabled={(date) => {
-                                const startDate = form.getValues("startDate");
+                                const startDate = form.getValues('startDate');
                                 return !startDate || date < startDate;
                               }}
                               initialFocus
@@ -936,15 +1148,23 @@ export default function LeaveManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('leave.approver')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={t('leave.selectApprover')} />
+                            <SelectValue
+                              placeholder={t('leave.selectApprover')}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {managers?.map((manager) => (
-                            <SelectItem key={manager.id} value={manager.id.toString()}>
+                            <SelectItem
+                              key={manager.id}
+                              value={manager.id.toString()}
+                            >
                               {manager.name}
                             </SelectItem>
                           ))}
@@ -974,10 +1194,16 @@ export default function LeaveManagement() {
                 />
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsNewLeaveDialogOpen(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsNewLeaveDialogOpen(false)}
+                  >
                     {t('leave.cancel')}
                   </Button>
-                  <Button type="submit" loading={createLeaveMutation.isPending}>{t('leave.submitRequest')}</Button>
+                  <Button type="submit" loading={createLeaveMutation.isPending}>
+                    {t('leave.submitRequest')}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -994,7 +1220,9 @@ export default function LeaveManagement() {
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
-              <Label htmlFor="cancellationReason">Reason for cancellation</Label>
+              <Label htmlFor="cancellationReason">
+                Reason for cancellation
+              </Label>
               <Textarea
                 id="cancellationReason"
                 placeholder="Provide a reason for cancellation..."
@@ -1004,7 +1232,10 @@ export default function LeaveManagement() {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCancelDialogOpen(false)}
+              >
                 Go Back
               </Button>
               <Button
@@ -1038,7 +1269,10 @@ export default function LeaveManagement() {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsRejectDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button

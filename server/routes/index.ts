@@ -1,58 +1,58 @@
-import { Express } from "express";
-import authRoutes from "./authRoutes";
-import { userRoutes } from "./userRoutes";
-import adminRoutes from "./adminRoutes";
-import celebrationRoutes from "./celebrationRoutes";
-import { celebrationPostRoutes } from "./celebrationPostRoutes";
-import pointsRoutes from "./pointsRoutes";
-import channelRoutes from "./channelRoutes";
-import spacesRoutes from "./spacesRoutes";
-import featuredPostsRoutes from "./featuredPostsRoutes";
-import prioritiesRoutes from "./prioritiesRoutes";
-import postsRoutes from "./postsRoutes";
-import { logger } from "@shared/logger";
+import { Express } from 'express';
+import authRoutes from './authRoutes';
+import { userRoutes } from './userRoutes';
+import adminRoutes from './adminRoutes';
+import celebrationRoutes from './celebrationRoutes';
+import { celebrationPostRoutes } from './celebrationPostRoutes';
+import pointsRoutes from './pointsRoutes';
+import channelRoutes from './channelRoutes';
+import spacesRoutes from './spacesRoutes';
+import featuredPostsRoutes from './featuredPostsRoutes';
+import prioritiesRoutes from './prioritiesRoutes';
+import postsRoutes from './postsRoutes';
+import { logger } from '@shared/logger';
 
 // Import microservices
-import recognitionMicroservice from "../microservices/recognition";
-import socialMicroservice from "../microservices/social";
-import leaveMicroservice from "../microservices/leave";
-import interestsMicroservice from "../microservices/interests";
-import employeeStatusMicroservice from "../microservices/employee-status";
-import { setupBirthdayStatusRoutes } from "../microservices/birthday-status";
+import recognitionMicroservice from '../microservices/recognition';
+import socialMicroservice from '../microservices/social';
+import leaveMicroservice from '../microservices/leave';
+import interestsMicroservice from '../microservices/interests';
+import employeeStatusMicroservice from '../microservices/employee-status';
+import { setupBirthdayStatusRoutes } from '../microservices/birthday-status';
 
 export function registerRoutes(app: Express) {
-  logger.info("Registering modular routes...");
+  logger.info('Registering modular routes...');
 
   // Authentication routes
-  app.use("/api/auth", authRoutes);
+  app.use('/api/auth', authRoutes);
 
   // User management routes
-  app.use("/api/users", userRoutes);
+  app.use('/api/users', userRoutes);
 
   // Admin functionality routes
-  app.use("/api/admin", adminRoutes);
+  app.use('/api/admin', adminRoutes);
 
   // Celebration routes (birthdays, anniversaries)
-  app.use("/api/celebrations", celebrationRoutes);
-  
+  app.use('/api/celebrations', celebrationRoutes);
+
   // Celebration post generation routes
-  app.use("/api/celebration-posts", celebrationPostRoutes);
+  app.use('/api/celebration-posts', celebrationPostRoutes);
 
   // Points system routes
-  app.use("/api/points", pointsRoutes);
+  app.use('/api/points', pointsRoutes);
 
   // Channel/Space routes
-  app.use("/api/channels", channelRoutes);
-  app.use("/api/spaces", spacesRoutes);
+  app.use('/api/channels', channelRoutes);
+  app.use('/api/spaces', spacesRoutes);
 
   // Posts interaction routes
-  app.use("/api/posts", postsRoutes);
+  app.use('/api/posts', postsRoutes);
 
   // Featured posts management routes
-  app.use("/api/featured-posts", featuredPostsRoutes);
+  app.use('/api/featured-posts', featuredPostsRoutes);
 
   // Priorities management routes
-  app.use("/api/priorities", prioritiesRoutes);
+  app.use('/api/priorities', prioritiesRoutes);
 
   // Mount microservices with prefixes to avoid conflicts
   app.use('/api/recognition', recognitionMicroservice);
@@ -62,5 +62,5 @@ export function registerRoutes(app: Express) {
   app.use('/api/employee-status', employeeStatusMicroservice);
   setupBirthdayStatusRoutes(app);
 
-  logger.info("All modular routes registered successfully");
+  logger.info('All modular routes registered successfully');
 }

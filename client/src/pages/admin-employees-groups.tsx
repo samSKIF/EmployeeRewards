@@ -1,30 +1,59 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Link, useLocation } from "wouter";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Loader2, 
+import React, { useState, useEffect, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Link, useLocation } from 'wouter';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Loader2,
   Plus,
-  AlertCircle, 
-  User, 
-  UserPlus, 
-  FileText, 
-  Trash, 
-  PenSquare, 
-  Upload, 
+  AlertCircle,
+  User,
+  UserPlus,
+  FileText,
+  Trash,
+  PenSquare,
+  Upload,
   Download,
   Users,
   Search,
@@ -38,10 +67,10 @@ import {
   Edit,
   Archive,
   UserCheck,
-  MessageCircle
-} from "lucide-react";
-import { format } from "date-fns";
-import { useAuth } from "@/hooks/useAuth";
+  MessageCircle,
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
 import { CreateSpaceDialog } from '@/components/spaces/CreateSpaceDialog';
 
 // Define employee form data type
@@ -93,8 +122,8 @@ interface Employee {
 
 // Groups Management Component
 function GroupsManagement() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [showGroupDialog, setShowGroupDialog] = useState(false);
@@ -103,7 +132,11 @@ function GroupsManagement() {
   const queryClient = useQueryClient();
 
   // Fetch spaces data from the API
-  const { data: spaces = [], isLoading: spacesLoading, refetch: refetchSpaces } = useQuery({
+  const {
+    data: spaces = [],
+    isLoading: spacesLoading,
+    refetch: refetchSpaces,
+  } = useQuery({
     queryKey: ['/api/admin/spaces'],
   });
 
@@ -116,22 +149,22 @@ function GroupsManagement() {
       refetchSpaces();
       setShowCreateDialog(false);
       toast({
-        title: "Success",
-        description: "Space created successfully",
+        title: 'Success',
+        description: 'Space created successfully',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create channel",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to create channel',
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Update group mutation
   const updateGroupMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number, data: any }) => {
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
       const response = await apiRequest('PUT', `/api/admin/groups/${id}`, data);
       return response.json();
     },
@@ -139,17 +172,17 @@ function GroupsManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
       setShowGroupDialog(false);
       toast({
-        title: "Success",
-        description: "Group updated successfully",
+        title: 'Success',
+        description: 'Group updated successfully',
       });
-    }
+    },
   });
 
   // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/groups/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete group');
       return response.json();
@@ -157,30 +190,37 @@ function GroupsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
       toast({
-        title: "Success",
-        description: "Group deleted successfully",
+        title: 'Success',
+        description: 'Group deleted successfully',
       });
-    }
+    },
   });
 
-  const filteredGroups = Array.isArray(spaces) ? spaces.filter((group: any) => {
-    const matchesSearch = group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredGroups = Array.isArray(spaces)
+    ? spaces.filter((group: any) => {
+        const matchesSearch =
+          group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (selectedCategory === 'all') return matchesSearch;
-    return group.channelType === selectedCategory && matchesSearch;
-  }) : [];
+        if (selectedCategory === 'all') return matchesSearch;
+        return group.channelType === selectedCategory && matchesSearch;
+      })
+    : [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Spaces Management</h2>
-          <p className="text-gray-600">Manage workplace spaces within your administrative scope</p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Spaces Management
+          </h2>
+          <p className="text-gray-600">
+            Manage workplace spaces within your administrative scope
+          </p>
         </div>
 
-        <Button 
+        <Button
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -245,7 +285,10 @@ function GroupsManagement() {
                 </TableRow>
               ) : filteredGroups.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No spaces found
                   </TableCell>
                 </TableRow>
@@ -266,13 +309,15 @@ function GroupsManagement() {
                             </p>
                           </Link>
                           <p className="text-sm text-gray-500 truncate max-w-xs">
-                            {group.description || "No description"}
+                            {group.description || 'No description'}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{group.channelType || "General"}</Badge>
+                      <Badge variant="secondary">
+                        {group.channelType || 'General'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -282,7 +327,8 @@ function GroupsManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        {group.accessLevel === 'approval_required' || group.accessLevel === 'private' ? (
+                        {group.accessLevel === 'approval_required' ||
+                        group.accessLevel === 'private' ? (
                           <>
                             <Lock className="h-4 w-4 text-gray-400" />
                             <span className="text-sm">Private</span>
@@ -297,15 +343,19 @@ function GroupsManagement() {
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-gray-500">
-                        {group.createdAt ? format(new Date(group.createdAt), 'MMM dd, yyyy') : 'N/A'}
+                        {group.createdAt
+                          ? format(new Date(group.createdAt), 'MMM dd, yyyy')
+                          : 'N/A'}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={group.isActive ? "default" : "secondary"}
-                        className={group.isActive ? "bg-green-100 text-green-800" : ""}
+                      <Badge
+                        variant={group.isActive ? 'default' : 'secondary'}
+                        className={
+                          group.isActive ? 'bg-green-100 text-green-800' : ''
+                        }
                       >
-                        {group.isActive ? "Active" : "Inactive"}
+                        {group.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -349,8 +399,8 @@ function GroupsManagement() {
       </Card>
 
       {/* Create Space Dialog */}
-      <CreateSpaceDialog 
-        open={showCreateDialog} 
+      <CreateSpaceDialog
+        open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
       />
 
@@ -361,9 +411,11 @@ function GroupsManagement() {
             <DialogTitle>Channel Details</DialogTitle>
           </DialogHeader>
           {selectedGroup && (
-            <GroupDetailsForm 
+            <GroupDetailsForm
               group={selectedGroup}
-              onSubmit={(data) => updateGroupMutation.mutate({ id: selectedGroup.id, data })}
+              onSubmit={(data) =>
+                updateGroupMutation.mutate({ id: selectedGroup.id, data })
+              }
               isLoading={updateGroupMutation.isPending}
             />
           )}
@@ -374,7 +426,13 @@ function GroupsManagement() {
 }
 
 // Enhanced Create Group Form with HR Assistance
-function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => void; isLoading: boolean }) {
+function CreateGroupForm({
+  onSubmit,
+  isLoading,
+}: {
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -386,7 +444,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
     isPrivate: false,
     requiresApproval: false,
     maxMembers: '',
-    tags: [] as string[]
+    tags: [] as string[],
   });
 
   // Fetch departments and locations for HR assistance
@@ -402,7 +460,7 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
     e.preventDefault();
     const submitData = {
       ...formData,
-      maxMembers: formData.maxMembers ? parseInt(formData.maxMembers) : null
+      maxMembers: formData.maxMembers ? parseInt(formData.maxMembers) : null,
     };
     onSubmit(submitData);
   };
@@ -411,33 +469,33 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
     department: {
       name: 'Department Group',
       description: 'A group for team collaboration and updates',
-      accessLevel: 'department_only'
+      accessLevel: 'department_only',
     },
     site: {
-      name: 'Site Group', 
+      name: 'Site Group',
       description: 'Connect with colleagues at your location',
-      accessLevel: 'site_only'
+      accessLevel: 'site_only',
     },
     project: {
       name: 'Project Team',
       description: 'Collaborate on specific projects and initiatives',
-      accessLevel: 'approval_required'
+      accessLevel: 'approval_required',
     },
     company: {
       name: 'Company-wide Group',
       description: 'Open to all employees across the organization',
-      accessLevel: 'open'
-    }
+      accessLevel: 'open',
+    },
   };
 
   const handleTemplateSelect = (template: keyof typeof groupTypeTemplates) => {
     const templateData = groupTypeTemplates[template];
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       groupType: template,
       name: templateData.name,
       description: templateData.description,
-      accessLevel: templateData.accessLevel
+      accessLevel: templateData.accessLevel,
     }));
   };
 
@@ -446,7 +504,9 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
       {/* HR Assistance - Group Templates */}
       <div>
         <Label className="text-base font-semibold">Quick Setup Templates</Label>
-        <p className="text-sm text-gray-600 mb-3">Choose a template to get started quickly</p>
+        <p className="text-sm text-gray-600 mb-3">
+          Choose a template to get started quickly
+        </p>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(groupTypeTemplates).map(([key, template]) => (
             <Button
@@ -454,12 +514,16 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => handleTemplateSelect(key as keyof typeof groupTypeTemplates)}
+              onClick={() =>
+                handleTemplateSelect(key as keyof typeof groupTypeTemplates)
+              }
               className="text-left h-auto p-3"
             >
               <div>
                 <div className="font-medium text-sm">{template.name}</div>
-                <div className="text-xs text-gray-500">{template.description}</div>
+                <div className="text-xs text-gray-500">
+                  {template.description}
+                </div>
               </div>
             </Button>
           ))}
@@ -484,7 +548,9 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <Textarea
             id="description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             placeholder="Describe the group's purpose"
             rows={3}
           />
@@ -492,9 +558,11 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
 
         <div>
           <Label htmlFor="groupType">Group Type</Label>
-          <Select 
-            value={formData.groupType} 
-            onValueChange={(value) => setFormData({ ...formData, groupType: value })}
+          <Select
+            value={formData.groupType}
+            onValueChange={(value) =>
+              setFormData({ ...formData, groupType: value })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select group type" />
@@ -516,18 +584,26 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
 
         <div>
           <Label htmlFor="accessLevel">Who can join?</Label>
-          <Select 
-            value={formData.accessLevel} 
-            onValueChange={(value) => setFormData({ ...formData, accessLevel: value })}
+          <Select
+            value={formData.accessLevel}
+            onValueChange={(value) =>
+              setFormData({ ...formData, accessLevel: value })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select access level" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="open">Anyone in the company</SelectItem>
-              <SelectItem value="department_only">Department members only</SelectItem>
-              <SelectItem value="site_only">Site/Location members only</SelectItem>
-              <SelectItem value="approval_required">Requires approval to join</SelectItem>
+              <SelectItem value="department_only">
+                Department members only
+              </SelectItem>
+              <SelectItem value="site_only">
+                Site/Location members only
+              </SelectItem>
+              <SelectItem value="approval_required">
+                Requires approval to join
+              </SelectItem>
               <SelectItem value="invite_only">Invite only</SelectItem>
             </SelectContent>
           </Select>
@@ -537,28 +613,36 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Departments</Label>
             <div className="grid grid-cols-2 gap-2 mt-2 max-h-32 overflow-y-auto">
-              {departments && departments.map((dept: string) => (
-                <div key={dept} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`dept-${dept}`}
-                    checked={formData.allowedDepartments.includes(dept)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFormData(prev => ({
-                          ...prev,
-                          allowedDepartments: [...prev.allowedDepartments, dept]
-                        }));
-                      } else {
-                        setFormData(prev => ({
-                          ...prev,
-                          allowedDepartments: prev.allowedDepartments.filter((d: string) => d !== dept)
-                        }));
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`dept-${dept}`} className="text-sm">{dept}</Label>
-                </div>
-              ))}
+              {departments &&
+                departments.map((dept: string) => (
+                  <div key={dept} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`dept-${dept}`}
+                      checked={formData.allowedDepartments.includes(dept)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            allowedDepartments: [
+                              ...prev.allowedDepartments,
+                              dept,
+                            ],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            allowedDepartments: prev.allowedDepartments.filter(
+                              (d: string) => d !== dept
+                            ),
+                          }));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`dept-${dept}`} className="text-sm">
+                      {dept}
+                    </Label>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -567,28 +651,33 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
           <div>
             <Label>Allowed Sites/Locations</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {locations && locations.map((location: string) => (
-                <div key={location} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`site-${location}`}
-                    checked={formData.allowedSites.includes(location)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFormData(prev => ({
-                          ...prev,
-                          allowedSites: [...prev.allowedSites, location]
-                        }));
-                      } else {
-                        setFormData(prev => ({
-                          ...prev,
-                          allowedSites: prev.allowedSites.filter((s: string) => s !== location)
-                        }));
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`site-${location}`} className="text-sm">{location}</Label>
-                </div>
-              ))}
+              {locations &&
+                locations.map((location: string) => (
+                  <div key={location} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`site-${location}`}
+                      checked={formData.allowedSites.includes(location)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            allowedSites: [...prev.allowedSites, location],
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            allowedSites: prev.allowedSites.filter(
+                              (s: string) => s !== location
+                            ),
+                          }));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`site-${location}`} className="text-sm">
+                      {location}
+                    </Label>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -603,18 +692,26 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
             <Checkbox
               id="private"
               checked={formData.isPrivate}
-              onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, isPrivate: !!checked })
+              }
             />
-            <Label htmlFor="private">Private group (hidden from discovery)</Label>
+            <Label htmlFor="private">
+              Private group (hidden from discovery)
+            </Label>
           </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
               id="approval"
               checked={formData.requiresApproval}
-              onCheckedChange={(checked) => setFormData({ ...formData, requiresApproval: !!checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, requiresApproval: !!checked })
+              }
             />
-            <Label htmlFor="approval">Require admin approval for new members</Label>
+            <Label htmlFor="approval">
+              Require admin approval for new members
+            </Label>
           </div>
         </div>
 
@@ -624,7 +721,9 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
             id="maxMembers"
             type="number"
             value={formData.maxMembers}
-            onChange={(e) => setFormData({ ...formData, maxMembers: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, maxMembers: e.target.value })
+            }
             placeholder="Leave empty for unlimited"
             min="1"
           />
@@ -632,7 +731,11 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
       </div>
 
       <DialogFooter>
-        <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Group
         </Button>
@@ -642,17 +745,26 @@ function CreateGroupForm({ onSubmit, isLoading }: { onSubmit: (data: any) => voi
 }
 
 // Group Details Form Component
-function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit: (data: any) => void; isLoading: boolean }) {
+function GroupDetailsForm({
+  group,
+  onSubmit,
+  isLoading,
+}: {
+  group: any;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
   const [formData, setFormData] = useState({
     name: group.name || '',
     description: group.description || '',
     category: group.channelType || group.category || '',
-    isPrivate: group.accessLevel === 'approval_required' || group.isPrivate || false,
+    isPrivate:
+      group.accessLevel === 'approval_required' || group.isPrivate || false,
     requiresApproval: group.accessLevel === 'approval_required' || false,
     maxMembers: group.maxMembers || '',
     selectedDepartments: group.allowedDepartments || [],
     selectedLocations: group.allowedSites || [],
-    isActive: group.isActive !== false
+    isActive: group.isActive !== false,
   });
 
   // Fetch departments and locations for access controls
@@ -668,12 +780,16 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
     e.preventDefault();
     const submitData = {
       ...formData,
-      accessLevel: formData.requiresApproval ? 'approval_required' : 
-                  formData.selectedDepartments.length > 0 ? 'department_only' :
-                  formData.selectedLocations.length > 0 ? 'site_only' : 'open',
+      accessLevel: formData.requiresApproval
+        ? 'approval_required'
+        : formData.selectedDepartments.length > 0
+          ? 'department_only'
+          : formData.selectedLocations.length > 0
+            ? 'site_only'
+            : 'open',
       allowedDepartments: formData.selectedDepartments,
       allowedSites: formData.selectedLocations,
-      channelType: formData.category
+      channelType: formData.category,
     };
     onSubmit(submitData);
   };
@@ -737,7 +853,9 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
             <Textarea
               id="edit-description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Describe your group"
               rows={3}
             />
@@ -749,7 +867,9 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
               id="edit-maxMembers"
               type="number"
               value={formData.maxMembers || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, maxMembers: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, maxMembers: e.target.value }))
+              }
               placeholder="Leave empty for unlimited"
               min="1"
             />
@@ -758,9 +878,11 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
 
         <div>
           <Label htmlFor="edit-category">Channel Type</Label>
-          <Select 
-            value={formData.category} 
-            onValueChange={(value) => setFormData({ ...formData, category: value })}
+          <Select
+            value={formData.category}
+            onValueChange={(value) =>
+              setFormData({ ...formData, category: value })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select channel type" />
@@ -784,16 +906,22 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
               <Checkbox
                 id="edit-private"
                 checked={formData.isPrivate}
-                onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: !!checked })}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isPrivate: !!checked })
+                }
               />
-              <Label htmlFor="edit-private">Private Channel (invite only)</Label>
+              <Label htmlFor="edit-private">
+                Private Channel (invite only)
+              </Label>
             </div>
 
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edit-approval"
                 checked={formData.requiresApproval || false}
-                onCheckedChange={(checked) => setFormData({ ...formData, requiresApproval: !!checked })}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, requiresApproval: !!checked })
+                }
               />
               <Label htmlFor="edit-approval">Requires approval to join</Label>
             </div>
@@ -802,59 +930,83 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
 
         {/* Department Access Controls */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Select Departments (Optional)</Label>
+          <Label className="text-base font-semibold">
+            Select Departments (Optional)
+          </Label>
           <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-            {departments && departments.map((dept: string) => (
-              <div key={dept} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`edit-dept-${dept}`}
-                  checked={(formData.selectedDepartments || []).includes(dept)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setFormData(prev => ({
-                        ...prev,
-                        selectedDepartments: [...(prev.selectedDepartments || []), dept]
-                      }));
-                    } else {
-                      setFormData(prev => ({
-                        ...prev,
-                        selectedDepartments: (prev.selectedDepartments || []).filter((d: string) => d !== dept)
-                      }));
-                    }
-                  }}
-                />
-                <Label htmlFor={`edit-dept-${dept}`} className="text-sm">{dept}</Label>
-              </div>
-            ))}
+            {departments &&
+              departments.map((dept: string) => (
+                <div key={dept} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`edit-dept-${dept}`}
+                    checked={(formData.selectedDepartments || []).includes(
+                      dept
+                    )}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedDepartments: [
+                            ...(prev.selectedDepartments || []),
+                            dept,
+                          ],
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedDepartments: (
+                            prev.selectedDepartments || []
+                          ).filter((d: string) => d !== dept),
+                        }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`edit-dept-${dept}`} className="text-sm">
+                    {dept}
+                  </Label>
+                </div>
+              ))}
           </div>
         </div>
 
         {/* Location Access Controls */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Select Locations (Optional)</Label>
+          <Label className="text-base font-semibold">
+            Select Locations (Optional)
+          </Label>
           <div className="grid grid-cols-2 gap-2">
-            {locations && locations.map((location: string) => (
-              <div key={location} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`edit-loc-${location}`}
-                  checked={(formData.selectedLocations || []).includes(location)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setFormData(prev => ({
-                        ...prev,
-                        selectedLocations: [...(prev.selectedLocations || []), location]
-                      }));
-                    } else {
-                      setFormData(prev => ({
-                        ...prev,
-                        selectedLocations: (prev.selectedLocations || []).filter((l: string) => l !== location)
-                      }));
-                    }
-                  }}
-                />
-                <Label htmlFor={`edit-loc-${location}`} className="text-sm">{location}</Label>
-              </div>
-            ))}
+            {locations &&
+              locations.map((location: string) => (
+                <div key={location} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`edit-loc-${location}`}
+                    checked={(formData.selectedLocations || []).includes(
+                      location
+                    )}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedLocations: [
+                            ...(prev.selectedLocations || []),
+                            location,
+                          ],
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedLocations: (
+                            prev.selectedLocations || []
+                          ).filter((l: string) => l !== location),
+                        }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`edit-loc-${location}`} className="text-sm">
+                    {location}
+                  </Label>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -863,13 +1015,19 @@ function GroupDetailsForm({ group, onSubmit, isLoading }: { group: any; onSubmit
           <Checkbox
             id="edit-active"
             checked={formData.isActive}
-            onCheckedChange={(checked) => setFormData({ ...formData, isActive: !!checked })}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isActive: !!checked })
+            }
           />
           <Label htmlFor="edit-active">Active group</Label>
         </div>
 
         <DialogFooter>
-          <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Group
           </Button>
@@ -886,27 +1044,31 @@ interface EditEmployeeFormProps {
   onUpdate: () => void;
 }
 
-function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps) {
+function EditEmployeeForm({
+  employee,
+  onClose,
+  onUpdate,
+}: EditEmployeeFormProps) {
   const [formData, setFormData] = useState<EmployeeFormData>({
-    password: "",
-    name: employee.name || "",
-    surname: employee.surname || "",
-    email: employee.email || "",
-    phoneNumber: employee.phoneNumber || "",
-    jobTitle: employee.jobTitle || "",
-    department: employee.department || "",
-    location: employee.location || "",
-    managerEmail: employee.managerEmail || "",
-    sex: employee.sex || "",
-    nationality: employee.nationality || "",
-    birthDate: employee.birthDate || "",
-    hireDate: employee.hireDate || "",
+    password: '',
+    name: employee.name || '',
+    surname: employee.surname || '',
+    email: employee.email || '',
+    phoneNumber: employee.phoneNumber || '',
+    jobTitle: employee.jobTitle || '',
+    department: employee.department || '',
+    location: employee.location || '',
+    managerEmail: employee.managerEmail || '',
+    sex: employee.sex || '',
+    nationality: employee.nationality || '',
+    birthDate: employee.birthDate || '',
+    hireDate: employee.hireDate || '',
     isAdmin: employee.isAdmin || false,
-    status: employee.status || "active",
-    avatarUrl: employee.avatarUrl || "",
-    adminScope: employee.adminScope || "none",
+    status: employee.status || 'active',
+    avatarUrl: employee.avatarUrl || '',
+    adminScope: employee.adminScope || 'none',
     allowedSites: employee.allowedSites || [],
-    allowedDepartments: employee.allowedDepartments || []
+    allowedDepartments: employee.allowedDepartments || [],
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -917,31 +1079,35 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
     setIsLoading(true);
 
     try {
-      console.log("=== EMPLOYEE UPDATE SUBMISSION ===");
-      console.log("Employee ID:", employee.id);
-      console.log("Form data being sent:", JSON.stringify(formData, null, 2));
-      
-      const response = await apiRequest('PATCH', `/api/admin/employees/${employee.id}`, formData);
+      console.log('=== EMPLOYEE UPDATE SUBMISSION ===');
+      console.log('Employee ID:', employee.id);
+      console.log('Form data being sent:', JSON.stringify(formData, null, 2));
+
+      const response = await apiRequest(
+        'PATCH',
+        `/api/admin/employees/${employee.id}`,
+        formData
+      );
       const updatedData = await response.json();
-      
-      console.log("=== UPDATE RESPONSE ===");
-      console.log("Response data:", JSON.stringify(updatedData, null, 2));
-      console.log("========================");
-      
+
+      console.log('=== UPDATE RESPONSE ===');
+      console.log('Response data:', JSON.stringify(updatedData, null, 2));
+      console.log('========================');
+
       toast({
-        title: "Success",
-        description: "Employee information updated successfully",
+        title: 'Success',
+        description: 'Employee information updated successfully',
       });
-      
+
       // Call onUpdate which should invalidate caches and refresh data
       await onUpdate();
       onClose();
     } catch (error: any) {
-      console.error("Update error:", error);
+      console.error('Update error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update employee",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to update employee',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -949,7 +1115,10 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 max-h-[70vh] overflow-y-auto"
+    >
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -960,7 +1129,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
             />
           </div>
@@ -969,7 +1140,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="surname"
               value={formData.surname}
-              onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, surname: e.target.value })
+              }
             />
           </div>
         </div>
@@ -980,7 +1153,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             id="email"
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
         </div>
@@ -991,12 +1166,19 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="phoneNumber"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phoneNumber: e.target.value })
+              }
             />
           </div>
           <div>
             <Label htmlFor="sex">Gender</Label>
-            <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+            <Select
+              value={formData.sex}
+              onValueChange={(value) =>
+                setFormData({ ...formData, sex: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -1004,7 +1186,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
-                <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                <SelectItem value="Prefer not to say">
+                  Prefer not to say
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1016,7 +1200,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="nationality"
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, nationality: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1025,7 +1211,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
               id="birthDate"
               type="date"
               value={formData.birthDate}
-              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, birthDate: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1041,7 +1229,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="jobTitle"
               value={formData.jobTitle}
-              onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, jobTitle: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1049,7 +1239,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="department"
               value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, department: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1060,7 +1252,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
             <Input
               id="location"
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1069,7 +1263,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
               id="managerEmail"
               type="email"
               value={formData.managerEmail}
-              onChange={(e) => setFormData({ ...formData, managerEmail: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, managerEmail: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1081,12 +1277,19 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
               id="hireDate"
               type="date"
               value={formData.hireDate}
-              onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, hireDate: e.target.value })
+              }
             />
           </div>
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+            <Select
+              value={formData.status}
+              onValueChange={(value) =>
+                setFormData({ ...formData, status: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -1109,7 +1312,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
           <Checkbox
             id="isAdmin"
             checked={formData.isAdmin}
-            onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isAdmin: !!checked })
+            }
           />
           <Label htmlFor="isAdmin">Admin User</Label>
         </div>
@@ -1117,7 +1322,12 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
         {formData.isAdmin && (
           <div>
             <Label htmlFor="adminScope">Admin Scope</Label>
-            <Select value={formData.adminScope} onValueChange={(value) => setFormData({ ...formData, adminScope: value })}>
+            <Select
+              value={formData.adminScope}
+              onValueChange={(value) =>
+                setFormData({ ...formData, adminScope: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select admin scope" />
               </SelectTrigger>
@@ -1141,7 +1351,9 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
           <Input
             id="avatarUrl"
             value={formData.avatarUrl}
-            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, avatarUrl: e.target.value })
+            }
             placeholder="https://example.com/avatar.jpg"
           />
         </div>
@@ -1167,34 +1379,41 @@ interface CreateEmployeeFormProps {
 
 function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
   const [formData, setFormData] = useState<EmployeeFormData>({
-    password: "changeme123",
-    name: "",
-    surname: "",
-    email: "",
-    phoneNumber: "",
-    jobTitle: "",
-    department: "",
-    location: "",
-    managerEmail: "",
-    sex: "",
-    nationality: "",
-    birthDate: "",
-    hireDate: "",
+    password: 'changeme123',
+    name: '',
+    surname: '',
+    email: '',
+    phoneNumber: '',
+    jobTitle: '',
+    department: '',
+    location: '',
+    managerEmail: '',
+    sex: '',
+    nationality: '',
+    birthDate: '',
+    hireDate: '',
     isAdmin: false,
-    status: "active",
-    avatarUrl: "",
-    adminScope: "none",
+    status: 'active',
+    avatarUrl: '',
+    adminScope: 'none',
     allowedSites: [],
-    allowedDepartments: []
+    allowedDepartments: [],
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [duplicateCheck, setDuplicateCheck] = useState({ emailExists: false, nameExists: false });
+  const [duplicateCheck, setDuplicateCheck] = useState({
+    emailExists: false,
+    nameExists: false,
+  });
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
 
   // Check for duplicates
-  const checkDuplicates = async (email: string, name?: string, surname?: string) => {
+  const checkDuplicates = async (
+    email: string,
+    name?: string,
+    surname?: string
+  ) => {
     if (!email.trim()) return;
 
     try {
@@ -1202,7 +1421,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('firebaseToken')}`
+          Authorization: `Bearer ${localStorage.getItem('firebaseToken')}`,
         },
         body: JSON.stringify({ email, name, surname }),
       });
@@ -1231,9 +1450,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
     // Check for validation errors
     if (validationErrors.length > 0) {
       toast({
-        title: "Validation Error",
+        title: 'Validation Error',
         description: validationErrors.join('. '),
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -1245,7 +1464,7 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('firebaseToken')}`
+          Authorization: `Bearer ${localStorage.getItem('firebaseToken')}`,
         },
         body: JSON.stringify(formData),
       });
@@ -1259,9 +1478,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
       onClose();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create employee",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to create employee',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -1269,7 +1488,10 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 max-h-[70vh] overflow-y-auto"
+    >
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-md p-3">
@@ -1354,7 +1576,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             required
           />
           {duplicateCheck.emailExists && (
-            <p className="text-sm text-red-600 mt-1">This email is already in use</p>
+            <p className="text-sm text-red-600 mt-1">
+              This email is already in use
+            </p>
           )}
         </div>
 
@@ -1364,12 +1588,19 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-phoneNumber"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phoneNumber: e.target.value })
+              }
             />
           </div>
           <div>
             <Label htmlFor="create-sex">Gender</Label>
-            <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+            <Select
+              value={formData.sex}
+              onValueChange={(value) =>
+                setFormData({ ...formData, sex: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -1377,7 +1608,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
-                <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                <SelectItem value="Prefer not to say">
+                  Prefer not to say
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1389,7 +1622,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-nationality"
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, nationality: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1398,7 +1633,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
               id="create-birthDate"
               type="date"
               value={formData.birthDate}
-              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, birthDate: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1414,7 +1651,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-jobTitle"
               value={formData.jobTitle}
-              onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, jobTitle: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1422,7 +1661,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-department"
               value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, department: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1433,7 +1674,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             <Input
               id="create-location"
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
             />
           </div>
           <div>
@@ -1442,7 +1685,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
               id="create-managerEmail"
               type="email"
               value={formData.managerEmail}
-              onChange={(e) => setFormData({ ...formData, managerEmail: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, managerEmail: e.target.value })
+              }
             />
           </div>
         </div>
@@ -1454,12 +1699,19 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
               id="create-hireDate"
               type="date"
               value={formData.hireDate}
-              onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, hireDate: e.target.value })
+              }
             />
           </div>
           <div>
             <Label htmlFor="create-status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+            <Select
+              value={formData.status}
+              onValueChange={(value) =>
+                setFormData({ ...formData, status: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -1484,11 +1736,14 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
             id="create-password"
             type="password"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             placeholder="Employee will be asked to change on first login"
           />
           <p className="text-sm text-gray-500 mt-1">
-            Default: changeme123 (employee will be required to change on first login)
+            Default: changeme123 (employee will be required to change on first
+            login)
           </p>
         </div>
       </div>
@@ -1501,7 +1756,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
           <Checkbox
             id="create-isAdmin"
             checked={formData.isAdmin}
-            onCheckedChange={(checked) => setFormData({ ...formData, isAdmin: !!checked })}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, isAdmin: !!checked })
+            }
           />
           <Label htmlFor="create-isAdmin">Admin User</Label>
         </div>
@@ -1509,7 +1766,12 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
         {formData.isAdmin && (
           <div>
             <Label htmlFor="create-adminScope">Admin Scope</Label>
-            <Select value={formData.adminScope} onValueChange={(value) => setFormData({ ...formData, adminScope: value })}>
+            <Select
+              value={formData.adminScope}
+              onValueChange={(value) =>
+                setFormData({ ...formData, adminScope: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select admin scope" />
               </SelectTrigger>
@@ -1533,7 +1795,9 @@ function CreateEmployeeForm({ onClose, onSuccess }: CreateEmployeeFormProps) {
           <Input
             id="create-avatarUrl"
             value={formData.avatarUrl}
-            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, avatarUrl: e.target.value })
+            }
             placeholder="https://example.com/avatar.jpg"
           />
         </div>
@@ -1584,9 +1848,9 @@ function BulkUploadForm({ onClose, onSuccess }: BulkUploadFormProps) {
       onClose();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to upload employees",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to upload employees',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -1624,11 +1888,13 @@ function BulkUploadForm({ onClose, onSuccess }: BulkUploadFormProps) {
 
 // Employee Directory Component
 function EmployeeDirectory() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
-  const [selectedLocation, setSelectedLocation] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState<"all" | "active">("all");
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'active'>('all');
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
@@ -1637,7 +1903,11 @@ function EmployeeDirectory() {
   const queryClient = useQueryClient();
 
   // Fetch employees with a higher limit to get all users
-  const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
+  const {
+    data: employees = [],
+    isLoading: employeesLoading,
+    error: employeesError,
+  } = useQuery<Employee[]>({
     queryKey: ['/api/users?limit=500'],
   });
 
@@ -1652,20 +1922,24 @@ function EmployeeDirectory() {
   });
 
   // Fetch organization usage stats
-  const { data: usageStats, error: usageStatsError, isFetching } = useQuery({
+  const {
+    data: usageStats,
+    error: usageStatsError,
+    isFetching,
+  } = useQuery({
     queryKey: ['/api/admin/usage-stats'],
     queryFn: async () => {
-      console.log("📊 Fetching fresh usage stats from API...");
+      console.log('📊 Fetching fresh usage stats from API...');
       const response = await apiRequest('GET', '/api/admin/usage-stats');
       const data = await response.json();
-      console.log("📈 Usage stats received:", data);
+      console.log('📈 Usage stats received:', data);
       return data;
     },
     retry: false,
-    staleTime: 0 // Always fetch fresh data when invalidated
+    staleTime: 0, // Always fetch fresh data when invalidated
   });
 
-// Apply filters to employees
+  // Apply filters to employees
   const filteredEmployees = React.useMemo(() => {
     if (!employees || !Array.isArray(employees)) {
       console.log('No employees data available:', employees);
@@ -1673,11 +1947,10 @@ function EmployeeDirectory() {
     }
 
     // Remove duplicates by ID first
-    const uniqueEmployees = employees.filter((employee, index, arr) => 
-      arr.findIndex(e => e.id === employee.id) === index
+    const uniqueEmployees = employees.filter(
+      (employee, index, arr) =>
+        arr.findIndex((e) => e.id === employee.id) === index
     );
-    
-
 
     let result = [...uniqueEmployees];
 
@@ -1685,58 +1958,77 @@ function EmployeeDirectory() {
     if (searchTerm && searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase().trim();
       result = result.filter((employee: Employee) => {
-        const fullName = `${employee.name || ''} ${employee.surname || ''}`.toLowerCase();
+        const fullName =
+          `${employee.name || ''} ${employee.surname || ''}`.toLowerCase();
         const email = (employee.email || '').toLowerCase();
         const jobTitle = (employee.jobTitle || '').toLowerCase();
         const department = (employee.department || '').toLowerCase();
         const location = (employee.location || '').toLowerCase();
         const username = (employee.username || '').toLowerCase();
-        
-        return fullName.includes(searchLower) ||
-               email.includes(searchLower) ||
-               jobTitle.includes(searchLower) ||
-               department.includes(searchLower) ||
-               location.includes(searchLower) ||
-               username.includes(searchLower);
+
+        return (
+          fullName.includes(searchLower) ||
+          email.includes(searchLower) ||
+          jobTitle.includes(searchLower) ||
+          department.includes(searchLower) ||
+          location.includes(searchLower) ||
+          username.includes(searchLower)
+        );
       });
     }
 
     // Apply department filter
     if (selectedDepartment !== 'all') {
-      result = result.filter((employee: Employee) => employee.department === selectedDepartment);
+      result = result.filter(
+        (employee: Employee) => employee.department === selectedDepartment
+      );
     }
 
     // Apply location filter
     if (selectedLocation !== 'all') {
-      result = result.filter((employee: Employee) => employee.location === selectedLocation);
+      result = result.filter(
+        (employee: Employee) => employee.location === selectedLocation
+      );
     }
 
     // Apply status filter - only show active employees if selectedStatus is "active"
     if (selectedStatus === 'active') {
-      result = result.filter((employee: Employee) => employee.status === 'active');
+      result = result.filter(
+        (employee: Employee) => employee.status === 'active'
+      );
     }
 
     return result;
-  }, [employees, searchTerm, selectedDepartment, selectedLocation, selectedStatus]);
+  }, [
+    employees,
+    searchTerm,
+    selectedDepartment,
+    selectedLocation,
+    selectedStatus,
+  ]);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Employee Directory</h2>
-          <p className="text-gray-600">Manage employees and their information</p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Employee Directory
+          </h2>
+          <p className="text-gray-600">
+            Manage employees and their information
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setIsBulkUploadDialogOpen(true)}
           >
             <Upload className="h-4 w-4 mr-2" />
             Bulk Upload
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsCreateDialogOpen(true)}
             className="bg-green-600 hover:bg-green-700"
           >
@@ -1757,15 +2049,23 @@ function EmployeeDirectory() {
         <CardContent>
           {usageStatsError ? (
             <div className="text-center py-4">
-              <div className="text-sm text-muted-foreground mb-2">Unable to load usage statistics</div>
-              <div className="text-xs text-red-600">Authentication required</div>
+              <div className="text-sm text-muted-foreground mb-2">
+                Unable to load usage statistics
+              </div>
+              <div className="text-xs text-red-600">
+                Authentication required
+              </div>
             </div>
           ) : usageStats ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
-                  <div className="text-sm text-muted-foreground">Active Employees</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {usageStats.currentEmployees || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Active Employees
+                  </div>
                   {usageStats.totalEmployees > usageStats.currentEmployees && (
                     <div className="text-xs text-gray-500 mt-1">
                       ({usageStats.totalEmployees} total)
@@ -1773,40 +2073,62 @@ function EmployeeDirectory() {
                   )}
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
-                  <div className="text-sm text-muted-foreground">Subscription Capacity</div>
-                </div>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                    {(usageStats.subscribedUsers || 0) - (usageStats.currentEmployees || 0)}
+                  <div className="text-2xl font-bold text-green-600">
+                    {usageStats.subscribedUsers || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'Available Seats' : 'Over Limit'}
+                    Subscription Capacity
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div
+                    className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {(usageStats.subscribedUsers || 0) -
+                      (usageStats.currentEmployees || 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {(usageStats.currentEmployees || 0) <=
+                    (usageStats.subscribedUsers || 0)
+                      ? 'Available Seats'
+                      : 'Over Limit'}
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {usageStats.subscribedUsers ? Math.round(((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100) : 0}%
+                    {usageStats.subscribedUsers
+                      ? Math.round(
+                          ((usageStats.currentEmployees || 0) /
+                            usageStats.subscribedUsers) *
+                            100
+                        )
+                      : 0}
+                    %
                   </div>
-                  <div className="text-sm text-muted-foreground">Capacity Used</div>
+                  <div className="text-sm text-muted-foreground">
+                    Capacity Used
+                  </div>
                 </div>
               </div>
               <div className="mt-4">
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full ${
-                      (usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0)
-                        ? 'bg-green-600' 
+                      (usageStats.currentEmployees || 0) <=
+                      (usageStats.subscribedUsers || 0)
+                        ? 'bg-green-600'
                         : 'bg-red-600'
                     }`}
-                    style={{ 
-                      width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%` 
+                    style={{
+                      width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%`,
                     }}
                   ></div>
                 </div>
-                {(usageStats.currentEmployees || 0) > (usageStats.subscribedUsers || 0) && (
+                {(usageStats.currentEmployees || 0) >
+                  (usageStats.subscribedUsers || 0) && (
                   <div className="mt-2 text-sm text-red-600 font-medium">
-                    ⚠️ Organization is over subscription limit. Consider upgrading your plan.
+                    ⚠️ Organization is over subscription limit. Consider
+                    upgrading your plan.
                   </div>
                 )}
               </div>
@@ -1814,7 +2136,9 @@ function EmployeeDirectory() {
           ) : (
             <div className="text-center py-4">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-              <div className="text-sm text-muted-foreground mt-2">Loading usage statistics...</div>
+              <div className="text-sm text-muted-foreground mt-2">
+                Loading usage statistics...
+              </div>
             </div>
           )}
         </CardContent>
@@ -1834,21 +2158,28 @@ function EmployeeDirectory() {
           {searchTerm && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <span className="text-xs text-gray-500">
-                {filteredEmployees.length} result{filteredEmployees.length !== 1 ? 's' : ''}
+                {filteredEmployees.length} result
+                {filteredEmployees.length !== 1 ? 's' : ''}
               </span>
             </div>
           )}
         </div>
 
-        <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+        <Select
+          value={selectedDepartment}
+          onValueChange={setSelectedDepartment}
+        >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Departments" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Departments</SelectItem>
-            {departments && departments.map((dept: string) => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-            ))}
+            {departments &&
+              departments.map((dept: string) => (
+                <SelectItem key={dept} value={dept}>
+                  {dept}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
@@ -1858,13 +2189,19 @@ function EmployeeDirectory() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Locations</SelectItem>
-            {locations && locations.map((location: string) => (
-              <SelectItem key={location} value={location}>{location}</SelectItem>
-            ))}
+            {locations &&
+              locations.map((location: string) => (
+                <SelectItem key={location} value={location}>
+                  {location}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
-        <Select value={selectedStatus} onValueChange={(value: "all" | "active") => setSelectedStatus(value)}>
+        <Select
+          value={selectedStatus}
+          onValueChange={(value: 'all' | 'active') => setSelectedStatus(value)}
+        >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Employee Status" />
           </SelectTrigger>
@@ -1874,8 +2211,6 @@ function EmployeeDirectory() {
           </SelectContent>
         </Select>
       </div>
-
-
 
       {/* Employee Table */}
       <Card>
@@ -1900,7 +2235,10 @@ function EmployeeDirectory() {
                 </TableRow>
               ) : filteredEmployees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No employees found
                   </TableCell>
                 </TableRow>
@@ -1921,19 +2259,27 @@ function EmployeeDirectory() {
                               {employee.name} {employee.surname}
                             </p>
                           </Link>
-                          <p className="text-sm text-gray-500">{employee.email}</p>
+                          <p className="text-sm text-gray-500">
+                            {employee.email}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{employee.jobTitle || "N/A"}</TableCell>
-                    <TableCell>{employee.department || "N/A"}</TableCell>
-                    <TableCell>{employee.location || "N/A"}</TableCell>
+                    <TableCell>{employee.jobTitle || 'N/A'}</TableCell>
+                    <TableCell>{employee.department || 'N/A'}</TableCell>
+                    <TableCell>{employee.location || 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={employee.status === "Active" ? "default" : "secondary"}
-                        className={employee.status === "Active" ? "bg-green-100 text-green-800" : ""}
+                      <Badge
+                        variant={
+                          employee.status === 'Active' ? 'default' : 'secondary'
+                        }
+                        className={
+                          employee.status === 'Active'
+                            ? 'bg-green-100 text-green-800'
+                            : ''
+                        }
                       >
-                        {employee.status || "Active"}
+                        {employee.status || 'Active'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -1967,7 +2313,7 @@ function EmployeeDirectory() {
           </DialogHeader>
 
           {selectedEmployee && (
-            <EditEmployeeForm 
+            <EditEmployeeForm
               employee={selectedEmployee}
               onClose={() => {
                 setIsDialogOpen(false);
@@ -1975,21 +2321,39 @@ function EmployeeDirectory() {
               }}
               onUpdate={async () => {
                 // Invalidate and refetch user data - must match exact query key
-                console.log("🔄 Starting cache invalidation after employee update...");
-                
+                console.log(
+                  '🔄 Starting cache invalidation after employee update...'
+                );
+
                 // Remove cached data to force fresh fetch
-                await queryClient.removeQueries({ queryKey: ['/api/admin/usage-stats'] });
-                await queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
-                await queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-                await queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
-                await queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
-                
-                console.log("📊 Forcing immediate refetch of usage statistics...");
+                await queryClient.removeQueries({
+                  queryKey: ['/api/admin/usage-stats'],
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ['/api/users?limit=500'],
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ['/api/users'],
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ['/api/admin/employees'],
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ['/api/admin/usage-stats'],
+                });
+
+                console.log(
+                  '📊 Forcing immediate refetch of usage statistics...'
+                );
                 // Force immediate refetch
-                await queryClient.refetchQueries({ queryKey: ['/api/users?limit=500'] });
-                await queryClient.refetchQueries({ queryKey: ['/api/admin/usage-stats'] });
-                
-                console.log("✅ Cache invalidation completed");
+                await queryClient.refetchQueries({
+                  queryKey: ['/api/users?limit=500'],
+                });
+                await queryClient.refetchQueries({
+                  queryKey: ['/api/admin/usage-stats'],
+                });
+
+                console.log('✅ Cache invalidation completed');
                 setIsDialogOpen(false);
                 setSelectedEmployee(null);
               }}
@@ -2003,21 +2367,23 @@ function EmployeeDirectory() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Add New Employee</DialogTitle>
-            <DialogDescription>
-              Create a new employee account
-            </DialogDescription>
+            <DialogDescription>Create a new employee account</DialogDescription>
           </DialogHeader>
 
-          <CreateEmployeeForm 
+          <CreateEmployeeForm
             onClose={() => setIsCreateDialogOpen(false)}
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-              queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
-              queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
+              queryClient.invalidateQueries({
+                queryKey: ['/api/users?limit=500'],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ['/api/admin/usage-stats'],
+              });
               setIsCreateDialogOpen(false);
               toast({
-                title: "Success",
-                description: "Employee created successfully",
+                title: 'Success',
+                description: 'Employee created successfully',
               });
             }}
           />
@@ -2025,7 +2391,10 @@ function EmployeeDirectory() {
       </Dialog>
 
       {/* Bulk Upload Dialog */}
-      <Dialog open={isBulkUploadDialogOpen} onOpenChange={setIsBulkUploadDialogOpen}>
+      <Dialog
+        open={isBulkUploadDialogOpen}
+        onOpenChange={setIsBulkUploadDialogOpen}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Bulk Upload Employees</DialogTitle>
@@ -2034,16 +2403,20 @@ function EmployeeDirectory() {
             </DialogDescription>
           </DialogHeader>
 
-          <BulkUploadForm 
+          <BulkUploadForm
             onClose={() => setIsBulkUploadDialogOpen(false)}
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-              queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
-              queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
+              queryClient.invalidateQueries({
+                queryKey: ['/api/users?limit=500'],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ['/api/admin/usage-stats'],
+              });
               setIsBulkUploadDialogOpen(false);
               toast({
-                title: "Success", 
-                description: "Employees uploaded successfully",
+                title: 'Success',
+                description: 'Employees uploaded successfully',
               });
             }}
           />
@@ -2091,9 +2464,7 @@ function TrendingSpaces() {
     <Card>
       <CardHeader>
         <CardTitle>Trending Spaces</CardTitle>
-        <CardDescription>
-          Explore popular workplace spaces
-        </CardDescription>
+        <CardDescription>Explore popular workplace spaces</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         {isLoadingSpaces ? (
@@ -2115,8 +2486,12 @@ function TrendingSpaces() {
                     className="w-full h-32 object-cover object-center"
                   />
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900">{space.name}</h3>
-                    <p className="text-sm text-gray-600 truncate">{space.description}</p>
+                    <h3 className="font-semibold text-gray-900">
+                      {space.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 truncate">
+                      {space.description}
+                    </p>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center space-x-2 text-gray-500">
                         <Users className="h-4 w-4" />
@@ -2136,19 +2511,31 @@ function TrendingSpaces() {
 
 // Main Component
 export default function AdminEmployeesGroups() {
-  const [activeTab, setActiveTab] = useState("employees");
+  const [activeTab, setActiveTab] = useState('employees');
 
-  return (<div className="container mx-auto p-6 space-y-6">
+  return (
+    <div className="container mx-auto p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Employees and Spaces</h1>
-        <p className="text-gray-600 mt-1">Manage your organization's employees and workplace spaces</p>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Employees and Spaces
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Manage your organization's employees and workplace spaces
+        </p>
       </div>
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="employees" className="flex items-center space-x-2">
+          <TabsTrigger
+            value="employees"
+            className="flex items-center space-x-2"
+          >
             <User className="h-4 w-4" />
             <span>Employee Directory</span>
           </TabsTrigger>
@@ -2164,7 +2551,7 @@ export default function AdminEmployeesGroups() {
 
         <TabsContent value="groups" className="space-y-6">
           <GroupsManagement />
-          <TrendingSpaces/>
+          <TrendingSpaces />
         </TabsContent>
       </Tabs>
     </div>
