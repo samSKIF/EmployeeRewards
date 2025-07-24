@@ -933,6 +933,7 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
         description: "Employee information updated successfully",
       });
       
+      // Call onUpdate which should invalidate caches and refresh data
       await onUpdate();
       onClose();
     } catch (error: any) {
@@ -1651,14 +1652,17 @@ function EmployeeDirectory() {
   });
 
   // Fetch organization usage stats
-  const { data: usageStats, error: usageStatsError } = useQuery({
+  const { data: usageStats, error: usageStatsError, isFetching } = useQuery({
     queryKey: ['/api/admin/usage-stats'],
     queryFn: async () => {
+      console.log("📊 Fetching fresh usage stats from API...");
       const response = await apiRequest('GET', '/api/admin/usage-stats');
-      return await response.json();
+      const data = await response.json();
+      console.log("📈 Usage stats received:", data);
+      return data;
     },
     retry: false,
-    staleTime: 60000 // Cache for 1 minute
+    staleTime: 0 // Always fetch fresh data when invalidated
   });
 
 // Apply filters to employees
@@ -1971,15 +1975,21 @@ function EmployeeDirectory() {
               }}
               onUpdate={async () => {
                 // Invalidate and refetch user data - must match exact query key
-                console.log("Invalidating queries after update...");
+                console.log("🔄 Starting cache invalidation after employee update...");
+                
+                // Remove cached data to force fresh fetch
+                await queryClient.removeQueries({ queryKey: ['/api/admin/usage-stats'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/users'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
+                
+                console.log("📊 Forcing immediate refetch of usage statistics...");
                 // Force immediate refetch
                 await queryClient.refetchQueries({ queryKey: ['/api/users?limit=500'] });
                 await queryClient.refetchQueries({ queryKey: ['/api/admin/usage-stats'] });
                 
+                console.log("✅ Cache invalidation completed");
                 setIsDialogOpen(false);
                 setSelectedEmployee(null);
               }}
