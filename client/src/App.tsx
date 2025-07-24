@@ -24,6 +24,8 @@ import AdminSurveyEditor from '@/pages/admin-survey-editor';
 import LeaveManagement from '@/pages/leave-management';
 import HRConfig from '@/pages/hr-config';
 import AdminDashboard from '@/pages/admin/admin-dashboard';
+import AdminDashboardNew from '@/pages/admin/dashboard';
+import AdminOrgChart from '@/pages/admin/org-chart';
 import BrandingPage from '@/pages/admin/branding';
 import ShopConfigPage from '@/pages/admin/shop-config';
 import ManagementDashboard from '@/pages/management-dashboard';
@@ -201,7 +203,12 @@ function App() {
                   </Route>
                   <Route path="/admin/dashboard">
                     <SocialLayout>
-                      <AdminDashboard />
+                      <AdminDashboardNew />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/org-chart">
+                    <SocialLayout>
+                      <AdminOrgChart />
                     </SocialLayout>
                   </Route>
                   <Route path="/admin/branding">

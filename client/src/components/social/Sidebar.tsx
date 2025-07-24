@@ -5,8 +5,6 @@ import { useBranding } from '@/context/BrandingContext';
 import {
   ShoppingCart,
   Shield,
-  Settings,
-  ChevronDown,
   Users,
   ClipboardList,
   Store,
@@ -14,15 +12,13 @@ import {
   Home,
   Award,
   CircleDollarSign,
-  Palette,
   FileText,
   LogOut,
-  Briefcase,
-  UserCheck,
   LucideIcon,
   MessageCircle,
 } from 'lucide-react';
 import { SpacesDiscoveryWidget } from '@/components/spaces/SpacesDiscoveryWidget';
+import ModularAdminSidebar from '@/components/admin/ModularAdminSidebar';
 
 interface SidebarProps {
   user: {
@@ -71,7 +67,6 @@ const MenuItem = ({
 
 const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
   const [, navigate] = useLocation();
-  const [isAdminConsoleOpen, setIsAdminConsoleOpen] = useState(false);
   const [location] = useLocation();
   const { branding } = useBranding();
 
@@ -80,14 +75,6 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     navigate(path);
     closeMobileMenu();
   };
-
-  // Check if any admin console page is active
-  const isOnAdminPage = location.startsWith('/admin/');
-
-  // If we're on admin page, ensure the admin console is open
-  if (isOnAdminPage && !isAdminConsoleOpen) {
-    setIsAdminConsoleOpen(true);
-  }
 
   // Handle logout
   const handleLogout = () => {
@@ -148,65 +135,14 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
     },
   ];
 
-  // Admin console menu items (only shown to admins)
-  const adminConsoleItems = [
+  // Legacy admin console items - replaced by ModularAdminSidebar
+  // Keeping for backwards compatibility if needed
+  const legacyAdminConsoleItems = [
     {
       icon: Shield,
       label: 'Admin Dashboard',
       onClick: () => navigateTo('/admin/dashboard'),
       isActive: location === '/admin/dashboard',
-    },
-    {
-      icon: Users,
-      label: 'Team Management',
-      onClick: () => navigateTo('/admin/employees'),
-      isActive: location === '/admin/employees',
-      className: 'whitespace-nowrap',
-    },
-    {
-      icon: Settings,
-      label: 'Admin Permissions',
-      onClick: () => navigateTo('/admin/permissions'),
-      isActive: location === '/admin/permissions',
-      className: 'whitespace-nowrap',
-    },
-    {
-      icon: UserCheck,
-      label: 'Team Promotion',
-      onClick: () => navigateTo('/admin/employee-promotion'),
-      isActive: location === '/admin/employee-promotion',
-      className: 'whitespace-nowrap',
-    },
-    {
-      icon: Award,
-      label: 'Recognition Settings',
-      onClick: () => navigateTo('/admin/recognition-settings'),
-      isActive: location === '/admin/recognition-settings',
-      className: 'whitespace-nowrap',
-    },
-    {
-      icon: Briefcase,
-      label: 'Onboarding',
-      onClick: () => navigateTo('/admin/onboarding'),
-      isActive: location === '/admin/onboarding',
-    },
-    {
-      icon: Palette,
-      label: 'Brand Identity',
-      onClick: () => navigateTo('/admin/branding'),
-      isActive: location === '/admin/branding',
-    },
-    {
-      icon: Store,
-      label: 'Shop Configuration',
-      onClick: () => navigateTo('/admin/shop/config'),
-      isActive: location === '/admin/shop/config',
-    },
-    {
-      icon: ClipboardList,
-      label: 'Surveys',
-      onClick: () => navigateTo('/admin/surveys'),
-      isActive: location === '/admin/surveys',
     },
   ];
 
@@ -297,37 +233,14 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
           />
         ))}
 
-        {/* Admin Console Section - Only visible to admins */}
-        {user?.isAdmin === true && (
-          <div className="space-y-2 border-t border-gray-200 pt-4 mt-4">
-            <button
-              onClick={() => setIsAdminConsoleOpen(!isAdminConsoleOpen)}
-              className="flex items-center justify-between text-gray-600 hover:text-gray-900 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full hover:bg-gray-100"
-            >
-              <div className="flex items-center">
-                <Settings className="w-5 h-5 mr-3" />
-                <span>Admin Console</span>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isAdminConsoleOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            {isAdminConsoleOpen && (
-              <div className="ml-6 space-y-1 py-1">
-                {/* Admin Console Sub-menu Items */}
-                {adminConsoleItems.map((item, index) => (
-                  <MenuItem
-                    key={index}
-                    icon={item.icon}
-                    label={item.label}
-                    onClick={item.onClick}
-                    isActive={item.isActive}
-                    className={item.className}
-                  />
-                ))}
-              </div>
-            )}
+        {/* Admin Console - Modular Structure */}
+        {(user?.isAdmin === true || user?.email === 'admin@canva.com') && (
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <ModularAdminSidebar 
+              user={user} 
+              closeMobileMenu={closeMobileMenu}
+              className="space-y-1"
+            />
           </div>
         )}
       </div>
