@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Download } from "lucide-react";
+import { Loader2, Plus, User, UserPlus, FileText, Trash, PenSquare, Upload, Download, Users } from "lucide-react";
 import { format } from "date-fns";
 
 // Define employee form data type
@@ -184,6 +184,15 @@ export default function AdminEmployeesPage() {
     gcTime: 5 * 60 * 1000 // Keep in cache for 5 minutes
   });
 
+  // Fetch organization usage stats
+  const { data: usageStats } = useQuery({
+    queryKey: ['/api/admin/usage-stats'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/usage-stats');
+      return await response.json();
+    }
+  });
+
   // Create employee mutation
   const createMutation = useMutation({
     mutationFn: async (data: EmployeeFormData) => {
@@ -191,11 +200,11 @@ export default function AdminEmployeesPage() {
       const emailParts = data.email.split('@');
       const baseUsername = emailParts[0].toLowerCase().replace(/[^a-z0-9]/g, '.');
       
-      // Add the username field to the data
+      // Add the username field to the data (extend the type)
       const dataWithUsername = {
         ...data,
         username: baseUsername
-      };
+      } as EmployeeFormData & { username: string };
       
       // Use the specific HR employees endpoint to ensure Firebase user creation
       const response = await apiRequest('POST', '/api/hr/employees', dataWithUsername);
@@ -609,6 +618,63 @@ export default function AdminEmployeesPage() {
         </div>
       </div>
 
+      {/* Usage Statistics Card */}
+      {usageStats && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Employee Usage Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees}</div>
+                <div className="text-sm text-muted-foreground">Current Employees</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers}</div>
+                <div className="text-sm text-muted-foreground">Subscription Capacity</div>
+              </div>
+              <div className="text-center">
+                <div className={`text-2xl font-bold ${usageStats.currentEmployees <= usageStats.subscribedUsers ? 'text-green-600' : 'text-red-600'}`}>
+                  {usageStats.subscribedUsers - usageStats.currentEmployees}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {usageStats.currentEmployees <= usageStats.subscribedUsers ? 'Available Seats' : 'Over Limit'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Math.round((usageStats.currentEmployees / usageStats.subscribedUsers) * 100)}%
+                </div>
+                <div className="text-sm text-muted-foreground">Capacity Used</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full ${
+                    usageStats.currentEmployees <= usageStats.subscribedUsers 
+                      ? 'bg-green-600' 
+                      : 'bg-red-600'
+                  }`}
+                  style={{ 
+                    width: `${Math.min((usageStats.currentEmployees / usageStats.subscribedUsers) * 100, 100)}%` 
+                  }}
+                ></div>
+              </div>
+              {usageStats.currentEmployees > usageStats.subscribedUsers && (
+                <div className="mt-2 text-sm text-red-600 font-medium">
+                  ⚠️ Organization is over subscription limit. Consider upgrading your plan.
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Employee Directory</CardTitle>
@@ -671,14 +737,7 @@ export default function AdminEmployeesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {employee.lastSeenAt ? (
-                          <div className="text-sm">
-                            <div>{format(new Date(employee.lastSeenAt), 'MMM dd, yyyy')}</div>
-                            <div className="text-muted-foreground">{format(new Date(employee.lastSeenAt), 'HH:mm')}</div>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">Never</span>
-                        )}
+                        <div className="text-sm text-muted-foreground">—</div>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => openEditDialog(employee)}>
@@ -1417,9 +1476,9 @@ export default function AdminEmployeesPage() {
               onClick={() => {
                 if (currentEmployee) {
                   // Remove password if empty to avoid changing it
-                  const updatedData = {...formData};
+                  const updatedData = {...formData} as Partial<EmployeeFormData>;
                   if (!updatedData.password) {
-                    delete updatedData.password;
+                    delete (updatedData as any).password;
                   }
                   
                   updateMutation.mutate({

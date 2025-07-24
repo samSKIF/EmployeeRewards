@@ -9,6 +9,43 @@ import { logger } from "@shared/logger";
 
 const router = Router();
 
+// Get organization usage statistics
+router.get("/usage-stats", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user || !req.user.organizationId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const result = await pool.query(`
+      SELECT 
+        o.name as organization_name,
+        o.max_users,
+        s.subscribed_users,
+        COUNT(u.id) as current_employees
+      FROM organizations o
+      LEFT JOIN subscriptions s ON o.current_subscription_id = s.id
+      LEFT JOIN users u ON u.organization_id = o.id
+      WHERE o.id = $1
+      GROUP BY o.id, o.name, o.max_users, s.subscribed_users
+    `, [req.user.organizationId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
+    const stats = result.rows[0];
+    res.json({
+      organizationName: stats.organization_name,
+      maxUsers: parseInt(stats.max_users) || 0,
+      subscribedUsers: parseInt(stats.subscribed_users) || 0,
+      currentEmployees: parseInt(stats.current_employees) || 0
+    });
+  } catch (error) {
+    logger.error("Error fetching usage stats:", error);
+    res.status(500).json({ message: "Failed to fetch usage statistics" });
+  }
+});
+
 // Get all spaces for admin management
 router.get("/spaces", verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
