@@ -55,6 +55,7 @@ export function createAdminMenuConfig(
   // Helper function to check if a feature is enabled
   const isFeatureEnabled = (featureKey: string): boolean => {
     const feature = organizationFeatures.find(f => f.featureKey === featureKey);
+    console.log(`Checking feature ${featureKey}:`, feature, 'isEnabled:', feature?.isEnabled ?? false);
     return feature?.isEnabled ?? false;
   };
 

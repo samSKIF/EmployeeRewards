@@ -38,7 +38,9 @@ const ModularAdminSidebar: React.FC<ModularAdminSidebarProps> = ({
   }
 
   // Get menu configuration
+  console.log('ModularAdminSidebar - organizationFeatures:', organizationFeatures);
   const menuConfig = createAdminMenuConfig(location, organizationFeatures);
+  console.log('ModularAdminSidebar - menuConfig sections:', menuConfig.sections.map(s => ({ id: s.id, title: s.title })));
 
   // Navigation helper
   const navigateTo = (path: string) => {
