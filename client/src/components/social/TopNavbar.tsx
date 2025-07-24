@@ -214,9 +214,10 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     (feature: any) => feature.featureKey === 'recognition'
   )?.isEnabled || false;
 
-  // Admin menu items with conditional recognition section
+  // Admin menu items with comprehensive 5-section structure
   const adminItems = [
-    { isDivider: true, sectionTitle: 'People & Organization' },
+    // 1. People & Organization
+    { isDivider: true, sectionTitle: '🔹 People & Organization' },
     {
       icon: Users,
       label: 'Employees',
@@ -238,46 +239,140 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
       route: '/admin/leave-management',
       description: 'Handle leave requests and approvals'
     },
-    { isDivider: true, sectionTitle: 'Engagement Tools' },
+    {
+      icon: User,
+      label: 'Onboarding',
+      onClick: () => navigateTo('/admin/onboarding'),
+      route: '/admin/onboarding',
+      description: 'New hire onboarding workflows'
+    },
+    {
+      icon: Network,
+      label: 'Spaces & Groups',
+      onClick: () => navigateTo('/admin/spaces'),
+      route: '/admin/spaces',
+      description: 'Manage workplace communities'
+    },
+
+    // 2. Engagement Tools
+    { isDivider: true, sectionTitle: '💬 Engagement Tools' },
+    {
+      icon: ListChecks,
+      label: 'Campaigns & Missions',
+      onClick: () => navigateTo('/admin/campaigns'),
+      route: '/admin/campaigns',
+      description: 'Onboarding journeys and engagement campaigns'
+    },
+    {
+      icon: Bell,
+      label: 'Celebration Settings',
+      onClick: () => navigateTo('/admin/celebrations'),
+      route: '/admin/celebrations',
+      description: 'Birthdays, anniversaries, and milestone settings'
+    },
     {
       icon: FileText,
       label: 'Surveys',
       onClick: () => navigateTo('/admin/surveys'),
       route: '/admin/surveys',
-      description: 'Create and manage employee surveys'
+      description: 'Pulse checks, feedback, and polls'
     },
-    // Recognition & Rewards section - only show if recognition is enabled
+    {
+      icon: MessageCircle,
+      label: 'Posts & Feed Settings',
+      onClick: () => navigateTo('/admin/posts-settings'),
+      route: '/admin/posts-settings',
+      description: 'Moderation, featured posts, comment rules'
+    },
+
+    // 3. Recognition & Rewards - only show if recognition is enabled
     ...(isRecognitionEnabled ? [
-      { isDivider: true, sectionTitle: 'Recognition & Rewards' },
+      { isDivider: true, sectionTitle: '🏆 Recognition & Rewards' },
       {
         icon: Award,
         label: 'Recognition Settings',
         onClick: () => navigateTo('/admin/recognition-settings'),
         route: '/admin/recognition-settings',
-        description: 'Configure recognition programs'
+        description: 'Configure values, badges, peer-to-peer rules'
       },
       {
         icon: CircleDollarSign,
-        label: 'Points Economy',
+        label: 'Points Economy Settings',
         onClick: () => navigateTo('/admin/points-economy'),
         route: '/admin/points-economy',
-        description: 'Manage points and rewards system'
+        description: 'Budgets, top-up rules, expiration, redemption rights'
       },
       {
         icon: Store,
-        label: 'Reward Shop',
+        label: 'Reward Shop Settings',
         onClick: () => navigateTo('/admin/shop/config'),
         route: '/admin/shop/config',
-        description: 'Configure reward catalog'
+        description: 'Product catalog, redemption rules, orders'
       }
     ] : []),
-    { isDivider: true, sectionTitle: 'Platform Settings' },
+
+    // 4. Analytics & Reports
+    { isDivider: true, sectionTitle: '📊 Analytics & Reports' },
+    {
+      icon: BarChart2,
+      label: 'Engagement Analytics',
+      onClick: () => navigateTo('/admin/analytics/engagement'),
+      route: '/admin/analytics/engagement',
+      description: 'User activity and participation metrics'
+    },
+    ...(isRecognitionEnabled ? [
+      {
+        icon: BarChart2,
+        label: 'Recognition Analytics',
+        onClick: () => navigateTo('/admin/analytics/recognition'),
+        route: '/admin/analytics/recognition',
+        description: 'Recognition patterns and impact metrics'
+      }
+    ] : []),
+    {
+      icon: BarChart2,
+      label: 'Survey Results',
+      onClick: () => navigateTo('/admin/analytics/surveys'),
+      route: '/admin/analytics/surveys',
+      description: 'Survey responses and insights'
+    },
+    {
+      icon: BarChart2,
+      label: 'Custom Report Builder',
+      onClick: () => navigateTo('/admin/reports/builder'),
+      route: '/admin/reports/builder',
+      description: 'Create custom analytics reports'
+    },
+
+    // 5. Platform Settings
+    { isDivider: true, sectionTitle: '⚙️ Platform Settings' },
     {
       icon: Palette,
       label: 'Branding & Identity',
       onClick: () => navigateTo('/admin/branding'),
       route: '/admin/branding',
       description: 'Customize appearance and branding'
+    },
+    {
+      icon: Shield,
+      label: 'Roles & Permissions',
+      onClick: () => navigateTo('/admin/roles'),
+      route: '/admin/roles',
+      description: 'User access control and permissions'
+    },
+    {
+      icon: Settings,
+      label: 'Subscription & Usage',
+      onClick: () => navigateTo('/admin/subscription'),
+      route: '/admin/subscription',
+      description: 'Plan details and usage monitoring'
+    },
+    {
+      icon: Settings,
+      label: 'Integrations',
+      onClick: () => navigateTo('/admin/integrations'),
+      route: '/admin/integrations',
+      description: 'SSO, APIs, and third-party connections'
     }
   ];
 
