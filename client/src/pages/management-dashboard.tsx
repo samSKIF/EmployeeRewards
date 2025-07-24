@@ -690,10 +690,17 @@ const OrganizationFeaturesManagement = ({
         method: 'PUT',
         body: JSON.stringify({ isEnabled }),
       }),
-    onSuccess: (_, { featureKey, isEnabled }) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (_, { featureKey, isEnabled }) => {
+      // Invalidate and refetch the features
+      await queryClient.invalidateQueries({
         queryKey: [`/api/management/organizations/${organizationId}/features`],
       });
+      
+      // Also invalidate admin organization features for real-time menu updates
+      await queryClient.invalidateQueries({
+        queryKey: ['/api/admin/organization/features'],
+      });
+      
       toast({ 
         title: `${featureKey.charAt(0).toUpperCase() + featureKey.slice(1)} module ${isEnabled ? 'enabled' : 'disabled'}`,
         description: isEnabled 
@@ -715,6 +722,11 @@ const OrganizationFeaturesManagement = ({
   }
 
   const recognitionFeature = features?.find((f: any) => f.featureKey === 'recognition');
+  
+  // Debug logging
+  console.log('Features data:', features);
+  console.log('Recognition feature:', recognitionFeature);
+  console.log('Is enabled:', recognitionFeature?.isEnabled);
 
   return (
     <Card>
@@ -731,10 +743,16 @@ const OrganizationFeaturesManagement = ({
             <div className="text-sm text-muted-foreground">
               Enable peer-to-peer recognition, points economy, and reward shop features
             </div>
+            <div className="text-xs text-gray-500">
+              Current state: {recognitionFeature?.isEnabled ? 'ON' : 'OFF'} | 
+              Feature found: {recognitionFeature ? 'Yes' : 'No'} |
+              Features count: {features?.length || 0}
+            </div>
           </div>
           <Switch
-            checked={recognitionFeature?.isEnabled ?? false}
+            checked={Boolean(recognitionFeature?.isEnabled)}
             onCheckedChange={(checked) => {
+              console.log('Toggle clicked, new state:', checked);
               updateFeatureMutation.mutate({
                 featureKey: 'recognition',
                 isEnabled: checked,
