@@ -621,75 +621,75 @@ export default function AdminEmployeesPage() {
       </div>
 
       {/* Usage Statistics Card */}
-      {(usageStats || usageStatsError) && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Employee Usage Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {usageStatsError ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-muted-foreground mb-2">Unable to load usage statistics</div>
-                <div className="text-xs text-red-600">Authentication required</div>
-              </div>
-            ) : usageStats ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
-                    <div className="text-sm text-muted-foreground">Current Employees</div>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Employee Usage Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {usageStatsError ? (
+            <div className="text-center py-4">
+              <div className="text-sm text-muted-foreground mb-2">Unable to load usage statistics</div>
+              <div className="text-xs text-red-600">Authentication required</div>
+            </div>
+          ) : usageStats ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{usageStats.currentEmployees || 0}</div>
+                  <div className="text-sm text-muted-foreground">Current Employees</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
+                  <div className="text-sm text-muted-foreground">Subscription Capacity</div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                    {(usageStats.subscribedUsers || 0) - (usageStats.currentEmployees || 0)}
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{usageStats.subscribedUsers || 0}</div>
-                    <div className="text-sm text-muted-foreground">Subscription Capacity</div>
-                  </div>
-                  <div className="text-center">
-                    <div className={`text-2xl font-bold ${(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                      {(usageStats.subscribedUsers || 0) - (usageStats.currentEmployees || 0)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'Available Seats' : 'Over Limit'}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {usageStats.subscribedUsers ? Math.round(((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100) : 0}%
-                    </div>
-                    <div className="text-sm text-muted-foreground">Capacity Used</div>
+                  <div className="text-sm text-muted-foreground">
+                    {(usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0) ? 'Available Seats' : 'Over Limit'}
                   </div>
                 </div>
-                <div className="mt-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        (usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0)
-                          ? 'bg-green-600' 
-                          : 'bg-red-600'
-                      }`}
-                      style={{ 
-                        width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%` 
-                      }}
-                    ></div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {usageStats.subscribedUsers ? Math.round(((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100) : 0}%
                   </div>
-                  {(usageStats.currentEmployees || 0) > (usageStats.subscribedUsers || 0) && (
-                    <div className="mt-2 text-sm text-red-600 font-medium">
-                      ⚠️ Organization is over subscription limit. Consider upgrading your plan.
-                    </div>
-                  )}
+                  <div className="text-sm text-muted-foreground">Capacity Used</div>
                 </div>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-                <div className="text-sm text-muted-foreground mt-2">Loading usage statistics...</div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              <div className="mt-4">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full ${
+                      (usageStats.currentEmployees || 0) <= (usageStats.subscribedUsers || 0)
+                        ? 'bg-green-600' 
+                        : 'bg-red-600'
+                    }`}
+                    style={{ 
+                      width: `${Math.min(usageStats.subscribedUsers ? ((usageStats.currentEmployees || 0) / usageStats.subscribedUsers) * 100 : 0, 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                {(usageStats.currentEmployees || 0) > (usageStats.subscribedUsers || 0) && (
+                  <div className="mt-2 text-sm text-red-600 font-medium">
+                    ⚠️ Organization is over subscription limit. Consider upgrading your plan.
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+              <div className="text-sm text-muted-foreground mt-2">Loading usage statistics...</div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       <Card className="mb-8">
         <CardHeader>
