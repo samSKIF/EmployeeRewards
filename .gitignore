@@ -21,3 +21,6 @@ image_*.png
 
 # Local environment overrides
 .env.local
+
+# Test coverage reports
+coverage/
