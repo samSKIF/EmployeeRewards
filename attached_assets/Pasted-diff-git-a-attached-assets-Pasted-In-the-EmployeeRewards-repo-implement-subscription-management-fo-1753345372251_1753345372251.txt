@@ -1,0 +1,47 @@
+diff --git a/attached_assets/Pasted-In-the-EmployeeRewards-repo-implement-subscription-management-for-organizations-in-our-multi-tenant-1752486863281_1752486863283.txt b//dev/null
+index e4519b19330881d71b319c0fd14dd825238f4b13..0000000000000000000000000000000000000000 undefined
+--- a/attached_assets/Pasted-In-the-EmployeeRewards-repo-implement-subscription-management-for-organizations-in-our-multi-tenant-1752486863281_1752486863283.txt
++++ b//dev/null
+@@ -1,42 +0,0 @@
+-In the EmployeeRewards repo, implement subscription management for organizations in our multi-tenant SaaS platform. Payments are via bank transfer (manual, no automated gateway integration), so an admin employee will confirm payment receipt externally, then manually create/activate the organization and set up its subscription in the system.
+-
+-Tech stack: React/TypeScript frontend (Shadcn/UI, Tailwind, React Hook Form, TanStack Query), Node.js/Express/TypeScript backend (Drizzle ORM with PostgreSQL).
+-
+-Before making changes, outline the file modifications and DB schema updates for confirmation.
+-
+-Database Schema (using Drizzle ORM in schema.ts):
+-Add a new subscriptions table:
+-id: serial primary key
+-organization_id: integer foreign key to organizations.id, not null
+-last_payment_date: timestamp, not null
+-subscription_period: varchar (enum-like: 'quarter', 'year', 'custom'), not null
+-custom_duration_days: integer, nullable (only for 'custom')
+-expiration_date: timestamp, not null (calculated server-side)
+-is_active: boolean, default true
+-created_at: timestamp, default now()
+-In organizations table: Add current_subscription_id: integer foreign key to subscriptions.id, nullable.
+-Run migrations to apply schema changes.
+-Backend (Express routes in src/routes/organizations.ts or similar):
+-Update GET /organizations: Fetch list with current subscription details. Calculate days_remaining = (expiration_date - now()).days. If days_remaining <= 0 and is_active, set organization status to 'inactive' and subscription is_active to false.
+-Update POST /organizations (create): Accept subscription fields if provided; calculate expiration_date (e.g., last_payment_date + 90 days for 'quarter', 365 for 'year', custom_duration_days for 'custom'). Create subscription entry, link via current_subscription_id, set status 'active'.
+-Update PUT /organizations/:id (edit/activate): Allow manual activation toggle. If activating with subscription, create new subscription record (for renewals), update current_subscription_id, set status 'active'. Validate dates.
+-Add cron job (using node-cron) in app.ts: Daily check for expirations (deactivate) and reminders (log or email if <30 days left, e.g., via Nodemailer).
+-No payment API; assume manual confirmation.
+-Frontend:
+-Organizations List (e.g., src/components/OrganizationList.tsx): Use TanStack Query to fetch list.
+-Add columns: Last Payment Date (MM/DD/YYYY), Subscription Period, Expiration Date (MM/DD/YYYY), Days Remaining.
+-Status badge: Green (bg-green-500) for active with >30% remaining; Orange (bg-orange-500) with "(X days left)" if <30% and >0; Red (bg-red-500 'inactive') if expired/no subscription.
+-Calculate percentage: days_remaining / total_days (90 for quarter, 365 for year, custom_duration_days).
+-Add "Activate" button for inactive orgs (calls PUT to activate with subscription form modal if needed).
+-Create/Edit Organization Form (e.g., src/components/CreateOrganization.tsx or EditOrganization.tsx): Use React Hook Form.
+-Add "Subscription Information" section: Last Payment Date (date picker), Subscription Period (select: quarter/year/custom), Custom Duration Days (number input, conditional show if custom), Expiration Date (read-only, calculated via onChange preview in JS).
+-For create: Default inactive; option to add subscription for immediate activation.
+-For edit: Pre-fill from current subscription; manual activate toggle.
+-Use Tailwind for styling matching existing (light theme, green buttons).
+-General:
+-Handle no subscription: Show 'N/A' in list, status 'inactive'.
+-Security: RBAC checks (only super-admins can activate).
+-Test with sample data (e.g., org with quarter sub starting 2025-07-01, expiring 2025-09-29; current date July 14, 2025).
+-Ensure modularity: Separate utils for date calculations.
+-After implementation, run tests and confirm UI matches provided screenshots (organizations list with badges, edit form with fields).
+-Apply changes cleanly, commit with messages like "feat: add subscription management with manual activation".
