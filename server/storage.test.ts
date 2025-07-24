@@ -23,8 +23,7 @@ describe('DatabaseStorage', () => {
         const mockUser = { id: 1, name: 'Test User', organizationId: 1 };
         const mockQuery = {
           from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockResolvedValue([mockUser]),
+          where: jest.fn().mockResolvedValue([mockUser]),
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
@@ -32,14 +31,12 @@ describe('DatabaseStorage', () => {
 
         expect(result).toEqual(mockUser);
         expect(mockQuery.where).toHaveBeenCalled();
-        expect(mockQuery.limit).toHaveBeenCalledWith(1);
       });
 
       it('should return undefined if user not found', async () => {
         const mockQuery = {
           from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockResolvedValue([]),
+          where: jest.fn().mockResolvedValue([]),
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
@@ -90,6 +87,7 @@ describe('DatabaseStorage', () => {
         const mockQuery = {
           from: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           offset: jest.fn().mockResolvedValue(mockUsers),
         };
@@ -106,6 +104,7 @@ describe('DatabaseStorage', () => {
         const mockQuery = {
           from: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           offset: jest.fn().mockResolvedValue([]),
         };
