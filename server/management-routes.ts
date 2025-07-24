@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations } from '../shared/schema';
+import { users, organizations, organizationFeatures } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();
@@ -646,8 +646,7 @@ router.get('/organizations/:id/features', verifyCorporateAdmin, async (req, res)
     const { id } = req.params;
     const organizationId = parseInt(id);
 
-    // Import organizationFeatures from shared schema
-    const { organizationFeatures } = await import('../shared/schema');
+    console.log('Fetching features for organization:', organizationId);
 
     // Get all features for this organization
     const features = await db
@@ -655,19 +654,28 @@ router.get('/organizations/:id/features', verifyCorporateAdmin, async (req, res)
       .from(organizationFeatures)
       .where(eq(organizationFeatures.organizationId, organizationId));
 
+    console.log('Found features:', features);
+
     // If no features exist, create default ones
     if (features.length === 0) {
       const defaultFeatures = [
-        { organizationId, featureKey: 'recognition', isEnabled: true },
+        { organizationId, featureKey: 'recognition', isEnabled: false },
         { organizationId, featureKey: 'social', isEnabled: true },
         { organizationId, featureKey: 'surveys', isEnabled: true },
         { organizationId, featureKey: 'marketplace', isEnabled: true },
       ];
 
+      console.log('Creating default features:', defaultFeatures);
       await db.insert(organizationFeatures).values(defaultFeatures);
       
-      // Return the default features
-      res.json(defaultFeatures);
+      // Fetch the created features to get full data with IDs
+      const createdFeatures = await db
+        .select()
+        .from(organizationFeatures)
+        .where(eq(organizationFeatures.organizationId, organizationId));
+      
+      console.log('Created features:', createdFeatures);
+      res.json(createdFeatures);
     } else {
       res.json(features);
     }
@@ -684,8 +692,7 @@ router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, asyn
     const { isEnabled } = req.body;
     const organizationId = parseInt(id);
 
-    // Import organizationFeatures from shared schema
-    const { organizationFeatures } = await import('../shared/schema');
+    console.log('Updating feature:', { organizationId, featureKey, isEnabled });
 
     // Check if feature exists
     const [existingFeature] = await db
@@ -702,7 +709,11 @@ router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, asyn
       // Update existing feature
       const [updatedFeature] = await db
         .update(organizationFeatures)
-        .set({ isEnabled })
+        .set({ 
+          isEnabled,
+          enabledAt: isEnabled ? new Date() : null,
+          enabledBy: isEnabled ? req.corporateAdmin.id : null
+        })
         .where(
           and(
             eq(organizationFeatures.organizationId, organizationId),
@@ -711,14 +722,22 @@ router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, asyn
         )
         .returning();
 
+      console.log('Updated feature:', updatedFeature);
       res.json(updatedFeature);
     } else {
       // Create new feature
       const [newFeature] = await db
         .insert(organizationFeatures)
-        .values({ organizationId, featureKey, isEnabled })
+        .values({ 
+          organizationId, 
+          featureKey, 
+          isEnabled,
+          enabledAt: isEnabled ? new Date() : null,
+          enabledBy: isEnabled ? req.corporateAdmin.id : null
+        })
         .returning();
 
+      console.log('Created new feature:', newFeature);
       res.json(newFeature);
     }
   } catch (error) {
