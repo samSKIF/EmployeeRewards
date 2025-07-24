@@ -125,7 +125,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const { data: organizationFeatures = [] } = useQuery({
     queryKey: ['/api/admin/organization/features'],
     enabled: !!user?.isAdmin,
-    refetchInterval: 3000, // Poll every 3 seconds for real-time updates
+    // Remove polling to stop excessive API calls
   });
 
   // Filter employees based on search query

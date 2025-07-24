@@ -18,7 +18,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { SpacesDiscoveryWidget } from '@/components/spaces/SpacesDiscoveryWidget';
-import ModularAdminSidebar from '@/components/admin/ModularAdminSidebar';
+// Removed ModularAdminSidebar import as it doesn't exist
 
 interface SidebarProps {
   user: {
@@ -233,14 +233,15 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
           />
         ))}
 
-        {/* Admin Console - Modular Structure */}
+        {/* Admin Console - Note: Admin functions now in top navigation dropdown */}
         {(user?.isAdmin === true || user?.email === 'admin@canva.com') && (
           <div className="border-t border-gray-200 pt-4 mt-4">
-            <ModularAdminSidebar 
-              user={user} 
-              closeMobileMenu={closeMobileMenu}
-              className="space-y-1"
-            />
+            <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Admin Console
+            </div>
+            <p className="px-3 py-2 text-xs text-gray-400">
+              Admin functions are available in the top navigation dropdown
+            </p>
           </div>
         )}
       </div>
