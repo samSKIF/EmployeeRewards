@@ -304,6 +304,6 @@ export function useOrganizationFeatures() {
 }
 
 // Export the config function for use in other components like TopNavbar
-export const getAdminMenuConfig = AdminSidebarConfig;
+export const getAdminMenuConfig = createAdminMenuConfig;
 
-export default AdminSidebarConfig;
+export default createAdminMenuConfig;
