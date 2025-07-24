@@ -71,12 +71,12 @@ A comprehensive, modular HR and employee engagement platform built with React, T
    ```
 
 3. **Environment Configuration**
-   Create a `.env` file with your database configurations:
-   ```env
-   DATABASE_URL="postgresql://user:pass@localhost:5432/dbname"
-   MONGODB_URI="mongodb://localhost:27017/social_db"
-   REDIS_URL="redis://localhost:6379" # Optional
+   Copy the provided example and update the values:
+   ```bash
+   cp .env.example .env
    ```
+   Edit `.env` to set your database connection strings and secrets.
+   See [docs/development.md](docs/development.md) for a full explanation.
 
 4. **Start Development Server**
    ```bash
