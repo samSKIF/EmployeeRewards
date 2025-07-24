@@ -14,7 +14,10 @@ export function useOrganizationFeatures(): OrganizationFeature[] {
   const { data: features } = useQuery({
     queryKey: ['/api/admin/organization/features'],
     retry: false,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     placeholderData: []
   });
 

@@ -761,6 +761,11 @@ router.get(
 
         await db.insert(organizationFeatures).values(defaultFeatures);
         
+        // Set no-cache headers to ensure fresh data
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
         // Return the default features
         res.json(defaultFeatures);
       } else {
@@ -769,6 +774,12 @@ router.get(
           featureKey: f.featureKey,
           isEnabled: f.isEnabled
         }));
+        
+        // Set no-cache headers to ensure fresh data
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
         res.json(mappedFeatures);
       }
     } catch (error: any) {
