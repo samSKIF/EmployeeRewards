@@ -605,6 +605,7 @@ const UnifiedOrganizationManager = ({
 
       <TabsContent value="subscription" className="space-y-4">
         <SubscriptionManagement organizationId={organization.id} />
+        <OrganizationFeaturesManagement organizationId={organization.id} />
       </TabsContent>
 
       <TabsContent value="wallet" className="space-y-4">
@@ -662,6 +663,96 @@ const UnifiedOrganizationManager = ({
         </Card>
       </TabsContent>
     </Tabs>
+  );
+};
+
+// Organization Features Management Component
+const OrganizationFeaturesManagement = ({
+  organizationId,
+}: {
+  organizationId: number;
+}) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get organization features
+  const { data: features, isLoading } = useQuery({
+    queryKey: [`/api/management/organizations/${organizationId}/features`],
+    queryFn: async () => {
+      const result = await managementApi(`/organizations/${organizationId}/features`);
+      return result;
+    },
+  });
+
+  const updateFeatureMutation = useMutation({
+    mutationFn: ({ featureKey, isEnabled }: { featureKey: string; isEnabled: boolean }) =>
+      managementApi(`/organizations/${organizationId}/features/${featureKey}`, {
+        method: 'PUT',
+        body: JSON.stringify({ isEnabled }),
+      }),
+    onSuccess: (_, { featureKey, isEnabled }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/management/organizations/${organizationId}/features`],
+      });
+      toast({ 
+        title: `${featureKey.charAt(0).toUpperCase() + featureKey.slice(1)} module ${isEnabled ? 'enabled' : 'disabled'}`,
+        description: isEnabled 
+          ? `The ${featureKey} module is now active for this organization.`
+          : `The ${featureKey} module has been deactivated for this organization.`
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to update feature',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-4">Loading features...</div>;
+  }
+
+  const recognitionFeature = features?.find((f: any) => f.featureKey === 'recognition');
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Organization Features</CardTitle>
+        <CardDescription>
+          Control which modules are available for this organization
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="space-y-1">
+            <div className="font-medium">Recognition & Rewards Module</div>
+            <div className="text-sm text-muted-foreground">
+              Enable peer-to-peer recognition, points economy, and reward shop features
+            </div>
+          </div>
+          <Switch
+            checked={recognitionFeature?.isEnabled ?? false}
+            onCheckedChange={(checked) => {
+              updateFeatureMutation.mutate({
+                featureKey: 'recognition',
+                isEnabled: checked,
+              });
+            }}
+            disabled={updateFeatureMutation.isPending}
+          />
+        </div>
+
+        {recognitionFeature?.isEnabled && (
+          <div className="pl-4 text-sm text-muted-foreground">
+            <p>✓ Recognition Settings</p>
+            <p>✓ Points Economy</p>
+            <p>✓ Reward Shop</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -729,4 +729,48 @@ router.get(
   }
 );
 
+// Get organization features for current user's organization
+router.get(
+  '/organization/features',
+  verifyToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      // Import organizationFeatures from shared schema
+      const { organizationFeatures } = await import('@shared/schema');
+      const { db } = await import('../db');
+      const { eq } = await import('drizzle-orm');
+
+      // Get all features for this organization
+      const features = await db
+        .select()
+        .from(organizationFeatures)
+        .where(eq(organizationFeatures.organizationId, req.user.organizationId));
+
+      // If no features exist, create default ones
+      if (features.length === 0) {
+        const defaultFeatures = [
+          { organizationId: req.user.organizationId, featureKey: 'recognition', isEnabled: true },
+          { organizationId: req.user.organizationId, featureKey: 'social', isEnabled: true },
+          { organizationId: req.user.organizationId, featureKey: 'surveys', isEnabled: true },
+          { organizationId: req.user.organizationId, featureKey: 'marketplace', isEnabled: true },
+        ];
+
+        await db.insert(organizationFeatures).values(defaultFeatures);
+        
+        // Return the default features
+        res.json(defaultFeatures);
+      } else {
+        res.json(features);
+      }
+    } catch (error: any) {
+      logger.error('Error getting organization features:', error);
+      res.status(500).json({ message: error.message || 'Error retrieving organization features' });
+    }
+  }
+);
+
 export default router;

@@ -10,21 +10,17 @@ interface OrganizationFeature {
  * This determines which features are enabled/disabled for conditional UI rendering
  */
 export function useOrganizationFeatures(): OrganizationFeature[] {
-  // In a full implementation, this would fetch from /api/organization/features
-  // For now, we'll check if recognition settings exist as a proxy for recognition enablement
-  
-  const { data: recognitionSettings } = useQuery({
-    queryKey: ['/api/recognition/settings'],
+  // Fetch organization features from the new API endpoint
+  const { data: features } = useQuery({
+    queryKey: ['/api/admin/organization/features'],
     retry: false,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    placeholderData: null
+    placeholderData: []
   });
 
-  // Determine if recognition is enabled based on settings availability
-  const isRecognitionEnabled = Boolean(recognitionSettings);
-
-  return [
-    { featureKey: 'recognition', isEnabled: isRecognitionEnabled },
+  // Return features with proper fallbacks
+  return features && features.length > 0 ? features : [
+    { featureKey: 'recognition', isEnabled: true },
     { featureKey: 'social', isEnabled: true },
     { featureKey: 'surveys', isEnabled: true },
     { featureKey: 'marketplace', isEnabled: true },

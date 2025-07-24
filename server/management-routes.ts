@@ -638,4 +638,93 @@ router.get(
   }
 );
 
+// ========== ORGANIZATION FEATURES MANAGEMENT ==========
+
+// Get organization features
+router.get('/organizations/:id/features', verifyCorporateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const organizationId = parseInt(id);
+
+    // Import organizationFeatures from shared schema
+    const { organizationFeatures } = await import('../shared/schema');
+
+    // Get all features for this organization
+    const features = await db
+      .select()
+      .from(organizationFeatures)
+      .where(eq(organizationFeatures.organizationId, organizationId));
+
+    // If no features exist, create default ones
+    if (features.length === 0) {
+      const defaultFeatures = [
+        { organizationId, featureKey: 'recognition', isEnabled: true },
+        { organizationId, featureKey: 'social', isEnabled: true },
+        { organizationId, featureKey: 'surveys', isEnabled: true },
+        { organizationId, featureKey: 'marketplace', isEnabled: true },
+      ];
+
+      await db.insert(organizationFeatures).values(defaultFeatures);
+      
+      // Return the default features
+      res.json(defaultFeatures);
+    } else {
+      res.json(features);
+    }
+  } catch (error) {
+    console.error('Failed to fetch organization features:', error);
+    res.status(500).json({ error: 'Failed to fetch organization features' });
+  }
+});
+
+// Update organization feature
+router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, async (req, res) => {
+  try {
+    const { id, featureKey } = req.params;
+    const { isEnabled } = req.body;
+    const organizationId = parseInt(id);
+
+    // Import organizationFeatures from shared schema
+    const { organizationFeatures } = await import('../shared/schema');
+
+    // Check if feature exists
+    const [existingFeature] = await db
+      .select()
+      .from(organizationFeatures)
+      .where(
+        and(
+          eq(organizationFeatures.organizationId, organizationId),
+          eq(organizationFeatures.featureKey, featureKey)
+        )
+      );
+
+    if (existingFeature) {
+      // Update existing feature
+      const [updatedFeature] = await db
+        .update(organizationFeatures)
+        .set({ isEnabled })
+        .where(
+          and(
+            eq(organizationFeatures.organizationId, organizationId),
+            eq(organizationFeatures.featureKey, featureKey)
+          )
+        )
+        .returning();
+
+      res.json(updatedFeature);
+    } else {
+      // Create new feature
+      const [newFeature] = await db
+        .insert(organizationFeatures)
+        .values({ organizationId, featureKey, isEnabled })
+        .returning();
+
+      res.json(newFeature);
+    }
+  } catch (error) {
+    console.error('Failed to update organization feature:', error);
+    res.status(500).json({ error: 'Failed to update organization feature' });
+  }
+});
+
 export default router;
