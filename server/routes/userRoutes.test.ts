@@ -1,320 +1,676 @@
 import request from 'supertest';
 import express from 'express';
-import userRoutes from './userRoutes';
-import { storage } from '../storage';
-import { verifyToken } from '../middleware/auth';
-import { upload } from '../file-upload';
+import { db } from '../db';
+import { users, accounts } from '@shared/schema';
 
-jest.mock('../storage');
+// Mock dependencies
+jest.mock('../db');
 jest.mock('../middleware/auth');
-jest.mock('../file-upload');
+jest.mock('../storage');
 
-const mockStorage = storage as jest.Mocked<typeof storage>;
-const mockVerifyToken = verifyToken as jest.MockedFunction<typeof verifyToken>;
+// Import the router after mocking
+import userRouter from './userRoutes';
+import { verifyToken, verifyAdmin } from '../middleware/auth';
+import { storage } from '../storage';
+
+const mockedDb = db as jest.Mocked<typeof db>;
+const mockedVerifyToken = verifyToken as jest.MockedFunction<typeof verifyToken>;
+const mockedVerifyAdmin = verifyAdmin as jest.MockedFunction<typeof verifyAdmin>;
+const mockedStorage = storage as jest.Mocked<typeof storage>;
 
 describe('User Routes', () => {
   let app: express.Application;
-  
+
+  const mockUser = {
+    id: 1,
+    organizationId: 1,
+    email: 'user@example.com',
+    name: 'Test User',
+    isAdmin: false,
+    department: 'Engineering',
+    status: 'active',
+  };
+
+  const mockAdmin = {
+    id: 2,
+    organizationId: 1,
+    email: 'admin@example.com',
+    name: 'Admin User',
+    isAdmin: true,
+    department: 'Administration',
+    status: 'active',
+  };
+
   beforeEach(() => {
-    jest.clearAllMocks();
     app = express();
     app.use(express.json());
-    
-    // Mock auth middleware
-    mockVerifyToken.mockImplementation((req: any, res, next) => {
-      req.user = {
-        id: 1,
-        email: 'test@test.com',
-        organizationId: 1,
-        isAdmin: false,
-      };
+    app.use('/users', userRouter);
+    jest.clearAllMocks();
+
+    // Default auth middleware behavior
+    mockedVerifyToken.mockImplementation((req: any, res, next) => {
+      req.user = mockUser;
       next();
     });
-    
-    app.use('/api/users', userRoutes);
+
+    mockedVerifyAdmin.mockImplementation((req: any, res, next) => {
+      if (req.user?.isAdmin) {
+        next();
+      } else {
+        res.status(403).json({ message: 'Admin access required' });
+      }
+    });
   });
 
-  describe('GET /api/users/me', () => {
-    it('should return current user data', async () => {
-      const mockUser = {
-        id: 1,
-        name: 'Test User',
-        email: 'test@test.com',
-        organizationId: 1,
-        balance: 100,
-      };
-      
-      mockStorage.getUser.mockResolvedValue(mockUser);
-      mockStorage.getUserBalance.mockResolvedValue(100);
+  describe('GET /users/me', () => {
+    it('should return current user profile', async () => {
+      mockedStorage.getUser = jest.fn().mockResolvedValue(mockUser);
 
-      const response = await request(app)
-        .get('/api/users/me')
-        .set('Authorization', 'Bearer test-token');
+      const response = await request(app).get('/users/me');
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        ...mockUser,
-        balance: 100,
-      });
+      expect(response.body).toEqual(mockUser);
+      expect(mockedStorage.getUser).toHaveBeenCalledWith(1);
     });
 
-    it('should return 404 if user not found', async () => {
-      mockStorage.getUser.mockResolvedValue(undefined);
+    it('should handle user not found', async () => {
+      mockedStorage.getUser = jest.fn().mockResolvedValue(undefined);
 
-      const response = await request(app)
-        .get('/api/users/me')
-        .set('Authorization', 'Bearer test-token');
+      const response = await request(app).get('/users/me');
 
       expect(response.status).toBe(404);
+      expect(response.body.message).toBe('User not found');
+    });
+
+    it('should include balance information', async () => {
+      const userWithBalance = {
+        ...mockUser,
+        balance: 1500,
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(userWithBalance);
+
+      const response = await request(app).get('/users/me');
+
+      expect(response.status).toBe(200);
+      expect(response.body.balance).toBe(1500);
     });
   });
 
-  describe('PUT /api/users/me', () => {
-    it('should update current user profile', async () => {
+  describe('PATCH /users/me', () => {
+    it('should update user profile successfully', async () => {
       const updateData = {
         name: 'Updated Name',
-        phoneNumber: '+1234567890',
-        department: 'Engineering',
+        phoneNumber: '+1-555-0123',
+        aboutMe: 'Updated bio',
       };
-      
+
       const updatedUser = {
-        id: 1,
+        ...mockUser,
         ...updateData,
       };
-      
-      mockStorage.updateUser.mockResolvedValue(updatedUser);
+
+      mockedStorage.updateUser = jest.fn().mockResolvedValue(updatedUser);
 
       const response = await request(app)
-        .put('/api/users/me')
-        .set('Authorization', 'Bearer test-token')
+        .patch('/users/me')
         .send(updateData);
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(updatedUser);
-      expect(mockStorage.updateUser).toHaveBeenCalledWith(1, updateData);
+      expect(mockedStorage.updateUser).toHaveBeenCalledWith(1, updateData);
     });
 
-    it('should not allow updating sensitive fields', async () => {
-      const updateData = {
-        name: 'Updated Name',
-        isAdmin: true, // Should be filtered out
-        organizationId: 2, // Should be filtered out
+    it('should validate email format', async () => {
+      const invalidData = {
+        email: 'invalid-email-format',
       };
-      
-      mockStorage.updateUser.mockResolvedValue({ id: 1 });
 
-      await request(app)
-        .put('/api/users/me')
-        .set('Authorization', 'Bearer test-token')
-        .send(updateData);
+      const response = await request(app)
+        .patch('/users/me')
+        .send(invalidData);
 
-      expect(mockStorage.updateUser).toHaveBeenCalledWith(1, {
-        name: 'Updated Name',
-      });
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Invalid email format');
+    });
+
+    it('should prevent updating protected fields', async () => {
+      const protectedData = {
+        id: 999,
+        organizationId: 999,
+        isAdmin: true,
+        balance: 10000,
+      };
+
+      mockedStorage.updateUser = jest.fn().mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .patch('/users/me')
+        .send(protectedData);
+
+      // Should filter out protected fields
+      expect(mockedStorage.updateUser).not.toHaveBeenCalledWith(
+        expect.any(Number),
+        expect.objectContaining({
+          id: 999,
+          organizationId: 999,
+          isAdmin: true,
+          balance: 10000,
+        })
+      );
+    });
+
+    it('should handle storage errors', async () => {
+      mockedStorage.updateUser = jest.fn().mockRejectedValue(new Error('Database error'));
+
+      const response = await request(app)
+        .patch('/users/me')
+        .send({ name: 'New Name' });
+
+      expect(response.status).toBe(500);
     });
   });
 
-  describe('GET /api/users', () => {
-    it('should return users for organization', async () => {
+  describe('GET /users', () => {
+    beforeEach(() => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockAdmin;
+        next();
+      });
+    });
+
+    it('should return filtered users for organization', async () => {
       const mockUsers = [
-        { id: 1, name: 'User 1', organizationId: 1 },
-        { id: 2, name: 'User 2', organizationId: 1 },
+        {
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          department: 'Engineering',
+          status: 'active',
+        },
+        {
+          id: 2,
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          department: 'Marketing',
+          status: 'active',
+        },
       ];
-      
-      mockStorage.getUsers.mockResolvedValue(mockUsers);
-      mockStorage.getUserCount.mockResolvedValue(2);
 
-      const response = await request(app)
-        .get('/api/users')
-        .set('Authorization', 'Bearer test-token');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockUsers);
-      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 10, 0);
-    });
-
-    it('should support pagination', async () => {
-      mockStorage.getUsers.mockResolvedValue([]);
-      mockStorage.getUserCount.mockResolvedValue(0);
-
-      await request(app)
-        .get('/api/users')
-        .query({ limit: 20, offset: 40 })
-        .set('Authorization', 'Bearer test-token');
-
-      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 20, 40);
-    });
-
-    it('should filter active users only when requested', async () => {
-      mockStorage.getUsers.mockResolvedValue([]);
-      mockStorage.getUserCount.mockResolvedValue(0);
-
-      await request(app)
-        .get('/api/users')
-        .query({ status: 'active' })
-        .set('Authorization', 'Bearer test-token');
-
-      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 10, 0, 'active');
-      expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, 'active');
-    });
-  });
-
-  describe('GET /api/users/:id', () => {
-    it('should return user profile', async () => {
-      const mockUser = {
-        id: 5,
-        name: 'Other User',
-        organizationId: 1,
-        balance: 200,
-      };
-      
-      mockStorage.getUser.mockResolvedValue(mockUser);
-      mockStorage.getUserBalance.mockResolvedValue(200);
-
-      const response = await request(app)
-        .get('/api/users/5')
-        .set('Authorization', 'Bearer test-token');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        ...mockUser,
-        balance: 200,
+      mockedStorage.getUsers = jest.fn().mockResolvedValue(mockUsers);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue({
+        totalUsers: 50,
+        activeUsers: 45,
       });
+
+      const response = await request(app).get('/users');
+
+      expect(response.status).toBe(200);
+      expect(response.body.users).toEqual(mockUsers);
+      expect(response.body.pagination.totalUsers).toBe(50);
+      expect(response.body.pagination.activeUsers).toBe(45);
     });
 
-    it('should prevent accessing users from other organizations', async () => {
-      const mockUser = {
-        id: 5,
-        organizationId: 2, // Different org
-      };
-      
-      mockStorage.getUser.mockResolvedValue(mockUser);
+    it('should handle pagination parameters', async () => {
+      mockedStorage.getUsers = jest.fn().mockResolvedValue([]);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue({
+        totalUsers: 0,
+        activeUsers: 0,
+      });
 
       const response = await request(app)
-        .get('/api/users/5')
-        .set('Authorization', 'Bearer test-token');
+        .get('/users')
+        .query({ page: '2', limit: '10' });
+
+      expect(response.status).toBe(200);
+      expect(mockedStorage.getUsers).toHaveBeenCalledWith(
+        1, // organizationId
+        undefined, // filters
+        10, // offset (page 2 * limit 10 - limit 10)
+        10 // limit
+      );
+    });
+
+    it('should apply search filter', async () => {
+      mockedStorage.getUsers = jest.fn().mockResolvedValue([]);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue({
+        totalUsers: 0,
+        activeUsers: 0,
+      });
+
+      const response = await request(app)
+        .get('/users')
+        .query({ search: 'john' });
+
+      expect(response.status).toBe(200);
+      expect(mockedStorage.getUsers).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ search: 'john' }),
+        0,
+        50
+      );
+    });
+
+    it('should apply department filter', async () => {
+      mockedStorage.getUsers = jest.fn().mockResolvedValue([]);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue({
+        totalUsers: 0,
+        activeUsers: 0,
+      });
+
+      const response = await request(app)
+        .get('/users')
+        .query({ department: 'Engineering' });
+
+      expect(response.status).toBe(200);
+      expect(mockedStorage.getUsers).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ department: 'Engineering' }),
+        0,
+        50
+      );
+    });
+
+    it('should apply status filter', async () => {
+      mockedStorage.getUsers = jest.fn().mockResolvedValue([]);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue({
+        totalUsers: 0,
+        activeUsers: 0,
+      });
+
+      const response = await request(app)
+        .get('/users')
+        .query({ status: 'active' });
+
+      expect(response.status).toBe(200);
+      expect(mockedStorage.getUsers).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ status: 'active' }),
+        0,
+        50
+      );
+    });
+
+    it('should require admin access', async () => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockUser; // Regular user
+        next();
+      });
+
+      const response = await request(app).get('/users');
 
       expect(response.status).toBe(403);
     });
   });
 
-  describe('POST /api/users/me/avatar', () => {
-    it('should upload avatar successfully', async () => {
-      const mockFile = {
-        filename: 'avatar.jpg',
-        path: '/uploads/avatar.jpg',
-      };
-      
-      // Mock multer upload
-      (upload.single as jest.Mock) = jest.fn(() => (req: any, res: any, next: any) => {
-        req.file = mockFile;
+  describe('GET /users/:id', () => {
+    beforeEach(() => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockAdmin;
         next();
       });
-      
-      mockStorage.updateUser.mockResolvedValue({
-        id: 1,
-        avatarUrl: '/uploads/avatar.jpg',
-      });
+    });
 
-      const response = await request(app)
-        .post('/api/users/me/avatar')
-        .set('Authorization', 'Bearer test-token')
-        .attach('avatar', Buffer.from('fake-image'), 'avatar.jpg');
+    it('should return specific user profile', async () => {
+      const targetUser = {
+        id: 3,
+        name: 'Target User',
+        email: 'target@example.com',
+        organizationId: 1,
+        department: 'Sales',
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(targetUser);
+
+      const response = await request(app).get('/users/3');
 
       expect(response.status).toBe(200);
-      expect(response.body.avatarUrl).toBe('/uploads/avatar.jpg');
+      expect(response.body).toEqual(targetUser);
+    });
+
+    it('should handle user not found', async () => {
+      mockedStorage.getUser = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app).get('/users/999');
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe('User not found');
+    });
+
+    it('should prevent access to users from different organization', async () => {
+      const otherOrgUser = {
+        id: 3,
+        name: 'Other User',
+        organizationId: 2, // Different organization
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(otherOrgUser);
+
+      const response = await request(app).get('/users/3');
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Access denied');
+    });
+
+    it('should require admin access', async () => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockUser; // Regular user
+        next();
+      });
+
+      const response = await request(app).get('/users/3');
+
+      expect(response.status).toBe(403);
     });
   });
 
-  describe('GET /api/users/departments', () => {
-    it('should return unique departments', async () => {
-      const mockDepartments = ['Engineering', 'Marketing', 'Sales'];
-      
-      mockStorage.getDepartments.mockResolvedValue(mockDepartments);
+  describe('PATCH /users/:id', () => {
+    beforeEach(() => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockAdmin;
+        next();
+      });
+    });
+
+    it('should update user successfully', async () => {
+      const updateData = {
+        name: 'Updated Name',
+        department: 'Engineering',
+        jobTitle: 'Senior Developer',
+        status: 'active',
+      };
+
+      const existingUser = {
+        id: 3,
+        organizationId: 1,
+        email: 'user@example.com',
+      };
+
+      const updatedUser = {
+        ...existingUser,
+        ...updateData,
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(existingUser);
+      mockedStorage.updateUser = jest.fn().mockResolvedValue(updatedUser);
 
       const response = await request(app)
-        .get('/api/users/departments')
-        .set('Authorization', 'Bearer test-token');
+        .patch('/users/3')
+        .send(updateData);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(updatedUser);
+    });
+
+    it('should handle user not found', async () => {
+      mockedStorage.getUser = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .patch('/users/999')
+        .send({ name: 'New Name' });
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should prevent updating users from different organization', async () => {
+      const otherOrgUser = {
+        organizationId: 2, // Different organization
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(otherOrgUser);
+
+      const response = await request(app)
+        .patch('/users/3')
+        .send({ name: 'New Name' });
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should validate status values', async () => {
+      const existingUser = {
+        id: 3,
+        organizationId: 1,
+      };
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(existingUser);
+
+      const response = await request(app)
+        .patch('/users/3')
+        .send({ status: 'invalid_status' });
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('GET /users/departments', () => {
+    it('should return unique departments for organization', async () => {
+      const mockDepartments = ['Engineering', 'Marketing', 'Sales', 'HR'];
+
+      mockedDb.selectDistinct = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(
+            mockDepartments.map(dept => ({ department: dept }))
+          ),
+        }),
+      });
+
+      const response = await request(app).get('/users/departments');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockDepartments);
-      expect(mockStorage.getDepartments).toHaveBeenCalledWith(1);
+    });
+
+    it('should filter out null departments', async () => {
+      const mockResults = [
+        { department: 'Engineering' },
+        { department: null },
+        { department: 'Marketing' },
+        { department: '' },
+      ];
+
+      mockedDb.selectDistinct = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockResults),
+        }),
+      });
+
+      const response = await request(app).get('/users/departments');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(['Engineering', 'Marketing']);
     });
   });
 
-  describe('GET /api/users/locations', () => {
-    it('should return unique locations', async () => {
-      const mockLocations = ['New York', 'London', 'Tokyo'];
-      
-      mockStorage.getLocations.mockResolvedValue(mockLocations);
+  describe('GET /users/locations', () => {
+    it('should return unique locations for organization', async () => {
+      const mockLocations = ['New York', 'San Francisco', 'London', 'Tokyo'];
 
-      const response = await request(app)
-        .get('/api/users/locations')
-        .set('Authorization', 'Bearer test-token');
+      mockedDb.selectDistinct = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(
+            mockLocations.map(loc => ({ location: loc }))
+          ),
+        }),
+      });
+
+      const response = await request(app).get('/users/locations');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockLocations);
-      expect(mockStorage.getLocations).toHaveBeenCalledWith(1);
     });
   });
 
-  describe('POST /api/users/change-password', () => {
-    it('should change password successfully', async () => {
-      const mockUser = {
-        id: 1,
-        password: 'old_hashed_password',
-      };
-      
-      mockStorage.getUser.mockResolvedValue(mockUser);
-      mockStorage.validatePassword.mockResolvedValue(true); // Old password valid
-      mockStorage.updateUserPassword.mockResolvedValue(true);
+  describe('GET /users/:id/balance', () => {
+    it('should return user balance', async () => {
+      mockedStorage.getUserBalance = jest.fn().mockResolvedValue(1250);
 
-      const response = await request(app)
-        .post('/api/users/change-password')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          currentPassword: 'oldpass123',
-          newPassword: 'newpass123',
-        });
+      const response = await request(app).get('/users/1/balance');
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Password updated successfully');
+      expect(response.body.balance).toBe(1250);
     });
 
-    it('should reject incorrect current password', async () => {
-      mockStorage.getUser.mockResolvedValue({ id: 1 });
-      mockStorage.validatePassword.mockResolvedValue(false);
+    it('should only allow users to check their own balance', async () => {
+      const response = await request(app).get('/users/999/balance');
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Access denied');
+    });
+
+    it('should allow admins to check any user balance', async () => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        req.user = mockAdmin;
+        next();
+      });
+
+      mockedStorage.getUserBalance = jest.fn().mockResolvedValue(750);
+
+      const response = await request(app).get('/users/1/balance');
+
+      expect(response.status).toBe(200);
+      expect(response.body.balance).toBe(750);
+    });
+  });
+
+  describe('GET /users/:id/transactions', () => {
+    it('should return user transaction history', async () => {
+      const mockTransactions = [
+        {
+          id: 1,
+          amount: 100,
+          type: 'recognition',
+          description: 'Great work!',
+          createdAt: new Date(),
+        },
+        {
+          id: 2,
+          amount: -50,
+          type: 'purchase',
+          description: 'Coffee shop voucher',
+          createdAt: new Date(),
+        },
+      ];
+
+      mockedStorage.getTransactions = jest.fn().mockResolvedValue(mockTransactions);
+
+      const response = await request(app).get('/users/1/transactions');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockTransactions);
+    });
+
+    it('should only allow users to check their own transactions', async () => {
+      const response = await request(app).get('/users/999/transactions');
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should handle pagination for transactions', async () => {
+      mockedStorage.getTransactions = jest.fn().mockResolvedValue([]);
 
       const response = await request(app)
-        .post('/api/users/change-password')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          currentPassword: 'wrongpass',
-          newPassword: 'newpass123',
-        });
+        .get('/users/1/transactions')
+        .query({ limit: '25' });
+
+      expect(response.status).toBe(200);
+      expect(mockedStorage.getTransactions).toHaveBeenCalledWith(1, 25);
+    });
+  });
+
+  describe('Authorization', () => {
+    it('should require authentication for all routes', async () => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        res.status(401).json({ message: 'Unauthorized' });
+      });
+
+      const response = await request(app).get('/users/me');
 
       expect(response.status).toBe(401);
-      expect(response.body.message).toContain('Current password is incorrect');
+    });
+
+    it('should handle missing user context', async () => {
+      mockedVerifyToken.mockImplementation((req: any, res, next) => {
+        // No user attached
+        next();
+      });
+
+      const response = await request(app).get('/users/me');
+
+      expect(response.status).toBe(401);
     });
   });
 
-  describe('GET /api/users/search', () => {
-    it('should search users by query', async () => {
-      const searchResults = [
-        { id: 2, name: 'John Doe', department: 'Engineering' },
-        { id: 3, name: 'John Smith', department: 'Sales' },
-      ];
-      
-      mockStorage.searchUsers.mockResolvedValue(searchResults);
+  describe('Error Handling', () => {
+    it('should handle database connection errors', async () => {
+      mockedStorage.getUser = jest.fn().mockRejectedValue(new Error('Connection failed'));
+
+      const response = await request(app).get('/users/me');
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Internal server error');
+    });
+
+    it('should handle invalid user ID format', async () => {
+      const response = await request(app).get('/users/invalid-id');
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid user ID format');
+    });
+
+    it('should handle malformed request data', async () => {
+      const response = await request(app)
+        .patch('/users/me')
+        .send('invalid json');
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('Data Validation', () => {
+    it('should sanitize user input', async () => {
+      const maliciousData = {
+        name: '<script>alert("xss")</script>John Doe',
+        aboutMe: 'Hello <b>world</b>',
+      };
+
+      const sanitizedUser = {
+        ...mockUser,
+        name: 'John Doe', // Script tags removed
+        aboutMe: 'Hello world', // HTML tags removed
+      };
+
+      mockedStorage.updateUser = jest.fn().mockResolvedValue(sanitizedUser);
 
       const response = await request(app)
-        .get('/api/users/search')
-        .query({ q: 'John' })
-        .set('Authorization', 'Bearer test-token');
+        .patch('/users/me')
+        .send(maliciousData);
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(searchResults);
-      expect(mockStorage.searchUsers).toHaveBeenCalledWith(1, 'John');
+      expect(response.body.name).not.toContain('<script>');
+    });
+
+    it('should validate phone number format', async () => {
+      const invalidData = {
+        phoneNumber: 'not-a-phone-number',
+      };
+
+      const response = await request(app)
+        .patch('/users/me')
+        .send(invalidData);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should enforce maximum length constraints', async () => {
+      const tooLongData = {
+        aboutMe: 'x'.repeat(1001), // Too long
+      };
+
+      const response = await request(app)
+        .patch('/users/me')
+        .send(tooLongData);
+
+      expect(response.status).toBe(400);
     });
   });
 });

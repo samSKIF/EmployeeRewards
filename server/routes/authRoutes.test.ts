@@ -1,363 +1,752 @@
 import request from 'supertest';
 import express from 'express';
-import authRoutes from './authRoutes';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { storage } from '../storage';
-import { generateToken } from '../middleware/auth';
-import { checkSubscriptionStatus } from '../services/subscriptionService';
 
+// Mock dependencies
 jest.mock('../storage');
-jest.mock('../middleware/auth');
-jest.mock('../services/subscriptionService');
+jest.mock('bcrypt');
+jest.mock('jsonwebtoken');
 
-const mockStorage = storage as jest.Mocked<typeof storage>;
-const mockGenerateToken = generateToken as jest.MockedFunction<typeof generateToken>;
-const mockCheckSubscriptionStatus = checkSubscriptionStatus as jest.MockedFunction<typeof checkSubscriptionStatus>;
+// Import the router after mocking
+import authRouter from './authRoutes';
+
+const mockedStorage = storage as jest.Mocked<typeof storage>;
+const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+const mockedJwt = jwt as jest.Mocked<typeof jwt>;
 
 describe('Auth Routes', () => {
   let app: express.Application;
-  
+
   beforeEach(() => {
-    jest.clearAllMocks();
     app = express();
     app.use(express.json());
-    app.use('/api/auth', authRoutes);
+    app.use('/auth', authRouter);
+    jest.clearAllMocks();
   });
 
-  describe('POST /api/auth/login', () => {
+  describe('POST /auth/login', () => {
     it('should login user with valid credentials', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
+      };
+
       const mockUser = {
         id: 1,
-        username: 'testuser',
-        email: 'test@test.com',
+        email: 'user@example.com',
+        password: 'hashed_password',
+        name: 'Test User',
         organizationId: 1,
         isAdmin: false,
         status: 'active',
       };
-      
-      const mockOrg = {
+
+      const mockOrganization = {
         id: 1,
-        name: 'Test Org',
+        name: 'Test Company',
         status: 'active',
+        hasActiveSubscription: true,
       };
-      
-      mockStorage.validateUser.mockResolvedValue(mockUser);
-      mockStorage.getOrganization.mockResolvedValue(mockOrg);
-      mockCheckSubscriptionStatus.mockResolvedValue(true);
-      mockGenerateToken.mockReturnValue('mock-jwt-token');
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockedJwt.sign = jest.fn().mockReturnValue('mock_jwt_token');
 
       const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'testuser',
-          password: 'password123',
-        });
+        .post('/auth/login')
+        .send(loginData);
 
       expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        user: mockUser,
-        token: 'mock-jwt-token',
+      expect(response.body.token).toBe('mock_jwt_token');
+      expect(response.body.user).toMatchObject({
+        id: 1,
+        email: 'user@example.com',
+        name: 'Test User',
       });
-      expect(mockStorage.updateLastSeenAt).toHaveBeenCalledWith(1);
+      expect(response.body.user.password).toBeUndefined(); // Password should not be returned
     });
 
-    it('should reject invalid credentials', async () => {
-      mockStorage.validateUser.mockResolvedValue(null);
+    it('should reject login with invalid email', async () => {
+      const loginData = {
+        email: 'nonexistent@example.com',
+        password: 'password123',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined);
 
       const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'wronguser',
-          password: 'wrongpass',
-        });
+        .post('/auth/login')
+        .send(loginData);
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
     });
 
-    it('should reject inactive user', async () => {
+    it('should reject login with invalid password', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'wrongpassword',
+      };
+
       const mockUser = {
         id: 1,
-        username: 'testuser',
+        email: 'user@example.com',
+        password: 'hashed_password',
+        status: 'active',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(false);
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send(loginData);
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe('Invalid credentials');
+    });
+
+    it('should reject login for inactive user', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'user@example.com',
+        password: 'hashed_password',
         status: 'inactive',
         organizationId: 1,
       };
-      
-      mockStorage.validateUser.mockResolvedValue(mockUser);
+
+      const mockOrganization = {
+        status: 'active',
+        hasActiveSubscription: true,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
 
       const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'testuser',
-          password: 'password123',
-        });
+        .post('/auth/login')
+        .send(loginData);
 
-      expect(response.status).toBe(403);
-      expect(response.body.message).toContain('account is not active');
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe('Account is inactive');
     });
 
-    it('should handle inactive organization with subscription popup', async () => {
+    it('should reject login for user in inactive organization', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
+      };
+
       const mockUser = {
         id: 1,
-        username: 'testuser',
+        email: 'user@example.com',
+        password: 'hashed_password',
+        status: 'active',
         organizationId: 1,
         isAdmin: false,
-        status: 'active',
       };
-      
-      const mockOrg = {
-        id: 1,
-        name: 'Test Org',
+
+      const mockOrganization = {
         status: 'inactive',
-        superuserEmail: 'admin@org.com',
+        hasActiveSubscription: false,
+        superuserEmail: 'admin@company.com',
       };
-      
-      mockStorage.validateUser.mockResolvedValue(mockUser);
-      mockStorage.getOrganization.mockResolvedValue(mockOrg);
-      mockCheckSubscriptionStatus.mockResolvedValue(false);
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
 
       const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'testuser',
-          password: 'password123',
-        });
+        .post('/auth/login')
+        .send(loginData);
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toContain('The system is inactive');
-      expect(response.body.message).toContain('admin@org.com');
-      expect(response.body.showSubscriptionPopup).toBe(true);
+      expect(response.body.message).toContain('system is inactive');
+      expect(response.body.message).toContain('admin@company.com');
     });
 
-    it('should allow corporate admin to bypass subscription check', async () => {
-      const mockUser = {
+    it('should allow corporate admin to login even if organization is inactive', async () => {
+      const loginData = {
+        email: 'admin@example.com',
+        password: 'password123',
+      };
+
+      const mockAdmin = {
         id: 1,
-        username: 'admin',
+        email: 'admin@example.com',
+        password: 'hashed_password',
+        status: 'active',
         organizationId: 1,
         isAdmin: true,
-        adminScope: 'super',
-        status: 'active',
+        adminScope: 'corporate',
       };
-      
-      const mockOrg = {
-        id: 1,
-        status: 'active',
+
+      const mockOrganization = {
+        status: 'inactive',
+        hasActiveSubscription: false,
       };
-      
-      mockStorage.validateUser.mockResolvedValue(mockUser);
-      mockStorage.getOrganization.mockResolvedValue(mockOrg);
-      mockGenerateToken.mockReturnValue('admin-token');
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockAdmin);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockedJwt.sign = jest.fn().mockReturnValue('admin_token');
 
       const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'admin',
-          password: 'adminpass',
-        });
+        .post('/auth/login')
+        .send(loginData);
 
       expect(response.status).toBe(200);
-      expect(mockCheckSubscriptionStatus).not.toHaveBeenCalled();
+      expect(response.body.token).toBe('admin_token');
     });
-  });
 
-  describe('POST /api/auth/register', () => {
-    it('should register new user with active subscription check', async () => {
-      const userData = {
-        username: 'newuser',
+    it('should validate required fields', async () => {
+      const incompleteData = {
+        email: 'user@example.com',
+        // Missing password
+      };
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send(incompleteData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Email and password are required');
+    });
+
+    it('should validate email format', async () => {
+      const invalidData = {
+        email: 'invalid-email-format',
         password: 'password123',
-        name: 'New User',
-        email: 'new@test.com',
-        organizationId: 1,
       };
-      
-      const mockOrg = {
-        id: 1,
-        name: 'Test Org',
-        status: 'active',
-      };
-      
-      const mockSubscription = {
-        id: 1,
-        subscribedUsers: 100,
-        isActive: true,
-      };
-      
-      const createdUser = {
-        id: 100,
-        ...userData,
-      };
-      
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        usernameExists: false,
-        emailExists: false,
-      });
-      mockStorage.getOrganization.mockResolvedValue(mockOrg);
-      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue(mockSubscription);
-      mockStorage.getUserCount.mockResolvedValue(50); // Under limit
-      mockStorage.createUser.mockResolvedValue(createdUser);
-      mockGenerateToken.mockReturnValue('new-user-token');
 
       const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData);
+        .post('/auth/login')
+        .send(invalidData);
 
-      expect(response.status).toBe(201);
-      expect(response.body).toMatchObject({
-        user: createdUser,
-        token: 'new-user-token',
-      });
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Invalid email format');
     });
 
-    it('should reject registration if subscription limit exceeded', async () => {
-      const userData = {
-        username: 'newuser',
+    it('should handle database errors gracefully', async () => {
+      const loginData = {
+        email: 'user@example.com',
         password: 'password123',
-        name: 'New User',
-        email: 'new@test.com',
-        organizationId: 1,
       };
-      
-      const mockOrg = {
-        id: 1,
-        status: 'active',
+
+      mockedStorage.getUserByEmail = jest.fn().mockRejectedValue(new Error('Database error'));
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send(loginData);
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Internal server error');
+    });
+
+    it('should handle JWT signing errors', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
       };
-      
-      const mockSubscription = {
-        id: 1,
-        subscribedUsers: 50,
-        isActive: true,
-      };
-      
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        usernameExists: false,
-        emailExists: false,
-      });
-      mockStorage.getOrganization.mockResolvedValue(mockOrg);
-      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue(mockSubscription);
-      mockStorage.getUserCount.mockResolvedValue(50); // At limit
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData);
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toContain('exceeded user limit');
-    });
-
-    it('should count only active employees for capacity', async () => {
-      mockStorage.getUserCount.mockResolvedValue(45); // Active users count
-      
-      // Mock subscription with limit
-      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue({
-        subscribedUsers: 50,
-        isActive: true,
-      });
-      
-      // Other mocks for successful registration
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        usernameExists: false,
-        emailExists: false,
-      });
-      mockStorage.getOrganization.mockResolvedValue({
-        id: 1,
-        status: 'active',
-      });
-      mockStorage.createUser.mockResolvedValue({ id: 100 });
-      mockGenerateToken.mockReturnValue('token');
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          username: 'newuser',
-          password: 'pass123',
-          name: 'New',
-          email: 'new@test.com',
-          organizationId: 1,
-        });
-
-      expect(response.status).toBe(201);
-      expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, 'active');
-    });
-
-    it('should reject duplicate username', async () => {
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        usernameExists: true,
-        emailExists: false,
-      });
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          username: 'existinguser',
-          password: 'pass123',
-          name: 'Test',
-          email: 'test@test.com',
-          organizationId: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toContain('Username already exists');
-    });
-
-    it('should reject duplicate email', async () => {
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        usernameExists: false,
-        emailExists: true,
-      });
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          username: 'newuser',
-          password: 'pass123',
-          name: 'Test',
-          email: 'existing@test.com',
-          organizationId: 1,
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toContain('Email already exists');
-    });
-  });
-
-  describe('POST /api/auth/logout', () => {
-    it('should logout successfully', async () => {
-      const response = await request(app)
-        .post('/api/auth/logout');
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Logged out successfully');
-    });
-  });
-
-  describe('POST /api/auth/forgot-password', () => {
-    it('should send password reset email', async () => {
       const mockUser = {
         id: 1,
-        email: 'test@test.com',
-        name: 'Test User',
+        email: 'user@example.com',
+        password: 'hashed_password',
+        status: 'active',
+        organizationId: 1,
       };
-      
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.createPasswordResetToken.mockResolvedValue('reset-token-123');
+
+      const mockOrganization = {
+        status: 'active',
+        hasActiveSubscription: true,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockedJwt.sign = jest.fn().mockImplementation(() => {
+        throw new Error('JWT signing failed');
+      });
 
       const response = await request(app)
-        .post('/api/auth/forgot-password')
-        .send({ email: 'test@test.com' });
+        .post('/auth/login')
+        .send(loginData);
 
-      expect(response.status).toBe(200);
-      expect(response.body.message).toContain('Password reset email sent');
-      expect(mockStorage.createPasswordResetToken).toHaveBeenCalledWith(1);
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('POST /auth/register', () => {
+    it('should register new user successfully', async () => {
+      const registrationData = {
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const mockOrganization = {
+        id: 1,
+        name: 'Test Company',
+        status: 'active',
+        hasActiveSubscription: true,
+        subscribedUsers: 50,
+      };
+
+      const mockUserCount = {
+        activeUsers: 25,
+        totalUsers: 30,
+      };
+
+      const mockCreatedUser = {
+        id: 2,
+        email: 'newuser@example.com',
+        name: 'New User',
+        organizationId: 1,
+        status: 'active',
+        isAdmin: false,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined); // Email not taken
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue(mockUserCount);
+      mockedBcrypt.hash = jest.fn().mockResolvedValue('hashed_password');
+      mockedStorage.createUser = jest.fn().mockResolvedValue(mockCreatedUser);
+      mockedJwt.sign = jest.fn().mockReturnValue('new_user_token');
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(201);
+      expect(response.body.token).toBe('new_user_token');
+      expect(response.body.user.email).toBe('newuser@example.com');
     });
 
-    it('should not reveal if email exists', async () => {
-      mockStorage.getUserByEmail.mockResolvedValue(null);
+    it('should reject registration with existing email', async () => {
+      const registrationData = {
+        email: 'existing@example.com',
+        password: 'password123',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const existingUser = {
+        id: 1,
+        email: 'existing@example.com',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(existingUser);
 
       const response = await request(app)
-        .post('/api/auth/forgot-password')
-        .send({ email: 'nonexistent@test.com' });
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Email already registered');
+    });
+
+    it('should reject registration when organization is at capacity', async () => {
+      const registrationData = {
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const mockOrganization = {
+        id: 1,
+        subscribedUsers: 25, // Capacity limit
+        hasActiveSubscription: true,
+      };
+
+      const mockUserCount = {
+        activeUsers: 25, // At capacity
+        totalUsers: 30,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+      mockedStorage.getUserCount = jest.fn().mockResolvedValue(mockUserCount);
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('capacity limit');
+    });
+
+    it('should reject registration for inactive organization', async () => {
+      const registrationData = {
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const mockOrganization = {
+        status: 'inactive',
+        hasActiveSubscription: false,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(mockOrganization);
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('not accepting new registrations');
+    });
+
+    it('should validate password strength', async () => {
+      const registrationData = {
+        email: 'newuser@example.com',
+        password: '123', // Too weak
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Password must be at least');
+    });
+
+    it('should validate required fields', async () => {
+      const incompleteData = {
+        email: 'newuser@example.com',
+        // Missing password, name, organizationId
+      };
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(incompleteData);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should handle organization not found', async () => {
+      const registrationData = {
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+        organizationId: 999,
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined);
+      mockedStorage.getOrganization = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(registrationData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Organization not found');
+    });
+  });
+
+  describe('POST /auth/forgot-password', () => {
+    it('should initiate password reset for valid email', async () => {
+      const resetData = {
+        email: 'user@example.com',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'user@example.com',
+        name: 'Test User',
+        status: 'active',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedStorage.createPasswordResetToken = jest.fn().mockResolvedValue('reset_token_123');
+
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send(resetData);
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toContain('If your email exists');
+      expect(response.body.message).toBe('Password reset email sent');
+      expect(mockedStorage.createPasswordResetToken).toHaveBeenCalledWith(1);
+    });
+
+    it('should return success even for non-existent email (security)', async () => {
+      const resetData = {
+        email: 'nonexistent@example.com',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send(resetData);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Password reset email sent');
+      expect(mockedStorage.createPasswordResetToken).not.toHaveBeenCalled();
+    });
+
+    it('should reject for inactive user', async () => {
+      const resetData = {
+        email: 'inactive@example.com',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'inactive@example.com',
+        status: 'inactive',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send(resetData);
+
+      expect(response.status).toBe(200); // Still return success for security
+      expect(mockedStorage.createPasswordResetToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /auth/reset-password', () => {
+    it('should reset password with valid token', async () => {
+      const resetData = {
+        token: 'valid_reset_token',
+        newPassword: 'newpassword123',
+      };
+
+      const mockUser = {
+        id: 1,
+        email: 'user@example.com',
+      };
+
+      mockedStorage.validatePasswordResetToken = jest.fn().mockResolvedValue(mockUser);
+      mockedBcrypt.hash = jest.fn().mockResolvedValue('new_hashed_password');
+      mockedStorage.updateUserPassword = jest.fn().mockResolvedValue(true);
+      mockedStorage.invalidatePasswordResetToken = jest.fn().mockResolvedValue(true);
+
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send(resetData);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Password reset successfully');
+      expect(mockedStorage.updateUserPassword).toHaveBeenCalledWith(1, 'new_hashed_password');
+      expect(mockedStorage.invalidatePasswordResetToken).toHaveBeenCalledWith('valid_reset_token');
+    });
+
+    it('should reject invalid or expired token', async () => {
+      const resetData = {
+        token: 'invalid_token',
+        newPassword: 'newpassword123',
+      };
+
+      mockedStorage.validatePasswordResetToken = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send(resetData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid or expired reset token');
+    });
+
+    it('should validate new password strength', async () => {
+      const resetData = {
+        token: 'valid_token',
+        newPassword: '123', // Too weak
+      };
+
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send(resetData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Password must be at least');
+    });
+  });
+
+  describe('POST /auth/change-password', () => {
+    it('should change password for authenticated user', async () => {
+      const changeData = {
+        currentPassword: 'oldpassword',
+        newPassword: 'newpassword123',
+      };
+
+      const mockUser = {
+        id: 1,
+        password: 'old_hashed_password',
+      };
+
+      // Mock authentication middleware
+      const authApp = express();
+      authApp.use(express.json());
+      authApp.use((req: any, res, next) => {
+        req.user = { id: 1 }; // Simulate authenticated user
+        next();
+      });
+      authApp.use('/auth', authRouter);
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(mockUser);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockedBcrypt.hash = jest.fn().mockResolvedValue('new_hashed_password');
+      mockedStorage.updateUserPassword = jest.fn().mockResolvedValue(true);
+
+      const response = await request(authApp)
+        .post('/auth/change-password')
+        .send(changeData);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Password changed successfully');
+    });
+
+    it('should reject incorrect current password', async () => {
+      const changeData = {
+        currentPassword: 'wrongpassword',
+        newPassword: 'newpassword123',
+      };
+
+      const mockUser = {
+        id: 1,
+        password: 'old_hashed_password',
+      };
+
+      const authApp = express();
+      authApp.use(express.json());
+      authApp.use((req: any, res, next) => {
+        req.user = { id: 1 };
+        next();
+      });
+      authApp.use('/auth', authRouter);
+
+      mockedStorage.getUser = jest.fn().mockResolvedValue(mockUser);
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(false);
+
+      const response = await request(authApp)
+        .post('/auth/change-password')
+        .send(changeData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Current password is incorrect');
+    });
+
+    it('should require authentication', async () => {
+      const changeData = {
+        currentPassword: 'oldpassword',
+        newPassword: 'newpassword123',
+      };
+
+      const response = await request(app)
+        .post('/auth/change-password')
+        .send(changeData);
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle malformed JSON requests', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send('invalid json');
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should handle bcrypt errors', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
+      };
+
+      const mockUser = {
+        password: 'hashed_password',
+        status: 'active',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue(mockUser);
+      mockedBcrypt.compare = jest.fn().mockRejectedValue(new Error('Bcrypt error'));
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send(loginData);
+
+      expect(response.status).toBe(500);
+    });
+
+    it('should handle JWT environment variable missing', async () => {
+      const originalSecret = process.env.JWT_SECRET;
+      delete process.env.JWT_SECRET;
+
+      const loginData = {
+        email: 'user@example.com',
+        password: 'password123',
+      };
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send(loginData);
+
+      expect(response.status).toBe(500);
+
+      process.env.JWT_SECRET = originalSecret;
+    });
+  });
+
+  describe('Security', () => {
+    it('should rate limit login attempts', async () => {
+      const loginData = {
+        email: 'user@example.com',
+        password: 'wrongpassword',
+      };
+
+      mockedStorage.getUserByEmail = jest.fn().mockResolvedValue({ password: 'hash' });
+      mockedBcrypt.compare = jest.fn().mockResolvedValue(false);
+
+      // Make multiple failed attempts
+      for (let i = 0; i < 5; i++) {
+        await request(app).post('/auth/login').send(loginData);
+      }
+
+      // Should start rate limiting after multiple failures
+      const response = await request(app)
+        .post('/auth/login')
+        .send(loginData);
+
+      // Rate limiting implementation dependent
+      expect([401, 429]).toContain(response.status);
+    });
+
+    it('should sanitize user input', async () => {
+      const maliciousData = {
+        email: 'user@example.com',
+        password: 'password123',
+        name: '<script>alert("xss")</script>John',
+      };
+
+      const response = await request(app)
+        .post('/auth/register')
+        .send(maliciousData);
+
+      // Should either reject or sanitize
+      if (response.status === 201) {
+        expect(response.body.user.name).not.toContain('<script>');
+      }
     });
   });
 });

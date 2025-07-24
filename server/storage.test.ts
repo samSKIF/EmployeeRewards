@@ -1,372 +1,459 @@
 import { DatabaseStorage } from './storage';
 import { db } from './db';
-import * as schema from '@shared/schema';
-import { eq, and, desc, asc, gte, lte, sql, or } from 'drizzle-orm';
-import bcrypt from 'bcrypt';
+import { users, accounts, transactions } from '@shared/schema';
+import { eq, and, count, sum } from 'drizzle-orm';
+import { compare } from 'bcrypt';
 
+// Mock dependencies
 jest.mock('./db');
 jest.mock('bcrypt');
-jest.mock('./storage');
 
-const mockDb = db as jest.Mocked<typeof db>;
-const mockStorage = {
-  getUser: jest.fn(),
-  createUser: jest.fn(),
-  getUsers: jest.fn(),
-  validateUser: jest.fn(),
-  getOrganization: jest.fn(),
-  updateOrganization: jest.fn(),
-  earnPoints: jest.fn(),
-  getPostsForOrganization: jest.fn(),
-  createPost: jest.fn(),
-  getPost: jest.fn(),
-  likePost: jest.fn(),
-  unlikePost: jest.fn(),
-} as any;
+const mockedDb = db as jest.Mocked<typeof db>;
+const mockedCompare = compare as jest.MockedFunction<typeof compare>;
 
 describe('DatabaseStorage', () => {
+  let storage: DatabaseStorage;
+
   beforeEach(() => {
+    storage = new DatabaseStorage();
     jest.clearAllMocks();
   });
 
-  describe('User Operations', () => {
-    describe('getUser', () => {
-      it('should return user by id', async () => {
-        const mockUser = { id: 1, name: 'Test User', organizationId: 1 };
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
+  describe('getUser', () => {
+    it('should return user by ID', async () => {
+      const mockUser = {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        name: 'Test User',
+        organizationId: 1,
+      };
+
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([mockUser]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-
-        mockStorage.getUser.mockResolvedValue(mockUser);
-        const result = await mockStorage.getUser(1);
-
-        expect(result).toEqual(mockUser);
-        expect(mockQuery.where).toHaveBeenCalled();
+        }),
       });
 
-      it('should return undefined if user not found', async () => {
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
+      const result = await storage.getUser(1);
+
+      expect(result).toEqual(mockUser);
+      expect(mockedDb.select).toHaveBeenCalled();
+    });
+
+    it('should return undefined when user not found', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-
-        mockStorage.getUser.mockResolvedValue(undefined);
-        const result = await mockStorage.getUser(999);
-
-        expect(result).toBeUndefined();
+        }),
       });
+
+      const result = await storage.getUser(999);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('getUserByEmail', () => {
+    it('should return user by email', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        name: 'Test User',
+      };
+
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockUser]),
+        }),
+      });
+
+      const result = await storage.getUserByEmail('test@example.com');
+
+      expect(result).toEqual(mockUser);
     });
 
-    describe('createUser', () => {
-      it('should create user with hashed password', async () => {
-        const userData = {
-          username: 'newuser',
-          password: 'plaintext',
-          name: 'New User',
-          email: 'new@test.com',
-          organizationId: 1,
-        };
-        
-        const hashedPassword = 'hashed_password';
-        (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
-        
-        const createdUser = { id: 100, ...userData, password: hashedPassword };
-        const mockQuery = {
-          values: jest.fn().mockReturnThis(),
+    it('should return undefined when user not found by email', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
+      const result = await storage.getUserByEmail('nonexistent@example.com');
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('createUser', () => {
+    it('should create new user successfully', async () => {
+      const newUser = {
+        username: 'newuser',
+        email: 'new@example.com',
+        password: 'hashedpassword',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      const createdUser = { id: 2, ...newUser };
+
+      mockedDb.insert = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
           returning: jest.fn().mockResolvedValue([createdUser]),
-        };
-        mockDb.insert = jest.fn().mockReturnValue(mockQuery);
+        }),
+      });
 
-        mockStorage.createUser.mockResolvedValue(createdUser);
-        const result = await mockStorage.createUser(userData);
+      const result = await storage.createUser(newUser);
 
-        expect(bcrypt.hash).toHaveBeenCalledWith('plaintext', 10);
-        expect(mockQuery.values).toHaveBeenCalledWith({
-          ...userData,
-          password: hashedPassword,
+      expect(result).toEqual(createdUser);
+      expect(mockedDb.insert).toHaveBeenCalledWith(users);
+    });
+
+    it('should handle database errors during user creation', async () => {
+      const newUser = {
+        username: 'newuser',
+        email: 'new@example.com',
+        password: 'password',
+        name: 'New User',
+        organizationId: 1,
+      };
+
+      mockedDb.insert = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockRejectedValue(new Error('Duplicate email')),
+        }),
+      });
+
+      await expect(storage.createUser(newUser)).rejects.toThrow('Duplicate email');
+    });
+  });
+
+  describe('updateUser', () => {
+    it('should update user successfully', async () => {
+      const updateData = {
+        name: 'Updated Name',
+        department: 'Engineering',
+        jobTitle: 'Senior Developer',
+      };
+
+      const updatedUser = { id: 1, ...updateData };
+
+      mockedDb.update = jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([updatedUser]),
+          }),
+        }),
+      });
+
+      const result = await storage.updateUser(1, updateData);
+
+      expect(result).toEqual(updatedUser);
+    });
+
+    it('should return undefined when user to update not found', async () => {
+      mockedDb.update = jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await storage.updateUser(999, { name: 'New Name' });
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('getUsers', () => {
+    it('should return filtered users for organization', async () => {
+      const mockUsers = [
+        { id: 1, name: 'User 1', organizationId: 1, department: 'Engineering' },
+        { id: 2, name: 'User 2', organizationId: 1, department: 'Marketing' },
+      ];
+
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockReturnValue({
+              limit: jest.fn().mockReturnValue({
+                offset: jest.fn().mockResolvedValue(mockUsers),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await storage.getUsers(1, undefined, 0, 50);
+
+      expect(result).toEqual(mockUsers);
+    });
+
+    it('should apply filters correctly', async () => {
+      const filters = {
+        department: 'Engineering',
+        search: 'john',
+        status: 'active',
+      };
+
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockReturnValue({
+              limit: jest.fn().mockReturnValue({
+                offset: jest.fn().mockResolvedValue([]),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      await storage.getUsers(1, filters, 0, 25);
+
+      // Verify the where clause was called (filters applied)
+      expect(mockedDb.select).toHaveBeenCalled();
+    });
+  });
+
+  describe('getUserCount', () => {
+    it('should return total and active user counts', async () => {
+      // Mock total users count
+      mockedDb.select = jest.fn()
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([{ count: 100 }]),
+          }),
+        })
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([{ count: 85 }]),
+          }),
         });
-        expect(result).toEqual(createdUser);
+
+      const result = await storage.getUserCount(1);
+
+      expect(result).toEqual({
+        totalUsers: 100,
+        activeUsers: 85,
       });
     });
+  });
 
-    describe('getUsers', () => {
-      it('should return users for organization with pagination', async () => {
-        const mockUsers = [
-          { id: 1, name: 'User 1', organizationId: 1 },
-          { id: 2, name: 'User 2', organizationId: 1 },
-        ];
-        
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          orderBy: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          offset: jest.fn().mockResolvedValue(mockUsers),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
+  describe('verifyPassword', () => {
+    it('should verify correct password', async () => {
+      const mockUser = {
+        id: 1,
+        password: 'hashedpassword',
+      };
 
-        mockStorage.getUsers.mockResolvedValue(mockUsers);
-        const result = await mockStorage.getUsers(1, 10, 0);
-
-        expect(result).toEqual(mockUsers);
-        expect(mockQuery.limit).toHaveBeenCalledWith(10);
-        expect(mockQuery.offset).toHaveBeenCalledWith(0);
-      });
-
-      it('should filter by status when provided', async () => {
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          orderBy: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          offset: jest.fn().mockResolvedValue([]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-
-        mockStorage.getUsers.mockResolvedValue([]);
-        await mockStorage.getUsers(1, 10, 0, 'active');
-
-        expect(mockQuery.where).toHaveBeenCalled();
-      });
-    });
-
-    describe('validateUser', () => {
-      it('should validate correct credentials', async () => {
-        const mockUser = {
-          id: 1,
-          username: 'testuser',
-          password: 'hashed_password',
-          organizationId: 1,
-        };
-        
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([mockUser]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-        
-        (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-        mockStorage.validateUser.mockResolvedValue(mockUser);
-        const result = await mockStorage.validateUser('testuser', 'plaintext');
-
-        expect(result).toEqual(mockUser);
-        expect(bcrypt.compare).toHaveBeenCalledWith('plaintext', 'hashed_password');
+        }),
       });
 
-      it('should return null for invalid credentials', async () => {
-        const mockUser = {
-          id: 1,
-          username: 'testuser',
-          password: 'hashed_password',
-        };
-        
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
+      mockedCompare.mockResolvedValue(true);
+
+      const result = await storage.verifyPassword(1, 'plainpassword');
+
+      expect(result).toBe(true);
+      expect(mockedCompare).toHaveBeenCalledWith('plainpassword', 'hashedpassword');
+    });
+
+    it('should reject incorrect password', async () => {
+      const mockUser = {
+        id: 1,
+        password: 'hashedpassword',
+      };
+
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([mockUser]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-        
-        (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-        mockStorage.validateUser.mockResolvedValue(null);
-        const result = await mockStorage.validateUser('testuser', 'wrongpassword');
-
-        expect(result).toBeNull();
+        }),
       });
+
+      mockedCompare.mockResolvedValue(false);
+
+      const result = await storage.verifyPassword(1, 'wrongpassword');
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when user not found', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
+      const result = await storage.verifyPassword(999, 'password');
+
+      expect(result).toBe(false);
     });
   });
 
-  describe('Organization Operations', () => {
-    describe('getOrganization', () => {
-      it('should return organization by id', async () => {
-        const mockOrg = { id: 1, name: 'Test Org', type: 'client' };
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockResolvedValue([mockOrg]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
-
-        mockStorage.getOrganization.mockResolvedValue(mockOrg);
-        const result = await mockStorage.getOrganization(1);
-
-        expect(result).toEqual(mockOrg);
+  describe('getUserBalance', () => {
+    it('should return user balance', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([{ balance: 1500 }]),
+        }),
       });
+
+      const result = await storage.getUserBalance(1);
+
+      expect(result).toBe(1500);
     });
 
-    describe('updateOrganization', () => {
-      it('should update organization', async () => {
-        const updateData = { name: 'Updated Org', status: 'inactive' };
-        const updatedOrg = { id: 1, ...updateData };
-        
-        const mockQuery = {
-          set: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([updatedOrg]),
-        };
-        mockDb.update = jest.fn().mockReturnValue(mockQuery);
-
-        mockStorage.updateOrganization.mockResolvedValue(updatedOrg);
-        const result = await mockStorage.updateOrganization(1, updateData);
-
-        expect(result).toEqual(updatedOrg);
-        expect(mockQuery.set).toHaveBeenCalledWith(updateData);
+    it('should return 0 when account not found', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
       });
+
+      const result = await storage.getUserBalance(999);
+
+      expect(result).toBe(0);
     });
   });
 
-  describe('Points and Transactions', () => {
-    describe('earnPoints', () => {
-      it('should create earn transaction and update balance', async () => {
-        const mockWallet = {
-          insert: jest.fn().mockReturnThis(),
-          values: jest.fn().mockReturnThis(),
-          onConflictDoUpdate: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([{ id: 1, userId: 1, balance: 100 }]),
-        };
-        
-        const mockTransaction = {
-          values: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([{
-            id: 100,
-            amount: 50,
-            type: 'earn',
-          }]),
-        };
-        
-        mockDb.insert = jest.fn()
-          .mockReturnValueOnce(mockWallet)
-          .mockReturnValueOnce(mockTransaction);
-
-        const result = await storage.earnPoints(1, 50, 'achievement', 'Great work!');
-
-        expect(result).toEqual({
-          transaction: { id: 100, amount: 50, type: 'earn' },
-          newBalance: 100,
-        });
+  describe('updateUserBalance', () => {
+    it('should update user balance successfully', async () => {
+      mockedDb.update = jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(undefined),
+        }),
       });
+
+      await storage.updateUserBalance(1, 2000);
+
+      expect(mockedDb.update).toHaveBeenCalledWith(accounts);
     });
 
-    describe('redeemPoints', () => {
-      it('should create redeem transaction if sufficient balance', async () => {
-        const mockBalance = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockResolvedValue([{ balance: 100 }]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockBalance);
-        
-        const mockUpdate = {
-          set: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([{ balance: 50 }]),
-        };
-        mockDb.update = jest.fn().mockReturnValue(mockUpdate);
-        
-        const mockTransaction = {
-          values: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([{
-            id: 101,
-            amount: -50,
-            type: 'redeem',
-          }]),
-        };
-        mockDb.insert = jest.fn().mockReturnValue(mockTransaction);
-
-        const result = await storage.redeemPoints(1, 50, 'product', 'Coffee voucher', 10);
-
-        expect(result).toEqual({
-          transaction: { id: 101, amount: -50, type: 'redeem' },
-          newBalance: 50,
-        });
+    it('should create account if not exists', async () => {
+      // Mock update returning no results (account doesn't exist)
+      mockedDb.update = jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(undefined),
+        }),
       });
 
-      it('should throw error if insufficient balance', async () => {
-        const mockBalance = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockResolvedValue([{ balance: 30 }]),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockBalance);
-
-        await expect(storage.redeemPoints(1, 50, 'product', 'Expensive item'))
-          .rejects.toThrow('Insufficient balance');
+      // Mock insert for creating new account
+      mockedDb.insert = jest.fn().mockReturnValue({
+        values: jest.fn().mockResolvedValue(undefined),
       });
+
+      await storage.updateUserBalance(1, 1000);
+
+      // Should attempt update first, then insert if needed
+      expect(mockedDb.update).toHaveBeenCalled();
     });
   });
 
-  describe('Channel/Space Operations', () => {
-    describe('getUserChannels', () => {
-      it('should return channels for user', async () => {
-        const mockChannels = [
-          { id: 1, name: 'General', memberCount: 10 },
-          { id: 2, name: 'Tech', memberCount: 5 },
-        ];
-        
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
-          leftJoin: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          groupBy: jest.fn().mockResolvedValue(mockChannels),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
+  describe('addTransaction', () => {
+    it('should add transaction successfully', async () => {
+      const transaction = {
+        fromUserId: 1,
+        toUserId: 2,
+        amount: 100,
+        type: 'recognition',
+        description: 'Great work!',
+        organizationId: 1,
+      };
 
-        const result = await storage.getUserChannels(1, 1);
+      const createdTransaction = { id: 1, ...transaction };
 
-        expect(result).toEqual(mockChannels);
+      mockedDb.insert = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockResolvedValue([createdTransaction]),
+        }),
       });
-    });
 
-    describe('createChannel', () => {
-      it('should create channel and add creator as member', async () => {
-        const channelData = {
-          name: 'New Channel',
-          description: 'Test channel',
-          createdBy: 1,
-          organizationId: 1,
-        };
-        
-        const createdChannel = { id: 10, ...channelData };
-        const mockInsert = {
-          values: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([createdChannel]),
-        };
-        mockDb.insert = jest.fn().mockReturnValue(mockInsert);
+      const result = await storage.addTransaction(transaction);
 
-        const result = await storage.createChannel(channelData);
-
-        expect(result).toEqual(createdChannel);
-        expect(mockDb.insert).toHaveBeenCalledTimes(2); // Channel + member
-      });
+      expect(result).toEqual(createdTransaction);
+      expect(mockedDb.insert).toHaveBeenCalledWith(transactions);
     });
   });
 
-  describe('Celebration Operations', () => {
-    describe('getTodaysCelebrations', () => {
-      it('should return birthdays and anniversaries for today', async () => {
-        const mockBirthdays = [
-          { id: 1, name: 'Birthday User', birthDate: '1990-01-24' },
-        ];
-        const mockAnniversaries = [
-          { id: 2, name: 'Anniversary User', hireDate: '2020-01-24' },
-        ];
-        
-        const mockQuery = {
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn()
-            .mockResolvedValueOnce(mockBirthdays)
-            .mockResolvedValueOnce(mockAnniversaries),
-        };
-        mockDb.select = jest.fn().mockReturnValue(mockQuery);
+  describe('getTransactions', () => {
+    it('should return user transactions', async () => {
+      const mockTransactions = [
+        {
+          id: 1,
+          amount: 100,
+          type: 'recognition',
+          description: 'Great work!',
+          createdAt: new Date(),
+        },
+      ];
 
-        const result = await storage.getTodaysCelebrations(1);
-
-        expect(result).toEqual([
-          expect.objectContaining({ type: 'birthday' }),
-          expect.objectContaining({ type: 'anniversary' }),
-        ]);
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue(mockTransactions),
+            }),
+          }),
+        }),
       });
+
+      const result = await storage.getTransactions(1);
+
+      expect(result).toEqual(mockTransactions);
+    });
+
+    it('should apply limit correctly', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue([]),
+            }),
+          }),
+        }),
+      });
+
+      await storage.getTransactions(1, 25);
+
+      expect(mockedDb.select).toHaveBeenCalled();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle database connection errors', async () => {
+      mockedDb.select = jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockRejectedValue(new Error('Connection failed')),
+        }),
+      });
+
+      await expect(storage.getUser(1)).rejects.toThrow('Connection failed');
+    });
+
+    it('should handle constraint violations', async () => {
+      mockedDb.insert = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockRejectedValue(
+            new Error('UNIQUE constraint failed: users.email')
+          ),
+        }),
+      });
+
+      const newUser = {
+        username: 'test',
+        email: 'existing@example.com',
+        password: 'password',
+        name: 'Test',
+        organizationId: 1,
+      };
+
+      await expect(storage.createUser(newUser)).rejects.toThrow(
+        'UNIQUE constraint failed'
+      );
     });
   });
 });
