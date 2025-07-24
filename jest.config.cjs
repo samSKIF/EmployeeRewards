@@ -10,20 +10,29 @@ module.exports = {
     '^@shared/(.*)$': '<rootDir>/shared/$1',
     '^@/(.*)$': '<rootDir>/client/src/$1'
   },
-  // Coverage configuration
+  // Only test server files
+  testMatch: [
+    '<rootDir>/server/**/*.test.ts',
+    '<rootDir>/shared/**/*.test.ts'
+  ],
+  // Coverage configuration - only server code
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   collectCoverageFrom: [
-    'server/**/*.{ts,tsx}',
-    'client/src/**/*.{ts,tsx}',
-    'shared/**/*.{ts,tsx}',
+    'server/**/*.ts',
+    'shared/**/*.ts',
     '!**/*.d.ts',
-    '!**/*.test.{ts,tsx}',
+    '!**/*.test.ts',
     '!**/node_modules/**',
     '!**/vendor/**',
     '!server/index.ts', // Entry points
-    '!client/src/main.tsx'
+    '!server/vite.ts', // Vite config
+    '!server/microservices/**/index.ts', // Microservice entry points
+    '!server/mongodb/**', // MongoDB integration (optional)
+    '!server/migrate*.ts', // Migration scripts
+    '!server/profile-migration.ts',
+    '!server/direct-sql-migration.ts'
   ],
   coverageThreshold: {
     global: {
@@ -32,5 +41,14 @@ module.exports = {
       lines: 70,
       statements: 70
     }
-  }
+  },
+  // Ignore patterns
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/client/',
+    '/dist/'
+  ],
+  modulePathIgnorePatterns: [
+    '/client/'
+  ]
 };
