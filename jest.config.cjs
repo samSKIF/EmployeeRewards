@@ -1,10 +1,10 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
       diagnostics: false
-    }
+    }]
   },
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/shared/$1',

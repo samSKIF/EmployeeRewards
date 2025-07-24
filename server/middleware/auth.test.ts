@@ -73,11 +73,11 @@ describe('Auth Middleware', () => {
       mockJwt.verify.mockReturnValue({ id: 1, email: 'test@example.com' });
       
       // Mock the database query
-      const mockSelect = {
+      const mockQuery = {
         from: jest.fn().mockReturnThis(),
         where: jest.fn().mockResolvedValue([mockUser]),
       };
-      mockDb.select.mockReturnValue(mockSelect as any);
+      mockDb.select.mockReturnValue(mockQuery);
       
       await verifyToken(req, mockRes, mockNext);
       

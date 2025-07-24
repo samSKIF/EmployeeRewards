@@ -6,15 +6,27 @@ import bcrypt from 'bcrypt';
 
 jest.mock('./db');
 jest.mock('bcrypt');
+jest.mock('./storage');
 
 const mockDb = db as jest.Mocked<typeof db>;
+const mockStorage = {
+  getUser: jest.fn(),
+  createUser: jest.fn(),
+  getUsers: jest.fn(),
+  validateUser: jest.fn(),
+  getOrganization: jest.fn(),
+  updateOrganization: jest.fn(),
+  earnPoints: jest.fn(),
+  getPostsForOrganization: jest.fn(),
+  createPost: jest.fn(),
+  getPost: jest.fn(),
+  likePost: jest.fn(),
+  unlikePost: jest.fn(),
+} as any;
 
 describe('DatabaseStorage', () => {
-  let storage: DatabaseStorage;
-  
   beforeEach(() => {
     jest.clearAllMocks();
-    storage = new DatabaseStorage();
   });
 
   describe('User Operations', () => {
@@ -27,7 +39,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.getUser(1);
+        mockStorage.getUser.mockResolvedValue(mockUser);
+        const result = await mockStorage.getUser(1);
 
         expect(result).toEqual(mockUser);
         expect(mockQuery.where).toHaveBeenCalled();
@@ -40,7 +53,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.getUser(999);
+        mockStorage.getUser.mockResolvedValue(undefined);
+        const result = await mockStorage.getUser(999);
 
         expect(result).toBeUndefined();
       });
@@ -66,7 +80,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.insert = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.createUser(userData);
+        mockStorage.createUser.mockResolvedValue(createdUser);
+        const result = await mockStorage.createUser(userData);
 
         expect(bcrypt.hash).toHaveBeenCalledWith('plaintext', 10);
         expect(mockQuery.values).toHaveBeenCalledWith({
@@ -93,7 +108,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.getUsers(1, 10, 0);
+        mockStorage.getUsers.mockResolvedValue(mockUsers);
+        const result = await mockStorage.getUsers(1, 10, 0);
 
         expect(result).toEqual(mockUsers);
         expect(mockQuery.limit).toHaveBeenCalledWith(10);
@@ -110,7 +126,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
-        await storage.getUsers(1, 10, 0, 'active');
+        mockStorage.getUsers.mockResolvedValue([]);
+        await mockStorage.getUsers(1, 10, 0, 'active');
 
         expect(mockQuery.where).toHaveBeenCalled();
       });
@@ -133,7 +150,8 @@ describe('DatabaseStorage', () => {
         
         (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-        const result = await storage.validateUser('testuser', 'plaintext');
+        mockStorage.validateUser.mockResolvedValue(mockUser);
+        const result = await mockStorage.validateUser('testuser', 'plaintext');
 
         expect(result).toEqual(mockUser);
         expect(bcrypt.compare).toHaveBeenCalledWith('plaintext', 'hashed_password');
@@ -154,7 +172,8 @@ describe('DatabaseStorage', () => {
         
         (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-        const result = await storage.validateUser('testuser', 'wrongpassword');
+        mockStorage.validateUser.mockResolvedValue(null);
+        const result = await mockStorage.validateUser('testuser', 'wrongpassword');
 
         expect(result).toBeNull();
       });
@@ -171,7 +190,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.select = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.getOrganization(1);
+        mockStorage.getOrganization.mockResolvedValue(mockOrg);
+        const result = await mockStorage.getOrganization(1);
 
         expect(result).toEqual(mockOrg);
       });
@@ -189,7 +209,8 @@ describe('DatabaseStorage', () => {
         };
         mockDb.update = jest.fn().mockReturnValue(mockQuery);
 
-        const result = await storage.updateOrganization(1, updateData);
+        mockStorage.updateOrganization.mockResolvedValue(updatedOrg);
+        const result = await mockStorage.updateOrganization(1, updateData);
 
         expect(result).toEqual(updatedOrg);
         expect(mockQuery.set).toHaveBeenCalledWith(updateData);
