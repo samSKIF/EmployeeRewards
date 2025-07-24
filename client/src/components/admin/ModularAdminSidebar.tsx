@@ -38,14 +38,7 @@ const ModularAdminSidebar: React.FC<ModularAdminSidebarProps> = ({
   }
 
   // Get menu configuration
-  console.log('ModularAdminSidebar - organizationFeatures:', organizationFeatures);
-  console.log('ModularAdminSidebar - organizationFeatures type:', typeof organizationFeatures, Array.isArray(organizationFeatures));
-  console.log('ModularAdminSidebar - organizationFeatures length:', organizationFeatures?.length);
-  console.log('ModularAdminSidebar - first feature:', organizationFeatures?.[0]);
-  
   const menuConfig = createAdminMenuConfig(location, organizationFeatures);
-  console.log('ModularAdminSidebar - menuConfig sections before filter:', menuConfig.sections.length);
-  console.log('ModularAdminSidebar - menuConfig sections:', menuConfig.sections.map(s => ({ id: s.id, title: s.title, requiresFeature: s.requiresFeature })));
 
   // Navigation helper
   const navigateTo = (path: string) => {
