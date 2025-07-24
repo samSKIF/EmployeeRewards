@@ -7,7 +7,7 @@ import {
 } from '../middleware/auth';
 import { storage } from '../storage';
 import { db, pool } from '../db';
-import { users, organizations, interestChannels } from '@shared/schema';
+import { users, interestChannels } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 import { logger } from '@shared/logger';
 

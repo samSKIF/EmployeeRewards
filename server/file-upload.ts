@@ -2,7 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { fileURLToPath } from 'url';
+
 
 // Create uploads directory in the root of the project
 const uploadsDir = path.join(process.cwd(), 'server', 'uploads');

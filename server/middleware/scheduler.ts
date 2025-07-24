@@ -2,8 +2,8 @@ import cron from "node-cron";
  import { db } from "../db";
  import { users, accounts } from "@shared/schema";
  import { eq, sql } from "drizzle-orm";
- import { awardBirthdayPoints } from '../storage';
-+import { logger } from "@shared/logger";
+import { awardBirthdayPoints } from '../storage';
+import { logger } from "@shared/logger";
 
  // Format for date comparison in PostgreSQL
  const formatPostgresDate = (date: Date) => {
@@ -11,14 +11,12 @@ import cron from "node-cron";
  };
 
  // Schedule birthday rewards job - runs every day at 8:00 AM
- export const scheduleBirthdayRewards = () => {
--  console.log("🎂 Scheduling birthday rewards job (daily at 08:00)");
-+  logger.info("🎂 Scheduling birthday rewards job (daily at 08:00)");
+export const scheduleBirthdayRewards = () => {
+  logger.info("🎂 Scheduling birthday rewards job (daily at 08:00)");
 
    cron.schedule("0 8 * * *", async () => {
      try {
--      console.log("🎂 Running birthday rewards job...");
-+      logger.info("🎂 Running birthday rewards job...");
+      logger.info("🎂 Running birthday rewards job...");
        const today = new Date();
        const monthDay = formatPostgresDate(today);
 
@@ -31,19 +29,16 @@ import cron from "node-cron";
                EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
          );
 
--      console.log(`Found ${birthdayUsers.length} users with birthdays today`);
-+      logger.info(`Found ${birthdayUsers.length} users with birthdays today`);
+      logger.info(`Found ${birthdayUsers.length} users with birthdays today`);
 
        // Award points to each user
        for (const user of birthdayUsers) {
          await awardBirthdayPoints(user.id);
        }
 
--      console.log("🎂 Birthday rewards job completed successfully");
-+      logger.info("🎂 Birthday rewards job completed successfully");
+      logger.info("🎂 Birthday rewards job completed successfully");
      } catch (error) {
--      console.error("Error in birthday rewards job:", error);
-+      logger.error("Error in birthday rewards job:", error);
+      logger.error("Error in birthday rewards job:", error);
      }
    });
 

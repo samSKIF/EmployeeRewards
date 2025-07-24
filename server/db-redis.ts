@@ -1,6 +1,6 @@
 
- import Redis from 'ioredis';
-+import { logger } from '@shared/logger';
+import Redis from 'ioredis';
+import { logger } from '@shared/logger';
 
  // Redis is now optional - only connect if REDIS_URL is provided
  const isRedisEnabled = !!process.env.REDIS_URL;
@@ -16,21 +16,18 @@
      if (this.isEnabled) {
        this.client = new Redis(process.env.REDIS_URL!, {
          maxRetriesPerRequest: 3,
-         retryDelayOnFailover: 100,
          lazyConnect: true,
        });
 
        this.client.on('connect', () => {
--        console.log('Connected to Redis');
-+        logger.info('Connected to Redis');
+        logger.info('Connected to Redis');
        });
 
        this.client.on('error', (err) => {
          console.error('Redis connection error:', err);
        });
      } else {
--      console.log('Redis disabled - no REDIS_URL environment variable set');
-+      logger.info('Redis disabled - no REDIS_URL environment variable set');
+      logger.info('Redis disabled - no REDIS_URL environment variable set');
      }
    }
 
@@ -79,8 +76,7 @@
    public async disconnect(): Promise<void> {
      if (this.isEnabled && this.client) {
        await this.client.quit();
--      console.log('Disconnected from Redis');
-+      logger.info('Disconnected from Redis');
+      logger.info('Disconnected from Redis');
      }
    }
  }

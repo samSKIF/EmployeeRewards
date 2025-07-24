@@ -237,7 +237,6 @@ export default function CelebrationCenter() {
         })()}
 
         {/* Action buttons */}
-        {true && (
           <>
             <div className="flex gap-2 pt-2">
               <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -530,7 +529,6 @@ export default function CelebrationCenter() {
               )}
             </div>
           </>
-        )}
       </CardContent>
     </Card>
   );

@@ -180,7 +180,7 @@ export default function QuestionPreview({
           </select>
         );
 
-      case 'ranking':
+      case 'ranking': {
         const defaultItems = ['Option 1', 'Option 2', 'Option 3'];
         const rankingItems = question.options?.length
           ? question.options
@@ -214,6 +214,7 @@ export default function QuestionPreview({
             ))}
           </div>
         );
+      }
 
       case 'slider':
         return (
