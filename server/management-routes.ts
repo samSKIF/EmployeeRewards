@@ -189,7 +189,7 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
 // Create new company
 router.post(
   '/companies',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageCompanies'),
   async (req, res) => {
     try {
@@ -219,7 +219,7 @@ router.post(
 // Update company features and settings
 router.patch(
   '/companies/:id',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageCompanies'),
   async (req, res) => {
     try {
@@ -245,7 +245,7 @@ router.patch(
 // Credit company wallet
 router.post(
   '/companies/:id/credit',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageFinances'),
   async (req, res) => {
     try {
@@ -350,7 +350,7 @@ router.get('/organizations/:id', async (req, res) => {
 // Get all merchants
 router.get(
   '/merchants',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageMerchants'),
   async (req, res) => {
     try {
@@ -368,7 +368,7 @@ router.get(
 // Create new merchant
 router.post(
   '/merchants',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageMerchants'),
   async (req, res) => {
     try {
@@ -397,7 +397,7 @@ router.post(
 // Get all products
 router.get(
   '/products',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageProducts'),
   async (req, res) => {
     try {
@@ -440,7 +440,7 @@ router.get(
 // Create new product
 router.post(
   '/products',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageProducts'),
   async (req, res) => {
     try {
@@ -463,7 +463,7 @@ router.post(
 // Get all orders with details
 router.get(
   '/orders',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageOrders'),
   async (req, res) => {
     try {
@@ -519,7 +519,7 @@ router.get(
 // Update order status
 router.patch(
   '/orders/:id/status',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('manageOrders'),
   async (req, res) => {
     try {
@@ -549,7 +549,7 @@ router.patch(
 // Get company engagement analytics
 router.get(
   '/analytics/companies/:id',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('viewAnalytics'),
   async (req, res) => {
     try {
@@ -598,7 +598,7 @@ router.get(
 // Get overall platform stats
 router.get(
   '/analytics/platform',
-  verifyManagementToken,
+  verifyCorporateAdmin,
   checkPermission('viewAnalytics'),
   async (req, res) => {
     try {

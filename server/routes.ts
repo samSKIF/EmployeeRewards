@@ -74,7 +74,7 @@ import path from 'path';
 // Import modular routes
 import { registerRoutes as registerModularRoutes } from './routes/index';
 import { logger } from '@shared/logger';
-import managementRoutes from './management-routes-simple';
+import managementRoutes from './management-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register core modular routes (auth, users, admin, celebrations, points, channels)
