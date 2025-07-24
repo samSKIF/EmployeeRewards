@@ -917,18 +917,23 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
     setIsLoading(true);
 
     try {
-      console.log("Submitting employee update:", formData);
+      console.log("=== EMPLOYEE UPDATE SUBMISSION ===");
+      console.log("Employee ID:", employee.id);
+      console.log("Form data being sent:", JSON.stringify(formData, null, 2));
       
       const response = await apiRequest('PATCH', `/api/admin/employees/${employee.id}`, formData);
       const updatedData = await response.json();
-      console.log("Update successful:", updatedData);
+      
+      console.log("=== UPDATE RESPONSE ===");
+      console.log("Response data:", JSON.stringify(updatedData, null, 2));
+      console.log("========================");
       
       toast({
         title: "Success",
         description: "Employee information updated successfully",
       });
       
-      onUpdate();
+      await onUpdate();
       onClose();
     } catch (error: any) {
       console.error("Update error:", error);
@@ -1945,12 +1950,17 @@ function EmployeeDirectory() {
                 setIsDialogOpen(false);
                 setSelectedEmployee(null);
               }}
-              onUpdate={() => {
-                queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-                toast({
-                  title: "Success",
-                  description: "Employee updated successfully",
-                });
+              onUpdate={async () => {
+                // Invalidate and refetch user data - must match exact query key
+                console.log("Invalidating queries after update...");
+                await queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
+                await queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+                await queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
+                // Force immediate refetch
+                await queryClient.refetchQueries({ queryKey: ['/api/users?limit=500'] });
+                
+                setIsDialogOpen(false);
+                setSelectedEmployee(null);
               }}
             />
           )}
