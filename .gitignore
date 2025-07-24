@@ -4,3 +4,20 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Logs
+*.log
+
+# Development screenshots and assets
+attached_assets/
+image_*.png
+*screenshot*.png
+
+# Backup files
+*.bak
+
+# Temporary files
+*.tmp
+
+# Local environment overrides
+.env.local
