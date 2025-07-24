@@ -302,3 +302,8 @@ export function useOrganizationFeatures() {
     { featureKey: 'marketplace', isEnabled: true }
   ];
 }
+
+// Export the config function for use in other components like TopNavbar
+export const getAdminMenuConfig = AdminSidebarConfig;
+
+export default AdminSidebarConfig;

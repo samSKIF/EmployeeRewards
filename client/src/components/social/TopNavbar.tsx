@@ -29,6 +29,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useBranding } from '@/context/BrandingContext';
+import { getAdminMenuConfig } from '@/components/admin/AdminSidebarConfig';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -201,49 +202,28 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     },
   ];
 
-  // Admin dropdown menu items
-  const adminItems = [
-    {
-      icon: Shield,
-      label: t('admin.dashboard'),
-      onClick: () => navigateTo('/admin/dashboard'),
-    },
-    {
-      icon: Users,
-      label: t('admin.employees'),
-      onClick: () => navigateTo('/admin/employees'),
-    },
-    {
-      icon: CalendarDays,
-      label: t('admin.leaveManagement'),
-      onClick: () => navigateTo('/admin/leave-management'),
-    },
-    {
-      icon: Award,
-      label: t('admin.recognitionSettings'),
-      onClick: () => navigateTo('/admin/recognition-settings'),
-    },
-    {
-      icon: ClipboardList,
-      label: t('admin.onboarding'),
-      onClick: () => navigateTo('/admin/onboarding'),
-    },
-    {
-      icon: Palette,
-      label: t('admin.branding'),
-      onClick: () => navigateTo('/admin/branding'),
-    },
-    {
-      icon: Store,
-      label: t('admin.shop'),
-      onClick: () => navigateTo('/admin/shop/config'),
-    },
-    {
-      icon: FileText,
-      label: t('admin.surveys'),
-      onClick: () => navigateTo('/admin/surveys'),
-    },
-  ];
+  // Get modular admin menu config
+  const adminMenuConfig = getAdminMenuConfig(location);
+  
+  // Flatten admin menu items from all sections for dropdown
+  const adminItems = adminMenuConfig.sections.flatMap(section => {
+    // Add section header as a disabled item if it has items
+    const sectionItems = section.items || [];
+    if (sectionItems.length === 0) return [];
+    
+    return [
+      // Section divider
+      { isDivider: true, sectionTitle: section.title },
+      // Section items
+      ...sectionItems.map(item => ({
+        icon: item.icon,
+        label: item.label,
+        onClick: () => navigateTo(item.route),
+        route: item.route,
+        description: item.description
+      }))
+    ];
+  });
 
   return (
     <div className="bg-gray-100 pt-2 pb-1 px-4 flex justify-center">
@@ -444,12 +424,24 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>{t('navigation.admin')}</DropdownMenuLabel>
-                  {adminItems.map((item, index) => (
-                    <DropdownMenuItem key={index} onClick={item.onClick}>
-                      <item.icon className="w-4 h-4 mr-2" />
-                      <span>{item.label}</span>
-                    </DropdownMenuItem>
-                  ))}
+                  {adminItems.map((item, index) => {
+                    if (item.isDivider) {
+                      return (
+                        <div key={index}>
+                          {index > 0 && <DropdownMenuSeparator />}
+                          <DropdownMenuLabel className="text-xs text-gray-500 font-semibold px-2 py-1">
+                            {item.sectionTitle}
+                          </DropdownMenuLabel>
+                        </div>
+                      );
+                    }
+                    return (
+                      <DropdownMenuItem key={index} onClick={item.onClick}>
+                        <item.icon className="w-4 h-4 mr-2" />
+                        <span>{item.label}</span>
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </>
               )}
 
