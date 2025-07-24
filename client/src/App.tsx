@@ -161,6 +161,11 @@ function App() {
                       <AdminEmployeesGroups />
                     </SocialLayout>
                   </Route>
+                  <Route path="/admin-employees-groups">
+                    <SocialLayout>
+                      <AdminEmployeesGroups />
+                    </SocialLayout>
+                  </Route>
                   <Route path="/admin/permissions">
                     <SocialLayout>
                       <AdminPermissions />

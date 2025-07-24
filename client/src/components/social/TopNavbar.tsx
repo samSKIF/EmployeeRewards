@@ -236,8 +236,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         {
           icon: Users,
           label: 'Employees',
-          onClick: () => navigateTo('/admin/employees'),
-          route: '/admin/employees',
+          onClick: () => navigateTo('/admin-employees-groups'),
+          route: '/admin-employees-groups',
           description: 'Manage team members and employee data'
         },
         {
@@ -264,8 +264,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         {
           icon: Network,
           label: 'Spaces & Groups',
-          onClick: () => navigateTo('/admin/spaces'),
-          route: '/admin/spaces',
+          onClick: () => navigateTo('/admin-employees-groups'),
+          route: '/admin-employees-groups',
           description: 'Manage workplace communities'
         }
       ]
