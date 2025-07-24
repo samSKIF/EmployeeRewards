@@ -29,9 +29,6 @@ const ModularAdminSidebar: React.FC<ModularAdminSidebarProps> = ({
   const { t } = useTranslation();
   const organizationFeatures = useOrganizationFeatures();
   
-  // Add debug logging to track feature changes
-  console.log('ModularAdminSidebar render - organizationFeatures:', organizationFeatures);
-  
   // Track which sections are collapsed
   const [collapsedSections, setCollapsedSections] = useState<CollapsedSections>({});
 
