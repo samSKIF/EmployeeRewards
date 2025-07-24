@@ -18,6 +18,8 @@ export function useOrganizationFeatures(): OrganizationFeature[] {
     cacheTime: 0, // Don't cache
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
+    refetchInterval: 3000, // Poll every 3 seconds for real-time updates
+    refetchIntervalInBackground: true, // Continue polling when tab is in background
     placeholderData: []
   });
 
