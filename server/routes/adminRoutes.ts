@@ -420,11 +420,17 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     }
     
     if (updateData.allowedSites !== undefined) {
-      dbUpdateData.allowed_sites = JSON.stringify(updateData.allowedSites);
+      // PostgreSQL array format - convert array to PostgreSQL array literal
+      dbUpdateData.allowed_sites = updateData.allowedSites.length > 0 
+        ? `{${updateData.allowedSites.map(s => `"${s}"`).join(',')}}`
+        : '{}';
     }
     
     if (updateData.allowedDepartments !== undefined) {
-      dbUpdateData.allowed_departments = JSON.stringify(updateData.allowedDepartments);
+      // PostgreSQL array format - convert array to PostgreSQL array literal
+      dbUpdateData.allowed_departments = updateData.allowedDepartments.length > 0
+        ? `{${updateData.allowedDepartments.map(d => `"${d}"`).join(',')}}`
+        : '{}';
     }
 
     // Update using raw SQL to ensure proper field mapping
@@ -491,8 +497,8 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
       avatarUrl: updatedEmployee.avatar_url,
       createdAt: updatedEmployee.created_at,
       adminScope: updatedEmployee.admin_scope,
-      allowedSites: typeof updatedEmployee.allowed_sites === 'string' ? JSON.parse(updatedEmployee.allowed_sites) : (updatedEmployee.allowed_sites || []),
-      allowedDepartments: typeof updatedEmployee.allowed_departments === 'string' ? JSON.parse(updatedEmployee.allowed_departments) : (updatedEmployee.allowed_departments || [])
+      allowedSites: updatedEmployee.allowed_sites || [],
+      allowedDepartments: updatedEmployee.allowed_departments || []
     };
 
     res.json(responseData);
