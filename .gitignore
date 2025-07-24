@@ -24,3 +24,17 @@ image_*.png
 
 # Test coverage reports
 coverage/
+
+# Migration and setup files
+*migration*.ts
+*setup*.ts
+*-backup*.ts
+*-old*.ts
+*-temp*.ts
+*-copy*.ts
+
+# Duplicate files
+*-complete.*
+*-fixed.*
+*-new.*
+*-updated.*

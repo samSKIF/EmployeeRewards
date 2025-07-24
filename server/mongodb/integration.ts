@@ -1,5 +1,4 @@
 import { connectToMongoDB } from './connection';
-import { runSocialMigration } from './migration';
 
 export async function initializeMongoDB() {
   try {
@@ -39,9 +38,7 @@ export async function setupMongoDBSocialRoutes(app: any) {
 
 export async function migrateSocialDataToMongoDB() {
   try {
-    console.log('Starting social data migration to MongoDB...');
-    await runSocialMigration();
-    console.log('Social data migration completed');
+    console.log('Social data migration skipped - migration files removed');
     return true;
   } catch (error) {
     console.error('Social data migration failed:', error);

@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from 'express';
 import { registerRoutes } from './routes';
-import managementRoutes from './management-routes-simple';
+import managementRoutes from './management-routes';
 import { setupVite, serveStatic, log } from './vite';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
