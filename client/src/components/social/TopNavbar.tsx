@@ -29,8 +29,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useBranding } from '@/context/BrandingContext';
-import { getAdminMenuConfig } from '@/components/admin/AdminSidebarConfig';
-import { useOrganizationFeatures } from '@/hooks/useOrganizationFeatures';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -123,6 +121,13 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     staleTime: 300000, // 5 minutes
   });
 
+  // Fetch organization features to check if recognition is enabled
+  const { data: organizationFeatures = [] } = useQuery({
+    queryKey: ['/api/admin/organization/features'],
+    enabled: !!user?.isAdmin,
+    refetchInterval: 3000, // Poll every 3 seconds for real-time updates
+  });
+
   // Filter employees based on search query
   const filteredEmployees =
     employees
@@ -203,31 +208,77 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     },
   ];
 
-  // Get organization features from API
-  const { data: organizationFeatures = [] } = useOrganizationFeatures();
-  
-  // Get modular admin menu config with actual organization features
-  const adminMenuConfig = getAdminMenuConfig(location, organizationFeatures);
-  
-  // Flatten admin menu items from all sections for dropdown
-  const adminItems = adminMenuConfig.sections.flatMap(section => {
-    // Add section header as a disabled item if it has items
-    const sectionItems = section.items || [];
-    if (sectionItems.length === 0) return [];
-    
-    return [
-      // Section divider
-      { isDivider: true, sectionTitle: section.title },
-      // Section items
-      ...sectionItems.map(item => ({
-        icon: item.icon,
-        label: item.label,
-        onClick: () => navigateTo(item.route),
-        route: item.route,
-        description: item.description
-      }))
-    ];
-  });
+  // Check if recognition feature is enabled
+  const isRecognitionEnabled = organizationFeatures.find(
+    (feature: any) => feature.featureKey === 'recognition'
+  )?.isEnabled || false;
+
+  // Admin menu items with conditional recognition section
+  const adminItems = [
+    { isDivider: true, sectionTitle: 'People & Organization' },
+    {
+      icon: Users,
+      label: 'Employees',
+      onClick: () => navigateTo('/admin/employees'),
+      route: '/admin/employees',
+      description: 'Manage team members and employee data'
+    },
+    {
+      icon: Building2,
+      label: 'Org Chart',
+      onClick: () => navigateTo('/admin/org-chart'),
+      route: '/admin/org-chart',
+      description: 'View organizational structure'
+    },
+    {
+      icon: CalendarDays,
+      label: 'Leave Management',
+      onClick: () => navigateTo('/admin/leave-management'),
+      route: '/admin/leave-management',
+      description: 'Handle leave requests and approvals'
+    },
+    { isDivider: true, sectionTitle: 'Engagement Tools' },
+    {
+      icon: FileText,
+      label: 'Surveys',
+      onClick: () => navigateTo('/admin/surveys'),
+      route: '/admin/surveys',
+      description: 'Create and manage employee surveys'
+    },
+    // Recognition & Rewards section - only show if recognition is enabled
+    ...(isRecognitionEnabled ? [
+      { isDivider: true, sectionTitle: 'Recognition & Rewards' },
+      {
+        icon: Award,
+        label: 'Recognition Settings',
+        onClick: () => navigateTo('/admin/recognition-settings'),
+        route: '/admin/recognition-settings',
+        description: 'Configure recognition programs'
+      },
+      {
+        icon: CircleDollarSign,
+        label: 'Points Economy',
+        onClick: () => navigateTo('/admin/points-economy'),
+        route: '/admin/points-economy',
+        description: 'Manage points and rewards system'
+      },
+      {
+        icon: Store,
+        label: 'Reward Shop',
+        onClick: () => navigateTo('/admin/shop/config'),
+        route: '/admin/shop/config',
+        description: 'Configure reward catalog'
+      }
+    ] : []),
+    { isDivider: true, sectionTitle: 'Platform Settings' },
+    {
+      icon: Palette,
+      label: 'Branding & Identity',
+      onClick: () => navigateTo('/admin/branding'),
+      route: '/admin/branding',
+      description: 'Customize appearance and branding'
+    }
+  ];
 
   return (
     <div className="bg-gray-100 pt-2 pb-1 px-4 flex justify-center">
