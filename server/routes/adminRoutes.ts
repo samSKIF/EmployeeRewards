@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from "../middleware/auth";
 import { storage } from "../storage";
 import { db, pool } from "../db";
@@ -380,6 +380,13 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
       return res.status(400).json({ message: "No data provided for update" });
     }
     
+    // Handle password update separately - only update if provided and not empty
+    if (updateData.password && updateData.password.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      dbUpdateData.password = hashedPassword;
+      logger.info("Password will be updated");
+    }
+    
     // Map frontend field names to database field names
     if (updateData.name !== undefined) dbUpdateData.name = updateData.name;
     if (updateData.surname !== undefined) dbUpdateData.surname = updateData.surname;
@@ -445,6 +452,7 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
     logger.info("Query:", updateQuery);
     logger.info("Values:", values);
     logger.info("dbUpdateData keys:", Object.keys(dbUpdateData));
+    logger.info("dbUpdateData values:", dbUpdateData);
     logger.info("====================");
     
     const result = await pool.query(updateQuery, values);
@@ -476,8 +484,8 @@ router.patch("/employees/:id", verifyToken, verifyAdmin, async (req: Authenticat
       managerEmail: updatedEmployee.manager_email,
       sex: updatedEmployee.sex,
       nationality: updatedEmployee.nationality,
-      dateOfBirth: updatedEmployee.birth_date,
-      dateJoined: updatedEmployee.hire_date,
+      birthDate: updatedEmployee.birth_date,  // Changed from dateOfBirth to birthDate
+      hireDate: updatedEmployee.hire_date,     // Changed from dateJoined to hireDate
       isAdmin: updatedEmployee.is_admin,
       status: updatedEmployee.status,
       avatarUrl: updatedEmployee.avatar_url,

@@ -917,24 +917,24 @@ function EditEmployeeForm({ employee, onClose, onUpdate }: EditEmployeeFormProps
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/users/${employee.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      console.log("Submitting employee update:", formData);
+      
+      const response = await apiRequest('PATCH', `/api/admin/employees/${employee.id}`, formData);
+      const updatedData = await response.json();
+      console.log("Update successful:", updatedData);
+      
+      toast({
+        title: "Success",
+        description: "Employee information updated successfully",
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update employee');
-      }
-
+      
       onUpdate();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Update error:", error);
       toast({
         title: "Error",
-        description: "Failed to update employee",
+        description: error.message || "Failed to update employee",
         variant: "destructive",
       });
     } finally {
