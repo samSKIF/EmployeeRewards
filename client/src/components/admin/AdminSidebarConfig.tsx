@@ -54,9 +54,25 @@ export function createAdminMenuConfig(
   
   // Helper function to check if a feature is enabled
   const isFeatureEnabled = (featureKey: string): boolean => {
+    console.log('All organizationFeatures:', organizationFeatures);
+    console.log('organizationFeatures length:', organizationFeatures?.length);
+    console.log('organizationFeatures is array:', Array.isArray(organizationFeatures));
+    
+    if (!Array.isArray(organizationFeatures) || organizationFeatures.length === 0) {
+      console.log(`No features data available, defaulting ${featureKey} to false`);
+      // TEMPORARY: Force recognition to be enabled until data loading works
+      if (featureKey === 'recognition') {
+        console.log('TEMPORARY: Forcing recognition to be enabled');
+        return true;
+      }
+      return false;
+    }
+    
     const feature = organizationFeatures.find(f => f.featureKey === featureKey);
     console.log(`Checking feature ${featureKey}:`, feature, 'isEnabled:', feature?.isEnabled ?? false);
-    return feature?.isEnabled ?? false;
+    const result = feature?.isEnabled ?? false;
+    console.log(`Feature ${featureKey} final result:`, result);
+    return result;
   };
 
   // Helper function to mark active route
