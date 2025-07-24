@@ -24,9 +24,11 @@ export function EmployeeFilters({
   filteredCount,
 }: EmployeeFiltersProps) {
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
+    // Convert "all" back to empty string for filtering logic
+    const processedValue = value === 'all' ? '' : value;
     onFiltersChange({
       ...filters,
-      [key]: value,
+      [key]: processedValue,
     });
   };
 
@@ -77,14 +79,14 @@ export function EmployeeFilters({
 
         {/* Department Filter */}
         <Select 
-          value={filters.department} 
+          value={filters.department || 'all'} 
           onValueChange={(value) => handleFilterChange('department', value)}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Departments" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Departments</SelectItem>
+            <SelectItem value="all">All Departments</SelectItem>
             {departments.map((dept) => (
               <SelectItem key={dept} value={dept}>
                 {dept}
@@ -95,14 +97,14 @@ export function EmployeeFilters({
 
         {/* Location Filter */}
         <Select 
-          value={filters.location} 
+          value={filters.location || 'all'} 
           onValueChange={(value) => handleFilterChange('location', value)}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Locations" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Locations</SelectItem>
+            <SelectItem value="all">All Locations</SelectItem>
             {locations.map((loc) => (
               <SelectItem key={loc} value={loc}>
                 {loc}
@@ -113,14 +115,14 @@ export function EmployeeFilters({
 
         {/* Status Filter */}
         <Select 
-          value={filters.status} 
+          value={filters.status || 'all'} 
           onValueChange={(value) => handleFilterChange('status', value)}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
@@ -130,16 +132,16 @@ export function EmployeeFilters({
 
         {/* Admin Filter */}
         <Select 
-          value={filters.isAdmin === null ? '' : filters.isAdmin.toString()} 
+          value={filters.isAdmin === null ? 'all' : filters.isAdmin.toString()} 
           onValueChange={(value) => 
-            handleFilterChange('isAdmin', value === '' ? null : value === 'true')
+            handleFilterChange('isAdmin', value === 'all' ? null : value === 'true')
           }
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Roles" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Roles</SelectItem>
+            <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="true">Admins Only</SelectItem>
             <SelectItem value="false">Regular Users</SelectItem>
           </SelectContent>

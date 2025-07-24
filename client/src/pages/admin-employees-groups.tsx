@@ -6,6 +6,7 @@ import { GroupsManagement } from '@/components/admin/groups-management/GroupsMan
 import { TrendingSpaces } from '@/components/admin/groups-management/TrendingSpaces';
 
 export default function AdminEmployeesGroups() {
+  console.log('AdminEmployeesGroups component loading...');
   const [activeTab, setActiveTab] = useState('employees');
 
   return (
