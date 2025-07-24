@@ -764,7 +764,12 @@ router.get(
         // Return the default features
         res.json(defaultFeatures);
       } else {
-        res.json(features);
+        // Map to only return required fields
+        const mappedFeatures = features.map(f => ({
+          featureKey: f.featureKey,
+          isEnabled: f.isEnabled
+        }));
+        res.json(mappedFeatures);
       }
     } catch (error: any) {
       logger.error('Error getting organization features:', error);

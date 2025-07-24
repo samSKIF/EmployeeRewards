@@ -18,15 +18,8 @@ export function useOrganizationFeatures(): OrganizationFeature[] {
     placeholderData: []
   });
 
-  // Return features with proper fallbacks
-  return features && features.length > 0 ? features : [
-    { featureKey: 'recognition', isEnabled: true },
-    { featureKey: 'social', isEnabled: true },
-    { featureKey: 'surveys', isEnabled: true },
-    { featureKey: 'marketplace', isEnabled: true },
-    { featureKey: 'analytics', isEnabled: true },
-    { featureKey: 'celebrations', isEnabled: true }
-  ];
+  // Return features from API or empty array
+  return features || [];
 }
 
 /**
