@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useBranding } from '@/context/BrandingContext';
 import { getAdminMenuConfig } from '@/components/admin/AdminSidebarConfig';
+import { useOrganizationFeatures } from '@/hooks/useOrganizationFeatures';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -202,8 +203,11 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     },
   ];
 
-  // Get modular admin menu config
-  const adminMenuConfig = getAdminMenuConfig(location);
+  // Get organization features from API
+  const { data: organizationFeatures = [] } = useOrganizationFeatures();
+  
+  // Get modular admin menu config with actual organization features
+  const adminMenuConfig = getAdminMenuConfig(location, organizationFeatures);
   
   // Flatten admin menu items from all sections for dropdown
   const adminItems = adminMenuConfig.sections.flatMap(section => {

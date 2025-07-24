@@ -284,28 +284,7 @@ export function createAdminMenuConfig(
   return menuConfig;
 }
 
-/**
- * Hook to get organization features for the current user's organization
- */
-export function useOrganizationFeatures() {
-  // For now, we'll use recognition settings as a proxy for recognition enablement
-  // In a full implementation, this would fetch from /api/organization/features
-  // For ThrivioHR, recognition is enabled if the organization has recognition settings
-  
-  // Check if recognition is enabled by attempting to fetch recognition settings
-  // If the settings exist and are accessible, recognition is enabled
-  
-  // Since we can't use React hooks here directly in config function,
-  // we'll return a default configuration that enables recognition
-  // The actual hook implementation would be in the component that uses this config
-  
-  return [
-    { featureKey: 'recognition', isEnabled: true }, // Always enabled for ThrivioHR
-    { featureKey: 'social', isEnabled: true },
-    { featureKey: 'surveys', isEnabled: true },
-    { featureKey: 'marketplace', isEnabled: true }
-  ];
-}
+
 
 // Export the config function for use in other components like TopNavbar
 export const getAdminMenuConfig = createAdminMenuConfig;
