@@ -123,16 +123,16 @@ const ModularAdminSidebar: React.FC<ModularAdminSidebarProps> = ({
         );
       })}
 
-      {/* Debug Info (Development Only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-6 px-3 py-2 bg-gray-50 rounded-md">
-          <div className="text-xs text-gray-500">
-            <div>Current Route: {location}</div>
-            <div>Recognition Enabled: {organizationFeatures.find(f => f.featureKey === 'recognition')?.isEnabled ? 'Yes' : 'No'}</div>
-            <div>Sections: {menuConfig.sections.length}</div>
-          </div>
+      {/* Debug Info - Temporarily always visible */}
+      <div className="mt-6 px-3 py-2 bg-gray-50 rounded-md">
+        <div className="text-xs text-gray-500">
+          <div>Current Route: {location}</div>
+          <div>Features loaded: {organizationFeatures.length}</div>
+          <div>Recognition Enabled: {organizationFeatures.find(f => f.featureKey === 'recognition')?.isEnabled ? 'Yes' : 'No'}</div>
+          <div>Total Sections: {menuConfig.sections.length}</div>
+          <div>Section IDs: {menuConfig.sections.map(s => s.id).join(', ')}</div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
