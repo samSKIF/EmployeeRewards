@@ -1975,8 +1975,10 @@ function EmployeeDirectory() {
                 await queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/users'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/admin/employees'] });
+                await queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
                 // Force immediate refetch
                 await queryClient.refetchQueries({ queryKey: ['/api/users?limit=500'] });
+                await queryClient.refetchQueries({ queryKey: ['/api/admin/usage-stats'] });
                 
                 setIsDialogOpen(false);
                 setSelectedEmployee(null);
@@ -2000,6 +2002,9 @@ function EmployeeDirectory() {
             onClose={() => setIsCreateDialogOpen(false)}
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
+              setIsCreateDialogOpen(false);
               toast({
                 title: "Success",
                 description: "Employee created successfully",
@@ -2023,6 +2028,9 @@ function EmployeeDirectory() {
             onClose={() => setIsBulkUploadDialogOpen(false)}
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/users?limit=500'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/admin/usage-stats'] });
+              setIsBulkUploadDialogOpen(false);
               toast({
                 title: "Success", 
                 description: "Employees uploaded successfully",
