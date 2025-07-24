@@ -145,3 +145,27 @@ The platform uses a hybrid database approach optimized for different data types:
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Development Standards
+
+The platform follows comprehensive development standards designed for scalability and easy developer onboarding:
+
+### Architecture Standards
+- **Microservices Pattern**: Recognition, social, and core services operate independently
+- **API-First Development**: All features expose REST APIs before UI implementation
+- **Type Safety**: Strict TypeScript with Drizzle ORM for database operations
+- **Multi-tenant Security**: All operations include organizationId filtering
+
+### Code Quality Requirements
+- **70% Test Coverage**: Enforced through Jest configuration
+- **No `any` Types**: Explicit typing required throughout codebase
+- **Consistent Patterns**: Database mocking, API responses, error handling
+- **Documentation**: All API endpoints and complex functions documented
+
+### Developer Onboarding Process
+1. **Week 1**: Environment setup, architecture understanding, fix simple tests
+2. **Week 2**: Implement small features following established patterns
+3. **Week 3**: Contribute to microservices architecture
+4. **Week 4**: Lead new API endpoint implementation with full testing
+
+Detailed standards documented in `docs/development-standards.md` and `docs/quick-start-guide.md`.
