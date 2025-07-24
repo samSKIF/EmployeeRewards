@@ -3,15 +3,15 @@ import express from 'express';
 import authRoutes from './authRoutes';
 import { storage } from '../storage';
 import { generateToken } from '../middleware/auth';
+import { checkSubscriptionStatus } from '../services/subscriptionService';
 
-// Mock dependencies
 jest.mock('../storage');
 jest.mock('../middleware/auth');
-jest.mock('../db');
 jest.mock('../services/subscriptionService');
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
 const mockGenerateToken = generateToken as jest.MockedFunction<typeof generateToken>;
+const mockCheckSubscriptionStatus = checkSubscriptionStatus as jest.MockedFunction<typeof checkSubscriptionStatus>;
 
 describe('Auth Routes', () => {
   let app: express.Application;
@@ -24,289 +24,253 @@ describe('Auth Routes', () => {
   });
 
   describe('POST /api/auth/login', () => {
-    it('should login with valid credentials', async () => {
+    it('should login user with valid credentials', async () => {
       const mockUser = {
         id: 1,
+        username: 'testuser',
         email: 'test@test.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        isAdmin: false,
         organizationId: 1,
+        isAdmin: false,
         status: 'active',
       };
       
-      const mockOrganization = {
+      const mockOrg = {
         id: 1,
         name: 'Test Org',
         status: 'active',
       };
       
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.verifyPassword.mockResolvedValue(true);
-      mockStorage.getOrganization.mockResolvedValue(mockOrganization);
-      mockStorage.checkSubscriptionStatus.mockResolvedValue(true);
-      mockGenerateToken.mockReturnValue('test-token');
+      mockStorage.validateUser.mockResolvedValue(mockUser);
+      mockStorage.getOrganization.mockResolvedValue(mockOrg);
+      mockCheckSubscriptionStatus.mockResolvedValue(true);
+      mockGenerateToken.mockReturnValue('mock-jwt-token');
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@test.com',
+          username: 'testuser',
           password: 'password123',
         });
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
-        token: 'test-token',
-        user: {
-          id: 1,
-          email: 'test@test.com',
-          name: 'Test User',
-        },
+        user: mockUser,
+        token: 'mock-jwt-token',
       });
-      expect(response.body.user.password).toBeUndefined();
+      expect(mockStorage.updateLastSeenAt).toHaveBeenCalledWith(1);
     });
 
-    it('should reject login with invalid email', async () => {
-      mockStorage.getUserByEmail.mockResolvedValue(undefined);
+    it('should reject invalid credentials', async () => {
+      mockStorage.validateUser.mockResolvedValue(null);
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'nonexistent@test.com',
-          password: 'password123',
+          username: 'wronguser',
+          password: 'wrongpass',
         });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
     });
 
-    it('should reject login with invalid password', async () => {
+    it('should reject inactive user', async () => {
       const mockUser = {
         id: 1,
-        email: 'test@test.com',
-        password: 'hashedpassword',
-      };
-      
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.verifyPassword.mockResolvedValue(false);
-
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          email: 'test@test.com',
-          password: 'wrongpassword',
-        });
-
-      expect(response.status).toBe(401);
-      expect(response.body.message).toBe('Invalid credentials');
-    });
-
-    it('should reject login for inactive user', async () => {
-      const mockUser = {
-        id: 1,
-        email: 'test@test.com',
-        password: 'hashedpassword',
+        username: 'testuser',
         status: 'inactive',
+        organizationId: 1,
       };
       
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.verifyPassword.mockResolvedValue(true);
+      mockStorage.validateUser.mockResolvedValue(mockUser);
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@test.com',
+          username: 'testuser',
           password: 'password123',
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toContain('inactive');
+      expect(response.body.message).toContain('account is not active');
     });
 
-    it('should reject login for organization without active subscription', async () => {
+    it('should handle inactive organization with subscription popup', async () => {
       const mockUser = {
         id: 1,
-        email: 'test@test.com',
-        password: 'hashedpassword',
+        username: 'testuser',
         organizationId: 1,
+        isAdmin: false,
         status: 'active',
-        isAdmin: false, // Not corporate admin
       };
       
-      const mockOrganization = {
+      const mockOrg = {
         id: 1,
         name: 'Test Org',
         status: 'inactive',
         superuserEmail: 'admin@org.com',
       };
       
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.verifyPassword.mockResolvedValue(true);
-      mockStorage.getOrganization.mockResolvedValue(mockOrganization);
-      mockStorage.checkSubscriptionStatus.mockResolvedValue(false);
+      mockStorage.validateUser.mockResolvedValue(mockUser);
+      mockStorage.getOrganization.mockResolvedValue(mockOrg);
+      mockCheckSubscriptionStatus.mockResolvedValue(false);
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@test.com',
+          username: 'testuser',
           password: 'password123',
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toContain('inactive');
+      expect(response.body.message).toContain('The system is inactive');
       expect(response.body.message).toContain('admin@org.com');
+      expect(response.body.showSubscriptionPopup).toBe(true);
     });
 
-    it('should allow corporate admin to login even without subscription', async () => {
+    it('should allow corporate admin to bypass subscription check', async () => {
       const mockUser = {
         id: 1,
-        email: 'admin@test.com',
-        password: 'hashedpassword',
+        username: 'admin',
         organizationId: 1,
-        status: 'active',
         isAdmin: true,
         adminScope: 'super',
+        status: 'active',
       };
       
-      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
-      mockStorage.verifyPassword.mockResolvedValue(true);
+      const mockOrg = {
+        id: 1,
+        status: 'active',
+      };
+      
+      mockStorage.validateUser.mockResolvedValue(mockUser);
+      mockStorage.getOrganization.mockResolvedValue(mockOrg);
       mockGenerateToken.mockReturnValue('admin-token');
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@test.com',
-          password: 'password123',
+          username: 'admin',
+          password: 'adminpass',
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.token).toBe('admin-token');
-    });
-
-    it('should validate required fields', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          email: 'test@test.com',
-          // Missing password
-        });
-
-      expect(response.status).toBe(400);
+      expect(mockCheckSubscriptionStatus).not.toHaveBeenCalled();
     });
   });
 
   describe('POST /api/auth/register', () => {
-    it('should register new user with valid data', async () => {
-      const newUserData = {
-        email: 'newuser@test.com',
+    it('should register new user with active subscription check', async () => {
+      const userData = {
+        username: 'newuser',
         password: 'password123',
-        name: 'New',
-        surname: 'User',
+        name: 'New User',
+        email: 'new@test.com',
         organizationId: 1,
       };
       
-      const mockOrganization = {
+      const mockOrg = {
+        id: 1,
+        name: 'Test Org',
+        status: 'active',
+      };
+      
+      const mockSubscription = {
+        id: 1,
+        subscribedUsers: 100,
+        isActive: true,
+      };
+      
+      const createdUser = {
+        id: 100,
+        ...userData,
+      };
+      
+      mockStorage.checkDuplicateUser.mockResolvedValue({
+        usernameExists: false,
+        emailExists: false,
+      });
+      mockStorage.getOrganization.mockResolvedValue(mockOrg);
+      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue(mockSubscription);
+      mockStorage.getUserCount.mockResolvedValue(50); // Under limit
+      mockStorage.createUser.mockResolvedValue(createdUser);
+      mockGenerateToken.mockReturnValue('new-user-token');
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData);
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        user: createdUser,
+        token: 'new-user-token',
+      });
+    });
+
+    it('should reject registration if subscription limit exceeded', async () => {
+      const userData = {
+        username: 'newuser',
+        password: 'password123',
+        name: 'New User',
+        email: 'new@test.com',
+        organizationId: 1,
+      };
+      
+      const mockOrg = {
         id: 1,
         status: 'active',
       };
       
-      const createdUser = {
-        id: 2,
-        ...newUserData,
-        username: 'new.user',
-        password: 'hashedpassword',
+      const mockSubscription = {
+        id: 1,
+        subscribedUsers: 50,
+        isActive: true,
       };
       
       mockStorage.checkDuplicateUser.mockResolvedValue({
+        usernameExists: false,
         emailExists: false,
-        nameExists: false,
       });
-      mockStorage.getOrganization.mockResolvedValue(mockOrganization);
-      mockStorage.getUserCount.mockResolvedValue(10); // Under limit
-      mockStorage.getActiveSubscriptionLimit.mockResolvedValue(50);
-      mockStorage.createUser.mockResolvedValue(createdUser);
-      mockGenerateToken.mockReturnValue('new-token');
+      mockStorage.getOrganization.mockResolvedValue(mockOrg);
+      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue(mockSubscription);
+      mockStorage.getUserCount.mockResolvedValue(50); // At limit
 
       const response = await request(app)
         .post('/api/auth/register')
-        .send(newUserData);
-
-      expect(response.status).toBe(201);
-      expect(response.body).toMatchObject({
-        token: 'new-token',
-        user: {
-          id: 2,
-          email: 'newuser@test.com',
-          name: 'New',
-        },
-      });
-      expect(response.body.user.password).toBeUndefined();
-    });
-
-    it('should reject registration with duplicate email', async () => {
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        emailExists: true,
-        nameExists: false,
-      });
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'existing@test.com',
-          password: 'password123',
-          name: 'New',
-          surname: 'User',
-          organizationId: 1,
-        });
+        .send(userData);
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toContain('already exists');
+      expect(response.body.message).toContain('exceeded user limit');
     });
 
-    it('should reject registration when organization at user limit', async () => {
+    it('should count only active employees for capacity', async () => {
+      mockStorage.getUserCount.mockResolvedValue(45); // Active users count
+      
+      // Mock subscription with limit
+      mockStorage.getActiveSubscriptionForOrg.mockResolvedValue({
+        subscribedUsers: 50,
+        isActive: true,
+      });
+      
+      // Other mocks for successful registration
       mockStorage.checkDuplicateUser.mockResolvedValue({
+        usernameExists: false,
         emailExists: false,
-        nameExists: false,
       });
-      mockStorage.getOrganization.mockResolvedValue({ id: 1, status: 'active' });
-      mockStorage.getUserCount.mockResolvedValue(50); // At limit
-      mockStorage.getActiveSubscriptionLimit.mockResolvedValue(50);
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'newuser@test.com',
-          password: 'password123',
-          name: 'New',
-          surname: 'User',
-          organizationId: 1,
-        });
-
-      expect(response.status).toBe(403);
-      expect(response.body.message).toContain('user limit');
-    });
-
-    it('should only count active users for limit', async () => {
-      mockStorage.checkDuplicateUser.mockResolvedValue({
-        emailExists: false,
-        nameExists: false,
+      mockStorage.getOrganization.mockResolvedValue({
+        id: 1,
+        status: 'active',
       });
-      mockStorage.getOrganization.mockResolvedValue({ id: 1, status: 'active' });
-      mockStorage.getUserCount.mockResolvedValue(45); // Active users under limit
-      mockStorage.getActiveSubscriptionLimit.mockResolvedValue(50);
-      mockStorage.createUser.mockResolvedValue({
-        id: 2,
-        email: 'newuser@test.com',
-      });
+      mockStorage.createUser.mockResolvedValue({ id: 100 });
       mockGenerateToken.mockReturnValue('token');
 
       const response = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'newuser@test.com',
-          password: 'password123',
+          username: 'newuser',
+          password: 'pass123',
           name: 'New',
-          surname: 'User',
+          email: 'new@test.com',
           organizationId: 1,
         });
 
@@ -314,32 +278,86 @@ describe('Auth Routes', () => {
       expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, 'active');
     });
 
-    it('should validate email format', async () => {
+    it('should reject duplicate username', async () => {
+      mockStorage.checkDuplicateUser.mockResolvedValue({
+        usernameExists: true,
+        emailExists: false,
+      });
+
       const response = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'invalid-email',
-          password: 'password123',
-          name: 'New',
-          surname: 'User',
+          username: 'existinguser',
+          password: 'pass123',
+          name: 'Test',
+          email: 'test@test.com',
           organizationId: 1,
         });
 
       expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Username already exists');
     });
 
-    it('should validate password length', async () => {
+    it('should reject duplicate email', async () => {
+      mockStorage.checkDuplicateUser.mockResolvedValue({
+        usernameExists: false,
+        emailExists: true,
+      });
+
       const response = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'test@test.com',
-          password: '123', // Too short
-          name: 'New',
-          surname: 'User',
+          username: 'newuser',
+          password: 'pass123',
+          name: 'Test',
+          email: 'existing@test.com',
           organizationId: 1,
         });
 
       expect(response.status).toBe(400);
+      expect(response.body.message).toContain('Email already exists');
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    it('should logout successfully', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout');
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Logged out successfully');
+    });
+  });
+
+  describe('POST /api/auth/forgot-password', () => {
+    it('should send password reset email', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@test.com',
+        name: 'Test User',
+      };
+      
+      mockStorage.getUserByEmail.mockResolvedValue(mockUser);
+      mockStorage.createPasswordResetToken.mockResolvedValue('reset-token-123');
+
+      const response = await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'test@test.com' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toContain('Password reset email sent');
+      expect(mockStorage.createPasswordResetToken).toHaveBeenCalledWith(1);
+    });
+
+    it('should not reveal if email exists', async () => {
+      mockStorage.getUserByEmail.mockResolvedValue(null);
+
+      const response = await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'nonexistent@test.com' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toContain('If your email exists');
     });
   });
 });

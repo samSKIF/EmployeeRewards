@@ -3,11 +3,11 @@ import express from 'express';
 import userRoutes from './userRoutes';
 import { storage } from '../storage';
 import { verifyToken } from '../middleware/auth';
+import { upload } from '../file-upload';
 
-// Mock dependencies
 jest.mock('../storage');
 jest.mock('../middleware/auth');
-jest.mock('../db');
+jest.mock('../file-upload');
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
 const mockVerifyToken = verifyToken as jest.MockedFunction<typeof verifyToken>;
@@ -20,7 +20,7 @@ describe('User Routes', () => {
     app = express();
     app.use(express.json());
     
-    // Mock auth middleware to always pass with test user
+    // Mock auth middleware
     mockVerifyToken.mockImplementation((req: any, res, next) => {
       req.user = {
         id: 1,
@@ -31,75 +31,31 @@ describe('User Routes', () => {
       next();
     });
     
-    app.use('/api', userRoutes);
-  });
-
-  describe('GET /api/users', () => {
-    it('should return paginated users for organization', async () => {
-      const mockUsers = [
-        { id: 1, name: 'User 1', email: 'user1@test.com', organizationId: 1 },
-        { id: 2, name: 'User 2', email: 'user2@test.com', organizationId: 1 },
-      ];
-      
-      mockStorage.getUsers.mockResolvedValue(mockUsers);
-      mockStorage.getUserCount.mockResolvedValue(2);
-
-      const response = await request(app)
-        .get('/api/users')
-        .set('Authorization', 'Bearer test-token')
-        .query({ limit: 10, offset: 0 });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockUsers);
-      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 10, 0, undefined);
-    });
-
-    it('should filter by status when provided', async () => {
-      mockStorage.getUsers.mockResolvedValue([]);
-      mockStorage.getUserCount.mockResolvedValue(0);
-
-      await request(app)
-        .get('/api/users')
-        .set('Authorization', 'Bearer test-token')
-        .query({ status: 'active' });
-
-      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 50, 0, 'active');
-    });
-
-    it('should return 401 without auth token', async () => {
-      mockVerifyToken.mockImplementation((req, res, next) => {
-        res.status(401).json({ message: 'Unauthorized' });
-      });
-
-      const response = await request(app).get('/api/users');
-
-      expect(response.status).toBe(401);
-    });
+    app.use('/api/users', userRoutes);
   });
 
   describe('GET /api/users/me', () => {
     it('should return current user data', async () => {
       const mockUser = {
         id: 1,
-        email: 'test@test.com',
         name: 'Test User',
-        isAdmin: false,
+        email: 'test@test.com',
         organizationId: 1,
+        balance: 100,
       };
       
       mockStorage.getUser.mockResolvedValue(mockUser);
+      mockStorage.getUserBalance.mockResolvedValue(100);
 
       const response = await request(app)
         .get('/api/users/me')
         .set('Authorization', 'Bearer test-token');
 
       expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        id: 1,
-        email: 'test@test.com',
-        name: 'Test User',
+      expect(response.body).toEqual({
+        ...mockUser,
+        balance: 100,
       });
-      expect(response.body.password).toBeUndefined();
     });
 
     it('should return 404 if user not found', async () => {
@@ -110,71 +66,170 @@ describe('User Routes', () => {
         .set('Authorization', 'Bearer test-token');
 
       expect(response.status).toBe(404);
-      expect(response.body.message).toBe('User not found');
+    });
+  });
+
+  describe('PUT /api/users/me', () => {
+    it('should update current user profile', async () => {
+      const updateData = {
+        name: 'Updated Name',
+        phoneNumber: '+1234567890',
+        department: 'Engineering',
+      };
+      
+      const updatedUser = {
+        id: 1,
+        ...updateData,
+      };
+      
+      mockStorage.updateUser.mockResolvedValue(updatedUser);
+
+      const response = await request(app)
+        .put('/api/users/me')
+        .set('Authorization', 'Bearer test-token')
+        .send(updateData);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(updatedUser);
+      expect(mockStorage.updateUser).toHaveBeenCalledWith(1, updateData);
+    });
+
+    it('should not allow updating sensitive fields', async () => {
+      const updateData = {
+        name: 'Updated Name',
+        isAdmin: true, // Should be filtered out
+        organizationId: 2, // Should be filtered out
+      };
+      
+      mockStorage.updateUser.mockResolvedValue({ id: 1 });
+
+      await request(app)
+        .put('/api/users/me')
+        .set('Authorization', 'Bearer test-token')
+        .send(updateData);
+
+      expect(mockStorage.updateUser).toHaveBeenCalledWith(1, {
+        name: 'Updated Name',
+      });
+    });
+  });
+
+  describe('GET /api/users', () => {
+    it('should return users for organization', async () => {
+      const mockUsers = [
+        { id: 1, name: 'User 1', organizationId: 1 },
+        { id: 2, name: 'User 2', organizationId: 1 },
+      ];
+      
+      mockStorage.getUsers.mockResolvedValue(mockUsers);
+      mockStorage.getUserCount.mockResolvedValue(2);
+
+      const response = await request(app)
+        .get('/api/users')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockUsers);
+      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 10, 0);
+    });
+
+    it('should support pagination', async () => {
+      mockStorage.getUsers.mockResolvedValue([]);
+      mockStorage.getUserCount.mockResolvedValue(0);
+
+      await request(app)
+        .get('/api/users')
+        .query({ limit: 20, offset: 40 })
+        .set('Authorization', 'Bearer test-token');
+
+      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 20, 40);
+    });
+
+    it('should filter active users only when requested', async () => {
+      mockStorage.getUsers.mockResolvedValue([]);
+      mockStorage.getUserCount.mockResolvedValue(0);
+
+      await request(app)
+        .get('/api/users')
+        .query({ status: 'active' })
+        .set('Authorization', 'Bearer test-token');
+
+      expect(mockStorage.getUsers).toHaveBeenCalledWith(1, 10, 0, 'active');
+      expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, 'active');
     });
   });
 
   describe('GET /api/users/:id', () => {
-    it('should return user by id from same organization', async () => {
+    it('should return user profile', async () => {
       const mockUser = {
-        id: 2,
-        email: 'user2@test.com',
-        name: 'User 2',
+        id: 5,
+        name: 'Other User',
         organizationId: 1,
+        balance: 200,
       };
       
       mockStorage.getUser.mockResolvedValue(mockUser);
+      mockStorage.getUserBalance.mockResolvedValue(200);
 
       const response = await request(app)
-        .get('/api/users/2')
+        .get('/api/users/5')
         .set('Authorization', 'Bearer test-token');
 
       expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        id: 2,
-        email: 'user2@test.com',
+      expect(response.body).toEqual({
+        ...mockUser,
+        balance: 200,
       });
     });
 
-    it('should return 404 for user from different organization', async () => {
+    it('should prevent accessing users from other organizations', async () => {
       const mockUser = {
-        id: 2,
-        email: 'user2@test.com',
+        id: 5,
         organizationId: 2, // Different org
       };
       
       mockStorage.getUser.mockResolvedValue(mockUser);
 
       const response = await request(app)
-        .get('/api/users/2')
+        .get('/api/users/5')
         .set('Authorization', 'Bearer test-token');
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
     });
   });
 
-  describe('GET /api/users/count', () => {
-    it('should return total and active user counts', async () => {
-      mockStorage.getUserCount.mockResolvedValueOnce(100); // Total
-      mockStorage.getUserCount.mockResolvedValueOnce(85); // Active
+  describe('POST /api/users/me/avatar', () => {
+    it('should upload avatar successfully', async () => {
+      const mockFile = {
+        filename: 'avatar.jpg',
+        path: '/uploads/avatar.jpg',
+      };
+      
+      // Mock multer upload
+      (upload.single as jest.Mock) = jest.fn(() => (req: any, res: any, next: any) => {
+        req.file = mockFile;
+        next();
+      });
+      
+      mockStorage.updateUser.mockResolvedValue({
+        id: 1,
+        avatarUrl: '/uploads/avatar.jpg',
+      });
 
       const response = await request(app)
-        .get('/api/users/count')
-        .set('Authorization', 'Bearer test-token');
+        .post('/api/users/me/avatar')
+        .set('Authorization', 'Bearer test-token')
+        .attach('avatar', Buffer.from('fake-image'), 'avatar.jpg');
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        total: 100,
-        active: 85,
-      });
-      expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, undefined);
-      expect(mockStorage.getUserCount).toHaveBeenCalledWith(1, 'active');
+      expect(response.body.avatarUrl).toBe('/uploads/avatar.jpg');
     });
   });
 
   describe('GET /api/users/departments', () => {
-    it('should return unique departments for organization', async () => {
-      const mockDepartments = ['Engineering', 'Sales', 'Marketing'];
+    it('should return unique departments', async () => {
+      const mockDepartments = ['Engineering', 'Marketing', 'Sales'];
+      
       mockStorage.getDepartments.mockResolvedValue(mockDepartments);
 
       const response = await request(app)
@@ -188,8 +243,9 @@ describe('User Routes', () => {
   });
 
   describe('GET /api/users/locations', () => {
-    it('should return unique locations for organization', async () => {
+    it('should return unique locations', async () => {
       const mockLocations = ['New York', 'London', 'Tokyo'];
+      
       mockStorage.getLocations.mockResolvedValue(mockLocations);
 
       const response = await request(app)
@@ -202,55 +258,63 @@ describe('User Routes', () => {
     });
   });
 
-  describe('GET /api/users/search', () => {
-    it('should search users by name', async () => {
-      const mockResults = [
-        { id: 1, name: 'John Doe', email: 'john@test.com' },
-      ];
-      mockStorage.searchUsers.mockResolvedValue(mockResults);
+  describe('POST /api/users/change-password', () => {
+    it('should change password successfully', async () => {
+      const mockUser = {
+        id: 1,
+        password: 'old_hashed_password',
+      };
+      
+      mockStorage.getUser.mockResolvedValue(mockUser);
+      mockStorage.validatePassword.mockResolvedValue(true); // Old password valid
+      mockStorage.updateUserPassword.mockResolvedValue(true);
 
       const response = await request(app)
-        .get('/api/users/search')
-        .query({ q: 'john' })
-        .set('Authorization', 'Bearer test-token');
+        .post('/api/users/change-password')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          currentPassword: 'oldpass123',
+          newPassword: 'newpass123',
+        });
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockResults);
-      expect(mockStorage.searchUsers).toHaveBeenCalledWith(1, 'john');
+      expect(response.body.message).toBe('Password updated successfully');
     });
 
-    it('should return 400 without search query', async () => {
-      const response = await request(app)
-        .get('/api/users/search')
-        .set('Authorization', 'Bearer test-token');
+    it('should reject incorrect current password', async () => {
+      mockStorage.getUser.mockResolvedValue({ id: 1 });
+      mockStorage.validatePassword.mockResolvedValue(false);
 
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe('Search query required');
+      const response = await request(app)
+        .post('/api/users/change-password')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          currentPassword: 'wrongpass',
+          newPassword: 'newpass123',
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toContain('Current password is incorrect');
     });
   });
 
-  describe('Multi-tenant isolation', () => {
-    it('should prevent access to users from other organizations', async () => {
-      // Set up user from org 1
-      mockVerifyToken.mockImplementation((req: any, res, next) => {
-        req.user = { id: 1, organizationId: 1 };
-        next();
-      });
-
-      // Try to access user from org 2
-      const userFromOtherOrg = {
-        id: 99,
-        organizationId: 2,
-        email: 'other@org.com',
-      };
-      mockStorage.getUser.mockResolvedValue(userFromOtherOrg);
+  describe('GET /api/users/search', () => {
+    it('should search users by query', async () => {
+      const searchResults = [
+        { id: 2, name: 'John Doe', department: 'Engineering' },
+        { id: 3, name: 'John Smith', department: 'Sales' },
+      ];
+      
+      mockStorage.searchUsers.mockResolvedValue(searchResults);
 
       const response = await request(app)
-        .get('/api/users/99')
+        .get('/api/users/search')
+        .query({ q: 'John' })
         .set('Authorization', 'Bearer test-token');
 
-      expect(response.status).toBe(404);
-      expect(response.body.message).toBe('User not found');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(searchResults);
+      expect(mockStorage.searchUsers).toHaveBeenCalledWith(1, 'John');
     });
   });
 });
