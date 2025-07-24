@@ -25,6 +25,7 @@ import {
   CalendarDays,
   Network,
   MessageCircle,
+  Building2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
