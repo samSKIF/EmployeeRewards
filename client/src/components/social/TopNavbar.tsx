@@ -6,6 +6,7 @@ import {
   Shield,
   Settings,
   ChevronDown,
+  ChevronRight,
   Users,
   ClipboardList,
   Store,
@@ -115,6 +116,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   // Fetch employees for search
   const { data: employees } = useQuery<any[]>({
@@ -148,6 +150,16 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   // Navigation helper
   const navigateTo = (path: string) => {
     navigate(path);
+  };
+
+  const toggleSection = (sectionId: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
+    } else {
+      newExpanded.add(sectionId);
+    }
+    setExpandedSections(newExpanded);
   };
 
   // Handle logout
@@ -214,165 +226,182 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
     (feature: any) => feature.featureKey === 'recognition'
   )?.isEnabled || false;
 
-  // Admin menu items with comprehensive 5-section structure
-  const adminItems = [
-    // 1. People & Organization
-    { isDivider: true, sectionTitle: '🔹 People & Organization' },
+  // Admin menu sections - organized and collapsible
+  const adminSections = [
     {
+      id: 'people',
+      title: '🔹 People & Organization',
       icon: Users,
-      label: 'Employees',
-      onClick: () => navigateTo('/admin/employees'),
-      route: '/admin/employees',
-      description: 'Manage team members and employee data'
+      items: [
+        {
+          icon: Users,
+          label: 'Employees',
+          onClick: () => navigateTo('/admin/employees'),
+          route: '/admin/employees',
+          description: 'Manage team members and employee data'
+        },
+        {
+          icon: Building2,
+          label: 'Org Chart',
+          onClick: () => navigateTo('/admin/org-chart'),
+          route: '/admin/org-chart',
+          description: 'View organizational structure'
+        },
+        {
+          icon: CalendarDays,
+          label: 'Leave Management',
+          onClick: () => navigateTo('/admin/leave-management'),
+          route: '/admin/leave-management',
+          description: 'Handle leave requests and approvals'
+        },
+        {
+          icon: User,
+          label: 'Onboarding',
+          onClick: () => navigateTo('/admin/onboarding'),
+          route: '/admin/onboarding',
+          description: 'New hire onboarding workflows'
+        },
+        {
+          icon: Network,
+          label: 'Spaces & Groups',
+          onClick: () => navigateTo('/admin/spaces'),
+          route: '/admin/spaces',
+          description: 'Manage workplace communities'
+        }
+      ]
     },
     {
-      icon: Building2,
-      label: 'Org Chart',
-      onClick: () => navigateTo('/admin/org-chart'),
-      route: '/admin/org-chart',
-      description: 'View organizational structure'
-    },
-    {
-      icon: CalendarDays,
-      label: 'Leave Management',
-      onClick: () => navigateTo('/admin/leave-management'),
-      route: '/admin/leave-management',
-      description: 'Handle leave requests and approvals'
-    },
-    {
-      icon: User,
-      label: 'Onboarding',
-      onClick: () => navigateTo('/admin/onboarding'),
-      route: '/admin/onboarding',
-      description: 'New hire onboarding workflows'
-    },
-    {
-      icon: Network,
-      label: 'Spaces & Groups',
-      onClick: () => navigateTo('/admin/spaces'),
-      route: '/admin/spaces',
-      description: 'Manage workplace communities'
-    },
-
-    // 2. Engagement Tools
-    { isDivider: true, sectionTitle: '💬 Engagement Tools' },
-    {
-      icon: ListChecks,
-      label: 'Campaigns & Missions',
-      onClick: () => navigateTo('/admin/campaigns'),
-      route: '/admin/campaigns',
-      description: 'Onboarding journeys and engagement campaigns'
-    },
-    {
-      icon: Bell,
-      label: 'Celebration Settings',
-      onClick: () => navigateTo('/admin/celebrations'),
-      route: '/admin/celebrations',
-      description: 'Birthdays, anniversaries, and milestone settings'
-    },
-    {
-      icon: FileText,
-      label: 'Surveys',
-      onClick: () => navigateTo('/admin/surveys'),
-      route: '/admin/surveys',
-      description: 'Pulse checks, feedback, and polls'
-    },
-    {
+      id: 'engagement',
+      title: '💬 Engagement Tools',
       icon: MessageCircle,
-      label: 'Posts & Feed Settings',
-      onClick: () => navigateTo('/admin/posts-settings'),
-      route: '/admin/posts-settings',
-      description: 'Moderation, featured posts, comment rules'
+      items: [
+        {
+          icon: ListChecks,
+          label: 'Campaigns & Missions',
+          onClick: () => navigateTo('/admin/campaigns'),
+          route: '/admin/campaigns',
+          description: 'Onboarding journeys and engagement campaigns'
+        },
+        {
+          icon: Bell,
+          label: 'Celebration Settings',
+          onClick: () => navigateTo('/admin/celebrations'),
+          route: '/admin/celebrations',
+          description: 'Birthdays, anniversaries, and milestone settings'
+        },
+        {
+          icon: FileText,
+          label: 'Surveys',
+          onClick: () => navigateTo('/admin/surveys'),
+          route: '/admin/surveys',
+          description: 'Pulse checks, feedback, and polls'
+        },
+        {
+          icon: MessageCircle,
+          label: 'Posts & Feed Settings',
+          onClick: () => navigateTo('/admin/posts-settings'),
+          route: '/admin/posts-settings',
+          description: 'Moderation, featured posts, comment rules'
+        }
+      ]
     },
-
-    // 3. Recognition & Rewards - only show if recognition is enabled
-    ...(isRecognitionEnabled ? [
-      { isDivider: true, sectionTitle: '🏆 Recognition & Rewards' },
-      {
-        icon: Award,
-        label: 'Recognition Settings',
-        onClick: () => navigateTo('/admin/recognition-settings'),
-        route: '/admin/recognition-settings',
-        description: 'Configure values, badges, peer-to-peer rules'
-      },
-      {
-        icon: CircleDollarSign,
-        label: 'Points Economy Settings',
-        onClick: () => navigateTo('/admin/points-economy'),
-        route: '/admin/points-economy',
-        description: 'Budgets, top-up rules, expiration, redemption rights'
-      },
-      {
-        icon: Store,
-        label: 'Reward Shop Settings',
-        onClick: () => navigateTo('/admin/shop/config'),
-        route: '/admin/shop/config',
-        description: 'Product catalog, redemption rules, orders'
-      }
-    ] : []),
-
-    // 4. Analytics & Reports
-    { isDivider: true, sectionTitle: '📊 Analytics & Reports' },
+    ...(isRecognitionEnabled ? [{
+      id: 'recognition',
+      title: '🏆 Recognition & Rewards',
+      icon: Award,
+      items: [
+        {
+          icon: Award,
+          label: 'Recognition Settings',
+          onClick: () => navigateTo('/admin/recognition-settings'),
+          route: '/admin/recognition-settings',
+          description: 'Configure values, badges, peer-to-peer rules'
+        },
+        {
+          icon: CircleDollarSign,
+          label: 'Points Economy Settings',
+          onClick: () => navigateTo('/admin/points-economy'),
+          route: '/admin/points-economy',
+          description: 'Budgets, top-up rules, expiration, redemption rights'
+        },
+        {
+          icon: Store,
+          label: 'Reward Shop Settings',
+          onClick: () => navigateTo('/admin/shop/config'),
+          route: '/admin/shop/config',
+          description: 'Product catalog, redemption rules, orders'
+        }
+      ]
+    }] : []),
     {
+      id: 'analytics',
+      title: '📊 Analytics & Reports',
       icon: BarChart2,
-      label: 'Engagement Analytics',
-      onClick: () => navigateTo('/admin/analytics/engagement'),
-      route: '/admin/analytics/engagement',
-      description: 'User activity and participation metrics'
-    },
-    ...(isRecognitionEnabled ? [
-      {
-        icon: BarChart2,
-        label: 'Recognition Analytics',
-        onClick: () => navigateTo('/admin/analytics/recognition'),
-        route: '/admin/analytics/recognition',
-        description: 'Recognition patterns and impact metrics'
-      }
-    ] : []),
-    {
-      icon: BarChart2,
-      label: 'Survey Results',
-      onClick: () => navigateTo('/admin/analytics/surveys'),
-      route: '/admin/analytics/surveys',
-      description: 'Survey responses and insights'
-    },
-    {
-      icon: BarChart2,
-      label: 'Custom Report Builder',
-      onClick: () => navigateTo('/admin/reports/builder'),
-      route: '/admin/reports/builder',
-      description: 'Create custom analytics reports'
-    },
-
-    // 5. Platform Settings
-    { isDivider: true, sectionTitle: '⚙️ Platform Settings' },
-    {
-      icon: Palette,
-      label: 'Branding & Identity',
-      onClick: () => navigateTo('/admin/branding'),
-      route: '/admin/branding',
-      description: 'Customize appearance and branding'
+      items: [
+        {
+          icon: BarChart2,
+          label: 'Engagement Analytics',
+          onClick: () => navigateTo('/admin/analytics/engagement'),
+          route: '/admin/analytics/engagement',
+          description: 'User activity and participation metrics'
+        },
+        ...(isRecognitionEnabled ? [{
+          icon: BarChart2,
+          label: 'Recognition Analytics',
+          onClick: () => navigateTo('/admin/analytics/recognition'),
+          route: '/admin/analytics/recognition',
+          description: 'Recognition patterns and impact metrics'
+        }] : []),
+        {
+          icon: BarChart2,
+          label: 'Survey Results',
+          onClick: () => navigateTo('/admin/analytics/surveys'),
+          route: '/admin/analytics/surveys',
+          description: 'Survey responses and insights'
+        },
+        {
+          icon: BarChart2,
+          label: 'Custom Report Builder',
+          onClick: () => navigateTo('/admin/reports/builder'),
+          route: '/admin/reports/builder',
+          description: 'Create custom analytics reports'
+        }
+      ]
     },
     {
-      icon: Shield,
-      label: 'Roles & Permissions',
-      onClick: () => navigateTo('/admin/roles'),
-      route: '/admin/roles',
-      description: 'User access control and permissions'
-    },
-    {
+      id: 'settings',
+      title: '⚙️ Platform Settings',
       icon: Settings,
-      label: 'Subscription & Usage',
-      onClick: () => navigateTo('/admin/subscription'),
-      route: '/admin/subscription',
-      description: 'Plan details and usage monitoring'
-    },
-    {
-      icon: Settings,
-      label: 'Integrations',
-      onClick: () => navigateTo('/admin/integrations'),
-      route: '/admin/integrations',
-      description: 'SSO, APIs, and third-party connections'
+      items: [
+        {
+          icon: Palette,
+          label: 'Branding & Identity',
+          onClick: () => navigateTo('/admin/branding'),
+          route: '/admin/branding',
+          description: 'Customize appearance and branding'
+        },
+        {
+          icon: Shield,
+          label: 'Roles & Permissions',
+          onClick: () => navigateTo('/admin/roles'),
+          route: '/admin/roles',
+          description: 'User access control and permissions'
+        },
+        {
+          icon: Settings,
+          label: 'Subscription & Usage',
+          onClick: () => navigateTo('/admin/subscription'),
+          route: '/admin/subscription',
+          description: 'Plan details and usage monitoring'
+        },
+        {
+          icon: Settings,
+          label: 'Integrations',
+          onClick: () => navigateTo('/admin/integrations'),
+          route: '/admin/integrations',
+          description: 'SSO, APIs, and third-party connections'
+        }
+      ]
     }
   ];
 
@@ -575,24 +604,42 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>{t('navigation.admin')}</DropdownMenuLabel>
-                  {adminItems.map((item, index) => {
-                    if (item.isDivider) {
-                      return (
-                        <div key={index}>
-                          {index > 0 && <DropdownMenuSeparator />}
-                          <DropdownMenuLabel className="text-xs text-gray-500 font-semibold px-2 py-1">
-                            {item.sectionTitle}
-                          </DropdownMenuLabel>
+                  {adminSections.map((section) => (
+                    <div key={section.id}>
+                      <DropdownMenuSeparator />
+                      {/* Section Header - Collapsible */}
+                      <button
+                        onClick={() => toggleSection(section.id)}
+                        className="w-full flex items-center justify-between px-2 py-2 text-xs text-gray-500 font-semibold hover:bg-gray-50 cursor-pointer"
+                      >
+                        <div className="flex items-center">
+                          <section.icon className="w-3 h-3 mr-2" />
+                          <span>{section.title}</span>
                         </div>
-                      );
-                    }
-                    return (
-                      <DropdownMenuItem key={index} onClick={item.onClick}>
-                        <item.icon className="w-4 h-4 mr-2" />
-                        <span>{item.label}</span>
-                      </DropdownMenuItem>
-                    );
-                  })}
+                        {expandedSections.has(section.id) ? (
+                          <ChevronDown className="w-3 h-3" />
+                        ) : (
+                          <ChevronRight className="w-3 h-3" />
+                        )}
+                      </button>
+                      
+                      {/* Collapsible Items */}
+                      {expandedSections.has(section.id) && (
+                        <div className="bg-gray-50/50">
+                          {section.items.map((item, itemIndex) => (
+                            <DropdownMenuItem 
+                              key={itemIndex} 
+                              onClick={item.onClick}
+                              className="text-xs py-1.5 px-6"
+                            >
+                              <item.icon className="w-3 h-3 mr-2" />
+                              <span>{item.label}</span>
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </>
               )}
 
