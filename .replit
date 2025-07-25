@@ -226,3 +226,6 @@ externalPort = 8008
 [[ports]]
 localPort = 46315
 externalPort = 8099
+
+[agent]
+integrations = ["javascript_sendgrid==1.0.0"]
