@@ -12,8 +12,15 @@ import SocialPage from '@/pages/social-page';
 import ProfilePage from '@/pages/profile-page';
 import NewProfilePage from '@/pages/new-profile-page';
 import UpdatedProfilePage from '@/pages/updated-profile-page';
-// Working modular admin components
-import { AdminEmployeesPage } from '@/components/admin/employee-management';
+// New modular admin components
+import EmployeeDirectory from '@/pages/admin/people/EmployeeDirectory';
+import EmployeeProfile from '@/pages/admin/people/EmployeeProfile';
+import EmployeeOnboarding from '@/pages/admin/people/EmployeeOnboarding';
+import EmployeeBulkActions from '@/pages/admin/people/EmployeeBulkActions';
+import SpaceDirectory from '@/pages/admin/workspaces/SpaceDirectory';
+import SpaceManagement from '@/pages/admin/workspaces/SpaceManagement';
+import MembershipManagement from '@/pages/admin/relationships/MembershipManagement';
+import OrganizationSettings from '@/pages/admin/system/OrganizationSettings';
 import AdminPermissions from '@/pages/admin-permissions';
 import EmployeePromotion from '@/pages/employee-promotion';
 import AdminSurveys from '@/pages/admin-surveys';
@@ -158,13 +165,48 @@ function App() {
                   </Route>
                   <Route path="/admin/employees">
                     <SocialLayout>
-                      <AdminEmployeesPage />
+                      <EmployeeDirectory />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/employees/profile/:id">
+                    <SocialLayout>
+                      <EmployeeProfile />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/employees/onboarding">
+                    <SocialLayout>
+                      <EmployeeOnboarding />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/employees/bulk-actions">
+                    <SocialLayout>
+                      <EmployeeBulkActions />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/workspaces">
+                    <SocialLayout>
+                      <SpaceDirectory />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/workspaces/management">
+                    <SocialLayout>
+                      <SpaceManagement />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/relationships/memberships">
+                    <SocialLayout>
+                      <MembershipManagement />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/system/organization">
+                    <SocialLayout>
+                      <OrganizationSettings />
                     </SocialLayout>
                   </Route>
                   {/* Legacy route redirects */}
                   <Route path="/admin-employees-groups">
                     <SocialLayout>
-                      <AdminEmployeesPage />
+                      <EmployeeDirectory />
                     </SocialLayout>
                   </Route>
                   <Route path="/admin/permissions">
