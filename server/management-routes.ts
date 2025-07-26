@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
-import { users, organizations, organizationFeatures } from '../shared/schema';
+import { users, organizations, organizationFeatures, subscriptions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();
@@ -149,7 +149,33 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    let query = db.select().from(organizations);
+    let query = db
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        isActive: organizations.isActive,
+        description: organizations.description,
+        createdAt: organizations.createdAt,
+        maxUsers: organizations.maxUsers,
+        contactEmail: organizations.contactEmail,
+        industry: organizations.industry,
+        // Subscription data
+        subscriptionId: subscriptions.id,
+        subscribedUsers: subscriptions.subscribedUsers,
+        totalMonthlyAmount: subscriptions.totalMonthlyAmount,
+        expirationDate: subscriptions.expirationDate,
+        subscriptionIsActive: subscriptions.isActive,
+        subscriptionPeriod: subscriptions.subscriptionPeriod,
+        pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
+      })
+      .from(organizations)
+      .leftJoin(
+        subscriptions,
+        and(
+          eq(subscriptions.organizationId, organizations.id),
+          eq(subscriptions.isActive, true)
+        )
+      );
 
     if (search) {
       query = query.where(eq(organizations.name, search as string));
@@ -177,8 +203,21 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
       createdAt: org.createdAt,
       userCount: 0, // TODO: Get actual user count
       maxUsers: org.maxUsers,
+      contactEmail: org.contactEmail,
+      industry: org.industry,
+      // Add subscription information
+      subscription: org.subscriptionId ? {
+        id: org.subscriptionId,
+        subscribedUsers: org.subscribedUsers,
+        totalMonthlyAmount: org.totalMonthlyAmount,
+        expirationDate: org.expirationDate,
+        isActive: org.subscriptionIsActive,
+        subscriptionPeriod: org.subscriptionPeriod,
+        pricePerUserPerMonth: org.pricePerUserPerMonth,
+      } : null,
     }));
 
+    console.log(`Fetched ${transformedList.length} organizations with subscription data`);
     res.json(transformedList);
   } catch (error) {
     console.error('Failed to fetch organizations:', error);
@@ -342,6 +381,116 @@ router.get('/organizations/:id', async (req, res) => {
     res
       .status(500)
       .json({ message: error.message || 'Failed to fetch organization' });
+  }
+});
+
+// Get organization subscription
+router.get('/organizations/:id/subscription', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // First get the organization
+    const [organization] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, parseInt(id)));
+
+    if (!organization) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+
+    // Get the active subscription for this organization
+    const subscription = await db
+      .select({
+        id: subscriptions.id,
+        organizationId: subscriptions.organizationId,
+        lastPaymentDate: subscriptions.lastPaymentDate,
+        subscriptionPeriod: subscriptions.subscriptionPeriod,
+        customDurationDays: subscriptions.customDurationDays,
+        expirationDate: subscriptions.expirationDate,
+        isActive: subscriptions.isActive,
+        maxUsers: subscriptions.maxUsers,
+        subscribedUsers: subscriptions.subscribedUsers,
+        pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
+        totalMonthlyAmount: subscriptions.totalMonthlyAmount,
+        createdAt: subscriptions.createdAt
+      })
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.organizationId, parseInt(id)),
+          eq(subscriptions.isActive, true)
+        )
+      )
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+
+    if (subscription.length === 0) {
+      return res.json({
+        hasSubscription: false,
+        subscription: null
+      });
+    }
+
+    res.json({
+      hasSubscription: true,
+      subscription: subscription[0]
+    });
+  } catch (error) {
+    console.error('Failed to fetch organization subscription:', error);
+    res.status(500).json({ error: 'Failed to fetch subscription data' });
+  }
+});
+
+// Get organization features
+router.get('/organizations/:id/features', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`Fetching features for organization: ${id}`);
+    
+    const features = await db
+      .select()
+      .from(organizationFeatures)
+      .where(eq(organizationFeatures.organizationId, parseInt(id)));
+
+    console.log(`Found features:`, features);
+    res.json(features);
+  } catch (error) {
+    console.error('Failed to fetch organization features:', error);
+    res.status(500).json({ error: 'Failed to fetch features' });
+  }
+});
+
+// Get all subscriptions for management dashboard
+router.get('/subscriptions', verifyCorporateAdmin, async (req, res) => {
+  try {
+    console.log('Fetching all subscriptions for management dashboard...');
+    
+    const subscriptionsList = await db
+      .select({
+        id: subscriptions.id,
+        organizationId: subscriptions.organizationId,
+        organizationName: organizations.name,
+        lastPaymentDate: subscriptions.lastPaymentDate,
+        subscriptionPeriod: subscriptions.subscriptionPeriod,
+        customDurationDays: subscriptions.customDurationDays,
+        expirationDate: subscriptions.expirationDate,
+        isActive: subscriptions.isActive,
+        maxUsers: subscriptions.maxUsers,
+        subscribedUsers: subscriptions.subscribedUsers,
+        pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
+        totalMonthlyAmount: subscriptions.totalMonthlyAmount,
+        createdAt: subscriptions.createdAt
+      })
+      .from(subscriptions)
+      .leftJoin(organizations, eq(subscriptions.organizationId, organizations.id))
+      .orderBy(desc(subscriptions.createdAt));
+
+    console.log(`Found ${subscriptionsList.length} subscriptions`);
+    res.json(subscriptionsList);
+  } catch (error) {
+    console.error('Failed to fetch subscriptions:', error);
+    res.status(500).json({ error: 'Failed to fetch subscriptions' });
   }
 });
 
