@@ -222,7 +222,7 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
   ];
 
   // Check if recognition feature is enabled
-  const isRecognitionEnabled = organizationFeatures.find(
+  const isRecognitionEnabled = (organizationFeatures as any[])?.find(
     (feature: any) => feature.featureKey === 'recognition'
   )?.isEnabled || false;
 
@@ -236,8 +236,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         {
           icon: Users,
           label: 'Employees',
-          onClick: () => navigateTo('/admin-employees-groups'),
-          route: '/admin-employees-groups',
+          onClick: () => navigateTo('/admin/employees'),
+          route: '/admin/employees',
           description: 'Manage team members and employee data'
         },
         {
@@ -264,8 +264,8 @@ const TopNavbar = ({ user }: TopNavbarProps) => {
         {
           icon: Network,
           label: 'Spaces & Groups',
-          onClick: () => navigateTo('/admin-employees-groups'),
-          route: '/admin-employees-groups',
+          onClick: () => navigateTo('/admin/workspaces'),
+          route: '/admin/workspaces',
           description: 'Manage workplace communities'
         }
       ]
