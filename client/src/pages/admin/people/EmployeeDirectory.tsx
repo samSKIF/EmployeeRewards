@@ -61,7 +61,7 @@ export default function EmployeeDirectory() {
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
-    queryKey: ['/api/users', filters],
+    queryKey: ['/api/users'],
   });
 
   const { data: departments = [] } = useQuery<string[]>({
@@ -72,6 +72,12 @@ export default function EmployeeDirectory() {
     queryKey: ['/api/users/locations'],
   });
 
+  // Calculate stats
+  const totalEmployees = employees.length;
+  const activeEmployees = employees.filter(emp => emp.status === 'active').length;
+  const totalDepartments = new Set(employees.map(emp => emp.department).filter(Boolean)).size;
+
+  // Filter employees based on search and filters
   const filteredEmployees = employees.filter((employee) => {
     const matchesSearch = 
       employee.name.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -122,209 +128,184 @@ export default function EmployeeDirectory() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Employee Directory</h1>
-          <p className="text-muted-foreground">
-            Manage your team members and their information
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleExport} variant="outline">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Employee Directory</h1>
+        <p className="text-gray-600 text-base">Manage your team members and their information</p>
+        <div className="flex gap-3">
+          <Button onClick={handleExport} variant="outline" className="border-2 border-gray-300">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Link href="/admin/people/employee-onboarding">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Employee
-            </Button>
-          </Link>
+          <Button className="bg-teal-600 hover:bg-teal-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Employee
+          </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalEmployeeCount}</div>
-            <p className="text-xs text-muted-foreground">
-              All employees in the system
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Employees</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeEmployeeCount}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently active team members
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Departments</CardTitle>
-            <Filter className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{departments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active departments
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Employees</p>
+              <p className="text-3xl font-bold text-gray-900">{totalEmployees}</p>
+              <p className="text-xs text-gray-500 mt-1">All employees in the system</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-full">
+              <Users className="h-6 w-6 text-gray-400" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Employees</p>
+              <p className="text-3xl font-bold text-gray-900">{activeEmployees}</p>
+              <p className="text-xs text-gray-500 mt-1">Currently active team members</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-full">
+              <Users className="h-6 w-6 text-gray-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Departments</p>
+              <p className="text-3xl font-bold text-gray-900">{totalDepartments}</p>
+              <p className="text-xs text-gray-500 mt-1">Active departments</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-full">
+              <Filter className="h-6 w-6 text-gray-400" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-          <CardDescription>
-            Find specific employees or filter by criteria
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search employees..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={filters.department}
-              onValueChange={(value) => handleFilterChange('department', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.status}
-              onValueChange={(value) => handleFilterChange('status', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="terminated">Terminated</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.location}
-              onValueChange={(value) => handleFilterChange('location', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Search & Filter Section */}
+      <div className="bg-white rounded-lg p-6 border shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Search & Filter</h3>
+          <p className="text-sm text-gray-600">Find specific employees or filter by criteria</p>
+        </div>
+        
+        <div className="grid grid-cols-4 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search employees..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </CardContent>
-      </Card>
+          
+          <Select value={filters.department} onValueChange={(value) => handleFilterChange('department', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Departments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              {departments.map((dept) => (
+                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-      {/* Employee Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Employee List ({filteredEmployees.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+          <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="terminated">Terminated</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locations.map((location) => (
+                <SelectItem key={location} value={location}>{location}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Employee List */}
+      <div className="bg-white rounded-lg border shadow-sm">
+        <div className="px-6 py-4 border-b">
+          <h3 className="text-lg font-semibold text-gray-900">Employee List ({filteredEmployees.length})</h3>
+        </div>
+        
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Job Title</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Hire Date</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold text-gray-700">Employee</TableHead>
+                <TableHead className="font-semibold text-gray-700">Job Title</TableHead>
+                <TableHead className="font-semibold text-gray-700">Department</TableHead>
+                <TableHead className="font-semibold text-gray-700">Location</TableHead>
+                <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                <TableHead className="font-semibold text-gray-700">Hire Date</TableHead>
+                <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredEmployees.map((employee) => (
-                <TableRow key={employee.id}>
+                <TableRow key={employee.id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-10 w-10">
                         <AvatarImage src={employee.avatarUrl} />
-                        <AvatarFallback>
-                          {employee.name.charAt(0)}
-                          {employee.surname?.charAt(0)}
+                        <AvatarFallback className="bg-teal-100 text-teal-600 font-medium">
+                          {employee.name?.substring(0, 2)?.toUpperCase() || 'NA'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">
-                          {employee.name} {employee.surname}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {employee.email}
-                        </div>
+                        <p className="font-medium text-gray-900">
+                          {employee.name} {employee.surname || ''}
+                        </p>
+                        <p className="text-sm text-gray-500">{employee.email}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{employee.jobTitle || 'Not specified'}</TableCell>
-                  <TableCell>{employee.department || 'Not assigned'}</TableCell>
-                  <TableCell>{employee.location || 'Not specified'}</TableCell>
+                  <TableCell className="text-gray-900">{employee.jobTitle || '-'}</TableCell>
+                  <TableCell className="text-gray-900">{employee.department || '-'}</TableCell>
+                  <TableCell className="text-gray-900">{employee.location || '-'}</TableCell>
                   <TableCell>
-                    <Badge
-                      className={getStatusColor(employee.status)}
-                      variant="secondary"
+                    <Badge 
+                      className={`${getStatusColor(employee.status)} border-0 text-xs font-medium px-2 py-1`}
                     >
                       {employee.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    {employee.hireDate 
-                      ? formatDate(new Date(employee.hireDate), 'MMM dd, yyyy')
-                      : 'Not specified'
-                    }
+                  <TableCell className="text-gray-900">
+                    {employee.hireDate ? formatDate(new Date(employee.hireDate), 'MMM dd, yyyy') : '-'}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/admin/people/employee-profile/${employee.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Profile
-                      </Button>
-                    </Link>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      View Profile
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
