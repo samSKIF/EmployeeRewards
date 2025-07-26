@@ -1,0 +1,308 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import EmployeeDirectory from '../EmployeeDirectory';
+
+// Mock wouter
+vi.mock('wouter', () => ({
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => 
+    <a href={href}>{children}</a>,
+}));
+
+// Mock date-fns
+vi.mock('date-fns', () => ({
+  formatDate: (date: Date, format: string) => '2023-01-15',
+}));
+
+const mockEmployees = [
+  {
+    id: 1,
+    name: 'John',
+    surname: 'Doe',
+    email: 'john.doe@company.com',
+    jobTitle: 'Software Engineer',
+    department: 'Engineering',
+    status: 'active',
+    location: 'New York',
+    hireDate: '2023-01-15',
+    avatarUrl: 'https://example.com/avatar1.jpg',
+  },
+  {
+    id: 2,
+    name: 'Jane',
+    surname: 'Smith',
+    email: 'jane.smith@company.com',
+    jobTitle: 'Product Manager',
+    department: 'Product',
+    status: 'inactive',
+    location: 'San Francisco',
+    hireDate: '2022-06-01',
+  },
+  {
+    id: 3,
+    name: 'Bob',
+    surname: 'Johnson',
+    email: 'bob.johnson@company.com',
+    jobTitle: 'Designer',
+    department: 'Design',
+    status: 'active',
+    location: 'Remote',
+    hireDate: '2023-03-20',
+  },
+];
+
+const mockDepartments = ['Engineering', 'Product', 'Design', 'Marketing'];
+const mockLocations = ['New York', 'San Francisco', 'Remote', 'London'];
+
+// Mock fetch function
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+function renderWithQueryClient(component: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {component}
+    </QueryClientProvider>
+  );
+}
+
+describe('EmployeeDirectory', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    
+    // Mock successful API responses
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes('/api/users/departments')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockDepartments),
+        });
+      }
+      if (url.includes('/api/users/locations')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockLocations),
+        });
+      }
+      if (url.includes('/api/users')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockEmployees),
+        });
+      }
+      return Promise.reject(new Error('Unknown endpoint'));
+    });
+  });
+
+  it('renders employee directory with header and stats', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    expect(screen.getByText('Employee Directory')).toBeInTheDocument();
+    expect(screen.getByText('Manage your team members and their information')).toBeInTheDocument();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Total Employees')).toBeInTheDocument();
+      expect(screen.getByText('Active Employees')).toBeInTheDocument();
+      expect(screen.getByText('Departments')).toBeInTheDocument();
+    });
+  });
+
+  it('displays correct employee counts in stats cards', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('3')).toBeInTheDocument(); // Total employees
+      expect(screen.getByText('2')).toBeInTheDocument(); // Active employees (John and Bob)
+      expect(screen.getByText('4')).toBeInTheDocument(); // Departments count
+    });
+  });
+
+  it('renders employee table with correct data', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('john.doe@company.com')).toBeInTheDocument();
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+      expect(screen.getByText('Engineering')).toBeInTheDocument();
+      
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+      expect(screen.getByText('jane.smith@company.com')).toBeInTheDocument();
+      expect(screen.getByText('Product Manager')).toBeInTheDocument();
+      expect(screen.getByText('Product')).toBeInTheDocument();
+    });
+  });
+
+  it('filters employees by search term', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    
+    const searchInput = screen.getByPlaceholderText('Search employees...');
+    fireEvent.change(searchInput, { target: { value: 'john' } });
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
+    });
+  });
+
+  it('filters employees by department', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    });
+    
+    // Find and click the department filter
+    const departmentSelect = screen.getByDisplayValue('All Departments');
+    fireEvent.click(departmentSelect);
+    
+    const engineeringOption = screen.getByText('Engineering');
+    fireEvent.click(engineeringOption);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
+    });
+  });
+
+  it('filters employees by status', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    });
+    
+    // Find and click the status filter
+    const statusSelect = screen.getByDisplayValue('All Statuses');
+    fireEvent.click(statusSelect);
+    
+    const activeOption = screen.getByText('Active');
+    fireEvent.click(activeOption);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
+    });
+  });
+
+  it('displays status badges with correct colors', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      const activeBadges = screen.getAllByText('active');
+      const inactiveBadges = screen.getAllByText('inactive');
+      
+      expect(activeBadges.length).toBe(2); // John and Bob
+      expect(inactiveBadges.length).toBe(1); // Jane
+      
+      // Check that badges have correct styling classes
+      activeBadges.forEach(badge => {
+        expect(badge).toHaveClass('bg-green-100', 'text-green-800');
+      });
+      
+      inactiveBadges.forEach(badge => {
+        expect(badge).toHaveClass('bg-gray-100', 'text-gray-800');
+      });
+    });
+  });
+
+  it('shows loading state initially', () => {
+    // Mock loading state
+    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    expect(screen.getByRole('status')).toBeInTheDocument(); // Loading spinner
+  });
+
+  it('displays employee count in table header', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Employee List (3)')).toBeInTheDocument();
+    });
+  });
+
+  it('has functional export button', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Export')).toBeInTheDocument();
+    });
+    
+    const exportButton = screen.getByText('Export');
+    expect(exportButton).toBeEnabled();
+  });
+
+  it('has add employee button with correct link', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    const addButton = screen.getByText('Add Employee');
+    expect(addButton.closest('a')).toHaveAttribute('href', '/admin/people/employee-onboarding');
+  });
+
+  it('has view profile buttons with correct links', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      const viewButtons = screen.getAllByText('View Profile');
+      expect(viewButtons.length).toBe(3);
+      
+      viewButtons.forEach((button, index) => {
+        const employeeId = mockEmployees[index].id;
+        expect(button.closest('a')).toHaveAttribute('href', `/admin/people/employee-profile/${employeeId}`);
+      });
+    });
+  });
+
+  it('handles API errors gracefully', async () => {
+    // Mock API error
+    mockFetch.mockRejectedValue(new Error('API Error'));
+    
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    // Should not crash and should show empty state or error handling
+    await waitFor(() => {
+      expect(screen.getByText('Employee Directory')).toBeInTheDocument();
+    });
+  });
+
+  it('combines multiple filters correctly', async () => {
+    renderWithQueryClient(<EmployeeDirectory />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+      expect(screen.getByText('Bob Johnson')).toBeInTheDocument();
+    });
+    
+    // Apply search filter
+    const searchInput = screen.getByPlaceholderText('Search employees...');
+    fireEvent.change(searchInput, { target: { value: 'john' } });
+    
+    // Apply status filter
+    const statusSelect = screen.getByDisplayValue('All Statuses');
+    fireEvent.click(statusSelect);
+    const activeOption = screen.getByText('Active');
+    fireEvent.click(activeOption);
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
+      expect(screen.queryByText('Bob Johnson')).not.toBeInTheDocument(); // Filtered out by search
+    });
+  });
+});
