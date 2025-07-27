@@ -917,7 +917,7 @@ const SubscriptionManagement = ({
   });
 
   const onSubmit = (data: any) => {
-    if (subscriptionData?.subscriptionId) {
+    if (hasSubscription) {
       renewSubscription.mutate(data);
     } else {
       createSubscription.mutate(data);
@@ -930,8 +930,9 @@ const SubscriptionManagement = ({
     );
   }
 
-  const hasSubscription = subscriptionData?.subscriptionId;
-  const isActive = subscriptionData?.isActive;
+  const hasSubscription = subscriptionData?.hasSubscription && subscriptionData?.subscription;
+  const subscription = subscriptionData?.subscription;
+  const isActive = subscription?.isActive;
 
   return (
     <div className="space-y-6">
@@ -952,7 +953,7 @@ const SubscriptionManagement = ({
               <div>
                 <Label className="text-sm text-muted-foreground">Period</Label>
                 <p className="text-sm font-medium">
-                  {subscriptionData.subscriptionPeriod}
+                  {subscription?.subscriptionPeriod}
                 </p>
               </div>
               <div>
@@ -960,9 +961,9 @@ const SubscriptionManagement = ({
                   Last Payment
                 </Label>
                 <p className="text-sm">
-                  {subscriptionData.lastPaymentDate
+                  {subscription?.lastPaymentDate
                     ? new Date(
-                        subscriptionData.lastPaymentDate
+                        subscription.lastPaymentDate
                       ).toLocaleDateString()
                     : 'N/A'}
                 </p>
@@ -972,9 +973,9 @@ const SubscriptionManagement = ({
                   Expiration
                 </Label>
                 <p className="text-sm">
-                  {subscriptionData.expirationDate
+                  {subscription?.expirationDate
                     ? new Date(
-                        subscriptionData.expirationDate
+                        subscription.expirationDate
                       ).toLocaleDateString()
                     : 'N/A'}
                 </p>
@@ -990,7 +991,7 @@ const SubscriptionManagement = ({
                     Subscribed Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {subscriptionData.subscribedUsers || 'N/A'}
+                    {subscription?.subscribedUsers || 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -999,8 +1000,8 @@ const SubscriptionManagement = ({
                   </Label>
                   <p className="text-lg font-semibold">
                     $
-                    {subscriptionData.pricePerUserPerMonth
-                      ? subscriptionData.pricePerUserPerMonth.toFixed(2)
+                    {subscription?.pricePerUserPerMonth
+                      ? subscription.pricePerUserPerMonth.toFixed(2)
                       : 'N/A'}
                   </p>
                 </div>
@@ -1010,8 +1011,8 @@ const SubscriptionManagement = ({
                   </Label>
                   <p className="text-lg font-semibold text-green-600">
                     $
-                    {subscriptionData.totalMonthlyAmount
-                      ? subscriptionData.totalMonthlyAmount.toFixed(2)
+                    {subscription?.totalMonthlyAmount
+                      ? subscription.totalMonthlyAmount.toFixed(2)
                       : 'N/A'}
                   </p>
                 </div>
@@ -1027,7 +1028,7 @@ const SubscriptionManagement = ({
                     Current Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {subscriptionData.currentUserCount || 0}
+                    {subscription?.currentUserCount || 0}
                   </p>
                 </div>
                 <div>
@@ -1035,39 +1036,39 @@ const SubscriptionManagement = ({
                     Subscribed Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {subscriptionData.subscribedUsers || 'N/A'}
+                    {subscription?.subscribedUsers || 'N/A'}
                   </p>
                 </div>
               </div>
-              {subscriptionData.subscribedUsers && (
+              {subscription?.subscribedUsers && (
                 <div className="mt-3">
                   <div className="flex justify-between text-sm text-muted-foreground mb-1">
                     <span>Usage</span>
                     <span>
-                      {subscriptionData.currentUserCount || 0} /{' '}
-                      {subscriptionData.subscribedUsers}
+                      {subscription.currentUserCount || 0} /{' '}
+                      {subscription.subscribedUsers}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        (subscriptionData.currentUserCount || 0) /
-                          subscriptionData.subscribedUsers >=
+                        (subscription.currentUserCount || 0) /
+                          subscription.subscribedUsers >=
                         0.9
                           ? 'bg-red-500'
-                          : (subscriptionData.currentUserCount || 0) /
-                                subscriptionData.subscribedUsers >=
+                          : (subscription.currentUserCount || 0) /
+                                subscription.subscribedUsers >=
                               0.8
                             ? 'bg-orange-500'
                             : 'bg-green-500'
                       }`}
                       style={{
-                        width: `${Math.min(100, ((subscriptionData.currentUserCount || 0) / subscriptionData.subscribedUsers) * 100)}%`,
+                        width: `${Math.min(100, ((subscription.currentUserCount || 0) / subscription.subscribedUsers) * 100)}%`,
                       }}
                     />
                   </div>
-                  {(subscriptionData.currentUserCount || 0) /
-                    subscriptionData.subscribedUsers >=
+                  {(subscription.currentUserCount || 0) /
+                    subscription.subscribedUsers >=
                     0.9 && (
                     <p className="text-xs text-red-600 mt-1">
                       ⚠️ Approaching user limit - new registrations may be
@@ -1078,18 +1079,18 @@ const SubscriptionManagement = ({
               )}
             </div>
 
-            {subscriptionData.calculatedStatus && (
+            {subscription?.calculatedStatus && (
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-2 w-2 rounded-full bg-${subscriptionData.calculatedStatus.color}-500`}
+                    className={`h-2 w-2 rounded-full bg-${subscription.calculatedStatus.color}-500`}
                   ></div>
                   <span className="text-sm font-medium capitalize">
-                    {subscriptionData.calculatedStatus.status}
+                    {subscription.calculatedStatus.status}
                   </span>
-                  {subscriptionData.calculatedStatus.daysRemaining > 0 && (
+                  {subscription.calculatedStatus.daysRemaining > 0 && (
                     <span className="text-sm text-muted-foreground">
-                      - {subscriptionData.calculatedStatus.daysRemaining} days
+                      - {subscription.calculatedStatus.daysRemaining} days
                       remaining
                     </span>
                   )}
