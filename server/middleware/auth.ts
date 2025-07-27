@@ -16,9 +16,9 @@ export interface AuthenticatedRequest extends Request {
 // Generate JWT token
 export const generateToken = (user: Omit<User, 'password'>): string => {
   return jwt.sign(
-    { id: user.id, email: user.email, isAdmin: user.isAdmin },
+    { id: user.id, email: user.email, isAdmin: (user as any).is_admin },
     JWT_SECRET,
-    { expiresIn: '1d' }
+    { expiresIn: '7d' } // Extended expiry to reduce token issues
   );
 };
 
@@ -81,10 +81,25 @@ export const verifyAdmin = (
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  if (!req.user.isAdmin) {
+  // Fix: Use snake_case field names from database
+  const user = req.user as any;
+  const isAdminUser = user.is_admin && (
+    user.role_type === 'admin' || 
+    user.role_type === 'client_admin' || 
+    user.role_type === 'corporate_admin'
+  );
+
+  if (!isAdminUser) {
     return res
       .status(403)
-      .json({ message: 'Forbidden: Admin access required' });
+      .json({ 
+        message: 'Forbidden: Admin access required',
+        debug: {
+          is_admin: user.is_admin,
+          role_type: user.role_type,
+          computed_admin: isAdminUser
+        }
+      });
   }
 
   next();
