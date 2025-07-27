@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db, pool } from './db';
 import { users, organizations, organization_features, subscriptions } from '../shared/schema';
+import { companies, insertCompanySchema } from '../shared/management-schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();
@@ -263,7 +264,7 @@ router.post(
       // 3. Generate database URL
       const newCompanyDbUrl = `postgresql://company_${Date.now()}@localhost/company_db`;
 
-      const [newCompany] = await managementDb
+      const [newCompany] = await db
         .insert(companies)
         .values({
           ...companyData,
@@ -288,7 +289,7 @@ router.patch(
       const { id } = req.params;
       const updates = req.body;
 
-      const [updatedCompany] = await managementDb
+      const [updatedCompany] = await db
         .update(companies)
         .set({
           ...updates,
@@ -461,8 +462,8 @@ router.get('/organizations/:id/features', async (req, res) => {
     
     const features = await db
       .select()
-      .from(organizationFeatures)
-      .where(eq(organizationFeatures.organizationId, parseInt(id)));
+      .from(organization_features)
+      .where(eq(organization_features.organization_id, parseInt(id)));
 
     console.log(`Found features:`, features);
     res.json(features);
