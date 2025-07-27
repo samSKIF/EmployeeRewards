@@ -356,49 +356,100 @@ router.post(
   }
 );
 
-// Get organization by ID
+// Get organization by ID with subscription data
 router.get('/organizations/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [organization] = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.id, parseInt(id)));
+    // Use same query structure as list endpoint to include subscription data
+    const result = await pool.query(`
+      SELECT 
+        o.id,
+        o.name,
+        o.status,
+        o.max_users,
+        o.contact_name,
+        o.contact_email,
+        o.contact_phone,
+        o.superuser_email,
+        o.industry,
+        o.address,
+        o.logo_url,
+        o.created_at,
+        COALESCE(u.user_count, 0) as user_count,
+        s.id as subscription_id,
+        s.subscribed_users,
+        s.total_monthly_amount,
+        s.expiration_date,
+        s.is_active as subscription_active,
+        s.subscription_period,
+        s.price_per_user_per_month,
+        s.last_payment_date
+      FROM organizations o
+      LEFT JOIN (
+        SELECT organization_id, COUNT(*) as user_count 
+        FROM users 
+        WHERE status = 'active' 
+        GROUP BY organization_id
+      ) u ON o.id = u.organization_id
+      LEFT JOIN (
+        SELECT DISTINCT ON (organization_id) 
+          id, organization_id, subscribed_users, total_monthly_amount, 
+          expiration_date, is_active, subscription_period, 
+          price_per_user_per_month, last_payment_date, created_at
+        FROM subscriptions 
+        WHERE is_active = true
+        ORDER BY organization_id, created_at DESC
+      ) s ON o.id = s.organization_id
+      WHERE o.id = $1
+    `, [parseInt(id)]);
 
-    if (!organization) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    // Ensure all fields are present with proper defaults
+    const row = result.rows[0];
+
+    // Ensure all fields are present with proper defaults and include subscription data
     const completeOrganization = {
-      id: organization.id,
-      name: organization.name || '',
-      status: organization.isActive ? 'active' : 'inactive',
-      maxUsers: organization.maxUsers || null,
-      contactName: organization.contactName || '',
-      contactEmail: organization.contactEmail || '',
-      contactPhone: organization.contactPhone || '',
-      adminEmail: organization.adminEmail || '',
-      superuserEmail: organization.adminEmail || '',
-      industry: organization.industry || '',
-      streetAddress: organization.streetAddress || '',
-      city: organization.city || '',
-      state: organization.state || '',
-      zipCode: organization.zipCode || '',
-      country: organization.country || '',
-      website: organization.website || '',
-      description: organization.description || '',
-      logoUrl: organization.logoUrl || '',
-      createdAt: organization.createdAt,
-      updatedAt: organization.updatedAt,
-      address: {
-        street: organization.streetAddress || '',
-        city: organization.city || '',
-        state: organization.state || '',
-        zipCode: organization.zipCode || '',
-        country: organization.country || '',
+      id: row.id,
+      name: row.name || '',
+      status: row.status || 'active',
+      maxUsers: row.max_users,
+      contactName: row.contact_name || '',
+      contactEmail: row.contact_email || '',
+      contactPhone: row.contact_phone || '',
+      adminEmail: row.superuser_email || '',
+      superuserEmail: row.superuser_email || '',
+      industry: row.industry || '',
+      streetAddress: row.address?.street || '',
+      city: row.address?.city || '',
+      state: row.address?.state || '',
+      zipCode: row.address?.zip || '',
+      country: row.address?.country || '',
+      website: '',
+      description: '',
+      logoUrl: row.logo_url || '',
+      createdAt: row.created_at,
+      userCount: parseInt(row.user_count) || 0,
+      address: row.address || {
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: '',
       },
+      // Add subscription information 
+      subscription: row.subscription_id ? {
+        id: row.subscription_id,
+        subscribedUsers: row.subscribed_users,
+        totalMonthlyAmount: row.total_monthly_amount,
+        expirationDate: row.expiration_date,
+        isActive: row.subscription_active,
+        subscriptionPeriod: row.subscription_period,
+        pricePerUserPerMonth: row.price_per_user_per_month,
+        lastPaymentDate: row.last_payment_date
+      } : null,
     };
 
     res.json(completeOrganization);
