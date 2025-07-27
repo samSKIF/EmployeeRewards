@@ -14,7 +14,42 @@
     "complexity": ["warn", 10],
     "max-params": ["warn", 4],
     "max-depth": ["warn", 4],
-    "max-nested-callbacks": ["warn", 3]
+    "max-nested-callbacks": ["warn", 3],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "variable",
+        "format": ["snake_case", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "function",
+        "format": ["snake_case"]
+      },
+      {
+        "selector": "parameter",
+        "format": ["snake_case"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "property",
+        "format": ["snake_case"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "interface",
+        "format": ["PascalCase"],
+        "prefix": ["I"]
+      },
+      {
+        "selector": "typeAlias",
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": "class",
+        "format": ["PascalCase"]
+      }
+    ]
   },
   "overrides": [
     {

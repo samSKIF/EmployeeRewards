@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db, pool } from './db';
-import { users, organizations, organizationFeatures, subscriptions } from '../shared/schema';
+import { users, organizations, organization_features, subscriptions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();

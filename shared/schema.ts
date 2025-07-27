@@ -25,56 +25,56 @@ export const organizations: any = pgTable('organizations', {
   status: text('status').default('active').notNull(), // 'active', 'inactive', 'pending'
 
   // Contact Information
-  contactName: text('contact_name'),
-  contactEmail: text('contact_email'),
-  contactPhone: text('contact_phone'),
-  superuserEmail: text('superuser_email'),
+  contact_name: text('contact_name'),
+  contact_email: text('contact_email'),
+  contact_phone: text('contact_phone'),
+  superuser_email: text('superuser_email'),
 
   // Organization Details
   industry: text('industry'),
   address: jsonb('address'), // {street, city, state, country, zip}
 
   // Legacy and System Fields
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  createdBy: integer('created_by'),
-  logoUrl: text('logo_url'),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_by: integer('created_by'),
+  logo_url: text('logo_url'),
   settings: jsonb('settings'), // Store org-specific settings like enabled features
-  parentOrgId: integer('parent_org_id').references(() => organizations.id), // For hierarchical relationships
-  currentSubscriptionId: integer('current_subscription_id'), // Will reference subscriptions table
+  parent_org_id: integer('parent_org_id').references(() => organizations.id), // For hierarchical relationships
+  current_subscription_id: integer('current_subscription_id'), // Will reference subscriptions table
 });
 
 // Subscription management table
 export const subscriptions = pgTable('subscriptions', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id)
     .notNull(),
-  lastPaymentDate: timestamp('last_payment_date').notNull(),
-  subscriptionPeriod: text('subscription_period').notNull(), // 'quarter', 'year', 'custom'
-  customDurationDays: integer('custom_duration_days'), // Only for 'custom' period
-  expirationDate: timestamp('expiration_date').notNull(), // Calculated server-side
-  subscribedUsers: integer('subscribed_users').notNull().default(50), // Number of users they paid for (this is the user limit)
-  pricePerUserPerMonth: doublePrecision('price_per_user_per_month')
+  last_payment_date: timestamp('last_payment_date').notNull(),
+  subscription_period: text('subscription_period').notNull(), // 'quarter', 'year', 'custom'
+  custom_duration_days: integer('custom_duration_days'), // Only for 'custom' period
+  expiration_date: timestamp('expiration_date').notNull(), // Calculated server-side
+  subscribed_users: integer('subscribed_users').notNull().default(50), // Number of users they paid for (this is the user limit)
+  price_per_user_per_month: doublePrecision('price_per_user_per_month')
     .notNull()
     .default(10.0), // Monthly cost per user
-  totalMonthlyAmount: doublePrecision('total_monthly_amount')
+  total_monthly_amount: doublePrecision('total_monthly_amount')
     .notNull()
     .default(500.0), // Total monthly subscription cost
-  isActive: boolean('is_active').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Organization features tracking
-export const organizationFeatures = pgTable('organization_features', {
+export const organization_features = pgTable('organization_features', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id)
     .notNull(),
-  featureKey: text('feature_key').notNull(), // 'social', 'rewards', 'marketplace'
-  isEnabled: boolean('is_enabled').default(true).notNull(),
-  enabledAt: timestamp('enabled_at').defaultNow(),
-  enabledBy: integer('enabled_by'),
+  feature_key: text('feature_key').notNull(), // 'social', 'rewards', 'marketplace'
+  is_enabled: boolean('is_enabled').default(true).notNull(),
+  enabled_at: timestamp('enabled_at').defaultNow(),
+  enabled_by: integer('enabled_by'),
   settings: jsonb('settings'), // Feature-specific settings/configuration
 });
 
@@ -86,63 +86,63 @@ export const users = pgTable('users', {
   name: text('name').notNull(), // First name
   surname: text('surname'), // Last name
   email: text('email').notNull().unique(),
-  phoneNumber: text('phone_number'), // Phone number
-  jobTitle: text('job_title'), // Job name/title
+  phone_number: text('phone_number'), // Phone number
+  job_title: text('job_title'), // Job name/title
   department: text('department'), // Department
   sex: text('sex'), // Gender
   nationality: text('nationality'), // Nationality
-  birthDate: date('birth_date'), // Date of birth
-  roleType: text('role_type').default('employee').notNull(), // 'corporate_admin', 'client_admin', 'seller_admin', 'employee'
-  isAdmin: boolean('is_admin').default(false), // Legacy field: Role: admin or user
+  birth_date: date('birth_date'), // Date of birth
+  role_type: text('role_type').default('employee').notNull(), // 'corporate_admin', 'client_admin', 'seller_admin', 'employee'
+  is_admin: boolean('is_admin').default(false), // Legacy field: Role: admin or user
   status: text('status').default('active'), // Status: active/inactive
-  avatarUrl: text('avatar_url'), // Profile photo
-  hireDate: date('hire_date'), // Work anniversary date
-  firebaseUid: text('firebase_uid'), // Firebase User ID for authentication
-  organizationId: integer('organization_id').references(() => organizations.id), // Which org they belong to
+  avatar_url: text('avatar_url'), // Profile photo
+  hire_date: date('hire_date'), // Work anniversary date
+  firebase_uid: text('firebase_uid'), // Firebase User ID for authentication
+  organization_id: integer('organization_id').references(() => organizations.id), // Which org they belong to
   permissions: jsonb('permissions'), // Specific permissions within their role
   title: text('title'), // Job title for profile
   location: text('location'), // Location/office
   responsibilities: text('responsibilities'), // Job responsibilities
-  aboutMe: text('about_me'), // About me section for profile
-  coverPhotoUrl: text('cover_photo_url'), // Profile cover photo
-  lastSeenAt: timestamp('last_seen_at'), // Last login/activity timestamp
-  managerId: integer('manager_id').references(() => users.id), // Reference to manager (self-referencing)
-  managerEmail: text('manager_email'), // Manager's email address for building org hierarchy
-  adminScope: text('admin_scope').default('none'), // 'super', 'site', 'department', 'hybrid', 'none'
-  allowedSites: text('allowed_sites').array().default([]), // Array of sites this admin can manage (multiple sites possible)
-  allowedDepartments: text('allowed_departments').array().default([]), // Array of departments this admin can manage (multiple departments possible)
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  createdBy: integer('created_by'),
+  about_me: text('about_me'), // About me section for profile
+  cover_photo_url: text('cover_photo_url'), // Profile cover photo
+  last_seen_at: timestamp('last_seen_at'), // Last login/activity timestamp
+  manager_id: integer('manager_id').references(() => users.id), // Reference to manager (self-referencing)
+  manager_email: text('manager_email'), // Manager's email address for building org hierarchy
+  admin_scope: text('admin_scope').default('none'), // 'super', 'site', 'department', 'hybrid', 'none'
+  allowed_sites: text('allowed_sites').array().default([]), // Array of sites this admin can manage (multiple sites possible)
+  allowed_departments: text('allowed_departments').array().default([]), // Array of departments this admin can manage (multiple departments possible)
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_by: integer('created_by'),
 });
 
 // Accounts table to track point balances (ledger)
 export const accounts = pgTable('accounts', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id, {
+  user_id: integer('user_id').references(() => users.id, {
     onDelete: 'cascade',
   }),
-  accountType: text('account_type').notNull(), // 'user', 'system', etc
+  account_type: text('account_type').notNull(), // 'user', 'system', etc
   balance: doublePrecision('balance').notNull().default(0),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Transactions table (double-entry accounting)
 export const transactions = pgTable('transactions', {
   id: serial('id').primaryKey(),
-  fromAccountId: integer('from_account_id').references(() => accounts.id),
-  toAccountId: integer('to_account_id').references(() => accounts.id),
+  from_account_id: integer('from_account_id').references(() => accounts.id),
+  to_account_id: integer('to_account_id').references(() => accounts.id),
   amount: doublePrecision('amount').notNull(),
   description: text('description').notNull(),
   reason: text('reason'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  createdBy: integer('created_by').references(() => users.id),
-  recognitionId: integer('recognition_id').references(() => recognitions.id),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_by: integer('created_by').references(() => users.id),
+  recognition_id: integer('recognition_id').references(() => recognitions.id),
 });
 
 // Seller profiles table
 export const sellers = pgTable('sellers', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id)
     .notNull(),
   businessName: text('business_name').notNull(),
@@ -236,7 +236,7 @@ export const orders = pgTable('orders', {
   cancelReason: text('cancel_reason'),
   returnedAt: timestamp('returned_at'),
   returnReason: text('return_reason'),
-  organizationId: integer('organization_id').references(() => organizations.id), // Client organization the order belongs to
+  organization_id: integer('organization_id').references(() => organizations.id), // Client organization the order belongs to
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at'),
 });
@@ -433,7 +433,7 @@ export const recognitions = pgTable('recognitions', {
 // Recognition Settings schema for the recognition microservice
 export const recognitionSettings = pgTable('recognition_settings', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id, { onDelete: 'cascade' })
     .notNull(),
   costPerPoint: doublePrecision('cost_per_point').notNull().default(0.1),
@@ -469,7 +469,7 @@ export const managerBudgets = pgTable('manager_budgets', {
   managerId: integer('manager_id')
     .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id, { onDelete: 'cascade' })
     .notNull(),
   totalPoints: integer('total_points').notNull().default(0),
@@ -520,7 +520,7 @@ export const messages = pgTable('messages', {
 // Organization branding and settings
 export const brandingSettings = pgTable('branding_settings', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id').references(() => organizations.id), // Reference to organization
+  organization_id: integer('organization_id').references(() => organizations.id), // Reference to organization
   organizationName: text('organization_name').notNull(),
   logoUrl: text('logo_url'), // Company logo URL
   colorScheme: text('color_scheme').default('default'), // "default", "blue", "green", "purple", "custom"
@@ -615,7 +615,7 @@ export const leaveTypes = pgTable('leave_types', {
   documentationRequired: boolean('documentation_required').default(false),
   maxConsecutiveDays: integer('max_consecutive_days'), // Optional limit
   minAdvanceNotice: integer('min_advance_notice'), // Days required before leave
-  organizationId: integer('organization_id').references(() => organizations.id),
+  organization_id: integer('organization_id').references(() => organizations.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at'),
   createdBy: integer('created_by').references(() => users.id),
@@ -690,7 +690,7 @@ export const holidays = pgTable('holidays', {
   date: date('date').notNull(),
   description: text('description'),
   country: text('country').notNull().default('Global'), // For country-specific holidays
-  organizationId: integer('organization_id').references(() => organizations.id),
+  organization_id: integer('organization_id').references(() => organizations.id),
   isRecurringYearly: boolean('is_recurring_yearly').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at'),
@@ -733,7 +733,7 @@ export const leavePolicies = pgTable('leave_policies', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id)
     .notNull(),
   settings: jsonb('settings'), // JSON of policy settings
@@ -756,7 +756,7 @@ export const employeeStatusTypes = pgTable('employee_status_types', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at'),
   createdBy: integer('created_by').references(() => users.id),
-  organizationId: integer('organization_id').references(() => organizations.id),
+  organization_id: integer('organization_id').references(() => organizations.id),
 });
 
 // Employee Statuses - assigns status to specific employees
@@ -892,11 +892,11 @@ export const organizationsRelations = relations(
   organizations,
   ({ one, many }) => ({
     parent: one(organizations, {
-      fields: [organizations.parentOrgId],
+      fields: [organizations.parent_org_id],
       references: [organizations.id],
     }),
     children: many(organizations, { relationName: 'childOrganizations' }),
-    features: many(organizationFeatures),
+    features: many(organization_features),
     users: many(users),
     sellers: many(sellers),
     leaveTypes: many(leaveTypes),
@@ -906,7 +906,7 @@ export const organizationsRelations = relations(
     brandingSettings: many(brandingSettings),
     subscriptions: many(subscriptions),
     currentSubscription: one(subscriptions, {
-      fields: [organizations.currentSubscriptionId],
+      fields: [organizations.current_subscription_id],
       references: [subscriptions.id],
     }),
   })
@@ -915,20 +915,20 @@ export const organizationsRelations = relations(
 // Subscription relations
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   organization: one(organizations, {
-    fields: [subscriptions.organizationId],
+    fields: [subscriptions.organization_id],
     references: [organizations.id],
   }),
 }));
 
 export const organizationFeaturesRelations = relations(
-  organizationFeatures,
+  organization_features,
   ({ one }) => ({
     organization: one(organizations, {
-      fields: [organizationFeatures.organizationId],
+      fields: [organization_features.organization_id],
       references: [organizations.id],
     }),
     enabledByUser: one(users, {
-      fields: [organizationFeatures.enabledBy],
+      fields: [organization_features.enabled_by],
       references: [users.id],
     }),
   })
@@ -936,10 +936,10 @@ export const organizationFeaturesRelations = relations(
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   organization: one(organizations, {
-    fields: [users.organizationId],
+    fields: [users.organization_id],
     references: [organizations.id],
   }),
-  creator: one(users, { fields: [users.createdBy], references: [users.id] }),
+  creator: one(users, { fields: [users.created_by], references: [users.id] }),
   transactions: many(transactions, { relationName: 'userTransactions' }),
   products: many(products),
   posts: many(posts),
@@ -1335,7 +1335,7 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
   updatedAt: true,
 });
 export const insertOrganizationFeatureSchema = createInsertSchema(
-  organizationFeatures
+  organization_features
 ).omit({ id: true });
 export const insertSellerSchema = createInsertSchema(sellers).omit({
   id: true,
@@ -1472,7 +1472,7 @@ export type CreateOrganizationData = z.infer<typeof createOrganizationSchema>;
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
 
-export type OrganizationFeature = typeof organizationFeatures.$inferSelect;
+export type OrganizationFeature = typeof organization_features.$inferSelect;
 export type InsertOrganizationFeature = z.infer<
   typeof insertOrganizationFeatureSchema
 >;
@@ -1700,7 +1700,7 @@ export const interestChannels = pgTable('interest_channels', {
   description: text('description'),
   memberCount: integer('member_count').default(0).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id)
     .notNull(),
 
@@ -1849,7 +1849,7 @@ export const interestChannelPinnedPosts = pgTable(
 // Featured Posts Configuration - Global settings for Spaces discovery page
 export const featuredPostsConfig = pgTable('featured_posts_config', {
   id: serial('id').primaryKey(),
-  organizationId: integer('organization_id')
+  organization_id: integer('organization_id')
     .references(() => organizations.id, { onDelete: 'cascade' })
     .notNull(),
   displayMode: text('display_mode').default('pinned').notNull(), // 'pinned', 'engagement', 'latest_from_spaces'

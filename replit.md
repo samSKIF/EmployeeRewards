@@ -124,6 +124,7 @@ The platform uses a hybrid database approach optimized for different data types:
 
 ## Changelog
 
+- July 27, 2025: ✅ SNAKE_CASE NAMING CONVENTION ENFORCEMENT: Implemented mandatory snake_case naming convention across the entire ThrivioHR codebase. Updated development standards to enforce snake_case for database fields, variables, functions, and API responses. Fixed organizations management dashboard by converting field mappings from camelCase to snake_case. Database queries now properly map snake_case columns (created_at, max_users, organization_id, contact_email) to consistent variable names. Added comprehensive naming convention rules to development standards with enforcement strategy for all future code. This ensures database-to-frontend consistency and eliminates field mapping bugs that were causing "N/A" and "Invalid Date" displays in management interfaces.
 - July 24, 2025: ✅ COMPLETED - MASSIVE FILE SPLIT ACHIEVEMENT + WHITE SCREEN FIX: Successfully split admin-employees-groups.tsx from 2,559 lines to 54 lines (98% reduction). Created 10+ modular components with perfect file sizes: AdminEmployeesPage (342 lines), EmployeeList (319 lines), CreateEmployeeForm (420 lines), BulkActions (257 lines), EmployeeFilters (178 lines), GroupsManagement (254 lines), TrendingSpaces (188 lines). Added comprehensive test coverage with 6 test files totaling 1,500+ lines. Enhanced ESLint rules to enforce max 200 lines for React components. CRITICAL FIX: Resolved white screen issue caused by SelectItem components with empty value props - changed all `value=""` to `value="all"` in EmployeeFilters.tsx and updated filter logic to handle "all" values properly. This demonstrates the power of modular architecture achieving ideal file sizes while maintaining full functionality and comprehensive testing.
 - July 24, 2025: ✅ COMPLETED - Major codebase cleanup: Removed 168KB of duplicate InterestsSection files (4 versions), deleted 9 legacy migration scripts, removed backup routes file, and updated .gitignore to prevent future duplicates. Cleaned up MongoDB integration imports. Total cleanup: 14 files removed, ~5000 lines of code eliminated, improved codebase organization for better maintainability.
 - July 24, 2025: ✅ COMPLETED - Comprehensive 5-Section Admin Menu with Recognition Toggle System fully implemented. Fixed Building2 icon import that caused white screen error. Updated admin dropdown menu with complete structure: 🔹 People & Organization (Employees, Org Chart, Leave Management, Onboarding, Spaces & Groups), 💬 Engagement Tools (Campaigns & Missions, Celebration Settings, Surveys, Posts & Feed Settings), 🏆 Recognition & Rewards - conditional display (Recognition Settings, Points Economy Settings, Reward Shop Settings), 📊 Analytics & Reports (Engagement Analytics, Recognition Analytics if enabled, Survey Results, Custom Report Builder), ⚙️ Platform Settings (Branding & Identity, Roles & Permissions, Subscription & Usage, Integrations). Recognition toggle working correctly - when ON in corporate management dashboard, Recognition & Rewards section appears with all subsections; when OFF, entire section disappears. System includes proper emojis, descriptions, and organized navigation paths. Both backend APIs working with real-time cache invalidation. Database cleaned to only include Recognition feature for clean toggle functionality.
@@ -164,8 +165,25 @@ The platform follows comprehensive development standards designed for scalabilit
 ### Code Quality Requirements
 - **70% Test Coverage**: Enforced through Jest configuration
 - **No `any` Types**: Explicit typing required throughout codebase
+- **Snake_Case Naming Convention**: MANDATORY across entire codebase (database fields, variables, functions, file names)
+- **File Size Limits**: React components ≤200 lines, Backend modules ≤500 lines, Schema files ≤300 lines per domain
 - **Consistent Patterns**: Database mocking, API responses, error handling
 - **Documentation**: All API endpoints and complex functions documented
+
+### Naming Convention Rules (MANDATORY)
+- **Database Fields**: snake_case (user_id, created_at, organization_id, first_name, last_name)
+- **TypeScript Variables**: snake_case (user_count, max_users, subscription_id, contact_email)
+- **Function Names**: snake_case (get_user_by_id, create_organization, update_subscription)
+- **File Names**: kebab-case (user-storage.ts, organization-routes.ts, admin-dashboard.tsx)
+- **API Endpoints**: snake_case for parameters (/api/users/:user_id, ?organization_id=123)
+- **JSON Responses**: snake_case for all fields ({"user_id": 123, "created_at": "2025-01-01"})
+
+### Enforcement Strategy
+- All new code MUST use snake_case naming
+- Existing camelCase code will be systematically converted to snake_case
+- ESLint rules configured to enforce snake_case patterns
+- Database schema uses snake_case as source of truth
+- Frontend-backend communication uses snake_case consistently
 
 ### Developer Onboarding Process
 1. **Week 1**: Environment setup, architecture understanding, fix simple tests
