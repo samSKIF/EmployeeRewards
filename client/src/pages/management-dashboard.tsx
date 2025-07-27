@@ -742,12 +742,12 @@ const OrganizationFeaturesManagement = ({
     return <div className="text-center py-4">Loading features...</div>;
   }
 
-  const recognitionFeature = features?.find((f: any) => f.featureKey === 'recognition');
+  const recognitionFeature = features?.find((f: any) => f.feature_key === 'recognition');
   
   // Debug logging
   console.log('Features data:', features);
   console.log('Recognition feature:', recognitionFeature);
-  console.log('Is enabled:', recognitionFeature?.isEnabled);
+  console.log('Is enabled:', recognitionFeature?.is_enabled);
 
   return (
     <Card>
@@ -765,13 +765,13 @@ const OrganizationFeaturesManagement = ({
               Enable peer-to-peer recognition, points economy, and reward shop features
             </div>
             <div className="text-xs text-gray-500">
-              Current state: {recognitionFeature?.isEnabled ? 'ON' : 'OFF'} | 
+              Current state: {recognitionFeature?.is_enabled ? 'ON' : 'OFF'} | 
               Feature found: {recognitionFeature ? 'Yes' : 'No'} |
               Features count: {features?.length || 0}
             </div>
           </div>
           <Switch
-            checked={Boolean(recognitionFeature?.isEnabled)}
+            checked={Boolean(recognitionFeature?.is_enabled)}
             onCheckedChange={(checked) => {
               console.log('Toggle clicked, new state:', checked);
               updateFeatureMutation.mutate({
@@ -783,7 +783,7 @@ const OrganizationFeaturesManagement = ({
           />
         </div>
 
-        {recognitionFeature?.isEnabled && (
+        {recognitionFeature?.is_enabled && (
           <div className="pl-4 text-sm text-muted-foreground">
             <p>✓ Recognition Settings</p>
             <p>✓ Points Economy</p>
