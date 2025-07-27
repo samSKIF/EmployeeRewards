@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { db } from './db';
+import { db, pool } from './db';
 import { users, organizations, organizationFeatures, subscriptions } from '../shared/schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
@@ -379,53 +379,41 @@ router.get('/organizations/:id', async (req, res) => {
 router.get('/organizations/:id/subscription', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`Fetching subscription for organization ID: ${id}`);
     
-    // First get the organization
-    const [organization] = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.id, parseInt(id)));
+    // Use raw SQL query to avoid Drizzle ORM field selection issues
+    const result = await pool.query(`
+      SELECT s.* FROM subscriptions s 
+      WHERE s.organization_id = $1 AND s.is_active = true 
+      ORDER BY s.created_at DESC 
+      LIMIT 1
+    `, [parseInt(id)]);
 
-    if (!organization) {
-      return res.status(404).json({ message: 'Organization not found' });
-    }
+    console.log(`Query result:`, result.rows);
 
-    // Get the active subscription for this organization
-    const subscription = await db
-      .select({
-        id: subscriptions.id,
-        organizationId: subscriptions.organizationId,
-        lastPaymentDate: subscriptions.lastPaymentDate,
-        subscriptionPeriod: subscriptions.subscriptionPeriod,
-        customDurationDays: subscriptions.customDurationDays,
-        expirationDate: subscriptions.expirationDate,
-        isActive: subscriptions.isActive,
-        maxUsers: subscriptions.maxUsers,
-        subscribedUsers: subscriptions.subscribedUsers,
-        pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
-        totalMonthlyAmount: subscriptions.totalMonthlyAmount,
-        createdAt: subscriptions.createdAt
-      })
-      .from(subscriptions)
-      .where(
-        and(
-          eq(subscriptions.organizationId, parseInt(id)),
-          eq(subscriptions.isActive, true)
-        )
-      )
-      .orderBy(desc(subscriptions.createdAt))
-      .limit(1);
-
-    if (subscription.length === 0) {
+    if (result.rows.length === 0) {
       return res.json({
         hasSubscription: false,
         subscription: null
       });
     }
 
+    const subscription = result.rows[0];
     res.json({
       hasSubscription: true,
-      subscription: subscription[0]
+      subscription: {
+        id: subscription.id,
+        organizationId: subscription.organization_id,
+        lastPaymentDate: subscription.last_payment_date,
+        subscriptionPeriod: subscription.subscription_period,
+        customDurationDays: subscription.custom_duration_days,
+        expirationDate: subscription.expiration_date,
+        isActive: subscription.is_active,
+        subscribedUsers: subscription.subscribed_users,
+        pricePerUserPerMonth: subscription.price_per_user_per_month,
+        totalMonthlyAmount: subscription.total_monthly_amount,
+        createdAt: subscription.created_at
+      }
     });
   } catch (error) {
     console.error('Failed to fetch organization subscription:', error);
@@ -457,28 +445,31 @@ router.get('/subscriptions', verifyCorporateAdmin, async (req, res) => {
   try {
     console.log('Fetching all subscriptions for management dashboard...');
     
-    const subscriptionsList = await db
-      .select({
-        id: subscriptions.id,
-        organizationId: subscriptions.organizationId,
-        organizationName: organizations.name,
-        lastPaymentDate: subscriptions.lastPaymentDate,
-        subscriptionPeriod: subscriptions.subscriptionPeriod,
-        customDurationDays: subscriptions.customDurationDays,
-        expirationDate: subscriptions.expirationDate,
-        isActive: subscriptions.isActive,
-        maxUsers: subscriptions.maxUsers,
-        subscribedUsers: subscriptions.subscribedUsers,
-        pricePerUserPerMonth: subscriptions.pricePerUserPerMonth,
-        totalMonthlyAmount: subscriptions.totalMonthlyAmount,
-        createdAt: subscriptions.createdAt
-      })
-      .from(subscriptions)
-      .leftJoin(organizations, eq(subscriptions.organizationId, organizations.id))
-      .orderBy(desc(subscriptions.createdAt));
+    // Use raw SQL to avoid Drizzle ORM issues
+    const result = await pool.query(`
+      SELECT s.*, o.name as organization_name 
+      FROM subscriptions s 
+      LEFT JOIN organizations o ON s.organization_id = o.id 
+      ORDER BY s.created_at DESC
+    `);
 
-    console.log(`Found ${subscriptionsList.length} subscriptions`);
-    res.json(subscriptionsList);
+    const enrichedSubscriptions = result.rows.map(row => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      lastPaymentDate: row.last_payment_date,
+      subscriptionPeriod: row.subscription_period,
+      customDurationDays: row.custom_duration_days,
+      expirationDate: row.expiration_date,
+      isActive: row.is_active,
+      subscribedUsers: row.subscribed_users,
+      pricePerUserPerMonth: row.price_per_user_per_month,
+      totalMonthlyAmount: row.total_monthly_amount,
+      createdAt: row.created_at,
+      organizationName: row.organization_name || 'Unknown Organization'
+    }));
+
+    console.log(`Found ${enrichedSubscriptions.length} subscriptions`);
+    res.json(enrichedSubscriptions);
   } catch (error) {
     console.error('Failed to fetch subscriptions:', error);
     res.status(500).json({ error: 'Failed to fetch subscriptions' });
