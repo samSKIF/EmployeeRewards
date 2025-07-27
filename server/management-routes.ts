@@ -43,9 +43,16 @@ const verifyCorporateAdmin = async (
       .from(users)
       .where(eq(users.id, decoded.id));
 
-    if (!user || !user.is_admin) {
+    // SECURITY FIX: Ensure user is corporate admin with no organization_id
+    if (!user || user.role_type !== 'corporate_admin' || user.organization_id !== null) {
+      console.log('SECURITY: Corporate admin access denied for user:', {
+        userId: user?.id,
+        email: user?.email,
+        roleType: user?.role_type,
+        organizationId: user?.organization_id
+      });
       return res
-        .status(401)
+        .status(403)
         .json({ message: 'Access denied. Corporate admin required.' });
     }
 
