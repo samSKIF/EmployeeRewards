@@ -764,11 +764,7 @@ const OrganizationFeaturesManagement = ({
             <div className="text-sm text-muted-foreground">
               Enable peer-to-peer recognition, points economy, and reward shop features
             </div>
-            <div className="text-xs text-gray-500">
-              Current state: {recognitionFeature?.is_enabled ? 'ON' : 'OFF'} | 
-              Feature found: {recognitionFeature ? 'Yes' : 'No'} |
-              Features count: {features?.length || 0}
-            </div>
+
           </div>
           <Switch
             checked={Boolean(recognitionFeature?.is_enabled)}
