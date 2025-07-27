@@ -352,8 +352,8 @@ export class DatabaseStorage implements IStorage {
 
     // Create a points account for the user
     await db.insert(accounts).values({
-      userId: user.id,
-      accountType: 'user',
+      user_id: user.id,
+      account_type: 'user',
       balance: 0,
     });
 
@@ -383,13 +383,13 @@ export class DatabaseStorage implements IStorage {
     const allAccounts = await db
       .select()
       .from(accounts)
-      .where(eq(accounts.accountType, 'user'));
+      .where(eq(accounts.account_type, 'user'));
 
     // Map accounts to users
     const accountMap = new Map<number, number>();
     allAccounts.forEach((account) => {
-      if (account.userId) {
-        accountMap.set(account.userId, account.balance);
+      if (account.user_id) {
+        accountMap.set(account.user_id, account.balance);
       }
     });
 
@@ -428,7 +428,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(accounts)
       .where(
-        and(eq(accounts.userId, userId), eq(accounts.accountType, 'user'))
+        and(eq(accounts.user_id, userId), eq(accounts.account_type, 'user'))
       );
 
     return account;
@@ -439,7 +439,7 @@ export class DatabaseStorage implements IStorage {
     const [systemAccount] = await db
       .select()
       .from(accounts)
-      .where(eq(accounts.accountType, 'system'));
+      .where(eq(accounts.account_type, 'system'));
 
     // If system account exists, return it
     if (systemAccount) {
@@ -450,7 +450,7 @@ export class DatabaseStorage implements IStorage {
     const [newSystemAccount] = await db
       .insert(accounts)
       .values({
-        accountType: 'system',
+        account_type: 'system',
         balance: 0,
       })
       .returning();
@@ -483,12 +483,12 @@ export class DatabaseStorage implements IStorage {
     const [transaction] = await db
       .insert(transactions)
       .values({
-        fromAccountId: systemAccount.id,
-        toAccountId: userAccount.id,
+        from_account_id: systemAccount.id,
+        to_account_id: userAccount.id,
         amount,
         reason,
         description,
-        createdBy: adminId,
+        created_by: adminId,
       })
       .returning();
 
@@ -537,12 +537,12 @@ export class DatabaseStorage implements IStorage {
     const [transaction] = await db
       .insert(transactions)
       .values({
-        fromAccountId: userAccount.id,
-        toAccountId: systemAccount.id,
+        from_account_id: userAccount.id,
+        to_account_id: systemAccount.id,
         amount,
         reason: 'product_redemption',
         description,
-        createdBy: userId,
+        created_by: userId,
       })
       .returning();
 
@@ -627,21 +627,27 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .where(
         or(
-          eq(transactions.fromAccountId, userAccount.id),
-          eq(transactions.toAccountId, userAccount.id)
+          eq(transactions.from_account_id, userAccount.id),
+          eq(transactions.to_account_id, userAccount.id)
         )
       )
-      .leftJoin(accounts, eq(transactions.fromAccountId, accounts.id))
-      .leftJoin(accounts, eq(transactions.toAccountId, accounts.id))
-      .leftJoin(users, eq(transactions.createdBy, users.id))
-      .orderBy(desc(transactions.createdAt));
+      .leftJoin(accounts, eq(transactions.from_account_id, accounts.id))
+      .leftJoin(accounts, eq(transactions.to_account_id, accounts.id))
+      .leftJoin(users, eq(transactions.created_by, users.id))
+      .orderBy(desc(transactions.created_at));
 
     // Transform the data
     return rawTransactions.map((row) => {
-      const isDebit = row.transaction.fromAccountId === userAccount.id;
+      const isDebit = row.transaction.from_account_id === userAccount.id;
 
       return {
         ...row.transaction,
+        fromAccountId: row.transaction.from_account_id,
+        toAccountId: row.transaction.to_account_id,
+        createdBy: row.transaction.created_by,
+        createdAt: row.transaction.created_at,
+        fromAccount: row.fromAccount,
+        toAccount: row.toAccount,
         userName: '', // Not needed for user's own transactions
         creatorName: row.creator?.name,
         accountType: isDebit ? 'debit' : 'credit',
@@ -661,30 +667,36 @@ export class DatabaseStorage implements IStorage {
         creator: users,
       })
       .from(transactions)
-      .leftJoin(accounts, eq(transactions.fromAccountId, accounts.id))
-      .leftJoin(accounts, eq(transactions.toAccountId, accounts.id))
-      .leftJoin(users, eq(accounts.userId, users.id))
-      .leftJoin(users, eq(accounts.userId, users.id))
-      .leftJoin(users, eq(transactions.createdBy, users.id))
-      .orderBy(desc(transactions.createdAt));
+      .leftJoin(accounts, eq(transactions.from_account_id, accounts.id))
+      .leftJoin(accounts, eq(transactions.to_account_id, accounts.id))
+      .leftJoin(users, eq(accounts.user_id, users.id))
+      .leftJoin(users, eq(accounts.user_id, users.id))
+      .leftJoin(users, eq(transactions.created_by, users.id))
+      .orderBy(desc(transactions.created_at));
 
     // Transform the data
     return rawTransactions.map((row) => {
       // For transactions to/from user accounts
-      const isUserTransaction = row.toAccount?.accountType === 'user';
+      const isUserTransaction = row.toAccount?.account_type === 'user';
       const userName = isUserTransaction
         ? row.toUser?.name || 'Unknown'
         : row.fromUser?.name || 'Unknown';
 
       return {
         ...row.transaction,
+        fromAccountId: row.transaction.from_account_id,
+        toAccountId: row.transaction.to_account_id,
+        createdBy: row.transaction.created_by,
+        createdAt: row.transaction.created_at,
+        fromAccount: row.fromAccount,
+        toAccount: row.toAccount,
         userName,
         creatorName: row.creator?.name,
         accountType:
-          row.toAccount?.accountType ||
-          row.fromAccount?.accountType ||
+          row.toAccount?.account_type ||
+          row.fromAccount?.account_type ||
           'unknown',
-        isDebit: row.fromAccount?.accountType === 'user',
+        isDebit: row.fromAccount?.account_type === 'user',
       };
     });
   }

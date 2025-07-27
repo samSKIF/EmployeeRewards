@@ -779,7 +779,7 @@ export const employeeStatuses = pgTable('employee_statuses', {
 // Define leave management relationships
 export const leaveTypesRelations = relations(leaveTypes, ({ one, many }) => ({
   organization: one(organizations, {
-    fields: [leaveTypes.organizationId],
+    fields: [leaveTypes.organization_id],
     references: [organizations.id],
   }),
   creator: one(users, {
@@ -840,7 +840,7 @@ export const leaveAdjustmentsRelations = relations(
 
 export const holidaysRelations = relations(holidays, ({ one }) => ({
   organization: one(organizations, {
-    fields: [holidays.organizationId],
+    fields: [holidays.organization_id],
     references: [organizations.id],
   }),
   creator: one(users, {
@@ -877,7 +877,7 @@ export const leaveNotificationsRelations = relations(
 
 export const leavePoliciesRelations = relations(leavePolicies, ({ one }) => ({
   organization: one(organizations, {
-    fields: [leavePolicies.organizationId],
+    fields: [leavePolicies.organization_id],
     references: [organizations.id],
   }),
   creator: one(users, {
@@ -977,27 +977,27 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
   fromAccount: one(accounts, {
-    fields: [transactions.fromAccountId],
+    fields: [transactions.from_account_id],
     references: [accounts.id],
   }),
   toAccount: one(accounts, {
-    fields: [transactions.toAccountId],
+    fields: [transactions.to_account_id],
     references: [accounts.id],
   }),
   creator: one(users, {
-    fields: [transactions.createdBy],
+    fields: [transactions.created_by],
     references: [users.id],
     relationName: 'userTransactions',
   }),
   recognition: one(recognitions, {
-    fields: [transactions.recognitionId],
+    fields: [transactions.recognition_id],
     references: [recognitions.id],
   }),
 }));
 
 export const sellersRelations = relations(sellers, ({ one, many }) => ({
   organization: one(organizations, {
-    fields: [sellers.organizationId],
+    fields: [sellers.organization_id],
     references: [organizations.id],
   }),
   approvedBy: one(users, {
@@ -1068,7 +1068,7 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     references: [sellers.id],
   }),
   organization: one(organizations, {
-    fields: [orders.organizationId],
+    fields: [orders.organization_id],
     references: [organizations.id],
   }),
   items: many(orderItems),
@@ -1251,9 +1251,9 @@ export const conversationsRelations = relations(conversations, ({ many }) => ({
 export const brandingSettingsRelations = relations(
   brandingSettings,
   ({ one }) => ({
-    organization: one(users, {
-      fields: [brandingSettings.organizationId],
-      references: [users.id],
+    organization: one(organizations, {
+      fields: [brandingSettings.organization_id],
+      references: [organizations.id],
     }),
     updatedBy: one(users, {
       fields: [brandingSettings.updatedById],
@@ -1870,7 +1870,7 @@ export const interestChannelsRelations = relations(
       references: [interests.id],
     }),
     organization: one(organizations, {
-      fields: [interestChannels.organizationId],
+      fields: [interestChannels.organization_id],
       references: [organizations.id],
     }),
     members: many(interestChannelMembers),
