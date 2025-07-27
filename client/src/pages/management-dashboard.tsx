@@ -69,13 +69,22 @@ interface Organization {
   status: string;
   createdAt: string;
   userCount: number;
-  subscribedUsers?: number;
-  // Subscription fields
-  lastPaymentDate?: string;
-  subscriptionPeriod?: string;
-  expirationDate?: string;
-  subscriptionActive?: boolean;
-  daysRemaining?: number;
+  maxUsers?: number;
+  contactEmail?: string;
+  industry?: string;
+  isActive: boolean;
+  description?: string;
+  subscription?: {
+    id: number;
+    subscribedUsers: number;
+    totalMonthlyAmount: number;
+    expirationDate: string;
+    isActive: boolean;
+    subscriptionPeriod: string;
+    pricePerUserPerMonth: number;
+    lastPaymentDate: string;
+    daysRemaining?: number;
+  };
 }
 
 interface OrganizationWithStats extends Organization {
@@ -1874,7 +1883,7 @@ const OrganizationsManagement = () => {
                       Max Employees
                     </p>
                     <p className="text-lg font-semibold">
-                      {organization.subscribedUsers || 'N/A'}
+                      {organization.subscription?.subscribedUsers || 'N/A'}
                     </p>
                   </div>
                   <div>
@@ -1888,22 +1897,22 @@ const OrganizationsManagement = () => {
                       Subscription
                     </p>
                     <div className="flex items-center gap-2">
-                      {organization.subscriptionActive ? (
+                      {organization.subscription?.isActive ? (
                         <>
                           <Badge variant="default" className="text-xs">
-                            {organization.subscriptionPeriod || 'Active'}
+                            {organization.subscription?.subscriptionPeriod || 'Active'}
                           </Badge>
-                          {organization.daysRemaining !== undefined && (
+                          {organization.subscription?.daysRemaining !== undefined && (
                             <span
                               className={`text-xs ${
-                                organization.daysRemaining <= 30
+                                organization.subscription.daysRemaining <= 30
                                   ? 'text-orange-600'
-                                  : organization.daysRemaining <= 7
+                                  : organization.subscription.daysRemaining <= 7
                                     ? 'text-red-600'
                                     : 'text-green-600'
                               }`}
                             >
-                              {organization.daysRemaining}d left
+                              {organization.subscription.daysRemaining}d left
                             </span>
                           )}
                         </>
@@ -1919,9 +1928,9 @@ const OrganizationsManagement = () => {
                       Last Payment
                     </p>
                     <p className="text-sm">
-                      {organization.lastPaymentDate
+                      {organization.subscription?.lastPaymentDate
                         ? new Date(
-                            organization.lastPaymentDate
+                            organization.subscription.lastPaymentDate
                           ).toLocaleDateString()
                         : 'N/A'}
                     </p>
@@ -1929,9 +1938,9 @@ const OrganizationsManagement = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Expiration</p>
                     <p className="text-sm">
-                      {organization.expirationDate
+                      {organization.subscription?.expirationDate
                         ? new Date(
-                            organization.expirationDate
+                            organization.subscription.expirationDate
                           ).toLocaleDateString()
                         : 'N/A'}
                     </p>
