@@ -3,7 +3,17 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db, pool } from './db';
 import { users, organizations, organization_features, subscriptions } from '../shared/schema';
-import { companies, insertCompanySchema } from '../shared/management-schema';
+import { 
+  companies, 
+  insertCompanySchema, 
+  merchants, 
+  insertMerchantSchema,
+  products,
+  insertProductSchema,
+  orders,
+  walletTransactions,
+  companyAnalytics
+} from '../shared/management-schema';
 import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 
 const router = express.Router();
@@ -145,7 +155,7 @@ router.get(
 // ========== COMPANY MANAGEMENT ==========
 
 // Get all organizations (companies) with pagination and filters
-router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
+router.get('/organizations', async (req, res) => {
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
