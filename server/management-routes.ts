@@ -149,64 +149,96 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    // First get organizations
-    let query = db.select().from(organizations);
+    // Build WHERE conditions
+    let whereConditions = [];
+    let params = [];
+    let paramIndex = 1;
 
     if (search) {
-      query = query.where(eq(organizations.name, search as string));
+      whereConditions.push(`o.name ILIKE $${paramIndex}`);
+      params.push(`%${search}%`);
+      paramIndex++;
     }
 
-    // Note: organizations table uses 'status' field
     if (status === 'active') {
-      query = query.where(eq(organizations.status, 'active'));
+      whereConditions.push(`o.status = $${paramIndex}`);
+      params.push('active');
+      paramIndex++;
     } else if (status === 'inactive') {
-      query = query.where(eq(organizations.status, 'inactive'));
+      whereConditions.push(`o.status = $${paramIndex}`);
+      params.push('inactive');
+      paramIndex++;
     }
 
-    const organizationList = await query
-      .limit(Number(limit))
-      .offset(offset)
-      .orderBy(desc(organizations.createdAt));
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
-    // Get subscription data for each organization
-    const transformedList = [];
-    for (const org of organizationList) {
-      // Get active subscription for this organization
-      const [subscription] = await db
-        .select()
-        .from(subscriptions)
-        .where(
-          and(
-            eq(subscriptions.organizationId, org.id),
-            eq(subscriptions.isActive, true)
-          )
-        )
-        .orderBy(desc(subscriptions.createdAt))
-        .limit(1);
+    // Add limit and offset params
+    params.push(Number(limit), offset);
+    const limitClause = `LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
 
-      transformedList.push({
-        id: org.id,
-        name: org.name,
-        status: org.status || 'active',
+    // Use raw SQL to get organizations with user counts and subscription data
+    const result = await pool.query(`
+      SELECT 
+        o.id,
+        o.name,
+        o.status,
+        o.max_users as max_users,
+        o.contact_email,
+        o.created_at as created_at,
+        o.industry,
+        COALESCE(u.user_count, 0) as user_count,
+        s.id as subscription_id,
+        s.subscribed_users,
+        s.total_monthly_amount,
+        s.expiration_date,
+        s.is_active as subscription_active,
+        s.subscription_period,
+        s.price_per_user_per_month,
+        s.last_payment_date
+      FROM organizations o
+      LEFT JOIN (
+        SELECT organization_id, COUNT(*) as user_count 
+        FROM users 
+        WHERE status = 'active' 
+        GROUP BY organization_id
+      ) u ON o.id = u.organization_id
+      LEFT JOIN (
+        SELECT DISTINCT ON (organization_id) 
+          id, organization_id, subscribed_users, total_monthly_amount, 
+          expiration_date, is_active, subscription_period, 
+          price_per_user_per_month, last_payment_date, created_at
+        FROM subscriptions 
+        WHERE is_active = true
+        ORDER BY organization_id, created_at DESC
+      ) s ON o.id = s.organization_id
+      ${whereClause}
+      ORDER BY o.created_at DESC
+      ${limitClause}
+    `, params);
+
+    const transformedList = result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        status: row.status || 'active',
         description: 'ThrivioHR Client Organization',
-        isActive: org.status === 'active',
-        createdAt: org.created_at,
-        userCount: 0, // TODO: Get actual user count
-        maxUsers: org.max_users || null,
-        contactEmail: org.contact_email || null,
-        industry: org.industry,
+        isActive: row.status === 'active',
+        createdAt: row.created_at,
+        userCount: parseInt(row.user_count) || 0,
+        maxUsers: row.max_users,
+        contactEmail: row.contact_email,
+        industry: row.industry,
         // Add subscription information
-        subscription: subscription ? {
-          id: subscription.id,
-          subscribedUsers: subscription.subscribedUsers,
-          totalMonthlyAmount: subscription.totalMonthlyAmount,
-          expirationDate: subscription.expirationDate,
-          isActive: subscription.isActive,
-          subscriptionPeriod: subscription.subscriptionPeriod,
-          pricePerUserPerMonth: subscription.pricePerUserPerMonth,
+        subscription: row.subscription_id ? {
+          id: row.subscription_id,
+          subscribedUsers: row.subscribed_users,
+          totalMonthlyAmount: row.total_monthly_amount,
+          expirationDate: row.expiration_date,
+          isActive: row.subscription_active,
+          subscriptionPeriod: row.subscription_period,
+          pricePerUserPerMonth: row.price_per_user_per_month,
+          lastPaymentDate: row.last_payment_date
         } : null,
-      });
-    }
+    }));
 
     console.log(`Fetched ${transformedList.length} organizations with subscription data`);
     res.json(transformedList);
