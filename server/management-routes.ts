@@ -73,19 +73,16 @@ const checkPermission = (permission: string) => {
 // Corporate admin login
 router.post('/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password, username } = req.body;
+    const loginField = email || username;
 
     // Look for corporate admin by email or username
     const [corporateAdmin] = await db
       .select()
       .from(users)
-      .where(
-        username.includes('@')
-          ? eq(users.email, username)
-          : eq(users.username, username)
-      );
+      .where(eq(users.email, loginField));
 
-    if (!corporateAdmin || corporateAdmin.roleType !== 'corporate_admin') {
+    if (!corporateAdmin || !corporateAdmin.is_admin) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -96,12 +93,6 @@ router.post('/auth/login', async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-
-    // Update last seen
-    await db
-      .update(users)
-      .set({ lastSeenAt: new Date() })
-      .where(eq(users.id, corporateAdmin.id));
 
     const token = jwt.sign({ id: corporateAdmin.id }, JWT_SECRET, {
       expiresIn: '8h',
@@ -125,7 +116,8 @@ router.post('/auth/login', async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    console.error('Management login error:', error);
+    res.status(500).json({ error: 'Login failed', details: error.message });
   }
 });
 
@@ -155,7 +147,7 @@ router.get(
 // ========== COMPANY MANAGEMENT ==========
 
 // Get all organizations (companies) with pagination and filters
-router.get('/organizations', async (req, res) => {
+router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20, search, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
