@@ -804,6 +804,7 @@ const SubscriptionManagement = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
+  const [isRenewSectionCollapsed, setIsRenewSectionCollapsed] = useState(true);
 
   // Get current subscription status
   const { data: subscriptionData, isLoading } = useQuery({
@@ -1104,11 +1105,38 @@ const SubscriptionManagement = ({
       {/* Create/Renew Subscription Form */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            {hasSubscription ? 'Renew Subscription' : 'Create Subscription'}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">
+              {hasSubscription ? 'Renew Subscription' : 'Create Subscription'}
+            </CardTitle>
+            {hasSubscription && isActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsRenewSectionCollapsed(!isRenewSectionCollapsed)}
+                className="flex items-center gap-2"
+              >
+                {isRenewSectionCollapsed ? (
+                  <>
+                    <span>Show Renewal Options</span>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>Hide Renewal Options</span>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardHeader>
-        <CardContent>
+        {(!hasSubscription || !isActive || !isRenewSectionCollapsed) && (
+          <CardContent>
           <Form {...subscriptionForm}>
             <form
               onSubmit={subscriptionForm.handleSubmit(onSubmit)}
@@ -1280,6 +1308,14 @@ const SubscriptionManagement = ({
             </form>
           </Form>
         </CardContent>
+        )}
+        {hasSubscription && isActive && isRenewSectionCollapsed && (
+          <CardContent className="pt-0">
+            <div className="text-sm text-muted-foreground text-center py-4">
+              Subscription is active. Click "Show Renewal Options" above to renew or modify.
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       {/* Actions */}
