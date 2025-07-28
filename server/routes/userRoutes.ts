@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
 import { storage } from '../storage';
 import { db } from '../db';
-import { users } from '@shared/schema';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { users, subscriptions } from '@shared/schema';
+import { eq, desc, sql, and, gte } from 'drizzle-orm';
 import { logger } from '@shared/logger';
 import { CacheService } from '../cache/cacheService';
 import { hash } from 'bcrypt';
@@ -212,8 +212,19 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     const organizationId = req.user.organization_id;
 
     // Get subscription limit for this organization
-    const subscription = await storage.getActiveSubscription(organizationId);
-    const subscriptionLimit = subscription?.subscribed_users || 1000; // Default fallback
+    const subscriptionData = await db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.organization_id, organizationId),
+          eq(subscriptions.is_active, true),
+          gte(subscriptions.expiration_date, new Date())
+        )
+      )
+      .limit(1);
+    
+    const subscriptionLimit = subscriptionData[0]?.subscribed_users || 1000; // Default fallback
 
     const userCount = await storage.getUserCount(organizationId);
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
