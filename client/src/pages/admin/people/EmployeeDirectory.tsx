@@ -210,7 +210,13 @@ export default function EmployeeDirectory() {
 
   // Handle form input changes
   const handleInputChange = (field: keyof UpdateEmployeeData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Convert UI values to database values
+    let dbValue = value;
+    if (value === 'none' || value === 'prefer_not_to_say') {
+      dbValue = '';
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: dbValue }));
   };
 
   // Handle form submission
@@ -732,7 +738,7 @@ export default function EmployeeDirectory() {
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Department</SelectItem>
+                  <SelectItem value="none">No Department</SelectItem>
                   {departments.map((dept) => (
                     <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                   ))}
@@ -747,7 +753,7 @@ export default function EmployeeDirectory() {
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Location</SelectItem>
+                  <SelectItem value="none">No Location</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location} value={location}>{location}</SelectItem>
                   ))}
@@ -818,7 +824,7 @@ export default function EmployeeDirectory() {
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Prefer not to say</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
