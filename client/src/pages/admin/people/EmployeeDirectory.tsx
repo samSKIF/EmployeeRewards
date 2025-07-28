@@ -180,39 +180,32 @@ export default function EmployeeDirectory() {
 
   // Handle opening edit dialog
   const handleEditEmployee = (employee: Employee) => {
-    console.log('=== EDIT DIALOG DEBUG ===');
-    console.log('1. Raw employee data:', employee);
-    console.log('2. Employee.location:', employee.location);
-    console.log('3. Employee.manager_email:', employee.manager_email);
-    console.log('4. Available locations array:', locations);
-    console.log('5. Available locations length:', locations.length);
-    
     try {
       const normalizedEmployee = normalizeEmployee(employee);
-      console.log('6. Normalized employee:', normalizedEmployee);
-      
       setEditingEmployee(employee);
       
-      // Fix location case matching issue - with better debugging
-      const employeeLocation = normalizedEmployee.location || '';
-      console.log('7. Employee location for matching:', `"${employeeLocation}"`);
-      
+      // Robust location matching - handles case insensitivity, trimming, and fallbacks
+      const employeeLocation = (normalizedEmployee.location || '').trim();
       let matchedLocation = employeeLocation;
-      if (locations && locations.length > 0) {
-        const foundLocation = locations.find(loc => 
-          loc.toLowerCase() === employeeLocation.toLowerCase()
-        );
-        if (foundLocation) {
-          matchedLocation = foundLocation;
-          console.log('8. Found matching location:', `"${foundLocation}"`);
+      
+      if (locations && locations.length > 0 && employeeLocation) {
+        // Try exact match first
+        const exactMatch = locations.find(loc => loc === employeeLocation);
+        if (exactMatch) {
+          matchedLocation = exactMatch;
         } else {
-          console.log('8. NO matching location found. Checking each location:');
-          locations.forEach(loc => {
-            console.log(`   - "${loc.toLowerCase()}" === "${employeeLocation.toLowerCase()}" = ${loc.toLowerCase() === employeeLocation.toLowerCase()}`);
-          });
+          // Try case-insensitive match
+          const caseInsensitiveMatch = locations.find(loc => 
+            loc.toLowerCase().trim() === employeeLocation.toLowerCase().trim()
+          );
+          if (caseInsensitiveMatch) {
+            matchedLocation = caseInsensitiveMatch;
+          }
+          // If no match found, keep original value but log warning
+          else if (employeeLocation) {
+            console.warn(`Location "${employeeLocation}" not found in available locations:`, locations);
+          }
         }
-      } else {
-        console.log('8. No locations array available!');
       }
 
       const formDataToSet = {
@@ -230,12 +223,8 @@ export default function EmployeeDirectory() {
         nationality: normalizedEmployee.nationality || '',
         sex: normalizedEmployee.sex || '',
       };
-      console.log('9. Final form data:', formDataToSet);
-      console.log('10. Location field specifically:', `"${formDataToSet.location}"`);
-      
       setFormData(formDataToSet);
       setIsEditDialogOpen(true);
-      console.log('=== EDIT DIALOG DEBUG END ===');
     } catch (error) {
       console.error('Error opening edit dialog:', error);
     }
