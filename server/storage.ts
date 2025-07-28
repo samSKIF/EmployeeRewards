@@ -851,7 +851,7 @@ export class DatabaseStorage implements IStorage {
         total: sql<number>`sum(${transactions.amount})`,
       })
       .from(transactions)
-      .where(eq(transactions.toAccountId, userAccount.id));
+      .where(eq(transactions.to_account_id, userAccount.id));
 
     const pointsEarned = earnedResult?.total || 0;
 
@@ -861,7 +861,7 @@ export class DatabaseStorage implements IStorage {
         total: sql<number>`sum(${transactions.amount})`,
       })
       .from(transactions)
-      .where(eq(transactions.fromAccountId, userAccount.id));
+      .where(eq(transactions.from_account_id, userAccount.id));
 
     const pointsUsed = usedResult?.total || 0;
 
@@ -2505,7 +2505,7 @@ export class DatabaseStorage implements IStorage {
       .from(users);
 
     if (organizationId) {
-      query.where(eq(users.organizationId, organizationId));
+      query.where(eq(users.organization_id, organizationId));
     }
 
     const [result] = await query;
@@ -2521,7 +2521,7 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(
         and(
-          eq(users.organizationId, organizationId),
+          eq(users.organization_id, organizationId),
           eq(users.status, 'active')
         )
       );
@@ -2537,7 +2537,7 @@ export class DatabaseStorage implements IStorage {
     const usersData = await db
       .select()
       .from(users)
-      .where(eq(users.organizationId, organizationId))
+      .where(eq(users.organization_id, organizationId))
       .limit(limit)
       .offset(offset)
       .orderBy(asc(users.name));
