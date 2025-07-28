@@ -328,6 +328,11 @@ router.post('/login', async (req, res) => {
           .select()
           .from(organizations)
           .where(eq(organizations.id, user.organization_id));
+        
+        logger.debug(`Found organization for user ${user.username}:`, { 
+          id: organization?.id, 
+          name: organization?.name 
+        });
 
         if (organization) {
           // Check for active subscription
@@ -343,12 +348,17 @@ router.post('/login', async (req, res) => {
             .orderBy(desc(subscriptions.created_at))
             .limit(1);
 
+          logger.debug(`Subscription query result for org ${organization.id}:`, activeSubscription);
+
           let hasActiveSubscription = false;
 
           if (activeSubscription) {
             const now = new Date();
-            const expirationDate = new Date(activeSubscription.expirationDate);
+            const expirationDate = new Date(activeSubscription.expiration_date);
             hasActiveSubscription = expirationDate > now;
+            logger.debug(`Subscription expires: ${expirationDate}, now: ${now}, valid: ${hasActiveSubscription}`);
+          } else {
+            logger.debug(`No active subscription found for organization ${organization.id}`);
           }
 
           // If no active subscription, deny login with message
