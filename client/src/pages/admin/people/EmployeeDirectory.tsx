@@ -188,6 +188,12 @@ export default function EmployeeDirectory() {
       console.log('Normalized employee location:', normalizedEmployee.location);
       console.log('Normalized employee manager_email:', normalizedEmployee.manager_email);
       setEditingEmployee(employee);
+      // Fix location case matching issue
+      const employeeLocation = normalizedEmployee.location || '';
+      const matchedLocation = locations.find(loc => 
+        loc.toLowerCase() === employeeLocation.toLowerCase()
+      ) || employeeLocation;
+
       const formDataToSet = {
         name: normalizedEmployee.name || '',
         surname: normalizedEmployee.surname || '',
@@ -195,7 +201,7 @@ export default function EmployeeDirectory() {
         phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
         jobTitle: normalizedEmployee.jobTitle || normalizedEmployee.job_title || normalizedEmployee.title || '',
         department: normalizedEmployee.department || '',
-        location: normalizedEmployee.location || '',
+        location: matchedLocation,
         status: normalizedEmployee.status || 'active',
         hireDate: normalizedEmployee.hireDate || normalizedEmployee.hire_date || '',
         birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
@@ -740,7 +746,7 @@ export default function EmployeeDirectory() {
 
             <div className="space-y-2">
               <Label htmlFor="department">Department</Label>
-              <Select value={formData.department} onValueChange={(value) => handleInputChange('department', value)}>
+              <Select value={formData.department || 'none'} onValueChange={(value) => handleInputChange('department', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
@@ -755,7 +761,7 @@ export default function EmployeeDirectory() {
 
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
-              <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
+              <Select value={formData.location || 'none'} onValueChange={(value) => handleInputChange('location', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
@@ -826,7 +832,7 @@ export default function EmployeeDirectory() {
 
             <div className="space-y-2">
               <Label htmlFor="sex">Gender</Label>
-              <Select value={formData.sex} onValueChange={(value) => handleInputChange('sex', value)}>
+              <Select value={formData.sex || 'prefer_not_to_say'} onValueChange={(value) => handleInputChange('sex', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
