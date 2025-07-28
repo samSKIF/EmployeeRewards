@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import {
@@ -117,6 +117,11 @@ export default function EmployeeDirectory() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Debug dialog state
+  useEffect(() => {
+    console.log('Edit dialog state changed:', isEditDialogOpen);
+  }, [isEditDialogOpen]);
   const [formData, setFormData] = useState<UpdateEmployeeData>({
     name: '',
     surname: '',
@@ -175,26 +180,32 @@ export default function EmployeeDirectory() {
 
   // Handle opening edit dialog
   const handleEditEmployee = (employee: Employee) => {
-    const normalizedEmployee = normalizeEmployee(employee);
-    setEditingEmployee(employee);
-    setFormData({
-      name: normalizedEmployee.name || '',
-      surname: normalizedEmployee.surname || '',
-      email: normalizedEmployee.email || '',
-      phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
-      jobTitle: normalizedEmployee.jobTitle || '',
-      department: normalizedEmployee.department || '',
-      location: normalizedEmployee.location || '',
-      status: normalizedEmployee.status || 'active',
-      hireDate: normalizedEmployee.hireDate || '',
-      birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
-      managerEmail: normalizedEmployee.managerEmail || '',
-      responsibilities: normalizedEmployee.responsibilities || '',
-      aboutMe: normalizedEmployee.aboutMe || normalizedEmployee.about_me || '',
-      nationality: normalizedEmployee.nationality || '',
-      sex: normalizedEmployee.sex || '',
-    });
-    setIsEditDialogOpen(true);
+    console.log('Opening edit dialog for employee:', employee);
+    try {
+      const normalizedEmployee = normalizeEmployee(employee);
+      setEditingEmployee(employee);
+      setFormData({
+        name: normalizedEmployee.name || '',
+        surname: normalizedEmployee.surname || '',
+        email: normalizedEmployee.email || '',
+        phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
+        jobTitle: normalizedEmployee.jobTitle || '',
+        department: normalizedEmployee.department || '',
+        location: normalizedEmployee.location || '',
+        status: normalizedEmployee.status || 'active',
+        hireDate: normalizedEmployee.hireDate || '',
+        birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
+        managerEmail: normalizedEmployee.managerEmail || '',
+        responsibilities: normalizedEmployee.responsibilities || '',
+        aboutMe: normalizedEmployee.aboutMe || normalizedEmployee.about_me || '',
+        nationality: normalizedEmployee.nationality || '',
+        sex: normalizedEmployee.sex || '',
+      });
+      console.log('Setting dialog open to true');
+      setIsEditDialogOpen(true);
+    } catch (error) {
+      console.error('Error opening edit dialog:', error);
+    }
   };
 
   // Handle form input changes
