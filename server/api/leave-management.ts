@@ -514,7 +514,7 @@ router.get('/policies', verifyToken, async (req: AuthenticatedRequest, res) => {
     const policies = await db.query.leavePolicies.findMany({
       where: and(
         eq(leavePolicies.organization_id, organizationId),
-        eq(leavePolicies.isActive, true)
+        eq(leavePolicies.is_active, true)
       ),
       orderBy: [leavePolicies.name],
     });

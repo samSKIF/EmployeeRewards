@@ -138,7 +138,7 @@ describe('Social Microservice', () => {
         id: 1,
         user_id: 1,
         content: postData.content,
-        imageUrl: postData.imageUrl,
+        imageUrl: postData.image_url,
         organizationId: 1,
         createdAt: new Date(),
       };

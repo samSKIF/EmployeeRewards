@@ -77,14 +77,14 @@ router.get(
           id: interestChannels.id,
           name: interestChannels.name,
           description: interestChannels.description,
-          channelType: interestChannels.channelType,
+          channelType: interestChannels.channel_type,
           accessLevel: interestChannels.accessLevel,
           memberCount: interestChannels.memberCount,
-          isActive: interestChannels.isActive,
+          isActive: interestChannels.is_active,
           allowedDepartments: interestChannels.allowedDepartments,
           allowedSites: interestChannels.allowedSites,
           createdAt: interestChannels.created_at,
-          createdBy: interestChannels.createdBy,
+          createdBy: interestChannels.created_by,
         })
         .from(interestChannels)
         .where(

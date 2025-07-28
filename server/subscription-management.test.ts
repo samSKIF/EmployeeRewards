@@ -61,7 +61,7 @@ describe('Subscription Management Tests', () => {
       });
 
       // Verify this data supports UI collapse logic
-      expect(response.body.hasSubscription && response.body.subscription.isActive).toBe(true);
+      expect(response.body.hasSubscription && response.body.subscription.is_active).toBe(true);
     });
 
     it('should handle subscription renewal with proper validation', async () => {
@@ -118,7 +118,7 @@ describe('Subscription Management Tests', () => {
         .expect(200);
 
       // For inactive subscriptions, UI should not collapse by default
-      expect(response.body.subscription.isActive).toBe(false);
+      expect(response.body.subscription.is_active).toBe(false);
       expect(response.body.hasSubscription).toBe(true);
     });
 
@@ -155,7 +155,7 @@ describe('Subscription Management Tests', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      expect(statusResponse.body.subscription.isActive).toBe(true);
+      expect(statusResponse.body.subscription.is_active).toBe(true);
 
       // Then renew subscription
       const renewalData = {
@@ -179,7 +179,7 @@ describe('Subscription Management Tests', () => {
         .expect(200);
 
       expect(renewResponse.body.subscribedUsers).toBe(200);
-      expect(renewResponse.body.isActive).toBe(true);
+      expect(renewResponse.body.is_active).toBe(true);
     });
 
     it('should handle subscription deactivation properly', async () => {
@@ -203,7 +203,7 @@ describe('Subscription Management Tests', () => {
         .expect(200);
 
       expect(mockStorage.deactivateSubscription).toHaveBeenCalledWith(6);
-      expect(response.body.isActive).toBe(false);
+      expect(response.body.is_active).toBe(false);
     });
   });
 

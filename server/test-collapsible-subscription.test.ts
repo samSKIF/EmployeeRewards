@@ -31,7 +31,7 @@ describe('Collapsible Subscription Section - TDD Example', () => {
         }
       };
       
-      expect(expectedBehavior.subscription.isActive).toBe(true);
+      expect(expectedBehavior.subscription.is_active).toBe(true);
       expect(expectedBehavior.subscription.collapsibleUI).toContain('collapsed');
     });
 
@@ -57,7 +57,7 @@ describe('Collapsible Subscription Section - TDD Example', () => {
         .expect(200);
 
       expect(response.body.hasSubscription).toBe(true);
-      expect(response.body.subscription.isActive).toBe(true);
+      expect(response.body.subscription.is_active).toBe(true);
       expect(response.body.subscription.subscribedUsers).toBe(150);
     });
 

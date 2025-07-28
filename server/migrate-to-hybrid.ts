@@ -41,7 +41,7 @@ async function migrateToHybridDatabase() {
           domain: org.domain,
           subscriptionTier: org.subscriptionTier || 'basic',
           maxEmployees: org.maxEmployees || 50,
-          isActive: org.isActive ?? true,
+          isActive: org.is_active ?? true,
           createdAt: org.created_at,
           updatedAt: org.updated_at,
         })
@@ -75,7 +75,7 @@ async function migrateToHybridDatabase() {
           organizationId: user.organization_id,
           manager_id: user.manager_id,
           isAdmin: user.is_admin ?? false,
-          isActive: user.isActive ?? true,
+          isActive: user.is_active ?? true,
           points: user.points || 0,
           createdAt: user.created_at,
           updatedAt: user.updated_at,
@@ -99,7 +99,7 @@ async function migrateToHybridDatabase() {
         authorName: post.authorName || 'Unknown',
         organizationId: post.organization_id || 1,
         content: post.content,
-        imageUrl: post.imageUrl || undefined,
+        imageUrl: post.image_url || undefined,
         type: (post.type as any) || 'text',
         visibility: 'public',
         reactions: [], // Will migrate reactions separately if needed

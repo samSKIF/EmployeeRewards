@@ -34,13 +34,13 @@ router.get('/:id', async (req, res) => {
       id: space[0].id,
       name: space[0].name,
       description: space[0].description,
-      channelType: space[0].channelType,
+      channelType: space[0].channel_type,
       accessLevel: space[0].accessLevel,
       memberCount: space[0].memberCount || 0,
-      isActive: space[0].isActive,
+      isActive: space[0].is_active,
       allowedDepartments: space[0].allowedDepartments,
       allowedSites: space[0].allowedSites,
-      createdBy: space[0].createdBy,
+      createdBy: space[0].created_by,
       organizationId: space[0].organization_id,
       createdAt: space[0].created_at,
       coverImage: space[0].coverImage,
@@ -71,14 +71,14 @@ router.get('/:id/posts', async (req, res) => {
         userName: users.name,
         userAvatar: users.avatar_url,
         createdAt: interestChannelPosts.created_at,
-        likeCount: interestChannelPosts.likeCount,
-        commentCount: interestChannelPosts.commentCount,
-        imageUrl: interestChannelPosts.imageUrl,
+        likeCount: interestChannelPosts.like_count,
+        commentCount: interestChannelPosts.comment_count,
+        imageUrl: interestChannelPosts.image_url,
         type: interestChannelPosts.type,
       })
       .from(interestChannelPosts)
       .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
-      .where(eq(interestChannelPosts.channelId, spaceId))
+      .where(eq(interestChannelPosts.channel_id, spaceId))
       .orderBy(desc(interestChannelPosts.created_at));
 
     logger.info(`Fetched ${posts.length} posts for space ID: ${spaceId}`);

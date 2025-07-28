@@ -63,13 +63,13 @@ async function checkUserCountLimit(
       const [subscription] = await db
         .select({
           subscribedUsers: subscriptions.subscribedUsers,
-          isActive: subscriptions.isActive,
+          isActive: subscriptions.is_active,
           expirationDate: subscriptions.expirationDate,
         })
         .from(subscriptions)
         .where(eq(subscriptions.id, organization.currentSubscriptionId));
 
-      if (subscription && subscription.isActive) {
+      if (subscription && subscription.is_active) {
         // Check if subscription is still valid
         const now = new Date();
         const isExpired = new Date(subscription.expirationDate) <= now;
@@ -337,7 +337,7 @@ router.post('/login', async (req, res) => {
             .where(
               and(
                 eq(subscriptions.organization_id, organization.id),
-                eq(subscriptions.isActive, true)
+                eq(subscriptions.is_active, true)
               )
             )
             .orderBy(desc(subscriptions.created_at))
@@ -385,7 +385,7 @@ router.post('/login', async (req, res) => {
     try {
       await db
         .update(users)
-        .set({ lastSeenAt: new Date() })
+        .set({ last_seen_at: new Date() })
         .where(eq(users.id, user.id));
       logger.debug(`Updated last seen for user ${user.id}`);
     } catch (error) {

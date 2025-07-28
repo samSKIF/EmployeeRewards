@@ -55,7 +55,7 @@ router.post(
         // Decrement like count
         await db
           .update(interestChannelPosts)
-          .set({ likeCount: sql`${interestChannelPosts.likeCount} - 1` })
+          .set({ likeCount: sql`${interestChannelPosts.like_count} - 1` })
           .where(eq(interestChannelPosts.id, postId));
 
         logger.info(`User ${user_id} unliked post ${postId}`);
@@ -71,7 +71,7 @@ router.post(
         // Increment like count
         await db
           .update(interestChannelPosts)
-          .set({ likeCount: sql`${interestChannelPosts.likeCount} + 1` })
+          .set({ likeCount: sql`${interestChannelPosts.like_count} + 1` })
           .where(eq(interestChannelPosts.id, postId));
 
         logger.info(`User ${user_id} liked post ${postId}`);
@@ -122,7 +122,7 @@ router.post(
       // Increment comment count on the post
       await db
         .update(interestChannelPosts)
-        .set({ commentCount: sql`${interestChannelPosts.commentCount} + 1` })
+        .set({ commentCount: sql`${interestChannelPosts.comment_count} + 1` })
         .where(eq(interestChannelPosts.id, postId));
 
       // Get user details for the response

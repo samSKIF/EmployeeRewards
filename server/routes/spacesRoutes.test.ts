@@ -190,7 +190,7 @@ describe('Spaces Routes', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.name).toBe('Marketing Team');
-      expect(response.body.createdBy).toBe(1);
+      expect(response.body.created_by).toBe(1);
     });
 
     it('should validate required fields', async () => {

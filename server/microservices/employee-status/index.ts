@@ -72,7 +72,7 @@ router.post('/status-types', async (req: AuthenticatedRequest, res) => {
         color: validatedData.color,
         durationDays: validatedData.durationDays,
         isSystem: false,
-        isActive: validatedData.isActive,
+        isActive: validatedData.is_active,
         createdBy: req.user.id,
         updatedAt: new Date(),
         organizationId: req.user.organization_id,
@@ -185,7 +185,7 @@ router.get(
         .where(
           and(
             eq(employeeStatuses.user_id, user_id),
-            eq(employeeStatusTypes.isActive, true),
+            eq(employeeStatusTypes.is_active, true),
             lte(employeeStatuses.startDate, today),
             or(
               isNull(employeeStatuses.endDate),

@@ -289,7 +289,7 @@ describe('Admin Dashboard Management Features', () => {
 
         expect(response.body.id).toBe(7);
         expect(response.body.subscribedUsers).toBe(100);
-        expect(response.body.isActive).toBe(true);
+        expect(response.body.is_active).toBe(true);
       });
 
       it('should calculate proper expiration dates based on period', async () => {
@@ -345,7 +345,7 @@ describe('Admin Dashboard Management Features', () => {
           .send(renewalData)
           .expect(200);
 
-        expect(response.body.isActive).toBe(true);
+        expect(response.body.is_active).toBe(true);
         expect(new Date(response.body.expirationDate).getFullYear()).toBe(2026);
       });
     });

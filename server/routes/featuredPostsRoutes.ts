@@ -20,13 +20,13 @@ router.get('/', async (req, res) => {
       .select({
         id: interestChannelPosts.id,
         content: interestChannelPosts.content,
-        imageUrl: interestChannelPosts.imageUrl,
-        likeCount: interestChannelPosts.likeCount,
-        commentCount: interestChannelPosts.commentCount,
+        imageUrl: interestChannelPosts.image_url,
+        likeCount: interestChannelPosts.like_count,
+        commentCount: interestChannelPosts.comment_count,
         createdAt: interestChannelPosts.created_at,
-        channelId: interestChannelPosts.channelId,
+        channelId: interestChannelPosts.channel_id,
         channelName: interestChannels.name,
-        channelType: interestChannels.channelType,
+        channelType: interestChannels.channel_type,
         authorId: interestChannelPosts.user_id,
         authorName: users.name,
         authorAvatarUrl: users.avatar_url,
@@ -34,11 +34,11 @@ router.get('/', async (req, res) => {
       .from(interestChannelPosts)
       .innerJoin(
         interestChannels,
-        eq(interestChannelPosts.channelId, interestChannels.id)
+        eq(interestChannelPosts.channel_id, interestChannels.id)
       )
       .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
-      .where(and(eq(interestChannels.isActive, true)))
-      .orderBy(desc(interestChannelPosts.likeCount))
+      .where(and(eq(interestChannels.is_active, true)))
+      .orderBy(desc(interestChannelPosts.like_count))
       .limit(3);
 
     logger.info(`Retrieved ${featuredPosts.length} real featured posts`);

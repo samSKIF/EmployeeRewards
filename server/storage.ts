@@ -706,7 +706,7 @@ export class DatabaseStorage implements IStorage {
     return db
       .select()
       .from(products)
-      .where(eq(products.isActive, true))
+      .where(eq(products.is_active, true))
       .orderBy(products.points);
   }
 
@@ -2271,7 +2271,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(interestChannels)
       .leftJoin(interests, eq(interestChannels.interestId, interests.id))
-      .where(eq(interestChannels.isActive, true))
+      .where(eq(interestChannels.is_active, true))
       .orderBy(desc(sql`COALESCE(${interestChannels.memberCount}, 0)`))
       .limit(10);
 
@@ -2296,13 +2296,13 @@ export class DatabaseStorage implements IStorage {
       .from(interestChannelMembers)
       .innerJoin(
         interestChannels,
-        eq(interestChannelMembers.channelId, interestChannels.id)
+        eq(interestChannelMembers.channel_id, interestChannels.id)
       )
       .leftJoin(interests, eq(interestChannels.interestId, interests.id))
       .where(
         and(
           eq(interestChannelMembers.user_id, user_id),
-          eq(interestChannels.isActive, true)
+          eq(interestChannels.is_active, true)
         )
       );
 
@@ -2321,14 +2321,14 @@ export class DatabaseStorage implements IStorage {
 
     // Get channels user is not a member of
     const userChannelIds = await db
-      .select({ channelId: interestChannelMembers.channelId })
+      .select({ channelId: interestChannelMembers.channel_id })
       .from(interestChannelMembers)
       .where(eq(interestChannelMembers.user_id, user_id));
 
-    const userChannelIdsList = userChannelIds.map((uc) => uc.channelId);
+    const userChannelIdsList = userChannelIds.map((uc) => uc.channel_id);
 
     let whereClause = and(
-      eq(interestChannels.isActive, true),
+      eq(interestChannels.is_active, true),
       eq(interestChannels.accessLevel, 'open')
     );
 
@@ -2372,7 +2372,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(interestChannels)
       .leftJoin(interests, eq(interestChannels.interestId, interests.id))
-      .leftJoin(users, eq(interestChannels.createdBy, users.id))
+      .leftJoin(users, eq(interestChannels.created_by, users.id))
       .where(eq(interestChannels.id, channelId));
 
     if (!channelData) {
@@ -2399,7 +2399,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(interestChannelPosts)
       .leftJoin(users, eq(interestChannelPosts.authorId, users.id))
-      .where(eq(interestChannelPosts.channelId, channelId))
+      .where(eq(interestChannelPosts.channel_id, channelId))
       .orderBy(desc(interestChannelPosts.created_at));
 
     return posts.map((p) => {
@@ -2422,7 +2422,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(interestChannelMembers)
       .leftJoin(users, eq(interestChannelMembers.user_id, users.id))
-      .where(eq(interestChannelMembers.channelId, channelId))
+      .where(eq(interestChannelMembers.channel_id, channelId))
       .orderBy(asc(interestChannelMembers.joinedAt));
 
     return members.map((m) => {
@@ -2447,7 +2447,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(interestChannelMembers.user_id, user_id),
-          eq(interestChannelMembers.channelId, channelId)
+          eq(interestChannelMembers.channel_id, channelId)
         )
       );
 
@@ -2483,7 +2483,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(interestChannelMembers.user_id, user_id),
-          eq(interestChannelMembers.channelId, channelId)
+          eq(interestChannelMembers.channel_id, channelId)
         )
       );
 

@@ -82,7 +82,7 @@ export class HybridDatabaseService {
       .select()
       .from(users)
       .where(
-        and(eq(users.organization_id, organizationId), eq(users.isActive, true))
+        and(eq(users.organization_id, organizationId), eq(users.is_active, true))
       )
       .orderBy(users.name);
 
