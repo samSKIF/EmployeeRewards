@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import {
   Card,
@@ -27,8 +27,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatDate, formatDistanceToNow } from 'date-fns';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Employee {
   id: number;
@@ -48,6 +66,33 @@ interface Employee {
   hire_date?: string;
   last_seen_at?: string;
   avatar_url?: string;
+  phoneNumber?: string;
+  phone_number?: string;
+  birthDate?: string;
+  birth_date?: string;
+  nationality?: string;
+  sex?: string;
+  responsibilities?: string;
+  aboutMe?: string;
+  about_me?: string;
+}
+
+interface UpdateEmployeeData {
+  name: string;
+  surname?: string;
+  email: string;
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  location?: string;
+  status: string;
+  hireDate?: string;
+  birthDate?: string;
+  managerEmail?: string;
+  responsibilities?: string;
+  aboutMe?: string;
+  nationality?: string;
+  sex?: string;
 }
 
 interface EmployeeFilters {
@@ -70,6 +115,97 @@ export default function EmployeeDirectory() {
 
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<UpdateEmployeeData>({
+    name: '',
+    surname: '',
+    email: '',
+    phoneNumber: '',
+    jobTitle: '',
+    department: '',
+    location: '',
+    status: 'active',
+    hireDate: '',
+    birthDate: '',
+    managerEmail: '',
+    responsibilities: '',
+    aboutMe: '',
+    nationality: '',
+    sex: '',
+  });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Edit employee mutation
+  const updateEmployeeMutation = useMutation({
+    mutationFn: async (data: UpdateEmployeeData) => {
+      if (!editingEmployee) throw new Error('No employee selected');
+      const response = await fetch(`/api/users/${editingEmployee.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update employee');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setIsEditDialogOpen(false);
+      setEditingEmployee(null);
+      toast({
+        title: 'Success',
+        description: 'Employee updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update employee',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Handle opening edit dialog
+  const handleEditEmployee = (employee: Employee) => {
+    const normalizedEmployee = normalizeEmployee(employee);
+    setEditingEmployee(employee);
+    setFormData({
+      name: normalizedEmployee.name || '',
+      surname: normalizedEmployee.surname || '',
+      email: normalizedEmployee.email || '',
+      phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
+      jobTitle: normalizedEmployee.jobTitle || '',
+      department: normalizedEmployee.department || '',
+      location: normalizedEmployee.location || '',
+      status: normalizedEmployee.status || 'active',
+      hireDate: normalizedEmployee.hireDate || '',
+      birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
+      managerEmail: normalizedEmployee.managerEmail || '',
+      responsibilities: normalizedEmployee.responsibilities || '',
+      aboutMe: normalizedEmployee.aboutMe || normalizedEmployee.about_me || '',
+      nationality: normalizedEmployee.nationality || '',
+      sex: normalizedEmployee.sex || '',
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (field: keyof UpdateEmployeeData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle form submission
+  const handleSaveEmployee = () => {
+    updateEmployeeMutation.mutate(formData);
+  };
 
   // Sorting functions
   const handleSort = (field: SortField) => {
@@ -95,6 +231,9 @@ export default function EmployeeDirectory() {
     hireDate: employee.hireDate || employee.hire_date,
     lastSeenAt: employee.lastSeenAt || employee.last_seen_at,
     avatarUrl: employee.avatarUrl || employee.avatar_url,
+    phoneNumber: employee.phoneNumber || employee.phone_number || '',
+    birthDate: employee.birthDate || employee.birth_date || '',
+    aboutMe: employee.aboutMe || employee.about_me || '',
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
@@ -476,25 +615,35 @@ export default function EmployeeDirectory() {
                   </TableCell>
                   <TableCell className="text-gray-900">
                     {employee.hireDate || employee.hire_date ? 
-                      formatDate(new Date(employee.hireDate || employee.hire_date), 'MMM dd, yyyy') : 
+                      formatDate(new Date(employee.hireDate || employee.hire_date!), 'MMM dd, yyyy') : 
                       '-'
                     }
                   </TableCell>
                   <TableCell className="text-gray-900 text-sm">
                     {employee.lastSeenAt || employee.last_seen_at ? 
-                      formatDistanceToNow(new Date(employee.lastSeenAt || employee.last_seen_at), { addSuffix: true }) : 
+                      formatDistanceToNow(new Date(employee.lastSeenAt || employee.last_seen_at!), { addSuffix: true }) : 
                       'Never'
                     }
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        View Profile
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Edit
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/people/employee-profile/${employee.id}`}>
+                            View Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditEmployee(employee)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Employee
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -502,6 +651,210 @@ export default function EmployeeDirectory() {
           </Table>
         </div>
       </div>
+
+      {/* Edit Employee Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Employee</DialogTitle>
+            <DialogDescription>
+              Update employee information. Changes will be saved immediately.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">First Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="First name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="surname">Last Name</Label>
+              <Input
+                id="surname"
+                value={formData.surname}
+                onChange={(e) => handleInputChange('surname', e.target.value)}
+                placeholder="Last name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="email@company.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jobTitle">Job Title</Label>
+              <Input
+                id="jobTitle"
+                value={formData.jobTitle}
+                onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                placeholder="Software Engineer"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Select value={formData.department} onValueChange={(value) => handleInputChange('department', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Department</SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Location</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location} value={location}>{location}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="terminated">Terminated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hireDate">Hire Date</Label>
+              <Input
+                id="hireDate"
+                type="date"
+                value={formData.hireDate}
+                onChange={(e) => handleInputChange('hireDate', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="birthDate">Birth Date</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={formData.birthDate}
+                onChange={(e) => handleInputChange('birthDate', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="managerEmail">Manager Email</Label>
+              <Input
+                id="managerEmail"
+                type="email"
+                value={formData.managerEmail}
+                onChange={(e) => handleInputChange('managerEmail', e.target.value)}
+                placeholder="manager@company.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nationality">Nationality</Label>
+              <Input
+                id="nationality"
+                value={formData.nationality}
+                onChange={(e) => handleInputChange('nationality', e.target.value)}
+                placeholder="e.g., American"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sex">Gender</Label>
+              <Select value={formData.sex} onValueChange={(value) => handleInputChange('sex', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Prefer not to say</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="responsibilities">Responsibilities</Label>
+              <Textarea
+                id="responsibilities"
+                value={formData.responsibilities}
+                onChange={(e) => handleInputChange('responsibilities', e.target.value)}
+                placeholder="Key responsibilities and duties..."
+                rows={3}
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="aboutMe">About Me</Label>
+              <Textarea
+                id="aboutMe"
+                value={formData.aboutMe}
+                onChange={(e) => handleInputChange('aboutMe', e.target.value)}
+                placeholder="Brief description about the employee..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              disabled={updateEmployeeMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEmployee}
+              disabled={updateEmployeeMutation.isPending}
+            >
+              {updateEmployeeMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

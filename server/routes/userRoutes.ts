@@ -505,6 +505,105 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// Update user by ID (admin only)
+router.put('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Only admins can update other users
+    if (!req.user.is_admin) {
+      return res.status(403).json({ message: 'Only administrators can update employees' });
+    }
+
+    const user_id = parseInt(req.params.id);
+    if (isNaN(user_id)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    // Get fields to update from the request body - handle both camelCase and snake_case
+    const {
+      name,
+      surname,
+      email,
+      phoneNumber,
+      phone_number,
+      jobTitle,
+      job_title,
+      department,
+      location,
+      status,
+      hireDate,
+      hire_date,
+      birthDate,
+      birth_date,
+      managerEmail,
+      manager_email,
+      responsibilities,
+      aboutMe,
+      about_me,
+      nationality,
+      sex,
+      avatarUrl,
+      avatar_url,
+    } = req.body;
+
+    // Build update object with snake_case field names for database
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (surname !== undefined) updateData.surname = surname;
+    if (email !== undefined) updateData.email = email;
+    if (phoneNumber !== undefined || phone_number !== undefined) updateData.phone_number = phoneNumber || phone_number;
+    if (jobTitle !== undefined || job_title !== undefined) updateData.job_title = jobTitle || job_title;
+    if (department !== undefined) updateData.department = department;
+    if (location !== undefined) updateData.location = location;
+    if (status !== undefined) updateData.status = status;
+    if (hireDate !== undefined || hire_date !== undefined) updateData.hire_date = hireDate || hire_date ? new Date(hireDate || hire_date) : null;
+    if (birthDate !== undefined || birth_date !== undefined) updateData.birth_date = birthDate || birth_date ? new Date(birthDate || birth_date) : null;
+    if (managerEmail !== undefined || manager_email !== undefined) updateData.manager_email = managerEmail || manager_email;
+    if (responsibilities !== undefined) updateData.responsibilities = responsibilities;
+    if (aboutMe !== undefined || about_me !== undefined) updateData.about_me = aboutMe || about_me;
+    if (nationality !== undefined) updateData.nationality = nationality;
+    if (sex !== undefined) updateData.sex = sex;
+    if (avatarUrl !== undefined || avatar_url !== undefined) updateData.avatar_url = avatarUrl || avatar_url;
+
+    // Ensure user belongs to same organization (multi-tenant security)
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, user_id));
+
+    if (!existingUser) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (existingUser.organization_id !== req.user.organization_id) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Update user in database
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, user_id))
+      .returning();
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    logger.info(`Employee ${user_id} updated by admin ${req.user.email}`);
+    res.json({
+      message: 'Employee updated successfully',
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    logger.error('Error updating employee:', error);
+    res.status(500).json({ message: error.message || 'Failed to update employee' });
+  }
+});
+
 // Get specific user by ID (must be last to avoid conflicts with other routes)
 router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
