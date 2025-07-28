@@ -27,8 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Plus, Filter, Users, Download } from 'lucide-react';
-import { formatDate } from 'date-fns';
+import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { formatDate, formatDistanceToNow } from 'date-fns';
 
 interface Employee {
   id: number;
@@ -43,6 +43,11 @@ interface Employee {
   location?: string;
   managerId?: number;
   managerEmail?: string;
+  lastSeenAt?: string;
+  job_title?: string;
+  hire_date?: string;
+  last_seen_at?: string;
+  avatar_url?: string;
 }
 
 interface EmployeeFilters {
@@ -52,12 +57,44 @@ interface EmployeeFilters {
   location: string;
 }
 
+type SortField = 'name' | 'jobTitle' | 'department' | 'location' | 'status' | 'hireDate' | 'lastSeenAt';
+type SortDirection = 'asc' | 'desc';
+
 export default function EmployeeDirectory() {
   const [filters, setFilters] = useState<EmployeeFilters>({
     search: '',
     department: 'all',
     status: 'all',
     location: 'all',
+  });
+
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  // Sorting functions
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="h-4 w-4" />;
+    return sortDirection === 'asc' ? 
+      <ArrowUp className="h-4 w-4" /> : 
+      <ArrowDown className="h-4 w-4" />;
+  };
+
+  // Helper function to normalize employee data
+  const normalizeEmployee = (employee: Employee) => ({
+    ...employee,
+    jobTitle: employee.jobTitle || employee.job_title || '',
+    hireDate: employee.hireDate || employee.hire_date,
+    lastSeenAt: employee.lastSeenAt || employee.last_seen_at,
+    avatarUrl: employee.avatarUrl || employee.avatar_url,
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
@@ -89,25 +126,71 @@ export default function EmployeeDirectory() {
   const subscriptionLimit = subscriptionInfo?.subscribed_users || 500;
   const usagePercentage = subscriptionLimit > 0 ? Math.round((activeEmployees / subscriptionLimit) * 100) : 0;
 
-  // Filter employees based on search and filters
-  const filteredEmployees = employees.filter((employee) => {
-    const matchesSearch = 
-      employee.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      employee.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-      employee.jobTitle?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      employee.department?.toLowerCase().includes(filters.search.toLowerCase());
+  // Filter and sort employees
+  const filteredAndSortedEmployees = (() => {
+    // First normalize and filter
+    const normalized = employees.map(normalizeEmployee);
+    
+    const filtered = normalized.filter((employee) => {
+      const searchMatch = 
+        employee.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        employee.email.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (employee.surname && employee.surname.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (employee.jobTitle && employee.jobTitle.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (employee.department && employee.department.toLowerCase().includes(filters.search.toLowerCase()));
 
-    const matchesDepartment = 
-      filters.department === 'all' || employee.department === filters.department;
+      const departmentMatch = filters.department === 'all' || employee.department === filters.department;
+      const statusMatch = filters.status === 'all' || employee.status === filters.status;
+      const locationMatch = filters.location === 'all' || employee.location === filters.location;
 
-    const matchesStatus = 
-      filters.status === 'all' || employee.status === filters.status;
+      return searchMatch && departmentMatch && statusMatch && locationMatch;
+    });
 
-    const matchesLocation = 
-      filters.location === 'all' || employee.location === filters.location;
+    // Then sort
+    return filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
 
-    return matchesSearch && matchesDepartment && matchesStatus && matchesLocation;
-  });
+      switch (sortField) {
+        case 'name':
+          aValue = a.name || '';
+          bValue = b.name || '';
+          break;
+        case 'jobTitle':
+          aValue = a.jobTitle || '';
+          bValue = b.jobTitle || '';
+          break;
+        case 'department':
+          aValue = a.department || '';
+          bValue = b.department || '';
+          break;
+        case 'location':
+          aValue = a.location || '';
+          bValue = b.location || '';
+          break;
+        case 'status':
+          aValue = a.status || '';
+          bValue = b.status || '';
+          break;
+        case 'hireDate':
+          aValue = a.hireDate ? new Date(a.hireDate).getTime() : 0;
+          bValue = b.hireDate ? new Date(b.hireDate).getTime() : 0;
+          break;
+        case 'lastSeenAt':
+          aValue = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+          bValue = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+          break;
+        default:
+          aValue = '';
+          bValue = '';
+      }
+
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  })();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -287,29 +370,86 @@ export default function EmployeeDirectory() {
       {/* Employee List */}
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="px-6 py-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">Employee List ({filteredEmployees.length})</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Employee List ({filteredAndSortedEmployees.length})</h3>
         </div>
         
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold text-gray-700">Employee</TableHead>
-                <TableHead className="font-semibold text-gray-700">Job Title</TableHead>
-                <TableHead className="font-semibold text-gray-700">Department</TableHead>
-                <TableHead className="font-semibold text-gray-700">Location</TableHead>
-                <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                <TableHead className="font-semibold text-gray-700">Hire Date</TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('name')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Employee
+                    {getSortIcon('name')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('jobTitle')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Job Title
+                    {getSortIcon('jobTitle')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('department')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Department
+                    {getSortIcon('department')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('location')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Location
+                    {getSortIcon('location')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('status')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Status
+                    {getSortIcon('status')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('hireDate')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Hire Date
+                    {getSortIcon('hireDate')}
+                  </button>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  <button 
+                    onClick={() => handleSort('lastSeenAt')}
+                    className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+                  >
+                    Last Connected
+                    {getSortIcon('lastSeenAt')}
+                  </button>
+                </TableHead>
                 <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEmployees.map((employee) => (
+              {filteredAndSortedEmployees.map((employee) => (
                 <TableRow key={employee.id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={employee.avatarUrl} />
+                        <AvatarImage src={employee.avatarUrl || employee.avatar_url} />
                         <AvatarFallback className="bg-teal-100 text-teal-600 font-medium">
                           {employee.name?.substring(0, 2)?.toUpperCase() || 'NA'}
                         </AvatarFallback>
@@ -322,7 +462,9 @@ export default function EmployeeDirectory() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-900">{employee.jobTitle || '-'}</TableCell>
+                  <TableCell className="text-gray-900">
+                    {employee.jobTitle || employee.job_title || '-'}
+                  </TableCell>
                   <TableCell className="text-gray-900">{employee.department || '-'}</TableCell>
                   <TableCell className="text-gray-900">{employee.location || '-'}</TableCell>
                   <TableCell>
@@ -333,7 +475,16 @@ export default function EmployeeDirectory() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-gray-900">
-                    {employee.hireDate ? formatDate(new Date(employee.hireDate), 'MMM dd, yyyy') : '-'}
+                    {employee.hireDate || employee.hire_date ? 
+                      formatDate(new Date(employee.hireDate || employee.hire_date), 'MMM dd, yyyy') : 
+                      '-'
+                    }
+                  </TableCell>
+                  <TableCell className="text-gray-900 text-sm">
+                    {employee.lastSeenAt || employee.last_seen_at ? 
+                      formatDistanceToNow(new Date(employee.lastSeenAt || employee.last_seen_at), { addSuffix: true }) : 
+                      'Never'
+                    }
                   </TableCell>
                   <TableCell>
                     <Button variant="outline" size="sm" className="text-xs">
