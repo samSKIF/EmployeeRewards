@@ -189,13 +189,13 @@ export default function EmployeeDirectory() {
         surname: normalizedEmployee.surname || '',
         email: normalizedEmployee.email || '',
         phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
-        jobTitle: normalizedEmployee.jobTitle || '',
+        jobTitle: normalizedEmployee.jobTitle || normalizedEmployee.job_title || normalizedEmployee.title || '',
         department: normalizedEmployee.department || '',
         location: normalizedEmployee.location || '',
         status: normalizedEmployee.status || 'active',
-        hireDate: normalizedEmployee.hireDate || '',
+        hireDate: normalizedEmployee.hireDate || normalizedEmployee.hire_date || '',
         birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
-        managerEmail: normalizedEmployee.managerEmail || '',
+        managerEmail: normalizedEmployee.managerEmail || normalizedEmployee.manager_email || '',
         responsibilities: normalizedEmployee.responsibilities || '',
         aboutMe: normalizedEmployee.aboutMe || normalizedEmployee.about_me || '',
         nationality: normalizedEmployee.nationality || '',
@@ -251,6 +251,7 @@ export default function EmployeeDirectory() {
     phoneNumber: employee.phoneNumber || employee.phone_number || '',
     birthDate: employee.birthDate || employee.birth_date || '',
     aboutMe: employee.aboutMe || employee.about_me || '',
+    managerEmail: employee.managerEmail || employee.manager_email || '',
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
@@ -832,27 +833,7 @@ export default function EmployeeDirectory() {
               </Select>
             </div>
 
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="responsibilities">Responsibilities</Label>
-              <Textarea
-                id="responsibilities"
-                value={formData.responsibilities}
-                onChange={(e) => handleInputChange('responsibilities', e.target.value)}
-                placeholder="Key responsibilities and duties..."
-                rows={3}
-              />
-            </div>
 
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="aboutMe">About Me</Label>
-              <Textarea
-                id="aboutMe"
-                value={formData.aboutMe}
-                onChange={(e) => handleInputChange('aboutMe', e.target.value)}
-                placeholder="Brief description about the employee..."
-                rows={3}
-              />
-            </div>
           </div>
 
           <DialogFooter>
