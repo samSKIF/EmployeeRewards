@@ -2531,7 +2531,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUsers(
     organizationId: number,
-    limit: number = 50,
+    limit: number = 1000, // Increased from 50 to show all employees
     offset: number = 0
   ): Promise<User[]> {
     const usersData = await db

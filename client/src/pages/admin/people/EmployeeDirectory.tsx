@@ -487,9 +487,14 @@ export default function EmployeeDirectory() {
                     }
                   </TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      View Profile
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        View Profile
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        Edit
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
