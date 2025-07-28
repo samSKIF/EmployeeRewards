@@ -211,35 +211,21 @@ export default function EmployeeDirectory() {
       </div>
 
       {/* Usage Alert */}
-      {usagePercentage > 90 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      {usagePercentage >= 90 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center">
-            <div className="text-red-400 mr-3">⚠️</div>
+            <div className="text-yellow-400 mr-3">⚠️</div>
             <div>
-              <h4 className="text-red-800 font-medium">Subscription Limit Warning</h4>
-              <p className="text-red-700 text-sm">
-                You're using {usagePercentage}% of your subscription capacity ({activeEmployees}/{subscriptionLimit}). 
-                Consider upgrading your plan or removing inactive employees.
+              <h4 className="text-yellow-800 font-medium">Subscription Usage Notice</h4>
+              <p className="text-yellow-700 text-sm">
+                You're using {usagePercentage}% of your subscription capacity ({activeEmployees}/{subscriptionLimit}). You have {subscriptionLimit - activeEmployees} employee slots remaining.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {usagePercentage > 75 && usagePercentage <= 90 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="text-yellow-400 mr-3">💡</div>
-            <div>
-              <h4 className="text-yellow-800 font-medium">Subscription Usage Notice</h4>
-              <p className="text-yellow-700 text-sm">
-                You're using {usagePercentage}% of your subscription capacity ({activeEmployees}/{subscriptionLimit}). 
-                You have {subscriptionLimit - activeEmployees} employee slots remaining.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Search & Filter Section */}
       <div className="bg-white rounded-lg p-6 border shadow-sm">
