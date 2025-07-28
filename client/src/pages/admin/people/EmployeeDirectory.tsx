@@ -181,10 +181,14 @@ export default function EmployeeDirectory() {
   // Handle opening edit dialog
   const handleEditEmployee = (employee: Employee) => {
     console.log('Opening edit dialog for employee:', employee);
+    console.log('Employee location field:', employee.location);
+    console.log('Employee manager_email field:', employee.manager_email);
     try {
       const normalizedEmployee = normalizeEmployee(employee);
+      console.log('Normalized employee location:', normalizedEmployee.location);
+      console.log('Normalized employee manager_email:', normalizedEmployee.manager_email);
       setEditingEmployee(employee);
-      setFormData({
+      const formDataToSet = {
         name: normalizedEmployee.name || '',
         surname: normalizedEmployee.surname || '',
         email: normalizedEmployee.email || '',
@@ -200,7 +204,9 @@ export default function EmployeeDirectory() {
         aboutMe: normalizedEmployee.aboutMe || normalizedEmployee.about_me || '',
         nationality: normalizedEmployee.nationality || '',
         sex: normalizedEmployee.sex || '',
-      });
+      };
+      console.log('Form data being set:', formDataToSet);
+      setFormData(formDataToSet);
       console.log('Setting dialog open to true');
       setIsEditDialogOpen(true);
     } catch (error) {
