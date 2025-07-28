@@ -25,8 +25,8 @@ export const scheduleBirthdayRewards = () => {
          .select()
          .from(users)
          .where(
-           sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
-               EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+           sql`EXTRACT(MONTH FROM ${users.birth_date}) = EXTRACT(MONTH FROM CURRENT_DATE) AND 
+               EXTRACT(DAY FROM ${users.birth_date}) = EXTRACT(DAY FROM CURRENT_DATE)`
          );
 
       logger.info(`Found ${birthdayUsers.length} users with birthdays today`);

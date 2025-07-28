@@ -49,7 +49,7 @@ async function checkUserCountLimit(
       .from(users)
       .where(
         and(
-          eq(users.organizationId, organizationId),
+          eq(users.organization_id, organizationId),
           eq(users.status, 'active')
         )
       );
@@ -135,9 +135,9 @@ router.post('/register', async (req, res) => {
       }
 
       // Check user count limits for the organization
-      if (userData.organizationId) {
+      if (userData.organization_id) {
         const userLimitCheck = await checkUserCountLimit(
-          userData.organizationId
+          userData.organization_id
         );
         if (!userLimitCheck.allowed) {
           return res.status(403).json({
@@ -197,9 +197,9 @@ router.post('/register', async (req, res) => {
       }
 
       // Check user count limits for the organization
-      if (validatedUserData.organizationId) {
+      if (validatedUserData.organization_id) {
         const userLimitCheck = await checkUserCountLimit(
-          validatedUserData.organizationId
+          validatedUserData.organization_id
         );
         if (!userLimitCheck.allowed) {
           return res.status(403).json({
@@ -229,17 +229,17 @@ router.post('/register', async (req, res) => {
         name: user.name,
         surname: user.surname,
         email: user.email,
-        phoneNumber: user.phoneNumber,
-        jobTitle: user.jobTitle,
+        phoneNumber: user.phone_number,
+        jobTitle: user.job_title,
         department: user.department,
         sex: user.sex,
         nationality: user.nationality,
-        birthDate: user.birthDate,
-        isAdmin: user.isAdmin,
+        birthDate: user.birth_date,
+        isAdmin: user.is_admin,
         status: user.status,
-        avatarUrl: user.avatarUrl,
-        hireDate: user.hireDate,
-        createdAt: user.createdAt,
+        avatarUrl: user.avatar_url,
+        hireDate: user.hire_date,
+        createdAt: user.created_at,
       });
 
       logger.info('Standard registration successful for:', userWithoutPassword);
@@ -321,13 +321,13 @@ router.post('/login', async (req, res) => {
     );
 
     // Check if user's organization has an active subscription (skip for corporate admins)
-    if (user.roleType !== 'corporate_admin' && user.organizationId) {
+    if (user.role_type !== 'corporate_admin' && user.organization_id) {
       try {
         // Get organization details
         const [organization] = await db
           .select()
           .from(organizations)
-          .where(eq(organizations.id, user.organizationId));
+          .where(eq(organizations.id, user.organization_id));
 
         if (organization) {
           // Check for active subscription
@@ -336,11 +336,11 @@ router.post('/login', async (req, res) => {
             .from(subscriptions)
             .where(
               and(
-                eq(subscriptions.organizationId, organization.id),
+                eq(subscriptions.organization_id, organization.id),
                 eq(subscriptions.isActive, true)
               )
             )
-            .orderBy(desc(subscriptions.createdAt))
+            .orderBy(desc(subscriptions.created_at))
             .limit(1);
 
           let hasActiveSubscription = false;
@@ -399,17 +399,17 @@ router.post('/login', async (req, res) => {
       name: user.name,
       surname: user.surname,
       email: user.email,
-      phoneNumber: user.phoneNumber,
-      jobTitle: user.jobTitle,
+      phoneNumber: user.phone_number,
+      jobTitle: user.job_title,
       department: user.department,
       sex: user.sex,
       nationality: user.nationality,
-      birthDate: user.birthDate,
-      isAdmin: user.isAdmin,
+      birthDate: user.birth_date,
+      isAdmin: user.is_admin,
       status: user.status,
-      avatarUrl: user.avatarUrl,
-      hireDate: user.hireDate,
-      createdAt: user.createdAt,
+      avatarUrl: user.avatar_url,
+      hireDate: user.hire_date,
+      createdAt: user.created_at,
     });
 
     // Don't send the password back to the client
@@ -423,7 +423,7 @@ router.post('/login', async (req, res) => {
       user: userWithoutPassword,
     };
 
-    if (user.roleType === 'corporate_admin') {
+    if (user.role_type === 'corporate_admin') {
       // Generate management token using same user data
       const MANAGEMENT_JWT_SECRET =
         process.env.MANAGEMENT_JWT_SECRET || 'management-secret-key';

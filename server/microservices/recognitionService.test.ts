@@ -65,8 +65,8 @@ describe('Recognition Microservice', () => {
   describe('GET /leaderboard/:organizationId', () => {
     it('should return recognition leaderboard', async () => {
       const mockLeaderboard = [
-        { userId: 1, name: 'Top User', points: 500, rank: 1 },
-        { userId: 2, name: 'Second User', points: 450, rank: 2 },
+        { user_id: 1, name: 'Top User', points: 500, rank: 1 },
+        { user_id: 2, name: 'Second User', points: 450, rank: 2 },
       ];
       
       mockStorage.getRecognitionLeaderboard.mockResolvedValue(mockLeaderboard);
@@ -80,7 +80,7 @@ describe('Recognition Microservice', () => {
     });
   });
 
-  describe('GET /stats/:userId', () => {
+  describe('GET /stats/:user_id', () => {
     it('should return user recognition stats', async () => {
       const mockStats = {
         totalGiven: 10,

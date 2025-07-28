@@ -51,7 +51,7 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
         .from(employeeStatuses)
         .where(
           and(
-            eq(employeeStatuses.userId, employee.id),
+            eq(employeeStatuses.user_id, employee.id),
             eq(employeeStatuses.statusTypeId, statusTypeId),
             eq(employeeStatuses.startDate, todayFormatted)
           )
@@ -60,7 +60,7 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
       if (existingStatus.length === 0) {
         // Assign birthday status for today only
         await db.insert(employeeStatuses).values({
-          userId: employee.id,
+          user_id: employee.id,
           statusTypeId: statusTypeId,
           startDate: todayFormatted,
           endDate: todayFormatted,
@@ -84,7 +84,7 @@ export async function checkBirthdayStatuses(req: Request, res: Response) {
 // Manual birthday status assignment
 export async function assignBirthdayStatus(req: Request, res: Response) {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
     const { date } = req.body;
 
     // Get the Birthday status type
@@ -105,7 +105,7 @@ export async function assignBirthdayStatus(req: Request, res: Response) {
     const newStatus = await db
       .insert(employeeStatuses)
       .values({
-        userId: parseInt(userId),
+        user_id: parseInt(user_id),
         statusTypeId: statusTypeId,
         startDate: targetDate,
         endDate: targetDate,
@@ -126,7 +126,7 @@ export async function assignBirthdayStatus(req: Request, res: Response) {
 export function setupBirthdayStatusRoutes(app: any) {
   app.post('/api/birthday-status/check', verifyToken, checkBirthdayStatuses);
   app.post(
-    '/api/birthday-status/assign/:userId',
+    '/api/birthday-status/assign/:user_id',
     verifyToken,
     assignBirthdayStatus
   );

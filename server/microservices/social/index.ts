@@ -35,7 +35,7 @@ router.post(
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    const userId = req.user.id;
+    const user_id = req.user.id;
 
     try {
       console.log('Social microservice: Handling post creation');
@@ -51,12 +51,12 @@ router.post(
       const query = `
       INSERT INTO posts (user_id, content, image_url, type, tags, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-      RETURNING id, user_id AS "userId", content, image_url AS "imageUrl", 
+      RETURNING id, user_id AS "user_id", content, image_url AS "imageUrl", 
         type, tags, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
 
       const result = await pool.query(query, [
-        userId,
+        user_id,
         content || '',
         imageUrl,
         type,
@@ -101,11 +101,11 @@ router.get(
       }
 
       // Execute the query to get posts only from users in the same company
-      const userId = req.user?.id;
+      const user_id = req.user?.id;
       const query = `
       SELECT 
         p.id, 
-        p.user_id AS "userId", 
+        p.user_id AS "user_id", 
         p.content, 
         p.image_url AS "imageUrl",
         p.type,
@@ -149,7 +149,7 @@ router.get(
       LIMIT 50
     `;
 
-      const result = await pool.query(query, [companyId, userId]);
+      const result = await pool.query(query, [companyId, user_id]);
 
       console.log(
         `Social microservice: Filtering posts for company ${companyId} (${userEmail})`
@@ -185,7 +185,7 @@ router.post(
       }
 
       const { postId, type } = req.body;
-      const userId = req.user.id;
+      const user_id = req.user.id;
 
       if (!postId) {
         return res.status(400).json({ error: 'Post ID is required' });
@@ -198,7 +198,7 @@ router.post(
       console.log('Social microservice: Adding reaction', {
         postId,
         type,
-        userId,
+        user_id,
       });
 
       // Check if user already reacted to this post
@@ -206,7 +206,7 @@ router.post(
       SELECT id, type FROM reactions 
       WHERE post_id = $1 AND user_id = $2
     `;
-      const existingResult = await pool.query(existingQuery, [postId, userId]);
+      const existingResult = await pool.query(existingQuery, [postId, user_id]);
 
       if (existingResult.rows.length > 0) {
         const existingReaction = existingResult.rows[0];
@@ -218,7 +218,7 @@ router.post(
           WHERE post_id = $1 AND user_id = $2
           RETURNING *
         `;
-          await pool.query(deleteQuery, [postId, userId]);
+          await pool.query(deleteQuery, [postId, user_id]);
           console.log('Social microservice: Reaction removed');
           return res
             .status(200)
@@ -231,7 +231,7 @@ router.post(
           WHERE post_id = $2 AND user_id = $3
           RETURNING *
         `;
-          const result = await pool.query(updateQuery, [type, postId, userId]);
+          const result = await pool.query(updateQuery, [type, postId, user_id]);
           console.log('Social microservice: Reaction updated');
           return res
             .status(200)
@@ -244,7 +244,7 @@ router.post(
         VALUES ($1, $2, $3, NOW())
         RETURNING *
       `;
-        const result = await pool.query(insertQuery, [postId, userId, type]);
+        const result = await pool.query(insertQuery, [postId, user_id, type]);
         console.log('Social microservice: Reaction added');
         return res
           .status(201)
@@ -272,8 +272,8 @@ router.get(
         r.created_at AS "createdAt",
         u.id AS "user.id",
         u.name AS "user.name",
-        u.avatar_url AS "user.avatarUrl",
-        u.job_title AS "user.jobTitle"
+        u.avatar_url AS "user.avatar_url",
+        u.job_title AS "user.job_title"
       FROM reactions r
       JOIN users u ON r.user_id = u.id
       WHERE r.post_id = $1
@@ -297,10 +297,10 @@ router.get(
         user: {
           id: row['user.id'],
           name: row['user.name'],
-          avatarUrl: row['user.avatarUrl'],
-          jobTitle: row['user.jobTitle'],
+          avatarUrl: row['user.avatar_url'],
+          jobTitle: row['user.job_title'],
         },
-        createdAt: row.createdAt,
+        createdAt: row.created_at,
       }));
 
       return res.status(200).json(reactions);
@@ -327,9 +327,9 @@ router.delete(
       }
 
       const { postId } = req.params;
-      const userId = req.user.id;
+      const user_id = req.user.id;
 
-      console.log('Social microservice: Removing reaction', { postId, userId });
+      console.log('Social microservice: Removing reaction', { postId, user_id });
 
       const deleteQuery = `
       DELETE FROM reactions 
@@ -337,7 +337,7 @@ router.delete(
       RETURNING *
     `;
 
-      const result = await pool.query(deleteQuery, [postId, userId]);
+      const result = await pool.query(deleteQuery, [postId, user_id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Reaction not found' });
@@ -365,7 +365,7 @@ router.post(
       }
 
       const { commentId, type = 'like' } = req.body;
-      const userId = req.user.id;
+      const user_id = req.user.id;
 
       if (!commentId) {
         return res.status(400).json({ error: 'Comment ID is required' });
@@ -378,7 +378,7 @@ router.post(
     `;
       const existingResult = await pool.query(existingQuery, [
         commentId,
-        userId,
+        user_id,
       ]);
 
       if (existingResult.rows.length > 0) {
@@ -389,7 +389,7 @@ router.post(
         WHERE comment_id = $2 AND user_id = $3
         RETURNING *
       `;
-        const result = await pool.query(updateQuery, [type, commentId, userId]);
+        const result = await pool.query(updateQuery, [type, commentId, user_id]);
         return res.status(200).json(result.rows[0]);
       } else {
         // Create new reaction
@@ -398,7 +398,7 @@ router.post(
         VALUES ($1, $2, $3, NOW())
         RETURNING *
       `;
-        const result = await pool.query(insertQuery, [commentId, userId, type]);
+        const result = await pool.query(insertQuery, [commentId, user_id, type]);
         return res.status(201).json(result.rows[0]);
       }
     } catch (error) {
@@ -424,7 +424,7 @@ router.delete(
       }
 
       const { commentId } = req.params;
-      const userId = req.user.id;
+      const user_id = req.user.id;
 
       const deleteQuery = `
       DELETE FROM comment_reactions 
@@ -432,7 +432,7 @@ router.delete(
       RETURNING *
     `;
 
-      const result = await pool.query(deleteQuery, [commentId, userId]);
+      const result = await pool.query(deleteQuery, [commentId, user_id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Reaction not found' });
@@ -464,7 +464,7 @@ router.get(
       }
 
       const { postId } = req.params;
-      const userId = req.user.id;
+      const user_id = req.user.id;
 
       console.log('Social microservice: Fetching comments for post', postId);
 
@@ -473,10 +473,10 @@ router.get(
         c.id,
         c.content,
         c.created_at AS "createdAt",
-        c.user_id AS "userId",
+        c.user_id AS "user_id",
         u.name AS "user.name",
-        u.avatar_url AS "user.avatarUrl",
-        u.job_title AS "user.jobTitle",
+        u.avatar_url AS "user.avatar_url",
+        u.job_title AS "user.job_title",
         (
           SELECT COUNT(*) 
           FROM comment_reactions cr 
@@ -494,19 +494,19 @@ router.get(
       ORDER BY c.created_at ASC
     `;
 
-      const result = await pool.query(query, [postId, userId]);
+      const result = await pool.query(query, [postId, user_id]);
 
       // Transform the flat result to nested structure
       const comments = result.rows.map((row) => ({
         id: row.id,
         content: row.content,
-        createdAt: row.createdAt,
-        userId: row.userId,
+        createdAt: row.created_at,
+        user_id: row.user_id,
         user: {
-          id: row.userId,
+          id: row.user_id,
           name: row['user.name'],
-          avatarUrl: row['user.avatarUrl'],
-          jobTitle: row['user.jobTitle'],
+          avatarUrl: row['user.avatar_url'],
+          jobTitle: row['user.job_title'],
         },
         reactionCount: parseInt(row.reactionCount) || 0,
         userReaction: row.userReaction || null,

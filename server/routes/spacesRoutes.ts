@@ -41,8 +41,8 @@ router.get('/:id', async (req, res) => {
       allowedDepartments: space[0].allowedDepartments,
       allowedSites: space[0].allowedSites,
       createdBy: space[0].createdBy,
-      organizationId: space[0].organizationId,
-      createdAt: space[0].createdAt,
+      organizationId: space[0].organization_id,
+      createdAt: space[0].created_at,
       coverImage: space[0].coverImage,
     };
 
@@ -67,19 +67,19 @@ router.get('/:id/posts', async (req, res) => {
       .select({
         id: interestChannelPosts.id,
         content: interestChannelPosts.content,
-        userId: interestChannelPosts.userId,
+        user_id: interestChannelPosts.user_id,
         userName: users.name,
-        userAvatar: users.avatarUrl,
-        createdAt: interestChannelPosts.createdAt,
+        userAvatar: users.avatar_url,
+        createdAt: interestChannelPosts.created_at,
         likeCount: interestChannelPosts.likeCount,
         commentCount: interestChannelPosts.commentCount,
         imageUrl: interestChannelPosts.imageUrl,
         type: interestChannelPosts.type,
       })
       .from(interestChannelPosts)
-      .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+      .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
       .where(eq(interestChannelPosts.channelId, spaceId))
-      .orderBy(desc(interestChannelPosts.createdAt));
+      .orderBy(desc(interestChannelPosts.created_at));
 
     logger.info(`Fetched ${posts.length} posts for space ID: ${spaceId}`);
     res.json(posts);

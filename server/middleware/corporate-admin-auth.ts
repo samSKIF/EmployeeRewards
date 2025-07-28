@@ -21,18 +21,18 @@ export const requireCorporateAdmin = (
   }
 
   // Check if user is a corporate admin
-  if (user.roleType !== 'corporate_admin') {
-    logger.warn(`Corporate admin access denied for user ${user.email}: Role is ${user.roleType}`);
+  if (user.role_type !== 'corporate_admin') {
+    logger.warn(`Corporate admin access denied for user ${user.email}: Role is ${user.role_type}`);
     return res.status(403).json({ 
       message: 'Corporate admin access required',
       error: 'FORBIDDEN',
-      userRole: user.roleType
+      userRole: user.role_type
     });
   }
 
   // Verify corporate admin has no organization_id (should be null)
-  if (user.organizationId !== null) {
-    logger.error(`SECURITY VIOLATION: Corporate admin ${user.email} has organization_id: ${user.organizationId}`);
+  if (user.organization_id !== null) {
+    logger.error(`SECURITY VIOLATION: Corporate admin ${user.email} has organization_id: ${user.organization_id}`);
     return res.status(403).json({ 
       message: 'Invalid corporate admin configuration',
       error: 'SECURITY_VIOLATION'
@@ -52,20 +52,20 @@ export const enforceOrganizationAccess = (
   next: NextFunction
 ) => {
   const user = req.user;
-  const organizationId = parseInt(req.params.organizationId || req.params.id);
+  const organizationId = parseInt(req.params.organization_id || req.params.id);
 
   if (!user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
 
   // Corporate admins can access any organization
-  if (user.roleType === 'corporate_admin') {
+  if (user.role_type === 'corporate_admin') {
     return next();
   }
 
   // Regular users can only access their own organization
-  if (user.organizationId !== organizationId) {
-    logger.warn(`Organization access denied: User ${user.email} (org: ${user.organizationId}) tried to access org ${organizationId}`);
+  if (user.organization_id !== organizationId) {
+    logger.warn(`Organization access denied: User ${user.email} (org: ${user.organization_id}) tried to access org ${organizationId}`);
     return res.status(403).json({ 
       message: 'Access denied: Can only access your own organization',
       error: 'ORGANIZATION_ACCESS_DENIED'

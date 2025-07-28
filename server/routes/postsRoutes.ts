@@ -19,9 +19,9 @@ router.post(
   async (req: AuthenticatedRequest, res) => {
     try {
       const postId = parseInt(req.params.id);
-      const userId = req.user?.id;
+      const user_id = req.user?.id;
 
-      if (!userId) {
+      if (!user_id) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
@@ -36,7 +36,7 @@ router.post(
         .where(
           and(
             eq(interestChannelPostLikes.postId, postId),
-            eq(interestChannelPostLikes.userId, userId)
+            eq(interestChannelPostLikes.user_id, user_id)
           )
         )
         .limit(1);
@@ -48,7 +48,7 @@ router.post(
           .where(
             and(
               eq(interestChannelPostLikes.postId, postId),
-              eq(interestChannelPostLikes.userId, userId)
+              eq(interestChannelPostLikes.user_id, user_id)
             )
           );
 
@@ -58,13 +58,13 @@ router.post(
           .set({ likeCount: sql`${interestChannelPosts.likeCount} - 1` })
           .where(eq(interestChannelPosts.id, postId));
 
-        logger.info(`User ${userId} unliked post ${postId}`);
+        logger.info(`User ${user_id} unliked post ${postId}`);
         res.json({ message: 'Post unliked', liked: false });
       } else {
         // Like the post
         await db.insert(interestChannelPostLikes).values({
           postId,
-          userId,
+          user_id,
           createdAt: new Date(),
         });
 
@@ -74,7 +74,7 @@ router.post(
           .set({ likeCount: sql`${interestChannelPosts.likeCount} + 1` })
           .where(eq(interestChannelPosts.id, postId));
 
-        logger.info(`User ${userId} liked post ${postId}`);
+        logger.info(`User ${user_id} liked post ${postId}`);
         res.json({ message: 'Post liked', liked: true });
       }
     } catch (error: any) {
@@ -93,10 +93,10 @@ router.post(
   async (req: AuthenticatedRequest, res) => {
     try {
       const postId = parseInt(req.params.id);
-      const userId = req.user?.id;
+      const user_id = req.user?.id;
       const { content } = req.body;
 
-      if (!userId) {
+      if (!user_id) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
@@ -113,7 +113,7 @@ router.post(
         .insert(interestChannelPostComments)
         .values({
           postId,
-          authorId: userId,
+          authorId: user_id,
           content: content.trim(),
           createdAt: new Date(),
         })
@@ -130,10 +130,10 @@ router.post(
         .select({
           id: users.id,
           name: users.name,
-          avatarUrl: users.avatarUrl,
+          avatarUrl: users.avatar_url,
         })
         .from(users)
-        .where(eq(users.id, userId))
+        .where(eq(users.id, user_id))
         .limit(1);
 
       const commentWithUser = {
@@ -141,7 +141,7 @@ router.post(
         author: user[0],
       };
 
-      logger.info(`User ${userId} commented on post ${postId}`);
+      logger.info(`User ${user_id} commented on post ${postId}`);
       res.status(201).json(commentWithUser);
     } catch (error: any) {
       logger.error('Error creating comment:', error);
@@ -165,15 +165,15 @@ router.get('/:id/comments', async (req, res) => {
       .select({
         id: interestChannelPostComments.id,
         content: interestChannelPostComments.content,
-        createdAt: interestChannelPostComments.createdAt,
+        createdAt: interestChannelPostComments.created_at,
         authorId: interestChannelPostComments.authorId,
         authorName: users.name,
-        authorAvatar: users.avatarUrl,
+        authorAvatar: users.avatar_url,
       })
       .from(interestChannelPostComments)
       .innerJoin(users, eq(interestChannelPostComments.authorId, users.id))
       .where(eq(interestChannelPostComments.postId, postId))
-      .orderBy(interestChannelPostComments.createdAt);
+      .orderBy(interestChannelPostComments.created_at);
 
     res.json(comments);
   } catch (error: any) {

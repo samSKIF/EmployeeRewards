@@ -16,7 +16,7 @@ async function getAnalyticsData(organizationId: number = 1) {
       .select({ count: count() })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(eq(users.organizationId, organizationId));
+      .where(eq(users.organization_id, organizationId));
 
     // Get department stats with employee counts from all users
     const departmentStats = await db
@@ -39,7 +39,7 @@ async function getAnalyticsData(organizationId: number = 1) {
       .where(
         and(
           sql`${users.department} IS NOT NULL`,
-          eq(users.organizationId, organizationId)
+          eq(users.organization_id, organizationId)
         )
       )
       .groupBy(users.department);
@@ -47,19 +47,19 @@ async function getAnalyticsData(organizationId: number = 1) {
     // Get monthly trends (last 6 months) for the organization
     const monthlyTrends = await db
       .select({
-        month: sql<string>`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`,
+        month: sql<string>`TO_CHAR(${recognitions.created_at}, 'YYYY-MM')`,
         count: count(recognitions.id),
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
       .where(
         and(
-          gte(recognitions.createdAt, sql`NOW() - INTERVAL '6 months'`),
-          eq(users.organizationId, organizationId)
+          gte(recognitions.created_at, sql`NOW() - INTERVAL '6 months'`),
+          eq(users.organization_id, organizationId)
         )
       )
-      .groupBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`)
-      .orderBy(sql`TO_CHAR(${recognitions.createdAt}, 'YYYY-MM')`);
+      .groupBy(sql`TO_CHAR(${recognitions.created_at}, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(${recognitions.created_at}, 'YYYY-MM')`);
 
     // Get top recognizers for the organization
     const topRecognizers = await db
@@ -73,7 +73,7 @@ async function getAnalyticsData(organizationId: number = 1) {
       .where(
         and(
           sql`${users.name} IS NOT NULL`,
-          eq(users.organizationId, organizationId)
+          eq(users.organization_id, organizationId)
         )
       )
       .groupBy(users.id, users.name, users.department)
@@ -92,7 +92,7 @@ async function getAnalyticsData(organizationId: number = 1) {
       .where(
         and(
           sql`${users.name} IS NOT NULL`,
-          eq(users.organizationId, organizationId)
+          eq(users.organization_id, organizationId)
         )
       )
       .groupBy(users.id, users.name, users.department)
@@ -215,7 +215,7 @@ router.post('/ask', async (req, res) => {
 
     // Get user's organization ID from the request
     const user = req.user as any;
-    const organizationId = user?.organizationId || 1;
+    const organizationId = user?.organization_id || 1;
 
     // Get current analytics data for the user's organization
     const analyticsData = await getAnalyticsData(organizationId);

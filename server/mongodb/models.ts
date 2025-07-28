@@ -15,7 +15,7 @@ export interface SocialPost {
   // Poll specific fields
   pollOptions?: string[];
   pollVotes?: Array<{
-    userId: number;
+    user_id: number;
     userName: string;
     option: string;
     votedAt: Date;
@@ -33,7 +33,7 @@ export interface SocialPost {
 
   // Engagement metrics
   reactions: Array<{
-    userId: number;
+    user_id: number;
     userName: string;
     type: 'like' | 'love' | 'celebrate' | 'support' | 'insightful';
     createdAt: Date;
@@ -54,7 +54,7 @@ export interface SocialPost {
   // Indexing fields
   tags?: string[];
   mentions?: Array<{
-    userId: number;
+    user_id: number;
     userName: string;
   }>;
 }
@@ -71,14 +71,14 @@ export interface Comment {
   parentCommentId?: ObjectId; // For nested comments
 
   reactions: Array<{
-    userId: number;
+    user_id: number;
     userName: string;
     type: 'like' | 'love' | 'celebrate' | 'support';
     createdAt: Date;
   }>;
 
   mentions?: Array<{
-    userId: number;
+    user_id: number;
     userName: string;
   }>;
 
@@ -92,7 +92,7 @@ export interface Comment {
 // Notifications Schema
 export interface Notification {
   _id?: ObjectId;
-  userId: number;
+  user_id: number;
   organizationId: number;
   type:
     | 'post_like'
@@ -128,7 +128,7 @@ export interface Notification {
 // Activity Feed Schema (for tracking user activities)
 export interface ActivityFeed {
   _id?: ObjectId;
-  userId: number;
+  user_id: number;
   organizationId: number;
   activityType:
     | 'post_created'
@@ -153,7 +153,7 @@ export interface ActivityFeed {
 // Social Stats Aggregation Schema (for dashboard)
 export interface SocialStatsDaily {
   _id?: ObjectId;
-  userId: number;
+  user_id: number;
   organizationId: number;
   date: string; // YYYY-MM-DD format
 

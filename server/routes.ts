@@ -225,17 +225,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     verifyToken,
     async (req: AuthenticatedRequest, res) => {
       try {
-        if (!req.user || !req.user.organizationId) {
+        if (!req.user || !req.user.organization_id) {
           return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const organizationId = req.user.organizationId;
+        const organizationId = req.user.organization_id;
 
         // Get user count for this organization
         const [userCountResult] = await db
           .select({ count: sql<number>`count(*)` })
           .from(users)
-          .where(eq(users.organizationId, organizationId));
+          .where(eq(users.organization_id, organizationId));
 
         const userCount = userCountResult?.count || 0;
 

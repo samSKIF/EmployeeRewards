@@ -55,7 +55,7 @@ class CelebrationPostService {
    * Check if a celebration post already exists for this user and date
    */
   private async celebrationPostExists(
-    userId: number,
+    user_id: number,
     celebrationType: string,
     date: string
   ): Promise<boolean> {
@@ -64,7 +64,7 @@ class CelebrationPostService {
         SELECT id FROM posts 
         WHERE type = 'celebration' 
           AND content LIKE '%#celebration_%'
-          AND content LIKE '%userId:${userId}%'
+          AND content LIKE '%user_id:${user_id}%'
           AND content LIKE '%type:${celebrationType}%'
           AND DATE(created_at) = $1
       `;
@@ -96,7 +96,7 @@ class CelebrationPostService {
       ];
 
       const message = messages[Math.floor(Math.random() * messages.length)];
-      return `${message}\n\n#celebration_birthday #team #birthday #userId:${user.id} #type:birthday`;
+      return `${message}\n\n#celebration_birthday #team #birthday #user_id:${user.id} #type:birthday`;
     } else {
       const yearText = yearsOfService
         ? `${yearsOfService} amazing ${yearsOfService === 1 ? 'year' : 'years'}`
@@ -110,7 +110,7 @@ class CelebrationPostService {
       ];
 
       const message = messages[Math.floor(Math.random() * messages.length)];
-      return `${message}\n\n#celebration_anniversary #team #workanniversary #userId:${user.id} #type:work_anniversary`;
+      return `${message}\n\n#celebration_anniversary #team #workanniversary #user_id:${user.id} #type:work_anniversary`;
     }
   }
 
@@ -244,10 +244,10 @@ class CelebrationPostService {
           }
 
           // Get organization admin
-          const admin = await this.getOrganizationAdmin(user.organizationId);
+          const admin = await this.getOrganizationAdmin(user.organization_id);
           if (!admin) {
             logger.warn(
-              `No admin found for organization ${user.organizationId}, skipping birthday post for ${user.name}`
+              `No admin found for organization ${user.organization_id}, skipping birthday post for ${user.name}`
             );
             continue;
           }
@@ -288,16 +288,16 @@ class CelebrationPostService {
           }
 
           // Get organization admin
-          const admin = await this.getOrganizationAdmin(user.organizationId);
+          const admin = await this.getOrganizationAdmin(user.organization_id);
           if (!admin) {
             logger.warn(
-              `No admin found for organization ${user.organizationId}, skipping anniversary post for ${user.name}`
+              `No admin found for organization ${user.organization_id}, skipping anniversary post for ${user.name}`
             );
             continue;
           }
 
           // Calculate years of service
-          const yearsOfService = this.calculateYearsOfService(user.hireDate);
+          const yearsOfService = this.calculateYearsOfService(user.hire_date);
 
           // Generate and create post
           const content = this.generateCelebrationContent(
@@ -338,7 +338,7 @@ class CelebrationPostService {
    * Manual trigger for celebration posts (for testing or admin use)
    */
   async generateCelebrationPostsForUser(
-    userId: number,
+    user_id: number,
     type: 'birthday' | 'work_anniversary'
   ): Promise<boolean> {
     try {
@@ -350,25 +350,25 @@ class CelebrationPostService {
         FROM users WHERE id = $1
       `;
 
-      const userResult = await pool.query(userQuery, [userId]);
+      const userResult = await pool.query(userQuery, [user_id]);
       if (userResult.rows.length === 0) {
-        logger.error(`User not found: ${userId}`);
+        logger.error(`User not found: ${user_id}`);
         return false;
       }
 
       const user = userResult.rows[0];
 
       // Get organization admin
-      const admin = await this.getOrganizationAdmin(user.organizationId);
+      const admin = await this.getOrganizationAdmin(user.organization_id);
       if (!admin) {
-        logger.error(`No admin found for organization ${user.organizationId}`);
+        logger.error(`No admin found for organization ${user.organization_id}`);
         return false;
       }
 
       // Generate content
       const yearsOfService =
         type === 'work_anniversary'
-          ? this.calculateYearsOfService(user.hireDate)
+          ? this.calculateYearsOfService(user.hire_date)
           : undefined;
       const content = this.generateCelebrationContent(
         user,

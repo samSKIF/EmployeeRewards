@@ -49,7 +49,7 @@ describe('AnalyticsService', () => {
         totalPointsEarned: 10000,
         avgEngagementRate: 75.5,
         topPerformers: [
-          { userId: 1, name: 'Top User', score: 95 },
+          { user_id: 1, name: 'Top User', score: 95 },
         ],
       };
       
@@ -182,7 +182,7 @@ describe('AnalyticsService', () => {
         ongoingRecognitions: 3,
         pendingApprovals: 8,
         recentActivities: [
-          { type: 'login', userId: 1, timestamp: new Date() },
+          { type: 'login', user_id: 1, timestamp: new Date() },
         ],
       };
       

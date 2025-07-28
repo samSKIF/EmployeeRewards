@@ -79,23 +79,23 @@ describe('MongoDB Collections', () => {
       
       // Simulate index creation
       await postsCollection.createIndex({ companyId: 1, createdAt: -1 });
-      await postsCollection.createIndex({ userId: 1 });
+      await postsCollection.createIndex({ user_id: 1 });
       
       expect(mockCollection.createIndex).toHaveBeenCalledWith({ 
         companyId: 1, 
         createdAt: -1 
       });
-      expect(mockCollection.createIndex).toHaveBeenCalledWith({ userId: 1 });
+      expect(mockCollection.createIndex).toHaveBeenCalledWith({ user_id: 1 });
     });
 
     it('should create compound index on reactions', async () => {
       const reactionsCollection = getReactionsCollection();
       
-      await reactionsCollection.createIndex({ postId: 1, userId: 1 });
+      await reactionsCollection.createIndex({ postId: 1, user_id: 1 });
       
       expect(mockCollection.createIndex).toHaveBeenCalledWith({ 
         postId: 1, 
-        userId: 1 
+        user_id: 1 
       });
     });
   });

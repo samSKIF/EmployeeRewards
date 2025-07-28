@@ -44,13 +44,13 @@ class ElasticsearchLogger {
   }
 
   public async logUserAction(
-    userId: number,
+    user_id: number,
     action: string,
     details: any,
     organizationId?: number
   ): Promise<void> {
     await this.logEvent('user-actions', {
-      userId,
+      user_id,
       action,
       details,
       organizationId,
@@ -72,13 +72,13 @@ class ElasticsearchLogger {
   }
 
   public async logDataAccess(
-    userId: number,
+    user_id: number,
     resource: string,
     action: 'read' | 'write' | 'delete',
     details: any
   ): Promise<void> {
     await this.logEvent('data-access', {
-      userId,
+      user_id,
       resource,
       action,
       details,

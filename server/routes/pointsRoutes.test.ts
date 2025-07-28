@@ -240,7 +240,7 @@ describe('Points Routes', () => {
         .post('/api/points/award')
         .set('Authorization', 'Bearer admin-token')
         .send({
-          userId: 5,
+          user_id: 5,
           amount: 100,
           reason: 'performance',
           description: 'Q1 performance bonus',
@@ -270,7 +270,7 @@ describe('Points Routes', () => {
         .post('/api/points/award')
         .set('Authorization', 'Bearer user-token')
         .send({
-          userId: 5,
+          user_id: 5,
           amount: 100,
           reason: 'performance',
           description: 'Bonus',
@@ -284,7 +284,7 @@ describe('Points Routes', () => {
         .post('/api/points/award')
         .set('Authorization', 'Bearer admin-token')
         .send({
-          userId: 5,
+          user_id: 5,
           amount: 0,
           reason: 'performance',
           description: 'Bonus',

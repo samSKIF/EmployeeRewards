@@ -25,7 +25,7 @@ router.get(
       }
 
       const { limit = 20, skip = 0, authorId } = req.query;
-      const organizationId = req.user.organizationId || 1;
+      const organizationId = req.user.organization_id || 1;
 
       // Create cache key based on query parameters
       const cacheKey = `${CacheService.KEYS.SOCIAL_POSTS(organizationId)}:limit:${limit}:skip:${skip}:author:${authorId || 'all'}`;
@@ -70,7 +70,7 @@ router.post(
         tags,
         pollOptions,
       } = req.body;
-      const organizationId = req.user.organizationId || 1;
+      const organizationId = req.user.organization_id || 1;
 
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ message: 'Content is required' });
@@ -165,7 +165,7 @@ router.delete(
       }
 
       // Check if user owns the post or is admin
-      if (post.authorId !== req.user.id && !req.user.isAdmin) {
+      if (post.authorId !== req.user.id && !req.user.is_admin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to delete this post' });
@@ -315,7 +315,7 @@ router.post(
         return res.status(400).json({ message: 'Comment content is required' });
       }
 
-      const organizationId = req.user.organizationId || 1;
+      const organizationId = req.user.organization_id || 1;
 
       const commentData = {
         postId: new ObjectId(id),
@@ -442,7 +442,7 @@ router.get(
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      const organizationId = req.user.organizationId || 1;
+      const organizationId = req.user.organization_id || 1;
       const stats = await socialService.getUserSocialStats(
         req.user.id,
         organizationId
@@ -474,7 +474,7 @@ router.get(
         return res.status(400).json({ message: 'Search query is required' });
       }
 
-      const organizationId = req.user.organizationId || 1;
+      const organizationId = req.user.organization_id || 1;
       const posts = await socialService.searchPosts(
         organizationId,
         q.trim(),

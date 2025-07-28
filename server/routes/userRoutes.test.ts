@@ -54,7 +54,7 @@ describe('User Routes', () => {
     });
 
     mockedVerifyAdmin.mockImplementation((req: any, res, next) => {
-      if (req.user?.isAdmin) {
+      if (req.user?.is_admin) {
         next();
       } else {
         res.status(403).json({ message: 'Admin access required' });

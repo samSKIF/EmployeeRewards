@@ -27,7 +27,7 @@ describe('JWT Authentication Middleware', () => {
   };
 
   const mockTokenPayload = {
-    userId: 1,
+    user_id: 1,
     organizationId: 1,
     email: 'user@example.com',
     role: 'employee',
@@ -66,7 +66,7 @@ describe('JWT Authentication Middleware', () => {
       app.get('/test', (req: any, res) => {
         res.json({
           authenticated: true,
-          userId: req.user.id,
+          user_id: req.user.id,
           email: req.user.email,
         });
       });
@@ -77,7 +77,7 @@ describe('JWT Authentication Middleware', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.authenticated).toBe(true);
-      expect(response.body.userId).toBe(1);
+      expect(response.body.user_id).toBe(1);
       expect(response.body.email).toBe('user@example.com');
     });
 
@@ -220,19 +220,19 @@ describe('JWT Authentication Middleware', () => {
 
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
-        res.json({ userId: req.user.id });
+        res.json({ user_id: req.user.id });
       });
 
       const response = await request(app)
         .get('/test?token=valid-token');
 
       expect(response.status).toBe(200);
-      expect(response.body.userId).toBe(1);
+      expect(response.body.user_id).toBe(1);
     });
 
     it('should prioritize Authorization header over query parameter', async () => {
-      const headerPayload = { ...mockTokenPayload, userId: 1 };
-      const queryPayload = { ...mockTokenPayload, userId: 2 };
+      const headerPayload = { ...mockTokenPayload, user_id: 1 };
+      const queryPayload = { ...mockTokenPayload, user_id: 2 };
 
       mockedJwt.verify = jest.fn()
         .mockReturnValueOnce(headerPayload) // For Authorization header
@@ -246,7 +246,7 @@ describe('JWT Authentication Middleware', () => {
 
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
-        res.json({ userId: req.user.id });
+        res.json({ user_id: req.user.id });
       });
 
       const response = await request(app)
@@ -254,7 +254,7 @@ describe('JWT Authentication Middleware', () => {
         .set('Authorization', 'Bearer header-token');
 
       expect(response.status).toBe(200);
-      expect(response.body.userId).toBe(1); // Should use header token
+      expect(response.body.user_id).toBe(1); // Should use header token
     });
   });
 
@@ -267,8 +267,8 @@ describe('JWT Authentication Middleware', () => {
 
       expect(mockedJwt.sign).toHaveBeenCalledWith(
         {
-          userId: mockUser.id,
-          organizationId: mockUser.organizationId,
+          user_id: mockUser.id,
+          organizationId: mockUser.organization_id,
           email: mockUser.email,
           role: mockUser.role,
         },
@@ -307,8 +307,8 @@ describe('JWT Authentication Middleware', () => {
 
       expect(mockedJwt.sign).toHaveBeenCalledWith(
         {
-          userId: mockUser.id,
-          organizationId: mockUser.organizationId,
+          user_id: mockUser.id,
+          organizationId: mockUser.organization_id,
           email: mockUser.email,
           role: mockUser.role,
         },
@@ -350,7 +350,7 @@ describe('JWT Authentication Middleware', () => {
   describe('refreshJWT function', () => {
     it('should generate new token from refresh token', () => {
       const refreshPayload = {
-        userId: 1,
+        user_id: 1,
         organizationId: 1,
         email: 'user@example.com',
         role: 'employee',
@@ -374,8 +374,8 @@ describe('JWT Authentication Middleware', () => {
       );
       expect(mockedJwt.sign).toHaveBeenCalledWith(
         {
-          userId: mockUser.id,
-          organizationId: mockUser.organizationId,
+          user_id: mockUser.id,
+          organizationId: mockUser.organization_id,
           email: mockUser.email,
           role: mockUser.role,
         },
@@ -574,7 +574,7 @@ describe('JWT Authentication Middleware', () => {
 
     it('should handle malicious payloads', async () => {
       const maliciousPayload = {
-        userId: "'; DROP TABLE users; --",
+        user_id: "'; DROP TABLE users; --",
         organizationId: '<script>alert("xss")</script>',
         email: 'malicious@example.com',
         role: 'admin',
@@ -612,7 +612,7 @@ describe('JWT Authentication Middleware', () => {
 
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
-        res.json({ userId: req.user.id });
+        res.json({ user_id: req.user.id });
       });
 
       // Make multiple concurrent requests
@@ -627,7 +627,7 @@ describe('JWT Authentication Middleware', () => {
       expect(responses).toHaveLength(10);
       responses.forEach(response => {
         expect(response.status).toBe(200);
-        expect(response.body.userId).toBe(1);
+        expect(response.body.user_id).toBe(1);
       });
 
       // Verify JWT should be called for each request (no caching)
@@ -661,7 +661,7 @@ describe('JWT Authentication Middleware', () => {
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
         res.json({
-          userId: req.user.id,
+          user_id: req.user.id,
           permissionCount: req.user.permissions?.length || 0,
         });
       });
@@ -671,7 +671,7 @@ describe('JWT Authentication Middleware', () => {
         .set('Authorization', 'Bearer large-payload-token');
 
       expect(response.status).toBe(200);
-      expect(response.body.userId).toBe(1);
+      expect(response.body.user_id).toBe(1);
       expect(response.body.permissionCount).toBe(100);
     });
   });
@@ -695,7 +695,7 @@ describe('JWT Authentication Middleware', () => {
 
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
-        res.json({ userId: req.user.id });
+        res.json({ user_id: req.user.id });
       });
 
       const response = await request(app)
@@ -704,7 +704,7 @@ describe('JWT Authentication Middleware', () => {
         .set('Origin', 'http://localhost:3000');
 
       expect(response.status).toBe(200);
-      expect(response.body.userId).toBe(1);
+      expect(response.body.user_id).toBe(1);
       expect(response.headers['access-control-allow-origin']).toBe('*');
     });
 
@@ -730,7 +730,7 @@ describe('JWT Authentication Middleware', () => {
 
       app.use(authenticateJWT);
       app.get('/test', (req: any, res) => {
-        res.json({ userId: req.user.id });
+        res.json({ user_id: req.user.id });
       });
 
       // Make requests up to the limit

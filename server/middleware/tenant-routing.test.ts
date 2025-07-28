@@ -199,7 +199,7 @@ describe('Tenant Routing Middleware', () => {
 
       expect(tenantRequest.subdomain).toBe('test-tenant');
       expect(tenantRequest.user).toBeDefined();
-      expect(tenantRequest.user?.organizationId).toBe(1);
+      expect(tenantRequest.user?.organization_id).toBe(1);
     });
   });
 

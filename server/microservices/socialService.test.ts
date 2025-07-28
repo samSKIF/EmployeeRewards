@@ -35,7 +35,7 @@ describe('Social Microservice', () => {
   describe('POST /posts', () => {
     it('should create social post', async () => {
       const postData = {
-        userId: 1,
+        user_id: 1,
         content: 'Test post content',
         type: 'text',
         companyId: 1,
@@ -56,7 +56,7 @@ describe('Social Microservice', () => {
       expect(mockPostsCollection.insertOne).toHaveBeenCalledWith(
         expect.objectContaining({
           content: postData.content,
-          userId: postData.userId,
+          user_id: postData.user_id,
         })
       );
     });
@@ -65,7 +65,7 @@ describe('Social Microservice', () => {
       const response = await request(app)
         .post('/posts')
         .send({
-          userId: 1,
+          user_id: 1,
           content: '', // Empty content
         });
 
@@ -79,14 +79,14 @@ describe('Social Microservice', () => {
         {
           _id: 'post1',
           content: 'Post 1',
-          userId: 1,
+          user_id: 1,
           createdAt: new Date(),
           reactions: { like: 5, love: 2 },
         },
         {
           _id: 'post2',
           content: 'Post 2',
-          userId: 2,
+          user_id: 2,
           createdAt: new Date(),
           reactions: { like: 3 },
         },
@@ -116,12 +116,12 @@ describe('Social Microservice', () => {
       const postId = 'post123';
       const updateData = {
         content: 'Updated content',
-        userId: 1,
+        user_id: 1,
       };
       
       mockPostsCollection.findOne.mockResolvedValue({
         _id: postId,
-        userId: 1,
+        user_id: 1,
         content: 'Original content',
       });
       
@@ -147,14 +147,14 @@ describe('Social Microservice', () => {
     it('should prevent updating other users posts', async () => {
       mockPostsCollection.findOne.mockResolvedValue({
         _id: 'post123',
-        userId: 2, // Different user
+        user_id: 2, // Different user
       });
 
       const response = await request(app)
         .put('/posts/post123')
         .send({
           content: 'Updated',
-          userId: 1,
+          user_id: 1,
         });
 
       expect(response.status).toBe(403);
@@ -165,7 +165,7 @@ describe('Social Microservice', () => {
     it('should delete post', async () => {
       mockPostsCollection.findOne.mockResolvedValue({
         _id: 'post123',
-        userId: 1,
+        user_id: 1,
       });
       
       mockPostsCollection.deleteOne.mockResolvedValue({
@@ -174,7 +174,7 @@ describe('Social Microservice', () => {
 
       const response = await request(app)
         .delete('/posts/post123')
-        .send({ userId: 1 });
+        .send({ user_id: 1 });
 
       expect(response.status).toBe(200);
       expect(mockPostsCollection.deleteOne).toHaveBeenCalledWith({
@@ -187,7 +187,7 @@ describe('Social Microservice', () => {
     it('should add reaction to post', async () => {
       const postId = 'post123';
       const reactionData = {
-        userId: 1,
+        user_id: 1,
         reaction: 'like',
       };
       
@@ -204,7 +204,7 @@ describe('Social Microservice', () => {
       expect(mockReactionsCollection.insertOne).toHaveBeenCalledWith(
         expect.objectContaining({
           postId,
-          userId: reactionData.userId,
+          user_id: reactionData.user_id,
           type: reactionData.reaction,
         })
       );
@@ -222,7 +222,7 @@ describe('Social Microservice', () => {
       const response = await request(app)
         .post('/posts/post123/react')
         .send({
-          userId: 1,
+          user_id: 1,
           reaction: 'love',
         });
 
@@ -239,12 +239,12 @@ describe('Social Microservice', () => {
 
       const response = await request(app)
         .delete('/posts/post123/react')
-        .send({ userId: 1 });
+        .send({ user_id: 1 });
 
       expect(response.status).toBe(200);
       expect(mockReactionsCollection.deleteOne).toHaveBeenCalledWith({
         postId: 'post123',
-        userId: 1,
+        user_id: 1,
       });
     });
   });
@@ -256,8 +256,8 @@ describe('Social Microservice', () => {
         activeUsers: 45,
         totalReactions: 500,
         topPosters: [
-          { userId: 1, postCount: 25 },
-          { userId: 2, postCount: 20 },
+          { user_id: 1, postCount: 25 },
+          { user_id: 2, postCount: 20 },
         ],
       };
       

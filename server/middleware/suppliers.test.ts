@@ -22,7 +22,7 @@ describe('Supplier Middleware', () => {
 
   const mockSupplier = {
     id: 1,
-    userId: 1,
+    user_id: 1,
     organizationId: 1,
     companyName: 'Test Supplier Inc',
     contactEmail: 'contact@testsupplier.com',
@@ -447,7 +447,7 @@ describe('Supplier Middleware', () => {
       const supplierForUser = {
         ...mockSupplier,
         id: 2,
-        userId: 2,
+        user_id: 2,
         companyName: 'Authenticated Supplier Ltd',
       };
 
@@ -466,7 +466,7 @@ describe('Supplier Middleware', () => {
       app.use(validateSupplier());
       app.get('/test', (req: any, res) => {
         res.json({
-          userId: req.user.id,
+          user_id: req.user.id,
           supplierId: req.supplier.id,
           companyName: req.supplier.companyName,
         });
@@ -475,7 +475,7 @@ describe('Supplier Middleware', () => {
       const response = await request(app).get('/test');
 
       expect(response.status).toBe(200);
-      expect(response.body.userId).toBe(2);
+      expect(response.body.user_id).toBe(2);
       expect(response.body.supplierId).toBe(2);
       expect(response.body.companyName).toBe('Authenticated Supplier Ltd');
     });
@@ -496,7 +496,7 @@ describe('Supplier Middleware', () => {
       app.get('/test', (req: any, res) => {
         res.json({
           hasSupplier: !!req.supplier,
-          orgMatch: req.supplier?.organizationId === req.user.organizationId,
+          orgMatch: req.supplier?.organization_id === req.user.organization_id,
         });
       });
 
@@ -575,7 +575,7 @@ describe('Supplier Middleware', () => {
     it('should handle malformed supplier data', async () => {
       const malformedSupplier = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         // Missing required fields
       };
 
@@ -589,7 +589,7 @@ describe('Supplier Middleware', () => {
       app.get('/test', (req: any, res) => {
         res.json({
           hasSupplier: !!req.supplier,
-          supplierValid: !!(req.supplier?.id && req.supplier?.userId),
+          supplierValid: !!(req.supplier?.id && req.supplier?.user_id),
         });
       });
 

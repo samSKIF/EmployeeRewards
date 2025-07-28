@@ -90,9 +90,9 @@ app.use((req, res, next) => {
     console.log('Client connected:', socket.id);
 
     // Join user-specific room for targeted notifications
-    socket.on('join', (userId) => {
-      socket.join(`user_${userId}`);
-      console.log(`User ${userId} joined room`);
+    socket.on('join', (user_id) => {
+      socket.join(`user_${user_id}`);
+      console.log(`User ${user_id} joined room`);
     });
 
     socket.on('disconnect', () => {

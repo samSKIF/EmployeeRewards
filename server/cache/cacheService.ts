@@ -12,7 +12,7 @@ export class CacheService {
     CELEBRATIONS_TODAY: (orgId: number) => `celebrations:today:org:${orgId}`,
     CELEBRATIONS_UPCOMING: (orgId: number) =>
       `celebrations:upcoming:org:${orgId}`,
-    USER_POINTS: (userId: number) => `points:user:${userId}`,
+    USER_POINTS: (user_id: number) => `points:user:${user_id}`,
   };
 
   // Cache expiration times (in seconds)
@@ -57,9 +57,9 @@ export class CacheService {
   }
 
   // Invalidate cache patterns for data updates
-  static async invalidateUserCache(userId: number, orgId?: number) {
-    await redisCache.del(this.KEYS.USER(userId));
-    await redisCache.del(this.KEYS.USER_POINTS(userId));
+  static async invalidateUserCache(user_id: number, orgId?: number) {
+    await redisCache.del(this.KEYS.USER(user_id));
+    await redisCache.del(this.KEYS.USER_POINTS(user_id));
 
     if (orgId) {
       await redisCache.del(this.KEYS.USERS_LIST(orgId));

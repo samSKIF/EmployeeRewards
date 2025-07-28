@@ -8,7 +8,7 @@ const router = Router();
 // Mock priorities table structure (add to schema later if needed)
 interface Priority {
   id: number;
-  userId: number;
+  user_id: number;
   text: string;
   completed: boolean;
   createdAt: Date;

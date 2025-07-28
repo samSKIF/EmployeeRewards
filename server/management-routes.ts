@@ -46,7 +46,7 @@ const verifyCorporateAdmin = async (
     // SECURITY FIX: Ensure user is corporate admin with no organization_id
     if (!user || user.role_type !== 'corporate_admin' || user.organization_id !== null) {
       console.log('SECURITY: Corporate admin access denied for user:', {
-        userId: user?.id,
+        user_id: user?.id,
         email: user?.email,
         roleType: user?.role_type,
         organizationId: user?.organization_id
@@ -581,7 +581,7 @@ router.get(
       const merchantList = await managementDb
         .select()
         .from(merchants)
-        .orderBy(desc(merchants.createdAt));
+        .orderBy(desc(merchants.created_at));
       res.json(merchantList);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch merchants' });
@@ -640,7 +640,7 @@ router.get(
           isActive: products.isActive,
           merchantName: merchants.name,
           merchantId: products.merchantId,
-          createdAt: products.createdAt,
+          createdAt: products.created_at,
         })
         .from(products)
         .leftJoin(merchants, eq(products.merchantId, merchants.id));
@@ -653,7 +653,7 @@ router.get(
         query = query.where(eq(products.merchantId, Number(merchantId)));
       }
 
-      const productList = await query.orderBy(desc(products.createdAt));
+      const productList = await query.orderBy(desc(products.created_at));
       res.json(productList);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch products' });
@@ -704,7 +704,7 @@ router.get(
           totalAmount: orders.totalAmount,
           status: orders.status,
           trackingNumber: orders.trackingNumber,
-          createdAt: orders.createdAt,
+          createdAt: orders.created_at,
           productName: products.name,
           companyName: companies.name,
           merchantName: merchants.name,
@@ -725,7 +725,7 @@ router.get(
       const orderList = await query
         .limit(Number(limit))
         .offset(offset)
-        .orderBy(desc(orders.createdAt));
+        .orderBy(desc(orders.created_at));
 
       res.json({
         orders: orderList,
@@ -876,7 +876,7 @@ router.get('/organizations/:id/features', verifyCorporateAdmin, async (req, res)
     const features = await db
       .select()
       .from(organizationFeatures)
-      .where(eq(organizationFeatures.organizationId, organizationId));
+      .where(eq(organizationFeatures.organization_id, organizationId));
 
     console.log('Found features:', features);
 
@@ -896,7 +896,7 @@ router.get('/organizations/:id/features', verifyCorporateAdmin, async (req, res)
       const createdFeatures = await db
         .select()
         .from(organizationFeatures)
-        .where(eq(organizationFeatures.organizationId, organizationId));
+        .where(eq(organizationFeatures.organization_id, organizationId));
       
       console.log('Created features:', createdFeatures);
       res.json(createdFeatures);
@@ -924,7 +924,7 @@ router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, asyn
       .from(organizationFeatures)
       .where(
         and(
-          eq(organizationFeatures.organizationId, organizationId),
+          eq(organizationFeatures.organization_id, organizationId),
           eq(organizationFeatures.featureKey, featureKey)
         )
       );
@@ -940,7 +940,7 @@ router.put('/organizations/:id/features/:featureKey', verifyCorporateAdmin, asyn
         })
         .where(
           and(
-            eq(organizationFeatures.organizationId, organizationId),
+            eq(organizationFeatures.organization_id, organizationId),
             eq(organizationFeatures.featureKey, featureKey)
           )
         )

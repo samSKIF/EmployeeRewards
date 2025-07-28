@@ -62,9 +62,9 @@ function notifyNewRecognition(recognition: any) {
   }
 }
 
-function notifyPointsUpdate(userId: number, points: number) {
+function notifyPointsUpdate(user_id: number, points: number) {
   if (io) {
-    io.to(`user_${userId}`).emit('pointsUpdate', { points });
+    io.to(`user_${user_id}`).emit('pointsUpdate', { points });
   }
 }
 
@@ -84,7 +84,7 @@ router.get(
       (req as any)._routeHandledByMicroservice = true;
 
       const settings = await db.query.recognitionSettings.findFirst({
-        where: eq(recognitionSettings.organizationId, organizationId),
+        where: eq(recognitionSettings.organization_id, organizationId),
       });
 
       if (!settings) {
@@ -127,7 +127,7 @@ router.put(
   async (req: RecognitionAuthRequest, res) => {
     try {
       console.log('Recognition microservice: Handling update settings request');
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
@@ -146,7 +146,7 @@ router.put(
 
       // Check if settings exist
       const existingSettings = await db.query.recognitionSettings.findFirst({
-        where: eq(recognitionSettings.organizationId, organizationId),
+        where: eq(recognitionSettings.organization_id, organizationId),
       });
 
       if (!existingSettings) {
@@ -156,8 +156,8 @@ router.put(
           .values({
             ...settingsData,
             organizationId,
-            createdBy: userId,
-            updatedBy: userId,
+            createdBy: user_id,
+            updatedBy: user_id,
           })
           .returning();
 
@@ -169,7 +169,7 @@ router.put(
         .update(recognitionSettings)
         .set({
           ...settingsData,
-          updatedBy: userId,
+          updatedBy: user_id,
           updatedAt: new Date(),
         })
         .where(eq(recognitionSettings.id, existingSettings.id))
@@ -215,24 +215,24 @@ router.get(
       // Get list of managers (users with roleType containing 'manager')
       const managers = await db.query.users.findMany({
         where: and(
-          eq(users.organizationId, organizationId),
-          sql`${users.roleType} ILIKE '%manager%'`
+          eq(users.organization_id, organizationId),
+          sql`${users.role_type} ILIKE '%manager%'`
         ),
       });
 
-      const managerIds = managers.map((manager) => manager.id);
+      const manager_ids = managers.map((manager) => manager.id);
 
-      if (managerIds.length === 0) {
+      if (manager_ids.length === 0) {
         return res.status(200).json([]);
       }
 
       // Get budgets for all managers
       const budgets = await db.query.managerBudgets.findMany({
         where: and(
-          eq(managerBudgets.organizationId, organizationId),
+          eq(managerBudgets.organization_id, organizationId),
           eq(managerBudgets.month, month),
           eq(managerBudgets.year, year),
-          inArray(managerBudgets.managerId, managerIds)
+          inArray(managerBudgets.manager_id, manager_ids)
         ),
         with: {
           manager: {
@@ -266,21 +266,21 @@ router.post(
       console.log(
         'Recognition microservice: Handling update manager budget request'
       );
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { managerId, totalPoints, month, year } = req.body;
+      const { manager_id, totalPoints, month, year } = req.body;
 
-      if (!managerId || !totalPoints || !month || !year) {
+      if (!manager_id || !totalPoints || !month || !year) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
       // Validate manager belongs to organization
       const manager = await db.query.users.findFirst({
         where: and(
-          eq(users.id, managerId),
-          eq(users.organizationId, organizationId)
+          eq(users.id, manager_id),
+          eq(users.organization_id, organizationId)
         ),
       });
 
@@ -293,8 +293,8 @@ router.post(
       // Check if budget already exists for this manager/month/year
       const existingBudget = await db.query.managerBudgets.findFirst({
         where: and(
-          eq(managerBudgets.managerId, managerId),
-          eq(managerBudgets.organizationId, organizationId),
+          eq(managerBudgets.manager_id, manager_id),
+          eq(managerBudgets.organization_id, organizationId),
           eq(managerBudgets.month, month),
           eq(managerBudgets.year, year)
         ),
@@ -321,13 +321,13 @@ router.post(
       const [newBudget] = await db
         .insert(managerBudgets)
         .values({
-          managerId,
+          manager_id,
           organizationId,
           totalPoints,
           remainingPoints: totalPoints,
           month,
           year,
-          createdBy: userId,
+          createdBy: user_id,
         })
         .returning();
 
@@ -347,7 +347,7 @@ router.post(
 router.post('/peer', verifyToken, async (req: RecognitionAuthRequest, res) => {
   try {
     console.log('Recognition microservice: Handling peer recognition request');
-    const { id: userId, organizationId } = req.user;
+    const { id: user_id, organizationId } = req.user;
     // Mark request as handled by microservice to prevent duplicate processing
     (req as any)._routeHandledByMicroservice = true;
 
@@ -361,7 +361,7 @@ router.post('/peer', verifyToken, async (req: RecognitionAuthRequest, res) => {
     const recipient = await db.query.users.findFirst({
       where: and(
         eq(users.id, recipientId),
-        eq(users.organizationId, organizationId)
+        eq(users.organization_id, organizationId)
       ),
     });
 
@@ -372,13 +372,13 @@ router.post('/peer', verifyToken, async (req: RecognitionAuthRequest, res) => {
     }
 
     // Don't allow self-recognition
-    if (userId === recipientId) {
+    if (user_id === recipientId) {
       return res.status(400).json({ error: 'You cannot recognize yourself' });
     }
 
     // Check settings
     const settings = await db.query.recognitionSettings.findFirst({
-      where: eq(recognitionSettings.organizationId, organizationId),
+      where: eq(recognitionSettings.organization_id, organizationId),
     });
 
     if (!settings || !settings.peerEnabled) {
@@ -394,7 +394,7 @@ router.post('/peer', verifyToken, async (req: RecognitionAuthRequest, res) => {
       // Create recognition with points - this will handle all validation and transactions
       const { recognition, transaction } =
         await storage.createPeerRecognitionWithPoints(
-          userId,
+          user_id,
           recipientId,
           points || settings.peerPointsPerRecognition,
           badgeType,
@@ -403,13 +403,13 @@ router.post('/peer', verifyToken, async (req: RecognitionAuthRequest, res) => {
 
       // Create a recognition post
       const post = await storage.createRecognitionPost(
-        userId,
+        user_id,
         {
           content: message,
           type: 'recognition',
         },
         {
-          recognizerId: userId,
+          recognizerId: user_id,
           recipientId,
           badgeType,
           points: recognition.points,
@@ -444,11 +444,11 @@ router.get('/sent', verifyToken, async (req: RecognitionAuthRequest, res) => {
     console.log(
       'Recognition microservice: Handling get sent recognitions request'
     );
-    const { id: userId } = req.user;
+    const { id: user_id } = req.user;
     // Mark request as handled by microservice to prevent duplicate processing
     (req as any)._routeHandledByMicroservice = true;
 
-    const recognitions = await storage.getUserRecognitionsGiven(userId);
+    const recognitions = await storage.getUserRecognitionsGiven(user_id);
     return res.status(200).json(recognitions);
   } catch (error) {
     console.error('Error getting sent recognitions:', error);
@@ -465,11 +465,11 @@ router.get(
       console.log(
         'Recognition microservice: Handling get received recognitions request'
       );
-      const { id: userId } = req.user;
+      const { id: user_id } = req.user;
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const recognitions = await storage.getUserRecognitionsReceived(userId);
+      const recognitions = await storage.getUserRecognitionsReceived(user_id);
       return res.status(200).json(recognitions);
     } catch (error) {
       console.error('Error getting received recognitions:', error);

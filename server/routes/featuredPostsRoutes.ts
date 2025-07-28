@@ -23,20 +23,20 @@ router.get('/', async (req, res) => {
         imageUrl: interestChannelPosts.imageUrl,
         likeCount: interestChannelPosts.likeCount,
         commentCount: interestChannelPosts.commentCount,
-        createdAt: interestChannelPosts.createdAt,
+        createdAt: interestChannelPosts.created_at,
         channelId: interestChannelPosts.channelId,
         channelName: interestChannels.name,
         channelType: interestChannels.channelType,
-        authorId: interestChannelPosts.userId,
+        authorId: interestChannelPosts.user_id,
         authorName: users.name,
-        authorAvatarUrl: users.avatarUrl,
+        authorAvatarUrl: users.avatar_url,
       })
       .from(interestChannelPosts)
       .innerJoin(
         interestChannels,
         eq(interestChannelPosts.channelId, interestChannels.id)
       )
-      .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+      .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
       .where(and(eq(interestChannels.isActive, true)))
       .orderBy(desc(interestChannelPosts.likeCount))
       .limit(3);

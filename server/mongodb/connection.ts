@@ -78,12 +78,12 @@ async function createIndexes() {
     // Notifications indexes
     await db
       .collection('notifications')
-      .createIndex({ userId: 1, createdAt: -1 });
+      .createIndex({ user_id: 1, createdAt: -1 });
     await db
       .collection('notifications')
       .createIndex({ organizationId: 1, createdAt: -1 });
-    await db.collection('notifications').createIndex({ isRead: 1, userId: 1 });
-    await db.collection('notifications').createIndex({ type: 1, userId: 1 });
+    await db.collection('notifications').createIndex({ isRead: 1, user_id: 1 });
+    await db.collection('notifications').createIndex({ type: 1, user_id: 1 });
 
     console.log('MongoDB indexes created successfully');
   } catch (error) {

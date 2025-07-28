@@ -130,14 +130,14 @@ export class SocialService {
 
   async addReactionToPost(
     postId: string,
-    userId: number,
+    user_id: number,
     userName: string,
     reactionType: 'like' | 'love' | 'celebrate' | 'support' | 'insightful'
   ): Promise<boolean> {
     // Remove existing reaction from same user
     await this.postsCollection.updateOne(
       { _id: new ObjectId(postId) },
-      { $pull: { reactions: { userId } } }
+      { $pull: { reactions: { user_id } } }
     );
 
     // Add new reaction
@@ -146,7 +146,7 @@ export class SocialService {
       {
         $push: {
           reactions: {
-            userId,
+            user_id,
             userName,
             type: reactionType,
             createdAt: new Date(),
@@ -159,11 +159,11 @@ export class SocialService {
 
   async removeReactionFromPost(
     postId: string,
-    userId: number
+    user_id: number
   ): Promise<boolean> {
     const result = await this.postsCollection.updateOne(
       { _id: new ObjectId(postId) },
-      { $pull: { reactions: { userId } } }
+      { $pull: { reactions: { user_id } } }
     );
     return result.modifiedCount > 0;
   }
@@ -234,14 +234,14 @@ export class SocialService {
 
   async addReactionToComment(
     commentId: string,
-    userId: number,
+    user_id: number,
     userName: string,
     reactionType: 'like' | 'love' | 'celebrate' | 'support'
   ): Promise<boolean> {
     // Remove existing reaction from same user
     await this.commentsCollection.updateOne(
       { _id: new ObjectId(commentId) },
-      { $pull: { reactions: { userId } } }
+      { $pull: { reactions: { user_id } } }
     );
 
     // Add new reaction
@@ -250,7 +250,7 @@ export class SocialService {
       {
         $push: {
           reactions: {
-            userId,
+            user_id,
             userName,
             type: reactionType,
             createdAt: new Date(),
@@ -276,12 +276,12 @@ export class SocialService {
   }
 
   async getUserNotifications(
-    userId: number,
+    user_id: number,
     limit: number = 20,
     skip: number = 0
   ): Promise<Notification[]> {
     return await this.notificationsCollection
-      .find({ userId })
+      .find({ user_id })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -301,9 +301,9 @@ export class SocialService {
     return result.modifiedCount > 0;
   }
 
-  async markAllNotificationsAsRead(userId: number): Promise<boolean> {
+  async markAllNotificationsAsRead(user_id: number): Promise<boolean> {
     const result = await this.notificationsCollection.updateMany(
-      { userId, isRead: false },
+      { user_id, isRead: false },
       {
         $set: {
           isRead: true,
@@ -314,9 +314,9 @@ export class SocialService {
     return result.modifiedCount > 0;
   }
 
-  async getUnreadNotificationsCount(userId: number): Promise<number> {
+  async getUnreadNotificationsCount(user_id: number): Promise<number> {
     return await this.notificationsCollection.countDocuments({
-      userId,
+      user_id,
       isRead: false,
     });
   }
@@ -344,28 +344,28 @@ export class SocialService {
 
   // Stats Methods
   async getUserSocialStats(
-    userId: number,
+    user_id: number,
     organizationId: number
   ): Promise<any> {
     const [postsCount, commentsCount, reactionsGiven, reactionsReceived] =
       await Promise.all([
         this.postsCollection.countDocuments({
-          authorId: userId,
+          authorId: user_id,
           organizationId,
           isDeleted: false,
         }),
         this.commentsCollection.countDocuments({
-          authorId: userId,
+          authorId: user_id,
           organizationId,
           isDeleted: false,
         }),
         this.postsCollection.countDocuments({
-          'reactions.userId': userId,
+          'reactions.user_id': user_id,
           organizationId,
           isDeleted: false,
         }),
         this.postsCollection.countDocuments({
-          authorId: userId,
+          authorId: user_id,
           organizationId,
           isDeleted: false,
           'reactions.0': { $exists: true },

@@ -42,7 +42,7 @@ describe('Leave Management API', () => {
     });
 
     mockedVerifyAdmin.mockImplementation((req: any, res, next) => {
-      if (req.user.isAdmin) {
+      if (req.user.is_admin) {
         next();
       } else {
         res.status(403).json({ message: 'Admin access required' });
@@ -201,7 +201,7 @@ describe('Leave Management API', () => {
     const mockLeaveRequests = [
       {
         id: 1,
-        userId: 2,
+        user_id: 2,
         leaveTypeId: 1,
         startDate: '2025-08-01',
         endDate: '2025-08-05',
@@ -240,7 +240,7 @@ describe('Leave Management API', () => {
             returning: jest.fn().mockResolvedValue([{
               id: 2,
               ...newRequest,
-              userId: 1,
+              user_id: 1,
               organizationId: 1,
               status: 'pending',
             }]),
@@ -375,7 +375,7 @@ describe('Leave Management API', () => {
         const mockEntitlements = [
           {
             id: 1,
-            userId: 1,
+            user_id: 1,
             leaveTypeId: 1,
             entitledDays: 25,
             usedDays: 5,

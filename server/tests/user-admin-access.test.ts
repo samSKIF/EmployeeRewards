@@ -119,9 +119,9 @@ describe('User Admin Access and Profile Tests', () => {
     });
 
     app.get('/api/users/:id/profile', (req: any, res) => {
-      const userId = parseInt(req.params.id);
+      const user_id = parseInt(req.params.id);
       const users = Object.values(mockUsers);
-      const targetUser = users.find((u: any) => u.id === userId);
+      const targetUser = users.find((u: any) => u.id === user_id);
       
       if (!targetUser || targetUser.organization_id !== req.user.organization_id) {
         return res.status(404).json({ message: 'User not found' });
@@ -138,26 +138,26 @@ describe('User Admin Access and Profile Tests', () => {
     });
 
     app.post('/api/users/:id/upload-avatar', (req: any, res) => {
-      const userId = parseInt(req.params.id);
-      if (userId !== req.user.id && !req.user.is_admin) {
+      const user_id = parseInt(req.params.id);
+      if (user_id !== req.user.id && !req.user.is_admin) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
       
       res.json({ 
         message: 'Avatar uploaded successfully',
-        avatar_url: `/uploads/avatars/${userId}-avatar.jpg`
+        avatar_url: `/uploads/avatars/${user_id}-avatar.jpg`
       });
     });
 
     app.post('/api/users/:id/upload-cover', (req: any, res) => {
-      const userId = parseInt(req.params.id);
-      if (userId !== req.user.id && !req.user.is_admin) {
+      const user_id = parseInt(req.params.id);
+      if (user_id !== req.user.id && !req.user.is_admin) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
       
       res.json({ 
         message: 'Cover photo uploaded successfully',
-        cover_photo_url: `/uploads/covers/${userId}-cover.jpg`
+        cover_photo_url: `/uploads/covers/${user_id}-cover.jpg`
       });
     });
   });
@@ -302,7 +302,7 @@ describe('User Admin Access and Profile Tests', () => {
       for (const testCase of testCases) {
         const mockRoleValidation = {
           is_admin: true,
-          role_type: testCase.roleType
+          role_type: testCase.role_type
         };
 
         const isAdminUser = mockRoleValidation.is_admin && (
@@ -410,8 +410,8 @@ describe('User Admin Access and Profile Tests', () => {
       validAdminCombinations.forEach(combo => {
         const mockUser = {
           is_admin: true,
-          role_type: combo.roleType,
-          organization_id: combo.organizationId
+          role_type: combo.role_type,
+          organization_id: combo.organization_id
         };
 
         const hasAccess = mockUser.is_admin && (

@@ -56,18 +56,18 @@ export async function getTenantDb(companyId: number) {
  * Get company ID from user's organization
  */
 export async function getCompanyIdFromUser(
-  userId: number
+  user_id: number
 ): Promise<number | null> {
   try {
     // First check if user is in the main users table with organizationId
     const user = await managementDb
       .select()
       .from(schema.users)
-      .where(eq(schema.users.id, userId))
+      .where(eq(schema.users.id, user_id))
       .then((rows) => rows[0]);
 
-    if (user?.organizationId) {
-      return user.organizationId;
+    if (user?.organization_id) {
+      return user.organization_id;
     }
 
     // If no organizationId, this might be a shared database scenario

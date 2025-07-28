@@ -68,15 +68,15 @@ describe('API Endpoint Tenant Isolation Tests', () => {
 
     // API endpoints with organization filtering
     app.get('/api/users', (req: any, res) => {
-      const userOrgId = req.user.organizationId;
-      const filteredUsers = mockDatabase.users.filter(user => user.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const filteredUsers = mockDatabase.users.filter(user => user.organization_id === userOrgId);
       res.json(filteredUsers);
     });
 
     app.get('/api/users/:id', (req: any, res) => {
-      const userId = parseInt(req.params.id);
-      const userOrgId = req.user.organizationId;
-      const user = mockDatabase.users.find(u => u.id === userId && u.organizationId === userOrgId);
+      const user_id = parseInt(req.params.id);
+      const userOrgId = req.user.organization_id;
+      const user = mockDatabase.users.find(u => u.id === user_id && u.organization_id === userOrgId);
       
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -85,15 +85,15 @@ describe('API Endpoint Tenant Isolation Tests', () => {
     });
 
     app.get('/api/posts', (req: any, res) => {
-      const userOrgId = req.user.organizationId;
-      const filteredPosts = mockDatabase.posts.filter(post => post.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const filteredPosts = mockDatabase.posts.filter(post => post.organization_id === userOrgId);
       res.json(filteredPosts);
     });
 
     app.get('/api/posts/:id', (req: any, res) => {
       const postId = parseInt(req.params.id);
-      const userOrgId = req.user.organizationId;
-      const post = mockDatabase.posts.find(p => p.id === postId && p.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const post = mockDatabase.posts.find(p => p.id === postId && p.organization_id === userOrgId);
       
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
@@ -102,20 +102,20 @@ describe('API Endpoint Tenant Isolation Tests', () => {
     });
 
     app.get('/api/recognition', (req: any, res) => {
-      const userOrgId = req.user.organizationId;
-      const filteredRecognition = mockDatabase.recognition.filter(r => r.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const filteredRecognition = mockDatabase.recognition.filter(r => r.organization_id === userOrgId);
       res.json(filteredRecognition);
     });
 
     app.get('/api/surveys', (req: any, res) => {
-      const userOrgId = req.user.organizationId;
-      const filteredSurveys = mockDatabase.surveys.filter(s => s.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const filteredSurveys = mockDatabase.surveys.filter(s => s.organization_id === userOrgId);
       res.json(filteredSurveys);
     });
 
     app.get('/api/users/departments', (req: any, res) => {
-      const userOrgId = req.user.organizationId;
-      const orgUsers = mockDatabase.users.filter(user => user.organizationId === userOrgId);
+      const userOrgId = req.user.organization_id;
+      const orgUsers = mockDatabase.users.filter(user => user.organization_id === userOrgId);
       const departments = [...new Set(orgUsers.map(user => user.department))];
       res.json(departments);
     });
@@ -129,7 +129,7 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every((user: any) => user.organizationId === 1)).toBe(true);
+      expect(response.body.every((user: any) => user.organization_id === 1)).toBe(true);
       expect(response.body.every((user: any) => user.email.includes('canva.com'))).toBe(true);
     });
 
@@ -140,7 +140,7 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every((user: any) => user.organizationId === 2)).toBe(true);
+      expect(response.body.every((user: any) => user.organization_id === 2)).toBe(true);
       expect(response.body.every((user: any) => user.email.includes('loylogic.com'))).toBe(true);
     });
 
@@ -171,7 +171,7 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every((post: any) => post.organizationId === 1)).toBe(true);
+      expect(response.body.every((post: any) => post.organization_id === 1)).toBe(true);
       expect(response.body.some((post: any) => post.title.includes('Canva'))).toBe(true);
       expect(response.body.every((post: any) => !post.title.includes('Loylogic'))).toBe(true);
     });
@@ -183,7 +183,7 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       expect(response.body).toHaveLength(2);
-      expect(response.body.every((post: any) => post.organizationId === 2)).toBe(true);
+      expect(response.body.every((post: any) => post.organization_id === 2)).toBe(true);
       expect(response.body.some((post: any) => post.title.includes('Loylogic'))).toBe(true);
       expect(response.body.every((post: any) => !post.title.includes('Canva'))).toBe(true);
     });
@@ -219,11 +219,11 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       expect(canvaResponse.body).toHaveLength(1);
-      expect(canvaResponse.body[0].organizationId).toBe(1);
+      expect(canvaResponse.body[0].organization_id).toBe(1);
       expect(canvaResponse.body[0].message).toContain('design');
 
       expect(loylogicResponse.body).toHaveLength(1);
-      expect(loylogicResponse.body[0].organizationId).toBe(2);
+      expect(loylogicResponse.body[0].organization_id).toBe(2);
       expect(loylogicResponse.body[0].message).toContain('marketing');
     });
   });
@@ -289,8 +289,8 @@ describe('API Endpoint Tenant Isolation Tests', () => {
         .expect(200);
 
       // Even admins should only see their organization's data
-      expect(canvaAdminResponse.body.every((user: any) => user.organizationId === 1)).toBe(true);
-      expect(loylogicAdminResponse.body.every((user: any) => user.organizationId === 2)).toBe(true);
+      expect(canvaAdminResponse.body.every((user: any) => user.organization_id === 1)).toBe(true);
+      expect(loylogicAdminResponse.body.every((user: any) => user.organization_id === 2)).toBe(true);
     });
 
     it('should prevent admin cross-organization post access', async () => {
@@ -326,7 +326,7 @@ describe('API Endpoint Tenant Isolation Tests', () => {
           // Verify all returned data belongs to the correct organization
           if (response.body.length > 0) {
             expect(response.body.every((item: any) => 
-              item.organizationId === expectedOrgId
+              item.organization_id === expectedOrgId
             )).toBe(true);
           }
         }

@@ -104,7 +104,7 @@ describe('Tenant Data Isolation Tests', () => {
 
     // API endpoints with tenant filtering
     app.get('/api/users', (req: any, res) => {
-      const userOrg = req.user.organizationId;
+      const userOrg = req.user.organization_id;
       const org = mockOrganizations[userOrg as keyof typeof mockOrganizations];
       if (!org) {
         return res.status(404).json({ message: 'Organization not found' });
@@ -113,15 +113,15 @@ describe('Tenant Data Isolation Tests', () => {
     });
 
     app.get('/api/users/:id', (req: any, res) => {
-      const userId = parseInt(req.params.id);
-      const userOrg = req.user.organizationId;
+      const user_id = parseInt(req.params.id);
+      const userOrg = req.user.organization_id;
       const org = mockOrganizations[userOrg as keyof typeof mockOrganizations];
       
       if (!org) {
         return res.status(404).json({ message: 'Organization not found' });
       }
       
-      const employee = org.employees.find(e => e.id === userId);
+      const employee = org.employees.find(e => e.id === user_id);
       if (!employee) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -130,7 +130,7 @@ describe('Tenant Data Isolation Tests', () => {
     });
 
     app.get('/api/posts', (req: any, res) => {
-      const userOrg = req.user.organizationId;
+      const userOrg = req.user.organization_id;
       const org = mockOrganizations[userOrg as keyof typeof mockOrganizations];
       if (!org) {
         return res.status(404).json({ message: 'Organization not found' });
@@ -139,7 +139,7 @@ describe('Tenant Data Isolation Tests', () => {
     });
 
     app.get('/api/surveys', (req: any, res) => {
-      const userOrg = req.user.organizationId;
+      const userOrg = req.user.organization_id;
       const org = mockOrganizations[userOrg as keyof typeof mockOrganizations];
       if (!org) {
         return res.status(404).json({ message: 'Organization not found' });

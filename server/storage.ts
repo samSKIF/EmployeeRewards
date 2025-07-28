@@ -106,36 +106,36 @@ export interface IStorage {
   ): Promise<boolean>;
 
   // Account methods
-  getAccountByUserId(userId: number): Promise<Account | undefined>;
+  getAccountByUserId(user_id: number): Promise<Account | undefined>;
   getSystemAccount(): Promise<Account>;
 
   // Points and transaction methods
-  getUserBalance(userId: number): Promise<number>;
+  getUserBalance(user_id: number): Promise<number>;
   earnPoints(
-    userId: number,
+    user_id: number,
     amount: number,
     reason: string,
     description: string,
     adminId?: number
   ): Promise<Transaction>;
   redeemPoints(
-    userId: number,
+    user_id: number,
     amount: number,
     description: string,
     productId: number
   ): Promise<{ transaction: Transaction; order: Order }>;
-  getTransactionsByUserId(userId: number): Promise<TransactionWithDetails[]>;
+  getTransactionsByUserId(user_id: number): Promise<TransactionWithDetails[]>;
   getAllTransactions(): Promise<TransactionWithDetails[]>;
 
   // Product methods
   getProducts(): Promise<Product[]>;
-  getProductsWithAvailability(userId: number): Promise<ProductWithAvailable[]>;
+  getProductsWithAvailability(user_id: number): Promise<ProductWithAvailable[]>;
   getProductById(id: number): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   deleteAllProducts(): Promise<void>;
 
   // Order methods
-  getOrdersByUserId(userId: number): Promise<OrderWithDetails[]>;
+  getOrdersByUserId(user_id: number): Promise<OrderWithDetails[]>;
   getAllOrders(): Promise<OrderWithDetails[]>;
   getOrderById(id: number): Promise<OrderWithDetails | undefined>;
   updateOrderStatus(
@@ -145,10 +145,10 @@ export interface IStorage {
   ): Promise<Order>;
 
   // Dashboard methods
-  getUserDashboardStats(userId: number): Promise<DashboardStats>;
+  getUserDashboardStats(user_id: number): Promise<DashboardStats>;
 
   // Scheduled methods
-  awardBirthdayPoints(userId: number): Promise<Transaction>;
+  awardBirthdayPoints(user_id: number): Promise<Transaction>;
 
   // Survey methods
   getSurveys(status?: string): Promise<Survey[]>;
@@ -173,7 +173,7 @@ export interface IStorage {
   getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
   getSurveyResponseById(id: number): Promise<SurveyResponse | undefined>;
   createSurveyResponse(
-    userId: number | null,
+    user_id: number | null,
     surveyId: number,
     completedAt?: Date
   ): Promise<SurveyResponse>;
@@ -187,20 +187,20 @@ export interface IStorage {
   createSurveyAnswer(answerData: InsertSurveyAnswer): Promise<SurveyAnswer>;
 
   // Social methods - Posts
-  createPost(userId: number, postData: InsertPost): Promise<Post>;
+  createPost(user_id: number, postData: InsertPost): Promise<Post>;
   createPollPost(
-    userId: number,
+    user_id: number,
     postData: InsertPost,
     pollData: InsertPoll
   ): Promise<{ post: Post; poll: Poll }>;
   createRecognitionPost(
-    userId: number,
+    user_id: number,
     postData: InsertPost,
     recognitionData: InsertRecognition
   ): Promise<{ post: Post; recognition: Recognition }>;
   getPosts(limit?: number, offset?: number): Promise<PostWithDetails[]>;
   getUserPosts(
-    userId: number,
+    user_id: number,
     limit?: number,
     offset?: number
   ): Promise<PostWithDetails[]>;
@@ -209,67 +209,67 @@ export interface IStorage {
   updatePost(id: number, postData: Partial<InsertPost>): Promise<Post>;
 
   // Social methods - Comments
-  createComment(userId: number, commentData: InsertComment): Promise<Comment>;
+  createComment(user_id: number, commentData: InsertComment): Promise<Comment>;
   getPostComments(postId: number): Promise<CommentWithUser[]>;
   deleteComment(id: number): Promise<boolean>;
 
   // Social methods - Reactions
-  addReaction(userId: number, reactionData: InsertReaction): Promise<Reaction>;
-  removeReaction(userId: number, postId: number): Promise<boolean>;
+  addReaction(user_id: number, reactionData: InsertReaction): Promise<Reaction>;
+  removeReaction(user_id: number, postId: number): Promise<boolean>;
   getUserReaction(
-    userId: number,
+    user_id: number,
     postId: number
   ): Promise<Reaction | undefined>;
 
   // Social methods - Polls
   getPollById(id: number): Promise<PollWithVotes | undefined>;
   votePoll(
-    userId: number,
+    user_id: number,
     pollId: number,
     optionIndex: number
   ): Promise<PollVote>;
   getUserPollVote(
-    userId: number,
+    user_id: number,
     pollId: number
   ): Promise<PollVote | undefined>;
 
   // Social methods - Recognitions
   createRecognition(recognitionData: InsertRecognition): Promise<Recognition>;
-  getUserRecognitionsGiven(userId: number): Promise<RecognitionWithDetails[]>;
+  getUserRecognitionsGiven(user_id: number): Promise<RecognitionWithDetails[]>;
   getUserRecognitionsReceived(
-    userId: number
+    user_id: number
   ): Promise<RecognitionWithDetails[]>;
 
   // Social methods - Chat
   createConversation(
-    userId: number,
+    user_id: number,
     conversationData: InsertConversation,
     participantIds: number[]
   ): Promise<Conversation>;
-  getUserConversations(userId: number): Promise<ConversationWithDetails[]>;
+  getUserConversations(user_id: number): Promise<ConversationWithDetails[]>;
   getConversationById(id: number): Promise<ConversationWithDetails | undefined>;
-  sendMessage(userId: number, messageData: InsertMessage): Promise<Message>;
+  sendMessage(user_id: number, messageData: InsertMessage): Promise<Message>;
   getConversationMessages(
     conversationId: number,
     limit?: number,
     offset?: number
   ): Promise<MessageWithSender[]>;
-  markMessagesAsRead(userId: number, conversationId: number): Promise<boolean>;
+  markMessagesAsRead(user_id: number, conversationId: number): Promise<boolean>;
 
   // Social methods - Stats
-  getUserSocialStats(userId: number): Promise<SocialStats>;
+  getUserSocialStats(user_id: number): Promise<SocialStats>;
   getShopConfig(): Promise<ShopConfig>;
   updateShopConfig(config: ShopConfig): Promise<ShopConfig>;
 
   // Channel methods
   getTrendingChannels(): Promise<any[]>;
-  getUserChannels(userId: number): Promise<any[]>;
-  getChannelSuggestions(userId: number): Promise<any[]>;
+  getUserChannels(user_id: number): Promise<any[]>;
+  getChannelSuggestions(user_id: number): Promise<any[]>;
   getChannel(channelId: number): Promise<any>;
   getChannelPosts(channelId: number): Promise<any[]>;
   getChannelMembers(channelId: number): Promise<any[]>;
-  joinChannel(userId: number, channelId: number): Promise<void>;
-  leaveChannel(userId: number, channelId: number): Promise<void>;
+  joinChannel(user_id: number, channelId: number): Promise<void>;
+  leaveChannel(user_id: number, channelId: number): Promise<void>;
 
   // User count and retrieval methods
   getUserCount(organizationId?: number): Promise<number>;
@@ -371,7 +371,7 @@ export class DatabaseStorage implements IStorage {
       name: user.name,
       email: user.email,
       department: user.department,
-      birthDate: user.birthDate,
+      birthDate: user.birth_date,
       balance,
     };
   }
@@ -398,7 +398,7 @@ export class DatabaseStorage implements IStorage {
       name: user.name,
       email: user.email,
       department: user.department,
-      birthDate: user.birthDate,
+      birthDate: user.birth_date,
       balance: accountMap.get(user.id) || 0,
     }));
   }
@@ -423,12 +423,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Account methods
-  async getAccountByUserId(userId: number): Promise<Account | undefined> {
+  async getAccountByUserId(user_id: number): Promise<Account | undefined> {
     const [account] = await db
       .select()
       .from(accounts)
       .where(
-        and(eq(accounts.user_id, userId), eq(accounts.account_type, 'user'))
+        and(eq(accounts.user_id, user_id), eq(accounts.account_type, 'user'))
       );
 
     return account;
@@ -459,24 +459,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Points and transaction methods
-  async getUserBalance(userId: number): Promise<number> {
-    const account = await this.getAccountByUserId(userId);
+  async getUserBalance(user_id: number): Promise<number> {
+    const account = await this.getAccountByUserId(user_id);
     return account ? account.balance : 0;
   }
 
   async earnPoints(
-    userId: number,
+    user_id: number,
     amount: number,
     reason: string,
     description: string,
     adminId?: number
   ): Promise<Transaction> {
     // Get accounts
-    const userAccount = await this.getAccountByUserId(userId);
+    const userAccount = await this.getAccountByUserId(user_id);
     const systemAccount = await this.getSystemAccount();
 
     if (!userAccount) {
-      throw new Error(`User account not found for user ${userId}`);
+      throw new Error(`User account not found for user ${user_id}`);
     }
 
     // Insert the transaction (double-entry accounting)
@@ -507,17 +507,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async redeemPoints(
-    userId: number,
+    user_id: number,
     amount: number,
     description: string,
     productId: number
   ): Promise<{ transaction: Transaction; order: Order }> {
     // Get accounts
-    const userAccount = await this.getAccountByUserId(userId);
+    const userAccount = await this.getAccountByUserId(user_id);
     const systemAccount = await this.getSystemAccount();
 
     if (!userAccount) {
-      throw new Error(`User account not found for user ${userId}`);
+      throw new Error(`User account not found for user ${user_id}`);
     }
 
     // Check if user has enough points
@@ -542,7 +542,7 @@ export class DatabaseStorage implements IStorage {
         amount,
         reason: 'product_redemption',
         description,
-        created_by: userId,
+        created_by: user_id,
       })
       .returning();
 
@@ -561,7 +561,7 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db
       .insert(orders)
       .values({
-        userId,
+        user_id,
         productId,
         transactionId: transaction.id,
         status: 'pending',
@@ -573,12 +573,12 @@ export class DatabaseStorage implements IStorage {
 
     try {
       if (product.supplier === 'tillo') {
-        const response = await tilloSupplier(product.name, userId);
+        const response = await tilloSupplier(product.name, user_id);
         if (response.success && response.giftCardLink) {
           externalRef = response.giftCardLink;
         }
       } else if (product.supplier === 'carlton') {
-        const response = await carltonSupplier(product.name, userId);
+        const response = await carltonSupplier(product.name, user_id);
         if (response.success && response.orderId) {
           externalRef = response.orderId;
         }
@@ -607,10 +607,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTransactionsByUserId(
-    userId: number
+    user_id: number
   ): Promise<TransactionWithDetails[]> {
     // First get the user's account
-    const userAccount = await this.getAccountByUserId(userId);
+    const userAccount = await this.getAccountByUserId(user_id);
 
     if (!userAccount) {
       return [];
@@ -642,8 +642,8 @@ export class DatabaseStorage implements IStorage {
 
       return {
         ...row.transaction,
-        fromAccountId: row.transaction.from_account_id,
-        toAccountId: row.transaction.to_account_id,
+        from_account_id: row.transaction.from_account_id,
+        to_account_id: row.transaction.to_account_id,
         createdBy: row.transaction.created_by,
         createdAt: row.transaction.created_at,
         fromAccount: row.fromAccount,
@@ -684,8 +684,8 @@ export class DatabaseStorage implements IStorage {
 
       return {
         ...row.transaction,
-        fromAccountId: row.transaction.from_account_id,
-        toAccountId: row.transaction.to_account_id,
+        from_account_id: row.transaction.from_account_id,
+        to_account_id: row.transaction.to_account_id,
         createdBy: row.transaction.created_by,
         createdAt: row.transaction.created_at,
         fromAccount: row.fromAccount,
@@ -715,10 +715,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProductsWithAvailability(
-    userId: number
+    user_id: number
   ): Promise<ProductWithAvailable[]> {
     const allProducts = await this.getProducts();
-    const userBalance = await this.getUserBalance(userId);
+    const userBalance = await this.getUserBalance(user_id);
 
     return allProducts.map((product) => ({
       ...product,
@@ -742,7 +742,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Order methods
-  async getOrdersByUserId(userId: number): Promise<OrderWithDetails[]> {
+  async getOrdersByUserId(user_id: number): Promise<OrderWithDetails[]> {
     const userOrders = await db
       .select({
         order: orders,
@@ -750,10 +750,10 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(orders)
-      .where(eq(orders.userId, userId))
+      .where(eq(orders.user_id, user_id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users, eq(orders.userId, users.id))
-      .orderBy(desc(orders.createdAt));
+      .leftJoin(users, eq(orders.user_id, users.id))
+      .orderBy(desc(orders.created_at));
 
     return userOrders.map((row) => ({
       ...row.order,
@@ -772,8 +772,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(orders)
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users, eq(orders.userId, users.id))
-      .orderBy(desc(orders.createdAt));
+      .leftJoin(users, eq(orders.user_id, users.id))
+      .orderBy(desc(orders.created_at));
 
     return allOrders.map((row) => ({
       ...row.order,
@@ -793,7 +793,7 @@ export class DatabaseStorage implements IStorage {
       .from(orders)
       .where(eq(orders.id, id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users, eq(orders.userId, users.id));
+      .leftJoin(users, eq(orders.user_id, users.id));
 
     if (!orderData) return undefined;
 
@@ -829,12 +829,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Dashboard methods
-  async getUserDashboardStats(userId: number): Promise<DashboardStats> {
+  async getUserDashboardStats(user_id: number): Promise<DashboardStats> {
     // Get user's current balance
-    const totalPoints = await this.getUserBalance(userId);
+    const totalPoints = await this.getUserBalance(user_id);
 
     // Get user account
-    const userAccount = await this.getAccountByUserId(userId);
+    const userAccount = await this.getAccountByUserId(user_id);
 
     if (!userAccount) {
       return {
@@ -871,7 +871,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)`,
       })
       .from(orders)
-      .where(eq(orders.userId, userId));
+      .where(eq(orders.user_id, user_id));
 
     const redemptions = redemptionsResult?.count || 0;
 
@@ -884,9 +884,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Scheduled methods
-  async awardBirthdayPoints(userId: number): Promise<Transaction> {
+  async awardBirthdayPoints(user_id: number): Promise<Transaction> {
     return this.earnPoints(
-      userId,
+      user_id,
       100, // Birthday bonus amount
       'birthday_bonus',
       "Happy Birthday! Here's a gift from the company."
@@ -894,12 +894,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Social methods - Posts
-  async createPost(userId: number, postData: InsertPost): Promise<Post> {
+  async createPost(user_id: number, postData: InsertPost): Promise<Post> {
     const [post] = await db
       .insert(posts)
       .values({
         ...postData,
-        userId,
+        user_id,
       })
       .returning();
 
@@ -907,7 +907,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPollPost(
-    userId: number,
+    user_id: number,
     postData: InsertPost,
     pollData: InsertPoll
   ): Promise<{ post: Post; poll: Poll }> {
@@ -916,7 +916,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        userId,
+        user_id,
         type: 'poll',
       })
       .returning();
@@ -934,7 +934,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createRecognitionPost(
-    userId: number,
+    user_id: number,
     postData: InsertPost,
     recognitionData: InsertRecognition
   ): Promise<{ post: Post; recognition: Recognition }> {
@@ -943,7 +943,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        userId,
+        user_id,
         type: 'recognition',
       })
       .returning();
@@ -953,7 +953,7 @@ export class DatabaseStorage implements IStorage {
       .insert(recognitions)
       .values({
         ...recognitionData,
-        recognizerId: userId,
+        recognizerId: user_id,
         postId: post.id,
       })
       .returning();
@@ -967,15 +967,15 @@ export class DatabaseStorage implements IStorage {
           recognition.recipientId,
           recognition.points,
           'recognition',
-          `Recognition from ${userId}: ${recognition.message}`,
-          userId
+          `Recognition from ${user_id}: ${recognition.message}`,
+          user_id
         );
 
         // Update the recognition with the transaction reference
         await db
           .update(recognitions)
           .set({
-            recognitionId: transaction.id,
+            recognition_id: transaction.id,
           })
           .where(eq(recognitions.id, recognition.id));
       }
@@ -995,8 +995,8 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(posts)
-      .leftJoin(users, eq(posts.userId, users.id))
-      .orderBy(desc(posts.createdAt))
+      .leftJoin(users, eq(posts.user_id, users.id))
+      .orderBy(desc(posts.created_at))
       .limit(limit)
       .offset(offset);
 
@@ -1092,20 +1092,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserPosts(
-    userId: number,
+    user_id: number,
     limit: number = 20,
     offset: number = 0
   ): Promise<PostWithDetails[]> {
-    // Similar to getPosts but filtered by userId
+    // Similar to getPosts but filtered by user_id
     const postsData = await db
       .select({
         post: posts,
         user: users,
       })
       .from(posts)
-      .leftJoin(users, eq(posts.userId, users.id))
-      .where(eq(posts.userId, userId))
-      .orderBy(desc(posts.createdAt))
+      .leftJoin(users, eq(posts.user_id, users.id))
+      .where(eq(posts.user_id, user_id))
+      .orderBy(desc(posts.created_at))
       .limit(limit)
       .offset(offset);
 
@@ -1209,7 +1209,7 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(posts)
-      .leftJoin(users, eq(posts.userId, users.id))
+      .leftJoin(users, eq(posts.user_id, users.id))
       .where(eq(posts.id, id));
 
     if (!postData) {
@@ -1311,14 +1311,14 @@ export class DatabaseStorage implements IStorage {
 
   // Social methods - Comments
   async createComment(
-    userId: number,
+    user_id: number,
     commentData: InsertComment
   ): Promise<Comment> {
     const [comment] = await db
       .insert(comments)
       .values({
         ...commentData,
-        userId,
+        user_id,
       })
       .returning();
 
@@ -1335,9 +1335,9 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(comments)
-      .leftJoin(users, eq(comments.userId, users.id))
+      .leftJoin(users, eq(comments.user_id, users.id))
       .where(eq(comments.postId, postId))
-      .orderBy(asc(comments.createdAt));
+      .orderBy(asc(comments.created_at));
 
     // Get comment IDs for reaction queries
     const commentIds = commentsData.map((c) => c.comment.id);
@@ -1368,7 +1368,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             inArray(commentReactions.commentId, commentIds),
-            eq(commentReactions.userId, currentUserId)
+            eq(commentReactions.user_id, currentUserId)
           )
         );
     }
@@ -1408,29 +1408,29 @@ export class DatabaseStorage implements IStorage {
 
   // Social methods - Reactions
   async addReaction(
-    userId: number,
+    user_id: number,
     reactionData: InsertReaction
   ): Promise<Reaction> {
     // Remove any existing reaction by this user on this post
-    await this.removeReaction(userId, reactionData.postId);
+    await this.removeReaction(user_id, reactionData.postId);
 
     // Add the new reaction
     const [reaction] = await db
       .insert(reactions)
       .values({
         ...reactionData,
-        userId,
+        user_id,
       })
       .returning();
 
     return reaction;
   }
 
-  async removeReaction(userId: number, postId: number): Promise<boolean> {
+  async removeReaction(user_id: number, postId: number): Promise<boolean> {
     try {
       await db
         .delete(reactions)
-        .where(and(eq(reactions.userId, userId), eq(reactions.postId, postId)));
+        .where(and(eq(reactions.user_id, user_id), eq(reactions.postId, postId)));
       return true;
     } catch (error) {
       console.error('Error removing reaction:', error);
@@ -1439,13 +1439,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserReaction(
-    userId: number,
+    user_id: number,
     postId: number
   ): Promise<Reaction | undefined> {
     const [reaction] = await db
       .select()
       .from(reactions)
-      .where(and(eq(reactions.userId, userId), eq(reactions.postId, postId)));
+      .where(and(eq(reactions.user_id, user_id), eq(reactions.postId, postId)));
 
     return reaction;
   }
@@ -1500,12 +1500,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async votePoll(
-    userId: number,
+    user_id: number,
     pollId: number,
     optionIndex: number
   ): Promise<PollVote> {
     // Check if user has already voted on this poll
-    const existingVote = await this.getUserPollVote(userId, pollId);
+    const existingVote = await this.getUserPollVote(user_id, pollId);
 
     if (existingVote) {
       // Update existing vote
@@ -1521,7 +1521,7 @@ export class DatabaseStorage implements IStorage {
       const [vote] = await db
         .insert(pollVotes)
         .values({
-          userId,
+          user_id,
           pollId,
           optionIndex,
         })
@@ -1532,13 +1532,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserPollVote(
-    userId: number,
+    user_id: number,
     pollId: number
   ): Promise<PollVote | undefined> {
     const [vote] = await db
       .select()
       .from(pollVotes)
-      .where(and(eq(pollVotes.userId, userId), eq(pollVotes.pollId, pollId)));
+      .where(and(eq(pollVotes.user_id, user_id), eq(pollVotes.pollId, pollId)));
 
     return vote;
   }
@@ -1566,7 +1566,7 @@ export class DatabaseStorage implements IStorage {
     const [settings] = await db
       .select()
       .from(recognitionSettings)
-      .orderBy(desc(recognitionSettings.createdAt))
+      .orderBy(desc(recognitionSettings.created_at))
       .limit(1);
 
     if (!settings || !settings.peerToPeerEnabled) {
@@ -1587,7 +1587,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(recognitions.recognizerId, recognizerId),
-          gt(recognitions.createdAt, startOfMonth)
+          gt(recognitions.created_at, startOfMonth)
         )
       );
 
@@ -1632,13 +1632,13 @@ export class DatabaseStorage implements IStorage {
       const [createdTransaction] = await db
         .insert(transactions)
         .values({
-          fromAccountId: senderAccount.id,
-          toAccountId: recipientAccount.id,
+          from_account_id: senderAccount.id,
+          to_account_id: recipientAccount.id,
           amount: pointsToGive,
           reason: 'peer_recognition',
           description: `Recognition: ${message}`,
           createdBy: recognizerId,
-          recognitionId: recognition.id,
+          recognition_id: recognition.id,
         })
         .returning();
 
@@ -1660,7 +1660,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserRecognitionsGiven(
-    userId: number
+    user_id: number
   ): Promise<RecognitionWithDetails[]> {
     const recognitionsData = await db
       .select({
@@ -1669,14 +1669,14 @@ export class DatabaseStorage implements IStorage {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recipientId, users.id))
-      .where(eq(recognitions.recognizerId, userId))
-      .orderBy(desc(recognitions.createdAt));
+      .where(eq(recognitions.recognizerId, user_id))
+      .orderBy(desc(recognitions.created_at));
 
     // Get recognizer info
     const [recognizer] = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, user_id));
 
     if (!recognizer) {
       return [];
@@ -1697,7 +1697,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserRecognitionsReceived(
-    userId: number
+    user_id: number
   ): Promise<RecognitionWithDetails[]> {
     const recognitionsData = await db
       .select({
@@ -1706,14 +1706,14 @@ export class DatabaseStorage implements IStorage {
       })
       .from(recognitions)
       .leftJoin(users, eq(recognitions.recognizerId, users.id))
-      .where(eq(recognitions.recipientId, userId))
-      .orderBy(desc(recognitions.createdAt));
+      .where(eq(recognitions.recipientId, user_id))
+      .orderBy(desc(recognitions.created_at));
 
     // Get recipient info
     const [recipient] = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, user_id));
 
     if (!recipient) {
       return [];
@@ -1735,7 +1735,7 @@ export class DatabaseStorage implements IStorage {
 
   // Social methods - Chat
   async createConversation(
-    userId: number,
+    user_id: number,
     conversationData: InsertConversation,
     participantIds: number[]
   ): Promise<Conversation> {
@@ -1746,12 +1746,12 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     // Add participants
-    const allParticipantIds = Array.from(new Set([userId, ...participantIds]));
+    const allParticipantIds = Array.from(new Set([user_id, ...participantIds]));
 
     for (const participantId of allParticipantIds) {
       await db.insert(conversationParticipants).values({
         conversationId: conversation.id,
-        userId: participantId,
+        user_id: participantId,
       });
     }
 
@@ -1759,7 +1759,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConversations(
-    userId: number
+    user_id: number
   ): Promise<ConversationWithDetails[]> {
     // Get all conversations where user is a participant
     const userConversations = await db
@@ -1767,7 +1767,7 @@ export class DatabaseStorage implements IStorage {
         conversationId: conversationParticipants.conversationId,
       })
       .from(conversationParticipants)
-      .where(eq(conversationParticipants.userId, userId));
+      .where(eq(conversationParticipants.user_id, user_id));
 
     const conversationIds = userConversations.map((c) => c.conversationId);
 
@@ -1780,7 +1780,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(conversations)
       .where(inArray(conversations.id, conversationIds))
-      .orderBy(desc(conversations.updatedAt));
+      .orderBy(desc(conversations.updated_at));
 
     // For each conversation, get participants
     const result: ConversationWithDetails[] = [];
@@ -1792,7 +1792,7 @@ export class DatabaseStorage implements IStorage {
           user: users,
         })
         .from(conversationParticipants)
-        .leftJoin(users, eq(conversationParticipants.userId, users.id))
+        .leftJoin(users, eq(conversationParticipants.user_id, users.id))
         .where(eq(conversationParticipants.conversationId, conversation.id));
 
       const participants = participantsData.map((p) => {
@@ -1809,7 +1809,7 @@ export class DatabaseStorage implements IStorage {
         .from(messages)
         .leftJoin(users, eq(messages.senderId, users.id))
         .where(eq(messages.conversationId, conversation.id))
-        .orderBy(desc(messages.createdAt))
+        .orderBy(desc(messages.created_at))
         .limit(1);
 
       // Get unread count for current user
@@ -1822,7 +1822,7 @@ export class DatabaseStorage implements IStorage {
           and(
             eq(messages.conversationId, conversation.id),
             eq(messages.isRead, false),
-            ne(messages.senderId, userId)
+            ne(messages.senderId, user_id)
           )
         );
 
@@ -1870,7 +1870,7 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(conversationParticipants)
-      .leftJoin(users, eq(conversationParticipants.userId, users.id))
+      .leftJoin(users, eq(conversationParticipants.user_id, users.id))
       .where(eq(conversationParticipants.conversationId, id));
 
     const participants = participantsData.map((p) => {
@@ -1887,7 +1887,7 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .leftJoin(users, eq(messages.senderId, users.id))
       .where(eq(messages.conversationId, id))
-      .orderBy(desc(messages.createdAt))
+      .orderBy(desc(messages.created_at))
       .limit(1);
 
     // Assemble conversation details
@@ -1911,14 +1911,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async sendMessage(
-    userId: number,
+    user_id: number,
     messageData: InsertMessage
   ): Promise<Message> {
     const [message] = await db
       .insert(messages)
       .values({
         ...messageData,
-        senderId: userId,
+        senderId: user_id,
       })
       .returning();
 
@@ -1944,7 +1944,7 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .leftJoin(users, eq(messages.senderId, users.id))
       .where(eq(messages.conversationId, conversationId))
-      .orderBy(desc(messages.createdAt))
+      .orderBy(desc(messages.created_at))
       .limit(limit)
       .offset(offset);
 
@@ -1959,7 +1959,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markMessagesAsRead(
-    userId: number,
+    user_id: number,
     conversationId: number
   ): Promise<boolean> {
     try {
@@ -1969,7 +1969,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(messages.conversationId, conversationId),
-            ne(messages.senderId, userId),
+            ne(messages.senderId, user_id),
             eq(messages.isRead, false)
           )
         );
@@ -1993,14 +1993,14 @@ export class DatabaseStorage implements IStorage {
     return this.shopConfig;
   }
 
-  async getUserSocialStats(userId: number): Promise<SocialStats> {
+  async getUserSocialStats(user_id: number): Promise<SocialStats> {
     // Get posts count
     const [postsCountResult] = await db
       .select({
         count: count(posts.id),
       })
       .from(posts)
-      .where(eq(posts.userId, userId));
+      .where(eq(posts.user_id, user_id));
 
     // Get comments count
     const [commentsCountResult] = await db
@@ -2008,7 +2008,7 @@ export class DatabaseStorage implements IStorage {
         count: count(comments.id),
       })
       .from(comments)
-      .where(eq(comments.userId, userId));
+      .where(eq(comments.user_id, user_id));
 
     // Get recognitions received count
     const [recognitionsReceivedCountResult] = await db
@@ -2016,7 +2016,7 @@ export class DatabaseStorage implements IStorage {
         count: count(recognitions.id),
       })
       .from(recognitions)
-      .where(eq(recognitions.recipientId, userId));
+      .where(eq(recognitions.recipientId, user_id));
 
     // Get recognitions given count
     const [recognitionsGivenCountResult] = await db
@@ -2024,7 +2024,7 @@ export class DatabaseStorage implements IStorage {
         count: count(recognitions.id),
       })
       .from(recognitions)
-      .where(eq(recognitions.recognizerId, userId));
+      .where(eq(recognitions.recognizerId, user_id));
 
     // Get unread messages count
     const userConversations = await db
@@ -2032,7 +2032,7 @@ export class DatabaseStorage implements IStorage {
         conversationId: conversationParticipants.conversationId,
       })
       .from(conversationParticipants)
-      .where(eq(conversationParticipants.userId, userId));
+      .where(eq(conversationParticipants.user_id, user_id));
 
     const conversationIds = userConversations.map((c) => c.conversationId);
 
@@ -2048,7 +2048,7 @@ export class DatabaseStorage implements IStorage {
           and(
             inArray(messages.conversationId, conversationIds),
             eq(messages.isRead, false),
-            ne(messages.senderId, userId)
+            ne(messages.senderId, user_id)
           )
         );
 
@@ -2088,7 +2088,7 @@ export class DatabaseStorage implements IStorage {
       query = query.where(eq(surveys.status, status));
     }
 
-    return await query.orderBy(desc(surveys.createdAt));
+    return await query.orderBy(desc(surveys.created_at));
   }
 
   async getSurveyById(id: number): Promise<Survey | undefined> {
@@ -2196,7 +2196,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(surveyResponses)
       .where(eq(surveyResponses.surveyId, surveyId))
-      .orderBy(desc(surveyResponses.createdAt));
+      .orderBy(desc(surveyResponses.created_at));
   }
 
   async getSurveyResponseById(id: number): Promise<SurveyResponse | undefined> {
@@ -2208,14 +2208,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createSurveyResponse(
-    userId: number | null,
+    user_id: number | null,
     surveyId: number,
     completedAt?: Date
   ): Promise<SurveyResponse> {
     const [response] = await db
       .insert(surveyResponses)
       .values({
-        userId,
+        user_id,
         surveyId,
         completedAt,
         startedAt: new Date(),
@@ -2282,7 +2282,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getUserChannels(userId: number): Promise<any[]> {
+  async getUserChannels(user_id: number): Promise<any[]> {
     const { interestChannels, interestChannelMembers, interests } =
       await import('@shared/schema');
     const { eq, and } = await import('drizzle-orm');
@@ -2301,7 +2301,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(interests, eq(interestChannels.interestId, interests.id))
       .where(
         and(
-          eq(interestChannelMembers.userId, userId),
+          eq(interestChannelMembers.user_id, user_id),
           eq(interestChannels.isActive, true)
         )
       );
@@ -2314,7 +2314,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getChannelSuggestions(userId: number): Promise<any[]> {
+  async getChannelSuggestions(user_id: number): Promise<any[]> {
     const { interestChannels, interestChannelMembers, interests } =
       await import('@shared/schema');
     const { eq, and, notInArray, sql } = await import('drizzle-orm');
@@ -2323,7 +2323,7 @@ export class DatabaseStorage implements IStorage {
     const userChannelIds = await db
       .select({ channelId: interestChannelMembers.channelId })
       .from(interestChannelMembers)
-      .where(eq(interestChannelMembers.userId, userId));
+      .where(eq(interestChannelMembers.user_id, user_id));
 
     const userChannelIdsList = userChannelIds.map((uc) => uc.channelId);
 
@@ -2400,7 +2400,7 @@ export class DatabaseStorage implements IStorage {
       .from(interestChannelPosts)
       .leftJoin(users, eq(interestChannelPosts.authorId, users.id))
       .where(eq(interestChannelPosts.channelId, channelId))
-      .orderBy(desc(interestChannelPosts.createdAt));
+      .orderBy(desc(interestChannelPosts.created_at));
 
     return posts.map((p) => {
       const { password, ...authorWithoutPassword } = p.author || {};
@@ -2421,7 +2421,7 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(interestChannelMembers)
-      .leftJoin(users, eq(interestChannelMembers.userId, users.id))
+      .leftJoin(users, eq(interestChannelMembers.user_id, users.id))
       .where(eq(interestChannelMembers.channelId, channelId))
       .orderBy(asc(interestChannelMembers.joinedAt));
 
@@ -2434,7 +2434,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async joinChannel(userId: number, channelId: number): Promise<void> {
+  async joinChannel(user_id: number, channelId: number): Promise<void> {
     const { interestChannelMembers, interestChannels } = await import(
       '@shared/schema'
     );
@@ -2446,7 +2446,7 @@ export class DatabaseStorage implements IStorage {
       .from(interestChannelMembers)
       .where(
         and(
-          eq(interestChannelMembers.userId, userId),
+          eq(interestChannelMembers.user_id, user_id),
           eq(interestChannelMembers.channelId, channelId)
         )
       );
@@ -2457,7 +2457,7 @@ export class DatabaseStorage implements IStorage {
 
     // Add user to channel
     await db.insert(interestChannelMembers).values({
-      userId,
+      user_id,
       channelId,
       role: 'member',
     });
@@ -2471,7 +2471,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(interestChannels.id, channelId));
   }
 
-  async leaveChannel(userId: number, channelId: number): Promise<void> {
+  async leaveChannel(user_id: number, channelId: number): Promise<void> {
     const { interestChannelMembers, interestChannels } = await import(
       '@shared/schema'
     );
@@ -2482,7 +2482,7 @@ export class DatabaseStorage implements IStorage {
       .delete(interestChannelMembers)
       .where(
         and(
-          eq(interestChannelMembers.userId, userId),
+          eq(interestChannelMembers.user_id, user_id),
           eq(interestChannelMembers.channelId, channelId)
         )
       );
@@ -2554,7 +2554,7 @@ export const storage = new DatabaseStorage();
 
 // Helper function for the scheduler
 export const awardBirthdayPoints = async (
-  userId: number
+  user_id: number
 ): Promise<Transaction> => {
-  return storage.awardBirthdayPoints(userId);
+  return storage.awardBirthdayPoints(user_id);
 };

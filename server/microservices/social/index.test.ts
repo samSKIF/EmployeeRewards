@@ -45,7 +45,7 @@ describe('Social Microservice', () => {
       const mockPosts = [
         {
           id: 1,
-          userId: 1,
+          user_id: 1,
           content: 'Hello world!',
           organizationId: 1,
           createdAt: new Date(),
@@ -136,7 +136,7 @@ describe('Social Microservice', () => {
 
       const mockCreatedPost = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         content: postData.content,
         imageUrl: postData.imageUrl,
         organizationId: 1,
@@ -155,7 +155,7 @@ describe('Social Microservice', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.content).toBe(postData.content);
-      expect(response.body.userId).toBe(1);
+      expect(response.body.user_id).toBe(1);
     });
 
     it('should validate required content', async () => {
@@ -208,7 +208,7 @@ describe('Social Microservice', () => {
       const mockReaction = {
         id: 1,
         postId: 1,
-        userId: 1,
+        user_id: 1,
         type: 'like',
         createdAt: new Date(),
       };
@@ -333,7 +333,7 @@ describe('Social Microservice', () => {
         {
           id: 1,
           postId: 1,
-          userId: 1,
+          user_id: 1,
           content: 'Great post!',
           createdAt: new Date(),
           author: {
@@ -375,7 +375,7 @@ describe('Social Microservice', () => {
       const mockComment = {
         id: 1,
         postId: 1,
-        userId: 1,
+        user_id: 1,
         content: commentData.content,
         createdAt: new Date(),
       };

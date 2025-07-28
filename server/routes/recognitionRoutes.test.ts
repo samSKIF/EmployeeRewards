@@ -197,14 +197,14 @@ describe('Recognition Routes', () => {
     it('should return recognition leaderboard', async () => {
       const mockLeaderboard = [
         {
-          userId: 5,
+          user_id: 5,
           name: 'John Doe',
           totalPoints: 500,
           recognitionCount: 10,
           rank: 1,
         },
         {
-          userId: 3,
+          user_id: 3,
           name: 'Jane Smith',
           totalPoints: 450,
           recognitionCount: 8,
@@ -289,8 +289,8 @@ describe('Recognition Routes', () => {
       
       mockStorage.getRecognition.mockResolvedValue(mockRecognition);
       mockStorage.addRecognitionReaction.mockResolvedValue({
-        recognitionId: 100,
-        userId: 1,
+        recognition_id: 100,
+        user_id: 1,
         reaction: '👏',
       });
 

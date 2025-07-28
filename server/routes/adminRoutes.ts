@@ -20,7 +20,7 @@ router.get(
   verifyAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      if (!req.user || !req.user.organizationId) {
+      if (!req.user || !req.user.organization_id) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
@@ -38,7 +38,7 @@ router.get(
       WHERE o.id = $1
       GROUP BY o.id, o.name, o.max_users, s.subscribed_users
     `,
-        [req.user.organizationId]
+        [req.user.organization_id]
       );
 
       if (result.rows.length === 0) {
@@ -83,17 +83,17 @@ router.get(
           isActive: interestChannels.isActive,
           allowedDepartments: interestChannels.allowedDepartments,
           allowedSites: interestChannels.allowedSites,
-          createdAt: interestChannels.createdAt,
+          createdAt: interestChannels.created_at,
           createdBy: interestChannels.createdBy,
         })
         .from(interestChannels)
         .where(
-          eq(interestChannels.organizationId, req.user.organizationId || 1)
+          eq(interestChannels.organization_id, req.user.organization_id || 1)
         )
-        .orderBy(desc(interestChannels.createdAt));
+        .orderBy(desc(interestChannels.created_at));
 
       logger.info(
-        `Returning ${spaces.length} spaces for org ${req.user.organizationId}`
+        `Returning ${spaces.length} spaces for org ${req.user.organization_id}`
       );
       res.json(spaces);
     } catch (error) {
@@ -231,7 +231,7 @@ router.get(
       }
 
       // Check if the user is a corporate admin
-      if (req.user.roleType !== 'corporate_admin') {
+      if (req.user.role_type !== 'corporate_admin') {
         return res
           .status(403)
           .json({ message: 'Forbidden: Corporate admin access required' });
@@ -260,7 +260,7 @@ router.get(
       }
 
       // Check if the user is a corporate admin
-      if (req.user.roleType !== 'corporate_admin') {
+      if (req.user.role_type !== 'corporate_admin') {
         return res
           .status(403)
           .json({ message: 'Forbidden: Corporate admin access required' });
@@ -299,7 +299,7 @@ router.post(
       }
 
       // Check if the user is a corporate admin
-      if (req.user.roleType !== 'corporate_admin') {
+      if (req.user.role_type !== 'corporate_admin') {
         return res
           .status(403)
           .json({ message: 'Forbidden: Corporate admin access required' });
@@ -363,7 +363,7 @@ router.get(
         limit = 50,
         offset = 0,
       } = req.query;
-      const organizationId = req.user.organizationId;
+      const organizationId = req.user.organization_id;
 
       logger.info(
         `Admin fetching employees for organization ${organizationId}`
@@ -418,7 +418,7 @@ router.get(
         jobTitle: row.job_title, // Map snake_case to camelCase
         department: row.department,
         location: row.location,
-        managerEmail: row.manager_email, // Map snake_case to camelCase
+        manager_email: row.manager_email, // Map snake_case to camelCase
         sex: row.sex,
         nationality: row.nationality,
         dateOfBirth: row.birth_date, // Map birth_date to dateOfBirth
@@ -462,7 +462,7 @@ router.patch(
       logger.info('=== EMPLOYEE UPDATE REQUEST ===');
       logger.info('Employee ID:', employeeId);
       logger.info('Full request body:', JSON.stringify(updateData, null, 2));
-      logger.info('User org ID:', req.user.organizationId);
+      logger.info('User org ID:', req.user.organization_id);
       logger.info('===============================');
 
       // Build update object with proper field mapping
@@ -485,11 +485,11 @@ router.patch(
       if (updateData.surname !== undefined)
         dbUpdateData.surname = updateData.surname;
       if (updateData.email !== undefined) dbUpdateData.email = updateData.email;
-      if (updateData.phoneNumber !== undefined)
-        dbUpdateData.phone_number = updateData.phoneNumber;
-      if (updateData.jobTitle !== undefined) {
-        dbUpdateData.job_title = updateData.jobTitle;
-        logger.info('Setting job_title to:', updateData.jobTitle);
+      if (updateData.phone_number !== undefined)
+        dbUpdateData.phone_number = updateData.phone_number;
+      if (updateData.job_title !== undefined) {
+        dbUpdateData.job_title = updateData.job_title;
+        logger.info('Setting job_title to:', updateData.job_title);
       }
       if (updateData.department !== undefined)
         dbUpdateData.department = updateData.department;
@@ -498,23 +498,23 @@ router.patch(
       if (updateData.sex !== undefined) dbUpdateData.sex = updateData.sex;
       if (updateData.nationality !== undefined)
         dbUpdateData.nationality = updateData.nationality;
-      if (updateData.birthDate !== undefined) {
-        dbUpdateData.birth_date = updateData.birthDate;
-        logger.info('Setting birth_date to:', updateData.birthDate);
+      if (updateData.birth_date !== undefined) {
+        dbUpdateData.birth_date = updateData.birth_date;
+        logger.info('Setting birth_date to:', updateData.birth_date);
       }
-      if (updateData.hireDate !== undefined)
-        dbUpdateData.hire_date = updateData.hireDate;
+      if (updateData.hire_date !== undefined)
+        dbUpdateData.hire_date = updateData.hire_date;
       if (updateData.status !== undefined)
         dbUpdateData.status = updateData.status;
-      if (updateData.avatarUrl !== undefined)
-        dbUpdateData.avatar_url = updateData.avatarUrl;
-      if (updateData.managerEmail !== undefined)
-        dbUpdateData.manager_email = updateData.managerEmail;
+      if (updateData.avatar_url !== undefined)
+        dbUpdateData.avatar_url = updateData.avatar_url;
+      if (updateData.manager_email !== undefined)
+        dbUpdateData.manager_email = updateData.manager_email;
 
       // Handle admin-specific fields
-      if (updateData.isAdmin !== undefined) {
-        dbUpdateData.is_admin = updateData.isAdmin;
-        logger.info('Setting is_admin to:', updateData.isAdmin);
+      if (updateData.is_admin !== undefined) {
+        dbUpdateData.is_admin = updateData.is_admin;
+        logger.info('Setting is_admin to:', updateData.is_admin);
       }
 
       if (updateData.adminScope !== undefined) {
@@ -551,7 +551,7 @@ router.patch(
       RETURNING *
     `;
 
-      values.push(req.user.organizationId);
+      values.push(req.user.organization_id);
 
       if (Object.keys(dbUpdateData).length === 0) {
         logger.warn('No valid fields to update after mapping');
@@ -595,7 +595,7 @@ router.patch(
         jobTitle: updatedEmployee.job_title,
         department: updatedEmployee.department,
         location: updatedEmployee.location,
-        managerEmail: updatedEmployee.manager_email,
+        manager_email: updatedEmployee.manager_email,
         sex: updatedEmployee.sex,
         nationality: updatedEmployee.nationality,
         birthDate: updatedEmployee.birth_date, // Changed from dateOfBirth to birthDate
@@ -648,7 +648,7 @@ router.patch(
           adminScope,
           JSON.stringify(allowedSites || []),
           JSON.stringify(allowedDepartments || []),
-          req.user.organizationId,
+          req.user.organization_id,
         ]
       );
 
@@ -699,7 +699,7 @@ router.get(
       GROUP BY c.id
       ORDER BY c.created_at DESC
     `,
-        [req.user.organizationId, req.user.id]
+        [req.user.organization_id, req.user.id]
       );
 
       const channels = result.rows.map((channel) => ({
@@ -715,7 +715,7 @@ router.get(
       }));
 
       logger.info('Retrieved channels for admin:', {
-        organizationId: req.user.organizationId,
+        organizationId: req.user.organization_id,
         channelCount: channels.length,
       });
 
@@ -748,15 +748,15 @@ router.get(
       const features = await db
         .select()
         .from(organizationFeatures)
-        .where(eq(organizationFeatures.organizationId, req.user.organizationId));
+        .where(eq(organizationFeatures.organization_id, req.user.organization_id));
 
       // If no features exist, create default ones
       if (features.length === 0) {
         const defaultFeatures = [
-          { organizationId: req.user.organizationId, featureKey: 'recognition', isEnabled: true },
-          { organizationId: req.user.organizationId, featureKey: 'social', isEnabled: true },
-          { organizationId: req.user.organizationId, featureKey: 'surveys', isEnabled: true },
-          { organizationId: req.user.organizationId, featureKey: 'marketplace', isEnabled: true },
+          { organizationId: req.user.organization_id, featureKey: 'recognition', isEnabled: true },
+          { organizationId: req.user.organization_id, featureKey: 'social', isEnabled: true },
+          { organizationId: req.user.organization_id, featureKey: 'surveys', isEnabled: true },
+          { organizationId: req.user.organization_id, featureKey: 'marketplace', isEnabled: true },
         ];
 
         await db.insert(organizationFeatures).values(defaultFeatures);

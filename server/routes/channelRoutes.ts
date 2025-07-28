@@ -32,18 +32,18 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
         isActive: interestChannels.isActive,
         allowedDepartments: interestChannels.allowedDepartments,
         allowedSites: interestChannels.allowedSites,
-        createdAt: interestChannels.createdAt,
+        createdAt: interestChannels.created_at,
         createdBy: interestChannels.createdBy,
-        organizationId: interestChannels.organizationId,
+        organizationId: interestChannels.organization_id,
       })
       .from(interestChannels)
       .where(
         and(
           eq(interestChannels.isActive, true),
-          eq(interestChannels.organizationId, req.user.organizationId || 1)
+          eq(interestChannels.organization_id, req.user.organization_id || 1)
         )
       )
-      .orderBy(desc(interestChannels.createdAt));
+      .orderBy(desc(interestChannels.created_at));
 
     logger.info(`Fetched ${channels.length} channels for user ${req.user.id}`);
     res.json(channels);
@@ -72,27 +72,27 @@ router.get(
           imageUrl: interestChannelPosts.imageUrl,
           likeCount: interestChannelPosts.likeCount,
           commentCount: interestChannelPosts.commentCount,
-          createdAt: interestChannelPosts.createdAt,
+          createdAt: interestChannelPosts.created_at,
           channelId: interestChannels.id,
           channelName: interestChannels.name,
           channelType: interestChannels.channelType,
           authorId: users.id,
           authorName: users.name,
-          authorAvatarUrl: users.avatarUrl,
+          authorAvatarUrl: users.avatar_url,
         })
         .from(interestChannelPosts)
         .innerJoin(
           interestChannels,
           eq(interestChannelPosts.channelId, interestChannels.id)
         )
-        .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+        .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
         .where(
           and(
-            eq(interestChannels.organizationId, req.user.organizationId || 1),
+            eq(interestChannels.organization_id, req.user.organization_id || 1),
             eq(interestChannels.isActive, true)
           )
         )
-        .orderBy(desc(interestChannelPosts.createdAt))
+        .orderBy(desc(interestChannelPosts.created_at))
         .limit(50);
 
       res.json(recentPosts);
@@ -183,9 +183,9 @@ router.get('/:id', async (req, res) => {
         isActive: interestChannels.isActive,
         allowedDepartments: interestChannels.allowedDepartments,
         allowedSites: interestChannels.allowedSites,
-        createdAt: interestChannels.createdAt,
+        createdAt: interestChannels.created_at,
         createdBy: interestChannels.createdBy,
-        organizationId: interestChannels.organizationId,
+        organizationId: interestChannels.organization_id,
       })
       .from(interestChannels)
       .where(eq(interestChannels.id, channelId))
@@ -294,19 +294,19 @@ router.get('/:id/posts', async (req, res) => {
       .select({
         id: interestChannelPosts.id,
         content: interestChannelPosts.content,
-        userId: interestChannelPosts.userId,
+        user_id: interestChannelPosts.user_id,
         userName: users.name,
-        userAvatar: users.avatarUrl,
-        createdAt: interestChannelPosts.createdAt,
+        userAvatar: users.avatar_url,
+        createdAt: interestChannelPosts.created_at,
         likeCount: interestChannelPosts.likeCount,
         commentCount: interestChannelPosts.commentCount,
         imageUrl: interestChannelPosts.imageUrl,
         type: sql`'post'`.as('type'),
       })
       .from(interestChannelPosts)
-      .innerJoin(users, eq(interestChannelPosts.userId, users.id))
+      .innerJoin(users, eq(interestChannelPosts.user_id, users.id))
       .where(eq(interestChannelPosts.channelId, channelId))
-      .orderBy(desc(interestChannelPosts.createdAt));
+      .orderBy(desc(interestChannelPosts.created_at));
 
     res.json(posts);
   } catch (error: any) {
@@ -339,12 +339,12 @@ router.get(
           name: users.name,
           username: users.username,
           email: users.email,
-          avatarUrl: users.avatarUrl,
+          avatarUrl: users.avatar_url,
           department: users.department,
           joinedAt: interestChannelMembers.joinedAt,
         })
         .from(interestChannelMembers)
-        .innerJoin(users, eq(interestChannelMembers.userId, users.id))
+        .innerJoin(users, eq(interestChannelMembers.user_id, users.id))
         .where(eq(interestChannelMembers.channelId, channelId))
         .orderBy(desc(interestChannelMembers.joinedAt));
 
@@ -393,7 +393,7 @@ router.get(
           name: users.name,
           username: users.username,
           email: users.email,
-          avatarUrl: users.avatarUrl,
+          avatarUrl: users.avatar_url,
           department: users.department,
         })
         .from(users)

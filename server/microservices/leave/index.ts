@@ -64,7 +64,7 @@ router.get(
       (req as any)._routeHandledByMicroservice = true;
 
       const types = await db.query.leaveTypes.findMany({
-        where: eq(leaveTypes.organizationId, organizationId),
+        where: eq(leaveTypes.organization_id, organizationId),
         orderBy: [leaveTypes.name],
       });
 
@@ -88,11 +88,11 @@ router.post(
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       const validatedData = insertLeaveTypeSchema.parse({
         ...req.body,
         organizationId,
-        createdBy: userId,
+        createdBy: user_id,
       });
 
       const [leaveType] = await db
@@ -134,7 +134,7 @@ router.patch(
         .where(
           and(
             eq(leaveTypes.id, typeId),
-            eq(leaveTypes.organizationId, organizationId)
+            eq(leaveTypes.organization_id, organizationId)
           )
         );
 
@@ -185,7 +185,7 @@ router.delete(
         .where(
           and(
             eq(leaveTypes.id, typeId),
-            eq(leaveTypes.organizationId, organizationId)
+            eq(leaveTypes.organization_id, organizationId)
           )
         );
 
@@ -233,11 +233,11 @@ router.get(
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { id: userId } = req.user;
+      const { id: user_id } = req.user;
 
       // Get all leave requests for the user
       const requests = await db.query.leaveRequests.findMany({
-        where: eq(leaveRequests.userId, userId),
+        where: eq(leaveRequests.user_id, user_id),
         with: {
           leaveType: true,
           approver: {
@@ -248,7 +248,7 @@ router.get(
             },
           },
         },
-        orderBy: [desc(leaveRequests.createdAt)],
+        orderBy: [desc(leaveRequests.created_at)],
       });
 
       console.log(
@@ -277,12 +277,12 @@ router.post(
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { id: userId, organizationId } = req.user;
+      const { id: user_id, organizationId } = req.user;
 
       // Validate the request data
       const validatedData = insertLeaveRequestSchema.parse({
         ...req.body,
-        userId,
+        user_id,
         status: 'PENDING',
       });
 
@@ -293,7 +293,7 @@ router.post(
         .where(
           and(
             eq(leaveTypes.id, validatedData.leaveTypeId),
-            eq(leaveTypes.organizationId, organizationId)
+            eq(leaveTypes.organization_id, organizationId)
           )
         );
 
@@ -340,7 +340,7 @@ router.patch(
       (req as any)._routeHandledByMicroservice = true;
 
       const { id } = req.params;
-      const { id: userId, isAdmin } = req.user;
+      const { id: user_id, isAdmin } = req.user;
       const requestId = parseInt(id);
 
       // Get the request
@@ -356,9 +356,9 @@ router.patch(
       // Check if user is authorized to update the request
       // (either the approver, an admin, or the requester canceling their own request)
       if (
-        request.approverId !== userId &&
+        request.approverId !== user_id &&
         !isAdmin &&
-        !(request.userId === userId && req.body.status === 'CANCELLED')
+        !(request.user_id === user_id && req.body.status === 'CANCELLED')
       ) {
         return res
           .status(403)
@@ -416,8 +416,8 @@ router.get(
       const { organizationId } = req.user;
 
       const policies = await db.query.leavePolicies.findMany({
-        where: eq(leavePolicies.organizationId, organizationId),
-        orderBy: [desc(leavePolicies.createdAt)],
+        where: eq(leavePolicies.organization_id, organizationId),
+        orderBy: [desc(leavePolicies.created_at)],
       });
 
       console.log(
@@ -449,7 +449,7 @@ router.post(
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       const { country } = req.body;
 
       // Check if policy already exists for this country
@@ -458,7 +458,7 @@ router.post(
         .from(leavePolicies)
         .where(
           and(
-            eq(leavePolicies.organizationId, organizationId),
+            eq(leavePolicies.organization_id, organizationId),
             eq(leavePolicies.country, country)
           )
         );
@@ -472,11 +472,11 @@ router.post(
           .set({
             ...req.body,
             updatedAt: new Date(),
-            updatedBy: userId,
+            updatedBy: user_id,
           })
           .where(
             and(
-              eq(leavePolicies.organizationId, organizationId),
+              eq(leavePolicies.organization_id, organizationId),
               eq(leavePolicies.country, country)
             )
           )
@@ -493,7 +493,7 @@ router.post(
         const validatedData = insertLeavePolicySchema.parse({
           ...req.body,
           organizationId,
-          createdBy: userId,
+          createdBy: user_id,
         });
 
         const [newPolicy] = await db
@@ -540,7 +540,7 @@ router.get(
       let queryBuilder = db
         .select()
         .from(holidays)
-        .where(eq(holidays.organizationId, organizationId));
+        .where(eq(holidays.organization_id, organizationId));
 
       // Add country filter if provided
       if (country) {
@@ -582,12 +582,12 @@ router.post(
       // Mark request as handled by microservice to prevent duplicate processing
       (req as any)._routeHandledByMicroservice = true;
 
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
 
       const validatedData = insertHolidaySchema.parse({
         ...req.body,
         organizationId,
-        createdBy: userId,
+        createdBy: user_id,
       });
 
       const [holiday] = await db

@@ -22,7 +22,7 @@ const statusTypeSchema = z.object({
 
 // Schema for assigning status to employee
 const assignStatusSchema = z.object({
-  userId: z.number().int(),
+  user_id: z.number().int(),
   statusTypeId: z.number().int(),
   startDate: z.string(), // Will be parsed as Date
   endDate: z.string().optional().nullable(), // Optional end date
@@ -32,7 +32,7 @@ const assignStatusSchema = z.object({
 // Get all status types (for configuration)
 router.get('/status-types', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to view status types' });
@@ -55,7 +55,7 @@ router.get('/status-types', async (req: AuthenticatedRequest, res) => {
 // Create a new status type
 router.post('/status-types', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to create status types' });
@@ -75,7 +75,7 @@ router.post('/status-types', async (req: AuthenticatedRequest, res) => {
         isActive: validatedData.isActive,
         createdBy: req.user.id,
         updatedAt: new Date(),
-        organizationId: req.user.organizationId,
+        organizationId: req.user.organization_id,
       })
       .returning();
 
@@ -91,7 +91,7 @@ router.post('/status-types', async (req: AuthenticatedRequest, res) => {
 // Update a status type
 router.patch('/status-types/:id', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to update status types' });
@@ -125,7 +125,7 @@ router.patch('/status-types/:id', async (req: AuthenticatedRequest, res) => {
 // Delete a status type
 router.delete('/status-types/:id', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to delete status types' });
@@ -165,10 +165,10 @@ router.delete('/status-types/:id', async (req: AuthenticatedRequest, res) => {
 
 // Get active employee statuses (for display)
 router.get(
-  '/users/:userId/statuses',
+  '/users/:user_id/statuses',
   async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const user_id = parseInt(req.params.user_id);
       const today = new Date();
 
       // Get current active statuses for this user
@@ -184,7 +184,7 @@ router.get(
         )
         .where(
           and(
-            eq(employeeStatuses.userId, userId),
+            eq(employeeStatuses.user_id, user_id),
             eq(employeeStatusTypes.isActive, true),
             lte(employeeStatuses.startDate, today),
             or(
@@ -193,7 +193,7 @@ router.get(
             )
           )
         )
-        .orderBy(desc(employeeStatuses.createdAt));
+        .orderBy(desc(employeeStatuses.created_at));
 
       // Format the response
       const formattedStatuses = currentStatuses.map((item) => ({
@@ -224,7 +224,7 @@ router.get(
 // Assign status to an employee
 router.post('/assign-status', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to assign statuses' });
@@ -236,7 +236,7 @@ router.post('/assign-status', async (req: AuthenticatedRequest, res) => {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, validatedData.userId));
+      .where(eq(users.id, validatedData.user_id));
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -267,7 +267,7 @@ router.post('/assign-status', async (req: AuthenticatedRequest, res) => {
     const [newStatus] = await db
       .insert(employeeStatuses)
       .values({
-        userId: validatedData.userId,
+        user_id: validatedData.user_id,
         statusTypeId: validatedData.statusTypeId,
         startDate: new Date(validatedData.startDate),
         endDate: endDate,
@@ -289,7 +289,7 @@ router.post('/assign-status', async (req: AuthenticatedRequest, res) => {
 // Remove a status from an employee
 router.delete('/statuses/:id', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to remove statuses' });
@@ -322,15 +322,15 @@ router.delete('/statuses/:id', async (req: AuthenticatedRequest, res) => {
 // Batch add statuses for events like birthdays or work anniversaries
 router.post('/batch-assign', async (req: AuthenticatedRequest, res) => {
   try {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to batch assign statuses' });
     }
 
-    const { statusTypeId, userIds, startDate, endDate, notes } = req.body;
+    const { statusTypeId, user_ids, startDate, endDate, notes } = req.body;
 
-    if (!statusTypeId || !Array.isArray(userIds) || userIds.length === 0) {
+    if (!statusTypeId || !Array.isArray(user_ids) || user_ids.length === 0) {
       return res.status(400).json({ message: 'Invalid request data' });
     }
 
@@ -354,8 +354,8 @@ router.post('/batch-assign', async (req: AuthenticatedRequest, res) => {
     }
 
     // Create status assignments for all users
-    const statusValues = userIds.map((userId) => ({
-      userId,
+    const statusValues = user_ids.map((user_id) => ({
+      user_id,
       statusTypeId,
       startDate: new Date(startDate),
       endDate: calculatedEndDate,

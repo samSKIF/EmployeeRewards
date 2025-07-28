@@ -679,7 +679,7 @@ describe('CacheService', () => {
   describe('Integration Scenarios', () => {
     it('should handle session caching workflow', async () => {
       const sessionData = {
-        userId: 123,
+        user_id: 123,
         username: 'johndoe',
         permissions: ['read', 'write'],
         lastActivity: new Date().toISOString()

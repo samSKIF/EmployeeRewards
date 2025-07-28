@@ -45,7 +45,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer valid-token',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 1 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 1 });
       mockedStorage.getUser = jest.fn().mockResolvedValue(mockUser);
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
@@ -125,7 +125,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer valid-token',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 999 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 999 });
       mockedStorage.getUser = jest.fn().mockResolvedValue(undefined);
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
@@ -142,7 +142,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer valid-token',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 1 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 1 });
       mockedStorage.getUser = jest.fn().mockRejectedValue(new Error('Database error'));
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
@@ -183,7 +183,7 @@ describe('Auth Middleware', () => {
         authorization: 'bearer valid-token', // lowercase
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 1 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 1 });
       mockedStorage.getUser = jest.fn().mockResolvedValue(mockUser);
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
@@ -372,7 +372,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer admin-token',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 1 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 1 });
       mockedStorage.getUser = jest.fn().mockResolvedValue(mockAdmin);
 
       // First middleware: verifyToken
@@ -405,12 +405,12 @@ describe('Auth Middleware', () => {
   });
 
   describe('Security Edge Cases', () => {
-    it('should handle JWT with no userId claim', async () => {
+    it('should handle JWT with no user_id claim', async () => {
       mockRequest.headers = {
         authorization: 'Bearer token-without-userid',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({}); // No userId
+      mockedJwt.verify = jest.fn().mockReturnValue({}); // No user_id
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
 
@@ -420,12 +420,12 @@ describe('Auth Middleware', () => {
       });
     });
 
-    it('should handle JWT with invalid userId format', async () => {
+    it('should handle JWT with invalid user_id format', async () => {
       mockRequest.headers = {
         authorization: 'Bearer token-with-invalid-userid',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 'not-a-number' });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 'not-a-number' });
       mockedStorage.getUser = jest.fn().mockResolvedValue(undefined);
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);
@@ -460,7 +460,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer valid-token',
       };
 
-      mockedJwt.verify = jest.fn().mockReturnValue({ userId: 1 });
+      mockedJwt.verify = jest.fn().mockReturnValue({ user_id: 1 });
       mockedStorage.getUser = jest.fn().mockResolvedValue(deactivatedUser);
 
       await verifyToken(mockRequest as AuthRequest, mockResponse as Response, mockNext);

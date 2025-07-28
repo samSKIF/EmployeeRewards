@@ -70,23 +70,23 @@ describe('CacheService', () => {
 
   describe('invalidateUserCache', () => {
     it('should invalidate user-specific cache keys', async () => {
-      const userId = 123;
+      const user_id = 123;
       const orgId = 456;
 
-      await CacheService.invalidateUserCache(userId, orgId);
+      await CacheService.invalidateUserCache(user_id, orgId);
 
-      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER(userId));
-      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER_POINTS(userId));
+      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER(user_id));
+      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER_POINTS(user_id));
       expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USERS_LIST(orgId));
     });
 
     it('should invalidate user cache without org ID', async () => {
-      const userId = 123;
+      const user_id = 123;
 
-      await CacheService.invalidateUserCache(userId);
+      await CacheService.invalidateUserCache(user_id);
 
-      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER(userId));
-      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER_POINTS(userId));
+      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER(user_id));
+      expect(mockedRedisCache.del).toHaveBeenCalledWith(CacheService.KEYS.USER_POINTS(user_id));
       expect(mockedRedisCache.del).toHaveBeenCalledTimes(2);
     });
   });

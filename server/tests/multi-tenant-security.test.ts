@@ -62,7 +62,7 @@ describe('Multi-Tenant Security - Corporate Admin Isolation Tests', () => {
         // CRITICAL SECURITY CHECK: Corporate admin must have null organization_id
         if (user.role_type !== 'corporate_admin' || user.organization_id !== null) {
           console.log('SECURITY: Corporate admin access denied for user:', {
-            userId: user.id,
+            user_id: user.id,
             email: user.email,
             roleType: user.role_type,
             organizationId: user.organization_id
@@ -212,18 +212,18 @@ describe('Multi-Tenant Security - Corporate Admin Isolation Tests', () => {
         .select({
           id: users.id,
           email: users.email,
-          roleType: users.roleType,
-          organizationId: users.organizationId
+          roleType: users.role_type,
+          organizationId: users.organization_id
         })
         .from(users)
-        .where(eq(users.roleType, 'corporate_admin'));
+        .where(eq(users.role_type, 'corporate_admin'));
 
       expect(corporateAdmins.length).toBeGreaterThan(0);
       
       // Every corporate admin MUST have organization_id = null
       corporateAdmins.forEach(admin => {
-        expect(admin.organizationId).toBe(null);
-        expect(admin.roleType).toBe('corporate_admin');
+        expect(admin.organization_id).toBe(null);
+        expect(admin.role_type).toBe('corporate_admin');
         expect(['admin@thriviohr.com', 'admin@empulse.com']).toContain(admin.email);
       });
     });
@@ -234,12 +234,12 @@ describe('Multi-Tenant Security - Corporate Admin Isolation Tests', () => {
         .select({
           id: users.id,
           email: users.email,
-          organizationId: users.organizationId
+          organizationId: users.organization_id
         })
         .from(users)
         .where(
           and(
-            eq(users.roleType, 'corporate_admin'),
+            eq(users.role_type, 'corporate_admin'),
             // Check for any non-null organization_id
           )
         );
@@ -254,17 +254,17 @@ describe('Multi-Tenant Security - Corporate Admin Isolation Tests', () => {
         .select({
           id: users.id,
           email: users.email,
-          roleType: users.roleType,
-          organizationId: users.organizationId
+          roleType: users.role_type,
+          organizationId: users.organization_id
         })
         .from(users)
-        .where(eq(users.roleType, 'employee'));
+        .where(eq(users.role_type, 'employee'));
 
       // Sample a few regular users and verify they have organization_id
       const sampleUsers = regularUsers.slice(0, 5);
       sampleUsers.forEach(user => {
-        expect(user.organizationId).not.toBe(null);
-        expect(user.roleType).toBe('employee');
+        expect(user.organization_id).not.toBe(null);
+        expect(user.role_type).toBe('employee');
       });
     });
   });

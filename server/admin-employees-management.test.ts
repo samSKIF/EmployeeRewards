@@ -136,7 +136,7 @@ describe('Admin Employees Management Features', () => {
           .expect(200);
 
         expect(response.body.name).toBe('John Updated Smith');
-        expect(response.body.jobTitle).toBe('Lead Developer');
+        expect(response.body.job_title).toBe('Lead Developer');
         expect(mockStorage.updateUser).toHaveBeenCalledWith(1, expect.objectContaining({
           name: 'John Updated Smith',
           job_title: 'Lead Developer' // snake_case conversion
@@ -161,7 +161,7 @@ describe('Admin Employees Management Features', () => {
           })
           .expect(200);
 
-        expect(response.body.birthDate).toBe('1990-05-15');
+        expect(response.body.birth_date).toBe('1990-05-15');
         expect(mockStorage.updateUser).toHaveBeenCalledWith(1, expect.objectContaining({
           birth_date: '1990-05-15' // snake_case field mapping
         }));
@@ -172,7 +172,7 @@ describe('Admin Employees Management Features', () => {
           phoneNumber: '+1234567890',
           jobTitle: 'Senior Manager',
           hireDate: '2023-01-15',
-          managerEmail: 'manager@company.com',
+          manager_email: 'manager@company.com',
           avatarUrl: 'https://example.com/avatar.jpg'
         };
 
@@ -255,8 +255,8 @@ describe('Admin Employees Management Features', () => {
 
     describe('Bulk Operations', () => {
       it('should handle bulk status updates', async () => {
-        const userIds = [1, 2, 3];
-        const updatedUsers = userIds.map(id => ({
+        const user_ids = [1, 2, 3];
+        const updatedUsers = user_ids.map(id => ({
           id,
           name: `User ${id}`,
           status: 'inactive',
@@ -269,27 +269,27 @@ describe('Admin Employees Management Features', () => {
           .patch('/api/users/bulk')
           .set('Authorization', `Bearer ${authToken}`)
           .send({
-            userIds,
+            user_ids,
             updates: { status: 'inactive' }
           })
           .expect(200);
 
         expect(response.body.updatedCount).toBe(3);
-        expect(mockStorage.updateUsers).toHaveBeenCalledWith(userIds, { status: 'inactive' });
+        expect(mockStorage.updateUsers).toHaveBeenCalledWith(user_ids, { status: 'inactive' });
       });
 
       it('should handle bulk delete operations', async () => {
-        const userIds = [1, 2, 3];
+        const user_ids = [1, 2, 3];
         mockStorage.deleteUsers.mockResolvedValue(3);
 
         const response = await request(app)
           .delete('/api/users/bulk')
           .set('Authorization', `Bearer ${authToken}`)
-          .send({ userIds })
+          .send({ user_ids })
           .expect(200);
 
         expect(response.body.deletedCount).toBe(3);
-        expect(mockStorage.deleteUsers).toHaveBeenCalledWith(userIds);
+        expect(mockStorage.deleteUsers).toHaveBeenCalledWith(user_ids);
       });
     });
   });
@@ -547,7 +547,7 @@ describe('Admin Employees Management Features', () => {
   });
 
   describe('Profile Navigation Integration', () => {
-    describe('GET /api/profile/:userId - Profile Access', () => {
+    describe('GET /api/profile/:user_id - Profile Access', () => {
       it('should allow navigation to employee profiles within organization', async () => {
         const userProfile = {
           id: 1,
@@ -566,7 +566,7 @@ describe('Admin Employees Management Features', () => {
           .expect(200);
 
         expect(response.body.name).toBe('John Smith');
-        expect(response.body.organizationId).toBe(1);
+        expect(response.body.organization_id).toBe(1);
       });
 
       it('should enforce organization-based profile access', async () => {

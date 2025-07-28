@@ -588,7 +588,7 @@ describe('Spaces Routes', () => {
 
       const existingMembership = {
         spaceId: 1,
-        userId: 1,
+        user_id: 1,
       };
 
       mockedDb.select = jest.fn()
@@ -641,7 +641,7 @@ describe('Spaces Routes', () => {
 
       const existingMembership = {
         spaceId: 1,
-        userId: 1,
+        user_id: 1,
       };
 
       mockedDb.select = jest.fn()

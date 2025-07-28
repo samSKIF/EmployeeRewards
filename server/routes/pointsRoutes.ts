@@ -16,9 +16,9 @@ router.post(
   verifyAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { userId, amount, reason, description } = req.body;
+      const { user_id, amount, reason, description } = req.body;
 
-      if (!userId || !amount || !reason || !description) {
+      if (!user_id || !amount || !reason || !description) {
         return res.status(400).json({ message: 'Missing required fields' });
       }
 
@@ -26,7 +26,7 @@ router.post(
 
       // Award points to the user
       const transaction = await storage.earnPoints(
-        userId,
+        user_id,
         amount,
         reason,
         description,
@@ -34,7 +34,7 @@ router.post(
       );
 
       // Get updated balance
-      const balance = await storage.getUserBalance(userId);
+      const balance = await storage.getUserBalance(user_id);
 
       res.json({
         transaction,

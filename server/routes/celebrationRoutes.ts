@@ -36,10 +36,10 @@ router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
       .from(users)
       .where(
         and(
-          eq(users.organizationId, companyId),
-          sql`${users.birthDate} IS NOT NULL`,
-          sql`EXTRACT(MONTH FROM ${users.birthDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-          sql`EXTRACT(DAY FROM ${users.birthDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+          eq(users.organization_id, companyId),
+          sql`${users.birth_date} IS NOT NULL`,
+          sql`EXTRACT(MONTH FROM ${users.birth_date}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+          sql`EXTRACT(DAY FROM ${users.birth_date}) = EXTRACT(DAY FROM CURRENT_DATE)`
         )
       );
 
@@ -49,10 +49,10 @@ router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
       .from(users)
       .where(
         and(
-          eq(users.organizationId, companyId),
-          sql`${users.hireDate} IS NOT NULL`,
-          sql`EXTRACT(MONTH FROM ${users.hireDate}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
-          sql`EXTRACT(DAY FROM ${users.hireDate}) = EXTRACT(DAY FROM CURRENT_DATE)`
+          eq(users.organization_id, companyId),
+          sql`${users.hire_date} IS NOT NULL`,
+          sql`EXTRACT(MONTH FROM ${users.hire_date}) = EXTRACT(MONTH FROM CURRENT_DATE)`,
+          sql`EXTRACT(DAY FROM ${users.hire_date}) = EXTRACT(DAY FROM CURRENT_DATE)`
         )
       );
 
@@ -68,12 +68,12 @@ router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
           id: employee.id,
           name: employee.name,
           surname: employee.surname,
-          avatarUrl: employee.avatarUrl,
+          avatarUrl: employee.avatar_url,
           department: employee.department,
           location: employee.location,
-          birthDate: employee.birthDate,
-          hireDate: employee.hireDate,
-          jobTitle: employee.jobTitle,
+          birthDate: employee.birth_date,
+          hireDate: employee.hire_date,
+          jobTitle: employee.job_title,
         },
         type: 'birthday',
         date: todayDate.toISOString().split('T')[0],
@@ -81,8 +81,8 @@ router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
         hasCommented: false,
       })),
       ...anniversaryUsers.map((employee) => {
-        const years = employee.hireDate
-          ? new Date().getFullYear() - new Date(employee.hireDate).getFullYear()
+        const years = employee.hire_date
+          ? new Date().getFullYear() - new Date(employee.hire_date).getFullYear()
           : 0;
         return {
           id: employee.id,
@@ -90,12 +90,12 @@ router.get('/today', verifyToken, async (req: AuthenticatedRequest, res) => {
             id: employee.id,
             name: employee.name,
             surname: employee.surname,
-            avatarUrl: employee.avatarUrl,
+            avatarUrl: employee.avatar_url,
             department: employee.department,
             location: employee.location,
-            birthDate: employee.birthDate,
-            hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle,
+            birthDate: employee.birth_date,
+            hireDate: employee.hire_date,
+            jobTitle: employee.job_title,
           },
           type: 'work_anniversary',
           date: todayDate.toISOString().split('T')[0],
@@ -122,7 +122,7 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const organizationId = currentUser.organizationId;
+    const organizationId = currentUser.organization_id;
     if (!organizationId) {
       return res.json([]);
     }
@@ -142,10 +142,10 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
         .from(users)
         .where(
           and(
-            eq(users.organizationId, organizationId),
-            sql`${users.birthDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
-            sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`
+            eq(users.organization_id, organizationId),
+            sql`${users.birth_date} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.birth_date}) = ${month}`,
+            sql`EXTRACT(DAY FROM ${users.birth_date}) = ${day}`
           )
         );
 
@@ -155,10 +155,10 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
         .from(users)
         .where(
           and(
-            eq(users.organizationId, organizationId),
-            sql`${users.hireDate} IS NOT NULL`,
-            sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
-            sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`
+            eq(users.organization_id, organizationId),
+            sql`${users.hire_date} IS NOT NULL`,
+            sql`EXTRACT(MONTH FROM ${users.hire_date}) = ${month}`,
+            sql`EXTRACT(DAY FROM ${users.hire_date}) = ${day}`
           )
         );
 
@@ -170,12 +170,12 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
             id: employee.id,
             name: employee.name,
             surname: employee.surname,
-            avatarUrl: employee.avatarUrl,
+            avatarUrl: employee.avatar_url,
             department: employee.department,
             location: employee.location,
-            birthDate: employee.birthDate,
-            hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle,
+            birthDate: employee.birth_date,
+            hireDate: employee.hire_date,
+            jobTitle: employee.job_title,
           },
           type: 'birthday',
           date: targetDate.toISOString().split('T')[0],
@@ -187,9 +187,9 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
       // Add anniversary celebrations
       celebrations.push(
         ...anniversaryUsers.map((employee) => {
-          const years = employee.hireDate
+          const years = employee.hire_date
             ? targetDate.getFullYear() -
-              new Date(employee.hireDate).getFullYear()
+              new Date(employee.hire_date).getFullYear()
             : 0;
           return {
             id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
@@ -197,12 +197,12 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
               id: employee.id,
               name: employee.name,
               surname: employee.surname,
-              avatarUrl: employee.avatarUrl,
+              avatarUrl: employee.avatar_url,
               department: employee.department,
               location: employee.location,
-              birthDate: employee.birthDate,
-              hireDate: employee.hireDate,
-              jobTitle: employee.jobTitle,
+              birthDate: employee.birth_date,
+              hireDate: employee.hire_date,
+              jobTitle: employee.job_title,
             },
             type: 'work_anniversary',
             date: targetDate.toISOString().split('T')[0],
@@ -230,7 +230,7 @@ router.get('/upcoming', verifyToken, async (req: AuthenticatedRequest, res) => {
 router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { department, location } = req.query;
-    const organizationId = req.user?.organizationId;
+    const organizationId = req.user?.organization_id;
 
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
@@ -253,10 +253,10 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
 
       // Build birthday query conditions
       const birthdayConditions = [
-        sql`${users.birthDate} IS NOT NULL`,
-        sql`EXTRACT(MONTH FROM ${users.birthDate}) = ${month}`,
-        sql`EXTRACT(DAY FROM ${users.birthDate}) = ${day}`,
-        eq(users.organizationId, organizationId),
+        sql`${users.birth_date} IS NOT NULL`,
+        sql`EXTRACT(MONTH FROM ${users.birth_date}) = ${month}`,
+        sql`EXTRACT(DAY FROM ${users.birth_date}) = ${day}`,
+        eq(users.organization_id, organizationId),
       ];
 
       // Add department filter if specified
@@ -277,10 +277,10 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
 
       // Build anniversary query conditions
       const anniversaryConditions = [
-        sql`${users.hireDate} IS NOT NULL`,
-        sql`EXTRACT(MONTH FROM ${users.hireDate}) = ${month}`,
-        sql`EXTRACT(DAY FROM ${users.hireDate}) = ${day}`,
-        eq(users.organizationId, organizationId),
+        sql`${users.hire_date} IS NOT NULL`,
+        sql`EXTRACT(MONTH FROM ${users.hire_date}) = ${month}`,
+        sql`EXTRACT(DAY FROM ${users.hire_date}) = ${day}`,
+        eq(users.organization_id, organizationId),
       ];
 
       // Add department filter if specified
@@ -307,12 +307,12 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
             id: employee.id,
             name: employee.name,
             surname: employee.surname,
-            avatarUrl: employee.avatarUrl,
+            avatarUrl: employee.avatar_url,
             department: employee.department,
             location: employee.location,
-            birthDate: employee.birthDate,
-            hireDate: employee.hireDate,
-            jobTitle: employee.jobTitle,
+            birthDate: employee.birth_date,
+            hireDate: employee.hire_date,
+            jobTitle: employee.job_title,
           },
           type: 'birthday',
           date: targetDate.toISOString().split('T')[0],
@@ -324,9 +324,9 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
       // Add anniversary celebrations
       celebrations.push(
         ...anniversaryUsers.map((employee) => {
-          const years = employee.hireDate
+          const years = employee.hire_date
             ? targetDate.getFullYear() -
-              new Date(employee.hireDate).getFullYear()
+              new Date(employee.hire_date).getFullYear()
             : 0;
           return {
             id: `anniversary-${employee.id}-${targetDate.toISOString().split('T')[0]}`,
@@ -334,12 +334,12 @@ router.get('/extended', verifyToken, async (req: AuthenticatedRequest, res) => {
               id: employee.id,
               name: employee.name,
               surname: employee.surname,
-              avatarUrl: employee.avatarUrl,
+              avatarUrl: employee.avatar_url,
               department: employee.department,
               location: employee.location,
-              birthDate: employee.birthDate,
-              hireDate: employee.hireDate,
-              jobTitle: employee.jobTitle,
+              birthDate: employee.birth_date,
+              hireDate: employee.hire_date,
+              jobTitle: employee.job_title,
             },
             type: 'work_anniversary',
             date: targetDate.toISOString().split('T')[0],

@@ -50,7 +50,7 @@ describe('Reports Routes', () => {
         activeUsers: 85,
         engagementRate: 85,
         topEngagedUsers: [
-          { userId: 1, name: 'User 1', score: 95 },
+          { user_id: 1, name: 'User 1', score: 95 },
         ],
         departmentBreakdown: [
           { department: 'Engineering', rate: 90 },
@@ -77,10 +77,10 @@ describe('Reports Routes', () => {
         totalRecognitions: 500,
         totalPointsAwarded: 25000,
         topRecognizers: [
-          { userId: 1, name: 'Manager 1', count: 50 },
+          { user_id: 1, name: 'Manager 1', count: 50 },
         ],
         topRecipients: [
-          { userId: 2, name: 'Employee 1', count: 30 },
+          { user_id: 2, name: 'Employee 1', count: 30 },
         ],
         categoryBreakdown: [
           { category: 'teamwork', count: 150, percentage: 30 },
@@ -146,7 +146,7 @@ describe('Reports Routes', () => {
         netFlow: 20000,
         averageBalance: 250,
         topEarners: [
-          { userId: 1, name: 'Top Performer', points: 2000 },
+          { user_id: 1, name: 'Top Performer', points: 2000 },
         ],
         redemptionBreakdown: [
           { category: 'food', amount: 10000, percentage: 33.3 },

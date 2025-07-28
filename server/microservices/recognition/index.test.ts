@@ -269,14 +269,14 @@ describe('Recognition Microservice', () => {
     it('should return points leaderboard for organization', async () => {
       const mockLeaderboard = [
         {
-          userId: 1,
+          user_id: 1,
           name: 'Top User',
           totalPoints: 500,
           recognitionCount: 10,
           avatarUrl: 'avatar1.jpg',
         },
         {
-          userId: 2,
+          user_id: 2,
           name: 'Second User',
           totalPoints: 350,
           recognitionCount: 7,

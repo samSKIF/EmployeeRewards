@@ -108,7 +108,7 @@ describe('Posts Routes', () => {
       const createdPost = {
         id: 10,
         content: 'This is a new post!',
-        userId: 1,
+        user_id: 1,
         organizationId: 1,
         createdAt: new Date(),
       };

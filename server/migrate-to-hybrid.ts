@@ -42,8 +42,8 @@ async function migrateToHybridDatabase() {
           subscriptionTier: org.subscriptionTier || 'basic',
           maxEmployees: org.maxEmployees || 50,
           isActive: org.isActive ?? true,
-          createdAt: org.createdAt,
-          updatedAt: org.updatedAt,
+          createdAt: org.created_at,
+          updatedAt: org.updated_at,
         })
         .onDuplicateKeyUpdate({
           name: org.name,
@@ -66,19 +66,19 @@ async function migrateToHybridDatabase() {
           username: user.username,
           email: user.email,
           name: user.name,
-          jobTitle: user.jobTitle,
+          jobTitle: user.job_title,
           department: user.department,
           location: user.location,
-          phoneNumber: user.phoneNumber,
+          phoneNumber: user.phone_number,
           birthday: user.birthday,
-          hireDate: user.hireDate,
-          organizationId: user.organizationId,
-          managerId: user.managerId,
-          isAdmin: user.isAdmin ?? false,
+          hireDate: user.hire_date,
+          organizationId: user.organization_id,
+          manager_id: user.manager_id,
+          isAdmin: user.is_admin ?? false,
           isActive: user.isActive ?? true,
           points: user.points || 0,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at,
         })
         .onDuplicateKeyUpdate({
           name: user.name,
@@ -97,7 +97,7 @@ async function migrateToHybridDatabase() {
       const mongoPost: SocialPost = {
         authorId: post.authorId,
         authorName: post.authorName || 'Unknown',
-        organizationId: post.organizationId || 1,
+        organizationId: post.organization_id || 1,
         content: post.content,
         imageUrl: post.imageUrl || undefined,
         type: (post.type as any) || 'text',
@@ -105,8 +105,8 @@ async function migrateToHybridDatabase() {
         reactions: [], // Will migrate reactions separately if needed
         commentsCount: 0, // Will update after migrating comments
         sharesCount: 0,
-        createdAt: post.createdAt || new Date(),
-        updatedAt: post.updatedAt || new Date(),
+        createdAt: post.created_at || new Date(),
+        updatedAt: post.updated_at || new Date(),
         isDeleted: post.isDeleted || false,
         tags: [],
         mentions: [],
@@ -131,7 +131,7 @@ async function migrateToHybridDatabase() {
         .createIndex({ postId: 1, createdAt: -1 }),
       mongodb
         .collection(COLLECTIONS.NOTIFICATIONS)
-        .createIndex({ userId: 1, createdAt: -1 }),
+        .createIndex({ user_id: 1, createdAt: -1 }),
       mongodb
         .collection(COLLECTIONS.NOTIFICATIONS)
         .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),

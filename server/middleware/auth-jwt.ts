@@ -16,7 +16,7 @@ export interface AuthenticatedRequest extends Request {
 // Generate JWT token
 export const generateToken = (user: Omit<User, 'password'>): string => {
   return jwt.sign(
-    { id: user.id, email: user.email, isAdmin: user.isAdmin },
+    { id: user.id, email: user.email, isAdmin: user.is_admin },
     JWT_SECRET,
     { expiresIn: '1d' }
   );

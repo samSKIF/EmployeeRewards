@@ -133,7 +133,7 @@ describe('Celebration Routes', () => {
   describe('POST /api/celebrations/post', () => {
     it('should create celebration post', async () => {
       const celebrationData = {
-        userId: 10,
+        user_id: 10,
         type: 'birthday',
         message: 'Happy Birthday!',
       };
@@ -163,7 +163,7 @@ describe('Celebration Routes', () => {
         .post('/api/celebrations/post')
         .set('Authorization', 'Bearer test-token')
         .send({
-          userId: 10,
+          user_id: 10,
           // Missing type
         });
 

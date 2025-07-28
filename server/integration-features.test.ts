@@ -72,7 +72,7 @@ describe('Integration Features - Admin Employee Management', () => {
         })
         .expect(200);
 
-      expect(updateResponse.body.birthDate).toBe('1995-06-20');
+      expect(updateResponse.body.birth_date).toBe('1995-06-20');
       expect(mockStorage.updateUser).toHaveBeenCalledWith(100, expect.objectContaining({
         birth_date: '1995-06-20' // Verify snake_case field mapping
       }));
@@ -195,7 +195,7 @@ describe('Integration Features - Admin Employee Management', () => {
         .expect(200);
 
       expect(employeesResponse.body.users).toHaveLength(1);
-      expect(employeesResponse.body.users[0].organizationId).toBe(1);
+      expect(employeesResponse.body.users[0].organization_id).toBe(1);
       expect(mockStorage.getUsers).toHaveBeenCalledWith(1, expect.any(Object));
 
       // Test 2: Cross-organization profile access should be blocked
@@ -226,7 +226,7 @@ describe('Integration Features - Admin Employee Management', () => {
         .expect(200);
 
       expect(spacesResponse.body).toHaveLength(1);
-      expect(spacesResponse.body[0].organizationId).toBe(1);
+      expect(spacesResponse.body[0].organization_id).toBe(1);
     });
   });
 
@@ -238,7 +238,7 @@ describe('Integration Features - Admin Employee Management', () => {
         jobTitle: 'Senior Engineer',
         hireDate: '2025-01-15',
         birthDate: '1990-12-25',
-        managerEmail: 'manager@company.com',
+        manager_email: 'manager@company.com',
         avatarUrl: 'https://example.com/avatar.jpg'
       };
 
@@ -314,7 +314,7 @@ describe('Integration Features - Admin Employee Management', () => {
         .patch('/api/users/bulk')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          userIds: selectedEmployees,
+          user_ids: selectedEmployees,
           updates: bulkUpdateData
         })
         .expect(200);
@@ -329,7 +329,7 @@ describe('Integration Features - Admin Employee Management', () => {
         .delete('/api/users/bulk')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          userIds: selectedEmployees
+          user_ids: selectedEmployees
         })
         .expect(200);
 
@@ -347,7 +347,7 @@ describe('Integration Features - Admin Employee Management', () => {
         .patch('/api/users/bulk')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          userIds: crossOrgEmployees,
+          user_ids: crossOrgEmployees,
           updates: { status: 'inactive' }
         })
         .expect(403);

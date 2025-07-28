@@ -521,7 +521,7 @@ describe('Recognition & Rewards Module Toggle - Complete Test Suite', () => {
       });
       
       nonAdminApp.post('/api/management/organizations/:id/features', (req, res) => {
-        if (!req.user.isAdmin) {
+        if (!req.user.is_admin) {
           return res.status(403).json({ error: 'Admin access required' });
         }
         res.json({ success: true });

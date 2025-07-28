@@ -24,9 +24,9 @@ router.post(
 
       // Check if user is admin
       if (
-        !req.user.isAdmin &&
-        req.user.roleType !== 'corporate_admin' &&
-        req.user.roleType !== 'client_admin'
+        !req.user.is_admin &&
+        req.user.role_type !== 'corporate_admin' &&
+        req.user.role_type !== 'client_admin'
       ) {
         return res.status(403).json({ message: 'Admin access required' });
       }
@@ -66,20 +66,20 @@ router.post(
 
       // Check if user is admin
       if (
-        !req.user.isAdmin &&
-        req.user.roleType !== 'corporate_admin' &&
-        req.user.roleType !== 'client_admin'
+        !req.user.is_admin &&
+        req.user.role_type !== 'corporate_admin' &&
+        req.user.role_type !== 'client_admin'
       ) {
         return res.status(403).json({ message: 'Admin access required' });
       }
 
-      const { userId, type } = req.body;
+      const { user_id, type } = req.body;
 
-      if (!userId || !type) {
+      if (!user_id || !type) {
         return res
           .status(400)
           .json({
-            message: 'userId and type (birthday/work_anniversary) are required',
+            message: 'user_id and type (birthday/work_anniversary) are required',
           });
       }
 
@@ -90,20 +90,20 @@ router.post(
       }
 
       logger.info(
-        `Manual celebration post generation for user ${userId} (${type}) triggered by admin: ${req.user.email}`
+        `Manual celebration post generation for user ${user_id} (${type}) triggered by admin: ${req.user.email}`
       );
 
       const success =
         await celebrationPostService.generateCelebrationPostsForUser(
-          parseInt(userId),
+          parseInt(user_id),
           type
         );
 
       if (success) {
         res.json({
-          message: `Celebration post created successfully for user ${userId}`,
+          message: `Celebration post created successfully for user ${user_id}`,
           type,
-          userId: parseInt(userId),
+          user_id: parseInt(user_id),
         });
       } else {
         res.status(500).json({ message: 'Failed to create celebration post' });

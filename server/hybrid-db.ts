@@ -82,7 +82,7 @@ export class HybridDatabaseService {
       .select()
       .from(users)
       .where(
-        and(eq(users.organizationId, organizationId), eq(users.isActive, true))
+        and(eq(users.organization_id, organizationId), eq(users.isActive, true))
       )
       .orderBy(users.name);
 
@@ -96,14 +96,14 @@ export class HybridDatabaseService {
 
     // Log audit event
     await auditLogger.logUserAction(
-      data.userId,
+      data.user_id,
       'leave_request_created',
       { leaveRequestId: result.insertId, ...data },
-      data.organizationId
+      data.organization_id
     );
 
     // Invalidate cache
-    await redisCache.del(`user_leave_requests:${data.userId}`);
+    await redisCache.del(`user_leave_requests:${data.user_id}`);
 
     return result;
   }
@@ -131,11 +131,11 @@ export class HybridDatabaseService {
       postData.authorId,
       'post_created',
       { postId: result.insertedId.toString(), content: postData.content },
-      postData.organizationId
+      postData.organization_id
     );
 
     // Invalidate feed cache
-    await redisCache.del(`feed:${postData.organizationId}`);
+    await redisCache.del(`feed:${postData.organization_id}`);
     await redisCache.del(`user_posts:${postData.authorId}`);
 
     return { ...post, _id: result.insertedId };
@@ -197,7 +197,7 @@ export class HybridDatabaseService {
         commentId: result.insertedId.toString(),
         postId: commentData.postId.toString(),
       },
-      commentData.organizationId
+      commentData.organization_id
     );
 
     // Invalidate cache
@@ -208,7 +208,7 @@ export class HybridDatabaseService {
 
   public async addReactionToPost(
     postId: string,
-    userId: number,
+    user_id: number,
     reactionType: string,
     organizationId: number
   ): Promise<void> {
@@ -217,7 +217,7 @@ export class HybridDatabaseService {
     // Remove existing reaction from same user
     await this.mongodb
       .collection(COLLECTIONS.POSTS)
-      .updateOne({ _id: objectId }, { $pull: { reactions: { userId } } });
+      .updateOne({ _id: objectId }, { $pull: { reactions: { user_id } } });
 
     // Add new reaction
     await this.mongodb.collection(COLLECTIONS.POSTS).updateOne(
@@ -225,7 +225,7 @@ export class HybridDatabaseService {
       {
         $push: {
           reactions: {
-            userId,
+            user_id,
             type: reactionType,
             createdAt: new Date(),
           },
@@ -235,7 +235,7 @@ export class HybridDatabaseService {
 
     // Log audit event
     await auditLogger.logUserAction(
-      userId,
+      user_id,
       'reaction_added',
       { postId, reactionType },
       organizationId
@@ -259,14 +259,14 @@ export class HybridDatabaseService {
       .insertOne(notification);
 
     // Invalidate user notifications cache
-    await redisCache.del(`notifications:${notificationData.userId}`);
+    await redisCache.del(`notifications:${notificationData.user_id}`);
   }
 
   public async getUserNotifications(
-    userId: number,
+    user_id: number,
     limit = 20
   ): Promise<Notification[]> {
-    const cacheKey = `notifications:${userId}`;
+    const cacheKey = `notifications:${user_id}`;
 
     const cached = await redisCache.get(cacheKey);
     if (cached) {
@@ -275,7 +275,7 @@ export class HybridDatabaseService {
 
     const notifications = await this.mongodb
       .collection(COLLECTIONS.NOTIFICATIONS)
-      .find({ userId })
+      .find({ user_id })
       .sort({ createdAt: -1 })
       .limit(limit)
       .toArray();
@@ -286,8 +286,8 @@ export class HybridDatabaseService {
   }
 
   // Hybrid operations (combining MySQL and MongoDB)
-  public async getUserDashboardData(userId: number): Promise<any> {
-    const cacheKey = `dashboard:${userId}`;
+  public async getUserDashboardData(user_id: number): Promise<any> {
+    const cacheKey = `dashboard:${user_id}`;
 
     const cached = await redisCache.get(cacheKey);
     if (cached) {
@@ -295,13 +295,13 @@ export class HybridDatabaseService {
     }
 
     // Get user data from MySQL
-    const user = await this.getUserById(userId);
+    const user = await this.getUserById(user_id);
     if (!user) throw new Error('User not found');
 
     // Get recent activities from MongoDB
     const recentPosts = await this.mongodb
       .collection(COLLECTIONS.POSTS)
-      .find({ authorId: userId, isDeleted: false })
+      .find({ authorId: user_id, isDeleted: false })
       .sort({ createdAt: -1 })
       .limit(5)
       .toArray();
@@ -309,14 +309,14 @@ export class HybridDatabaseService {
     // Get unread notifications count
     const unreadNotifications = await this.mongodb
       .collection(COLLECTIONS.NOTIFICATIONS)
-      .countDocuments({ userId, isRead: false });
+      .countDocuments({ user_id, isRead: false });
 
     // Get recent point transactions from MySQL
     const recentTransactions = await mysqlDb
       .select()
       .from(pointTransactions)
-      .where(eq(pointTransactions.userId, userId))
-      .orderBy(desc(pointTransactions.createdAt))
+      .where(eq(pointTransactions.user_id, user_id))
+      .orderBy(desc(pointTransactions.created_at))
       .limit(10);
 
     const dashboardData = {
@@ -337,12 +337,12 @@ export class HybridDatabaseService {
   }
 
   // Cache invalidation utilities
-  public async invalidateUserCache(userId: number): Promise<void> {
+  public async invalidateUserCache(user_id: number): Promise<void> {
     await Promise.all([
-      redisCache.del(`user:${userId}`),
-      redisCache.del(`dashboard:${userId}`),
-      redisCache.del(`user_posts:${userId}`),
-      redisCache.del(`notifications:${userId}`),
+      redisCache.del(`user:${user_id}`),
+      redisCache.del(`dashboard:${user_id}`),
+      redisCache.del(`user_posts:${user_id}`),
+      redisCache.del(`notifications:${user_id}`),
     ]);
   }
 

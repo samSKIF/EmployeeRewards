@@ -20,13 +20,13 @@ router.get('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     logger.debug(
       `/api/users/me: Returning data for user ${req.user.id} (${req.user.name}, ${req.user.email})`
     );
-    logger.debug(`User isAdmin value: ${req.user.isAdmin}`);
+    logger.debug(`User isAdmin value: ${req.user.is_admin}`);
 
     // Update lastSeenAt timestamp for ongoing activity tracking
     try {
       await db
         .update(users)
-        .set({ lastSeenAt: new Date() })
+        .set({ last_seen_at: new Date() })
         .where(eq(users.id, req.user.id));
     } catch (error) {
       logger.warn('Failed to update lastSeenAt:', error);
@@ -48,11 +48,11 @@ router.get('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     // Combine fresh user data with balance, ensuring isAdmin is explicitly set
     const userWithBalance = {
       ...freshUser,
-      isAdmin: freshUser.isAdmin === true, // Ensure boolean false for non-admins
+      isAdmin: freshUser.is_admin === true, // Ensure boolean false for non-admins
       balance,
     };
 
-    logger.debug(`Final user object isAdmin: ${userWithBalance.isAdmin}`);
+    logger.debug(`Final user object isAdmin: ${userWithBalance.is_admin}`);
     res.json(userWithBalance);
   } catch (error: any) {
     logger.error('Error getting user data:', error);
@@ -81,13 +81,13 @@ router.patch('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     // Build update object with only provided fields
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
-    if (title !== undefined) updateData.jobTitle = title;
+    if (title !== undefined) updateData.job_title = title;
     if (department !== undefined) updateData.department = department;
     if (location !== undefined) updateData.location = location;
     if (responsibilities !== undefined)
       updateData.responsibilities = responsibilities;
     if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
-    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
+    if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl;
 
     // Update user in database
     const [updatedUser] = await db
@@ -210,7 +210,7 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
 
     const { department, location, search, limit = 50, offset = 0 } = req.query;
 
-    const organizationId = req.user.organizationId;
+    const organizationId = req.user.organization_id;
 
     const userCount = await storage.getUserCount(organizationId);
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
@@ -260,14 +260,14 @@ router.get(
       // Query the departments table directly (no caching for now)
       const departmentRows = await db.execute(sql`
       SELECT name FROM departments 
-      WHERE organization_id = ${req.user.organizationId || 1} 
+      WHERE organization_id = ${req.user.organization_id || 1} 
       ORDER BY name
     `);
 
       const departments = departmentRows.rows.map((row: any) => row.name);
 
       logger.info(
-        `Returning ${departments.length} departments for org ${req.user.organizationId}:`,
+        `Returning ${departments.length} departments for org ${req.user.organization_id}:`,
         departments
       );
       res.json(departments);
@@ -293,14 +293,14 @@ router.get(
       // Query the locations table directly (no caching for now)
       const locationRows = await db.execute(sql`
       SELECT name FROM locations 
-      WHERE organization_id = ${req.user.organizationId || 1} 
+      WHERE organization_id = ${req.user.organization_id || 1} 
       ORDER BY name
     `);
 
       const locations = locationRows.rows.map((row: any) => row.name);
 
       logger.info(
-        `Returning ${locations.length} locations for org ${req.user.organizationId}:`,
+        `Returning ${locations.length} locations for org ${req.user.organization_id}:`,
         locations
       );
       res.json(locations);
@@ -335,7 +335,7 @@ router.post(
           .where(
             and(
               eq(users.email, email),
-              eq(users.organizationId, req.user.organizationId)
+              eq(users.organization_id, req.user.organization_id)
             )
           );
         emailExists = existingEmail.length > 0;
@@ -350,7 +350,7 @@ router.post(
             and(
               eq(users.name, name),
               eq(users.surname, surname),
-              eq(users.organizationId, req.user.organizationId)
+              eq(users.organization_id, req.user.organization_id)
             )
           );
         nameExists = existingName.length > 0;
@@ -374,7 +374,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     }
 
     // Only admins can create employees
-    if (!req.user.isAdmin) {
+    if (!req.user.is_admin) {
       return res
         .status(403)
         .json({ message: 'Only administrators can create employees' });
@@ -389,7 +389,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       jobTitle,
       department,
       location,
-      managerEmail,
+      manager_email,
       sex,
       nationality,
       birthDate,
@@ -414,7 +414,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       .where(
         and(
           eq(users.email, email),
-          eq(users.organizationId, req.user.organizationId)
+          eq(users.organization_id, req.user.organization_id)
         )
       );
 
@@ -434,7 +434,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       .where(
         and(
           eq(users.username, username),
-          eq(users.organizationId, req.user.organizationId)
+          eq(users.organization_id, req.user.organization_id)
         )
       );
 
@@ -457,7 +457,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
         jobTitle,
         department,
         location,
-        managerEmail,
+        manager_email,
         sex,
         nationality,
         birthDate: birthDate ? new Date(birthDate) : null,
@@ -470,7 +470,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
         adminScope,
         allowedSites: JSON.stringify(allowedSites),
         allowedDepartments: JSON.stringify(allowedDepartments),
-        organizationId: req.user.organizationId,
+        organizationId: req.user.organization_id,
         createdBy: req.user.id,
         createdAt: new Date(),
       })
@@ -498,8 +498,8 @@ router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const userId = parseInt(req.params.id);
-    if (isNaN(userId)) {
+    const user_id = parseInt(req.params.id);
+    if (isNaN(user_id)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
@@ -507,14 +507,14 @@ router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
     const [targetUser] = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, user_id));
 
     if (!targetUser) {
       return res.status(404).json({ message: 'Team member not found' });
     }
 
     // Ensure user belongs to same organization (multi-tenant security)
-    if (targetUser.organizationId !== req.user.organizationId) {
+    if (targetUser.organization_id !== req.user.organization_id) {
       return res.status(404).json({ message: 'Team member not found' });
     }
 
@@ -524,22 +524,22 @@ router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
       name: targetUser.name,
       surname: targetUser.surname,
       email: targetUser.email,
-      jobTitle: targetUser.jobTitle,
+      jobTitle: targetUser.job_title,
       department: targetUser.department,
       location: targetUser.location,
-      avatarUrl: targetUser.avatarUrl,
+      avatarUrl: targetUser.avatar_url,
       responsibilities: targetUser.responsibilities,
       aboutMe: targetUser.aboutMe,
-      birthDate: targetUser.birthDate,
-      hireDate: targetUser.hireDate,
-      phoneNumber: targetUser.phoneNumber,
+      birthDate: targetUser.birth_date,
+      hireDate: targetUser.hire_date,
+      phoneNumber: targetUser.phone_number,
       nationality: targetUser.nationality,
       sex: targetUser.sex,
-      coverPhotoUrl: targetUser.coverPhotoUrl,
+      coverPhotoUrl: targetUser.cover_photo_url,
     };
 
     logger.debug(
-      `Returning public profile for user ${userId} (${targetUser.name})`
+      `Returning public profile for user ${user_id} (${targetUser.name})`
     );
     res.json(publicProfile);
   } catch (error: any) {

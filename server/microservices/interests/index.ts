@@ -343,7 +343,7 @@ router.get('/admin/interests', async (req: AuthenticatedRequest, res) => {
   try {
     console.log('Interests microservice: Handling admin interests lookup');
     // Check if user is admin
-    if (!req.user?.isAdmin) {
+    if (!req.user?.is_admin) {
       return res
         .status(403)
         .json({ message: 'Not authorized to access admin resources' });
@@ -398,7 +398,7 @@ router.post(
     try {
       console.log('Interests microservice: Handling create interest');
       // Check if user is admin
-      if (!req.user?.isAdmin) {
+      if (!req.user?.is_admin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to create interests' });
@@ -447,7 +447,7 @@ router.patch(
     try {
       console.log('Interests microservice: Handling update interest');
       // Check if user is admin
-      if (!req.user?.isAdmin) {
+      if (!req.user?.is_admin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to update interests' });
@@ -495,7 +495,7 @@ router.delete(
     try {
       console.log('Interests microservice: Handling delete interest');
       // Check if user is admin
-      if (!req.user?.isAdmin) {
+      if (!req.user?.is_admin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to delete interests' });
@@ -540,7 +540,7 @@ router.post(
     try {
       console.log('Interests microservice: Handling merge interests');
       // Check if user is admin
-      if (!req.user?.isAdmin) {
+      if (!req.user?.is_admin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to merge interests' });
@@ -585,19 +585,19 @@ router.post(
 // Get interests with member counts for the current user's organization
 router.get('/with-counts', async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user!.id;
+    const user_id = req.user!.id;
 
     // Get user's organization
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users.id, user_id))
       .limit(1);
     if (!user[0]) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const organizationId = user[0].organizationId;
+    const organizationId = user[0].organization_id;
     if (!organizationId) {
       return res
         .status(400)
@@ -627,7 +627,7 @@ router.get('/with-counts', async (req: AuthenticatedRequest, res) => {
       LEFT JOIN employee_interests ui ON ui.interest_id = i.id AND ui.employee_id = $2
       ORDER BY i.category, i.label
     `,
-      [organizationId, userId]
+      [organizationId, user_id]
     );
 
     res.json(interestsWithCounts.rows);
@@ -640,20 +640,20 @@ router.get('/with-counts', async (req: AuthenticatedRequest, res) => {
 // Get or create interest group for a specific interest
 router.post('/groups/:interestId', async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user!.id;
+    const user_id = req.user!.id;
     const interestId = parseInt(req.params.interestId);
 
     // Get user's organization
     const user = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users.id, user_id))
       .limit(1);
     if (!user[0]) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const organizationId = user[0].organizationId;
+    const organizationId = user[0].organization_id;
     if (!organizationId) {
       return res
         .status(400)
@@ -708,7 +708,7 @@ router.post('/groups/:interestId', async (req: AuthenticatedRequest, res) => {
       SELECT * FROM interest_group_members 
       WHERE group_id = $1 AND user_id = $2 AND is_active = true
     `,
-      [groupId, userId]
+      [groupId, user_id]
     );
 
     if (membership.rows.length === 0) {
@@ -718,7 +718,7 @@ router.post('/groups/:interestId', async (req: AuthenticatedRequest, res) => {
         INSERT INTO interest_group_members (group_id, user_id, is_active)
         VALUES ($1, $2, true)
       `,
-        [groupId, userId]
+        [groupId, user_id]
       );
 
       // Update member count
@@ -762,7 +762,7 @@ router.get(
   async (req: AuthenticatedRequest, res) => {
     try {
       const groupId = parseInt(req.params.groupId);
-      const userId = req.user!.id;
+      const user_id = req.user!.id;
 
       // Check if user is a member
       const membership = await pool.query(
@@ -770,7 +770,7 @@ router.get(
       SELECT * FROM interest_group_members 
       WHERE group_id = $1 AND user_id = $2 AND is_active = true
     `,
-        [groupId, userId]
+        [groupId, user_id]
       );
 
       if (membership.rows.length === 0) {
@@ -861,7 +861,7 @@ router.post(
   async (req: AuthenticatedRequest, res) => {
     try {
       const groupId = parseInt(req.params.groupId);
-      const userId = req.user!.id;
+      const user_id = req.user!.id;
       const { content, imageUrl, type = 'standard', tags = [] } = req.body;
 
       if (!content?.trim()) {
@@ -874,7 +874,7 @@ router.post(
       SELECT * FROM interest_group_members 
       WHERE group_id = $1 AND user_id = $2 AND is_active = true
     `,
-        [groupId, userId]
+        [groupId, user_id]
       );
 
       if (membership.rows.length === 0) {
@@ -890,7 +890,7 @@ router.post(
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id
     `,
-        [groupId, userId, content.trim(), imageUrl, type, tags]
+        [groupId, user_id, content.trim(), imageUrl, type, tags]
       );
 
       // Get post with user details

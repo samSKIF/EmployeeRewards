@@ -109,7 +109,7 @@ describe('Channel Routes (Spaces)', () => {
   describe('POST /api/channels/:id/join', () => {
     it('should allow user to join channel', async () => {
       mockStorage.joinChannel.mockResolvedValue({
-        userId: 1,
+        user_id: 1,
         channelId: 2,
         joinedAt: new Date(),
       });
@@ -154,7 +154,7 @@ describe('Channel Routes (Spaces)', () => {
         {
           id: 1,
           content: 'Welcome to the channel!',
-          userId: 1,
+          user_id: 1,
           channelId: 2,
           createdAt: new Date(),
         },

@@ -6,7 +6,7 @@ const MODE = process.env.MODE || 'DRY_RUN';
 // Mock Tillo supplier for gift cards
 export const tilloSupplier = async (
   productName: string,
-  userId: number
+  user_id: number
 ): Promise<TilloResponse> => {
   // Simulate external API call delay
   await new Promise((resolve) => setTimeout(resolve, 500));
@@ -14,7 +14,7 @@ export const tilloSupplier = async (
   // In dry run mode, return mock data
   if (MODE === 'DRY_RUN') {
     console.log(
-      `[DRY_RUN] Tillo supplier fulfilling ${productName} for user ${userId}`
+      `[DRY_RUN] Tillo supplier fulfilling ${productName} for user ${user_id}`
     );
 
     // Simulate a success response
@@ -32,7 +32,7 @@ export const tilloSupplier = async (
 // Mock Carlton supplier for physical products
 export const carltonSupplier = async (
   productName: string,
-  userId: number,
+  user_id: number,
   shippingDetails?: any
 ): Promise<CarltonResponse> => {
   // Simulate external API call delay
@@ -41,7 +41,7 @@ export const carltonSupplier = async (
   // In dry run mode, return mock data
   if (MODE === 'DRY_RUN') {
     console.log(
-      `[DRY_RUN] Carlton supplier fulfilling ${productName} for user ${userId}`
+      `[DRY_RUN] Carlton supplier fulfilling ${productName} for user ${user_id}`
     );
 
     // Generate a mock order ID

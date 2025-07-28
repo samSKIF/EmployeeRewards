@@ -30,7 +30,7 @@ router.get('/types', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { organizationId } = req.user;
     const types = await db.query.leaveTypes.findMany({
-      where: eq(leaveTypes.organizationId, organizationId),
+      where: eq(leaveTypes.organization_id, organizationId),
       orderBy: [leaveTypes.name],
     });
     res.json(types);
@@ -47,11 +47,11 @@ router.post(
   verifyAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       const validatedData = insertLeaveTypeSchema.parse({
         ...req.body,
         organizationId,
-        createdBy: userId,
+        createdBy: user_id,
       });
 
       const [leaveType] = await db
@@ -80,7 +80,7 @@ router.patch(
       const existingType = await db.query.leaveTypes.findFirst({
         where: and(
           eq(leaveTypes.id, parseInt(id)),
-          eq(leaveTypes.organizationId, organizationId)
+          eq(leaveTypes.organization_id, organizationId)
         ),
       });
 
@@ -110,10 +110,10 @@ router.get(
   verifyToken,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { id: userId } = req.user;
+      const { id: user_id } = req.user;
 
       const entitlements = await db.query.leaveEntitlements.findMany({
-        where: eq(leaveEntitlements.userId, userId),
+        where: eq(leaveEntitlements.user_id, user_id),
         with: {
           leaveType: true,
         },
@@ -156,10 +156,10 @@ router.post(
 // Get all leave requests for a user
 router.get('/requests', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { id: userId } = req.user;
+    const { id: user_id } = req.user;
 
     const requests = await db.query.leaveRequests.findMany({
-      where: eq(leaveRequests.userId, userId),
+      where: eq(leaveRequests.user_id, user_id),
       with: {
         leaveType: true,
         approver: {
@@ -170,7 +170,7 @@ router.get('/requests', verifyToken, async (req: AuthenticatedRequest, res) => {
           },
         },
       },
-      orderBy: [desc(leaveRequests.createdAt)],
+      orderBy: [desc(leaveRequests.created_at)],
     });
 
     res.json(requests);
@@ -186,11 +186,11 @@ router.get(
   verifyToken,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { id: managerId } = req.user;
+      const { id: manager_id } = req.user;
 
       const pendingRequests = await db.query.leaveRequests.findMany({
         where: and(
-          eq(leaveRequests.approverId, managerId),
+          eq(leaveRequests.approverId, manager_id),
           eq(leaveRequests.status, 'PENDING')
         ),
         with: {
@@ -203,7 +203,7 @@ router.get(
           },
           leaveType: true,
         },
-        orderBy: [desc(leaveRequests.createdAt)],
+        orderBy: [desc(leaveRequests.created_at)],
       });
 
       res.json(pendingRequests);
@@ -220,7 +220,7 @@ router.post(
   verifyToken,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { id: userId } = req.user;
+      const { id: user_id } = req.user;
 
       // Calculate total days based on start and end date
       const startDate = new Date(req.body.startDate);
@@ -237,7 +237,7 @@ router.post(
 
       const validatedData = insertLeaveRequestSchema.parse({
         ...req.body,
-        userId,
+        user_id,
         totalDays,
         status: 'PENDING',
         createdAt: new Date(),
@@ -305,7 +305,7 @@ router.patch(
       if (status === 'APPROVED') {
         const entitlement = await db.query.leaveEntitlements.findFirst({
           where: and(
-            eq(leaveEntitlements.userId, leaveRequest.userId),
+            eq(leaveEntitlements.user_id, leaveRequest.user_id),
             eq(leaveEntitlements.leaveTypeId, leaveRequest.leaveTypeId)
           ),
         });
@@ -335,14 +335,14 @@ router.patch(
   async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
-      const { id: userId } = req.user;
+      const { id: user_id } = req.user;
       const { cancellationReason } = req.body;
 
       // Check if the request exists and belongs to the user
       const leaveRequest = await db.query.leaveRequests.findFirst({
         where: and(
           eq(leaveRequests.id, parseInt(id)),
-          eq(leaveRequests.userId, userId)
+          eq(leaveRequests.user_id, user_id)
         ),
       });
 
@@ -366,7 +366,7 @@ router.patch(
       if (leaveRequest.status === 'APPROVED') {
         const entitlement = await db.query.leaveEntitlements.findFirst({
           where: and(
-            eq(leaveEntitlements.userId, userId),
+            eq(leaveEntitlements.user_id, user_id),
             eq(leaveEntitlements.leaveTypeId, leaveRequest.leaveTypeId)
           ),
         });
@@ -408,12 +408,12 @@ router.get('/holidays', verifyToken, async (req: AuthenticatedRequest, res) => {
     const { organizationId } = req.user;
     const { country } = req.query;
 
-    let query = eq(holidays.organizationId, organizationId);
+    let query = eq(holidays.organization_id, organizationId);
 
     // If country is specified, filter by that country or global holidays
     if (country) {
       query = and(
-        eq(holidays.organizationId, organizationId),
+        eq(holidays.organization_id, organizationId),
         sql`(${holidays.country} = ${country as string} OR ${holidays.country} = 'Global')`
       );
     }
@@ -437,11 +437,11 @@ router.post(
   verifyAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       const validatedData = insertHolidaySchema.parse({
         ...req.body,
         organizationId,
-        createdBy: userId,
+        createdBy: user_id,
       });
 
       const [holiday] = await db
@@ -513,7 +513,7 @@ router.get('/policies', verifyToken, async (req: AuthenticatedRequest, res) => {
 
     const policies = await db.query.leavePolicies.findMany({
       where: and(
-        eq(leavePolicies.organizationId, organizationId),
+        eq(leavePolicies.organization_id, organizationId),
         eq(leavePolicies.isActive, true)
       ),
       orderBy: [leavePolicies.name],
@@ -533,11 +533,11 @@ router.post(
   verifyAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { organizationId, id: userId } = req.user;
+      const { organizationId, id: user_id } = req.user;
       const validatedData = insertLeavePolicySchema.parse({
         ...req.body,
         organizationId,
-        createdBy: userId,
+        createdBy: user_id,
       });
 
       const [policy] = await db
@@ -564,7 +564,7 @@ router.get(
 
       // Get all users in the organization
       const allUsers = await db.query.users.findMany({
-        where: eq(users.organizationId, organizationId),
+        where: eq(users.organization_id, organizationId),
         columns: {
           id: true,
           name: true,
@@ -574,14 +574,14 @@ router.get(
 
       // Get all leave types
       const allLeaveTypes = await db.query.leaveTypes.findMany({
-        where: eq(leaveTypes.organizationId, organizationId),
+        where: eq(leaveTypes.organization_id, organizationId),
       });
 
       // For each user, get their leave entitlements
       const report = await Promise.all(
         allUsers.map(async (user) => {
           const entitlements = await db.query.leaveEntitlements.findMany({
-            where: eq(leaveEntitlements.userId, user.id),
+            where: eq(leaveEntitlements.user_id, user.id),
             with: {
               leaveType: true,
             },
@@ -603,7 +603,7 @@ router.get(
           });
 
           return {
-            userId: user.id,
+            user_id: user.id,
             name: user.name,
             email: user.email,
             leaveBalances,
@@ -655,12 +655,12 @@ router.get('/calendar', verifyToken, async (req: AuthenticatedRequest, res) => {
 
     // Filter to only include users from the same organization
     const filteredEvents = leaveEvents.filter(
-      (event) => event.user?.organizationId === organizationId
+      (event) => event.user?.organization_id === organizationId
     );
 
     // Build base holiday query conditions
     const holidayConditions = [
-      eq(holidays.organizationId, organizationId),
+      eq(holidays.organization_id, organizationId),
       sql`${holidays.date} >= ${startDate as string}`,
       sql`${holidays.date} <= ${endDate as string}`,
     ];
@@ -685,7 +685,7 @@ router.get('/calendar', verifyToken, async (req: AuthenticatedRequest, res) => {
         title: `${event.user?.name || 'Unknown'} - ${event.leaveType?.name || 'Leave'}`,
         start: event.startDate,
         end: event.endDate,
-        userId: event.userId,
+        user_id: event.user_id,
         leaveTypeId: event.leaveTypeId,
         color: event.leaveType?.color || '#2196F3',
       })),

@@ -11,12 +11,12 @@ describe('Security Audit - Database State Validation', () => {
           id: users.id,
           email: users.email,
           username: users.username,
-          roleType: users.roleType,
-          organizationId: users.organizationId,
-          isAdmin: users.isAdmin
+          roleType: users.role_type,
+          organizationId: users.organization_id,
+          isAdmin: users.is_admin
         })
         .from(users)
-        .where(eq(users.roleType, 'corporate_admin'));
+        .where(eq(users.role_type, 'corporate_admin'));
 
       // Audit Report
       console.log('=== CORPORATE ADMIN SECURITY AUDIT ===');
@@ -25,8 +25,8 @@ describe('Security Audit - Database State Validation', () => {
       corporateAdmins.forEach((admin, index) => {
         console.log(`Admin ${index + 1}:`);
         console.log(`  Email: ${admin.email}`);
-        console.log(`  Organization ID: ${admin.organizationId}`);
-        console.log(`  Security Status: ${admin.organizationId === null ? '✅ SECURE' : '❌ VIOLATION'}`);
+        console.log(`  Organization ID: ${admin.organization_id}`);
+        console.log(`  Security Status: ${admin.organization_id === null ? '✅ SECURE' : '❌ VIOLATION'}`);
       });
 
       // Security Assertions
@@ -34,9 +34,9 @@ describe('Security Audit - Database State Validation', () => {
       
       corporateAdmins.forEach(admin => {
         // CRITICAL: Corporate admins must not belong to any organization
-        expect(admin.organizationId).toBe(null);
-        expect(admin.roleType).toBe('corporate_admin');
-        expect(admin.isAdmin).toBe(true);
+        expect(admin.organization_id).toBe(null);
+        expect(admin.role_type).toBe('corporate_admin');
+        expect(admin.is_admin).toBe(true);
       });
     });
 
@@ -47,8 +47,8 @@ describe('Security Audit - Database State Validation', () => {
         .from(users)
         .where(
           and(
-            eq(users.roleType, 'corporate_admin'),
-            isNotNull(users.organizationId)
+            eq(users.role_type, 'corporate_admin'),
+            isNotNull(users.organization_id)
           )
         );
 
@@ -87,15 +87,15 @@ describe('Security Audit - Database State Validation', () => {
       // Get distribution of users by organization
       const userDistribution = await db
         .select({
-          organizationId: users.organizationId,
+          organizationId: users.organization_id,
           count: count()
         })
         .from(users)
-        .groupBy(users.organizationId);
+        .groupBy(users.organization_id);
 
       console.log('=== USER DISTRIBUTION AUDIT ===');
       userDistribution.forEach(dist => {
-        const orgLabel = dist.organizationId === null ? 'Corporate Admins' : `Organization ${dist.organizationId}`;
+        const orgLabel = dist.organization_id === null ? 'Corporate Admins' : `Organization ${dist.organization_id}`;
         console.log(`${orgLabel}: ${dist.count} users`);
       });
 
@@ -103,7 +103,7 @@ describe('Security Audit - Database State Validation', () => {
       expect(userDistribution.length).toBeGreaterThan(0);
       
       // Should have some corporate admins (organization_id = null)
-      const corporateAdminCount = userDistribution.find(d => d.organizationId === null);
+      const corporateAdminCount = userDistribution.find(d => d.organization_id === null);
       expect(corporateAdminCount).toBeTruthy();
       expect(corporateAdminCount!.count).toBeGreaterThan(0);
     });
@@ -111,7 +111,7 @@ describe('Security Audit - Database State Validation', () => {
     it('should verify organization feature isolation', async () => {
       const orgFeatures = await db
         .select({
-          organizationId: organization_features.organizationId,
+          organizationId: organization_features.organization_id,
           featureKey: organization_features.featureKey,
           isEnabled: organization_features.isEnabled
         })
@@ -121,7 +121,7 @@ describe('Security Audit - Database State Validation', () => {
       
       // Group features by organization
       const featuresByOrg = orgFeatures.reduce((acc, feature) => {
-        const key = feature.organizationId.toString();
+        const key = feature.organization_id.toString();
         if (!acc[key]) acc[key] = [];
         acc[key].push(feature);
         return acc;
@@ -143,22 +143,22 @@ describe('Security Audit - Database State Validation', () => {
     it('should validate role-based access patterns', async () => {
       const roleDistribution = await db
         .select({
-          roleType: users.roleType,
+          roleType: users.role_type,
           count: count()
         })
         .from(users)
-        .groupBy(users.roleType);
+        .groupBy(users.role_type);
 
       console.log('=== ROLE DISTRIBUTION AUDIT ===');
       roleDistribution.forEach(role => {
-        console.log(`${role.roleType}: ${role.count} users`);
+        console.log(`${role.role_type}: ${role.count} users`);
       });
 
       // Should have multiple role types
       expect(roleDistribution.length).toBeGreaterThan(1);
       
       // Should have corporate admins
-      const corporateAdmins = roleDistribution.find(r => r.roleType === 'corporate_admin');
+      const corporateAdmins = roleDistribution.find(r => r.role_type === 'corporate_admin');
       expect(corporateAdmins).toBeTruthy();
       expect(corporateAdmins!.count).toBeGreaterThan(0);
     });
@@ -168,23 +168,23 @@ describe('Security Audit - Database State Validation', () => {
         .select({
           id: users.id,
           email: users.email,
-          roleType: users.roleType,
-          organizationId: users.organizationId,
-          isAdmin: users.isAdmin
+          roleType: users.role_type,
+          organizationId: users.organization_id,
+          isAdmin: users.is_admin
         })
         .from(users)
-        .where(eq(users.isAdmin, true));
+        .where(eq(users.is_admin, true));
 
       console.log('=== ADMIN PRIVILEGES AUDIT ===');
       console.log(`Total admin users: ${adminUsers.length}`);
       
       adminUsers.forEach(admin => {
-        const orgLabel = admin.organizationId === null ? 'Corporate Level' : `Organization ${admin.organizationId}`;
-        console.log(`Admin: ${admin.email} (${admin.roleType}) - ${orgLabel}`);
+        const orgLabel = admin.organization_id === null ? 'Corporate Level' : `Organization ${admin.organization_id}`;
+        console.log(`Admin: ${admin.email} (${admin.role_type}) - ${orgLabel}`);
         
         // Validate admin user configurations
-        expect(admin.isAdmin).toBe(true);
-        expect(admin.roleType).toBeTruthy();
+        expect(admin.is_admin).toBe(true);
+        expect(admin.role_type).toBeTruthy();
       });
     });
   });
@@ -196,14 +196,14 @@ describe('Security Audit - Database State Validation', () => {
       const [corporateAdmins] = await db
         .select({ count: count() })
         .from(users)
-        .where(eq(users.roleType, 'corporate_admin'));
+        .where(eq(users.role_type, 'corporate_admin'));
       const [adminViolations] = await db
         .select({ count: count() })
         .from(users)
         .where(
           and(
-            eq(users.roleType, 'corporate_admin'),
-            isNotNull(users.organizationId)
+            eq(users.role_type, 'corporate_admin'),
+            isNotNull(users.organization_id)
           )
         );
 
@@ -233,13 +233,13 @@ describe('Security Audit - Database State Validation', () => {
       const specificAccounts = await db
         .select({
           email: users.email,
-          organizationId: users.organizationId,
-          roleType: users.roleType
+          organizationId: users.organization_id,
+          roleType: users.role_type
         })
         .from(users)
         .where(
           and(
-            eq(users.roleType, 'corporate_admin'),
+            eq(users.role_type, 'corporate_admin'),
             // Only check the specific accounts that were problematic
           )
         );
@@ -251,13 +251,13 @@ describe('Security Audit - Database State Validation', () => {
       const empulseAccount = specificAccounts.find(acc => acc.email === 'admin@empulse.com');
 
       if (thrivioAccount) {
-        console.log(`admin@thriviohr.com - Organization ID: ${thrivioAccount.organizationId} (${thrivioAccount.organizationId === null ? '✅ FIXED' : '❌ STILL BROKEN'})`);
-        expect(thrivioAccount.organizationId).toBe(null);
+        console.log(`admin@thriviohr.com - Organization ID: ${thrivioAccount.organization_id} (${thrivioAccount.organization_id === null ? '✅ FIXED' : '❌ STILL BROKEN'})`);
+        expect(thrivioAccount.organization_id).toBe(null);
       }
 
       if (empulseAccount) {
-        console.log(`admin@empulse.com - Organization ID: ${empulseAccount.organizationId} (${empulseAccount.organizationId === null ? '✅ FIXED' : '❌ STILL BROKEN'})`);
-        expect(empulseAccount.organizationId).toBe(null);
+        console.log(`admin@empulse.com - Organization ID: ${empulseAccount.organization_id} (${empulseAccount.organization_id === null ? '✅ FIXED' : '❌ STILL BROKEN'})`);
+        expect(empulseAccount.organization_id).toBe(null);
       }
 
       // Both accounts should exist and be properly configured

@@ -28,7 +28,7 @@ describe('Leave Routes', () => {
     name: 'Test User',
     isAdmin: false,
     department: 'Engineering',
-    managerId: 2,
+    manager_id: 2,
   };
 
   const mockManager = {
@@ -53,7 +53,7 @@ describe('Leave Routes', () => {
     });
 
     mockedVerifyAdmin.mockImplementation((req: any, res, next) => {
-      if (req.user?.isAdmin) {
+      if (req.user?.is_admin) {
         next();
       } else {
         res.status(403).json({ message: 'Admin access required' });
@@ -73,7 +73,7 @@ describe('Leave Routes', () => {
 
       const mockCreatedRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         type: 'vacation',
         startDate: new Date('2025-08-01'),
         endDate: new Date('2025-08-05'),
@@ -319,7 +319,7 @@ describe('Leave Routes', () => {
     it('should return specific leave request', async () => {
       const mockRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         type: 'vacation',
         startDate: new Date('2025-08-01'),
         endDate: new Date('2025-08-05'),
@@ -365,7 +365,7 @@ describe('Leave Routes', () => {
     it('should prevent access to other users requests', async () => {
       const otherUserRequest = {
         id: 1,
-        userId: 999, // Different user
+        user_id: 999, // Different user
         organizationId: 1,
       };
 
@@ -391,10 +391,10 @@ describe('Leave Routes', () => {
 
       const teamMemberRequest = {
         id: 1,
-        userId: 1, // Team member
+        user_id: 1, // Team member
         organizationId: 1,
         user: {
-          managerId: 2, // Reports to manager
+          manager_id: 2, // Reports to manager
         },
       };
 
@@ -428,11 +428,11 @@ describe('Leave Routes', () => {
 
       const existingRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         status: 'pending',
         organizationId: 1,
         user: {
-          managerId: 2, // Reports to current user
+          manager_id: 2, // Reports to current user
         },
       };
 
@@ -477,11 +477,11 @@ describe('Leave Routes', () => {
 
       const existingRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         status: 'pending',
         organizationId: 1,
         user: {
-          managerId: 2,
+          manager_id: 2,
         },
       };
 
@@ -573,11 +573,11 @@ describe('Leave Routes', () => {
     it('should require manager comments for rejection', async () => {
       const existingRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         status: 'pending',
         organizationId: 1,
         user: {
-          managerId: 2,
+          manager_id: 2,
         },
       };
 
@@ -607,7 +607,7 @@ describe('Leave Routes', () => {
     it('should cancel pending leave request', async () => {
       const existingRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         status: 'pending',
         organizationId: 1,
       };
@@ -638,7 +638,7 @@ describe('Leave Routes', () => {
     it('should prevent cancelling approved requests', async () => {
       const existingRequest = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         status: 'approved',
         organizationId: 1,
       };
@@ -658,7 +658,7 @@ describe('Leave Routes', () => {
     it('should prevent cancelling other users requests', async () => {
       const otherUserRequest = {
         id: 1,
-        userId: 999, // Different user
+        user_id: 999, // Different user
         status: 'pending',
         organizationId: 1,
       };
@@ -678,7 +678,7 @@ describe('Leave Routes', () => {
   describe('GET /leave/balance', () => {
     it('should return user leave balance', async () => {
       const mockBalance = {
-        userId: 1,
+        user_id: 1,
         vacation: 15,
         sick: 10,
         personal: 5,

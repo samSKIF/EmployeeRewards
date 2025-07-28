@@ -80,7 +80,7 @@ describe('Admin Routes', () => {
         jobTitle: 'Senior Developer',
         hireDate: '2020-01-01',
         avatarUrl: 'https://example.com/avatar.jpg',
-        managerEmail: 'manager@test.com',
+        manager_email: 'manager@test.com',
       };
       
       const mockUpdatedUser = {
@@ -275,7 +275,7 @@ describe('Admin Routes', () => {
         .post('/api/admin/users/bulk-status')
         .set('Authorization', 'Bearer admin-token')
         .send({
-          userIds: [2, 3, 4],
+          user_ids: [2, 3, 4],
           status: 'inactive',
         });
 
@@ -288,7 +288,7 @@ describe('Admin Routes', () => {
         .post('/api/admin/users/bulk-status')
         .set('Authorization', 'Bearer admin-token')
         .send({
-          userIds: [], // Empty array
+          user_ids: [], // Empty array
           status: 'inactive',
         });
 

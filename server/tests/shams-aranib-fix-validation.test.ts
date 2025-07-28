@@ -42,11 +42,11 @@ describe('Shams Aranib Fix Validation Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin,
-          organizationId: users.organizationId,
-          avatarUrl: users.avatarUrl,
-          coverPhotoUrl: users.coverPhotoUrl,
+          roleType: users.role_type,
+          isAdmin: users.is_admin,
+          organizationId: users.organization_id,
+          avatarUrl: users.avatar_url,
+          coverPhotoUrl: users.cover_photo_url,
           status: users.status
         })
         .from(users)
@@ -57,25 +57,25 @@ describe('Shams Aranib Fix Validation Tests', () => {
       expect(shamsUser.id).toBe(1680);
       expect(shamsUser.name).toBe('shams');
       expect(shamsUser.email).toBe('shams.aranib@canva.com');
-      expect(shamsUser.isAdmin).toBe(true);
-      expect(shamsUser.roleType).toBe('admin'); // Fixed from null
-      expect(shamsUser.organizationId).toBe(1); // Canva organization
+      expect(shamsUser.is_admin).toBe(true);
+      expect(shamsUser.role_type).toBe('admin'); // Fixed from null
+      expect(shamsUser.organization_id).toBe(1); // Canva organization
       expect(shamsUser.status).toBe('active');
 
       // Profile assets
-      expect(shamsUser.avatarUrl).toBeTruthy();
-      expect(shamsUser.avatarUrl?.length).toBeGreaterThan(1000); // Base64 image
-      expect(shamsUser.coverPhotoUrl).toBeTruthy();
+      expect(shamsUser.avatar_url).toBeTruthy();
+      expect(shamsUser.avatar_url?.length).toBeGreaterThan(1000); // Base64 image
+      expect(shamsUser.cover_photo_url).toBeTruthy();
 
       console.log('✅ Shams user database values verified:');
       console.log(`   ID: ${shamsUser.id}`);
       console.log(`   Name: ${shamsUser.name}`);
       console.log(`   Email: ${shamsUser.email}`);
-      console.log(`   Is Admin: ${shamsUser.isAdmin}`);
-      console.log(`   Role Type: ${shamsUser.roleType} (was null)`);
-      console.log(`   Organization: ${shamsUser.organizationId}`);
-      console.log(`   Avatar: ${shamsUser.avatarUrl ? 'Present' : 'Missing'} (${shamsUser.avatarUrl?.length} chars)`);
-      console.log(`   Cover: ${shamsUser.coverPhotoUrl ? 'Present' : 'Missing'}`);
+      console.log(`   Is Admin: ${shamsUser.is_admin}`);
+      console.log(`   Role Type: ${shamsUser.role_type} (was null)`);
+      console.log(`   Organization: ${shamsUser.organization_id}`);
+      console.log(`   Avatar: ${shamsUser.avatar_url ? 'Present' : 'Missing'} (${shamsUser.avatar_url?.length} chars)`);
+      console.log(`   Cover: ${shamsUser.cover_photo_url ? 'Present' : 'Missing'}`);
     });
 
     it('should validate admin access logic computation', () => {
@@ -142,26 +142,26 @@ describe('Shams Aranib Fix Validation Tests', () => {
         .select({
           id: users.id,
           name: users.name,
-          avatarUrl: users.avatarUrl,
-          coverPhotoUrl: users.coverPhotoUrl
+          avatarUrl: users.avatar_url,
+          coverPhotoUrl: users.cover_photo_url
         })
         .from(users)
         .where(eq(users.id, 1680));
 
       expect(user).toBeTruthy();
-      expect(user.avatarUrl).toBeTruthy();
-      expect(user.coverPhotoUrl).toBeTruthy();
+      expect(user.avatar_url).toBeTruthy();
+      expect(user.cover_photo_url).toBeTruthy();
 
       // Validate avatar is base64 format (as shown in the original post)
-      if (user.avatarUrl?.startsWith('data:image/')) {
-        expect(user.avatarUrl).toContain('data:image/jpeg;base64');
-        expect(user.avatarUrl.length).toBeGreaterThan(1000);
+      if (user.avatar_url?.startsWith('data:image/')) {
+        expect(user.avatar_url).toContain('data:image/jpeg;base64');
+        expect(user.avatar_url.length).toBeGreaterThan(1000);
       }
 
       console.log('✅ Profile assets validation:');
-      console.log(`   Avatar URL present: ${!!user.avatarUrl}`);
-      console.log(`   Avatar type: ${user.avatarUrl?.startsWith('data:image/') ? 'Base64' : 'File path'}`);
-      console.log(`   Cover photo present: ${!!user.coverPhotoUrl}`);
+      console.log(`   Avatar URL present: ${!!user.avatar_url}`);
+      console.log(`   Avatar type: ${user.avatar_url?.startsWith('data:image/') ? 'Base64' : 'File path'}`);
+      console.log(`   Cover photo present: ${!!user.cover_photo_url}`);
     });
   });
 
@@ -220,14 +220,14 @@ describe('Shams Aranib Fix Validation Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin
+          roleType: users.role_type,
+          isAdmin: users.is_admin
         })
         .from(users)
-        .where(eq(users.isAdmin, true));
+        .where(eq(users.is_admin, true));
 
       const usersWithNullRoleType = problematicUsers.filter(user => 
-        user.roleType === null || user.roleType === ''
+        user.role_type === null || user.role_type === ''
       );
 
       console.log('✅ System Health Check:');
@@ -239,9 +239,9 @@ describe('Shams Aranib Fix Validation Tests', () => {
 
       // All admin users should have valid role types
       problematicUsers.forEach(user => {
-        expect(user.isAdmin).toBe(true);
-        expect(user.roleType).toBeTruthy();
-        expect(['admin', 'client_admin', 'corporate_admin'].includes(user.roleType!)).toBe(true);
+        expect(user.is_admin).toBe(true);
+        expect(user.role_type).toBeTruthy();
+        expect(['admin', 'client_admin', 'corporate_admin'].includes(user.role_type!)).toBe(true);
       });
     });
   });

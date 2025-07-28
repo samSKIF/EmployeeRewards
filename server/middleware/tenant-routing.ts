@@ -77,7 +77,7 @@ export function ensureTenantAccess(
   }
 
   // Super admins can access any tenant (for management purposes)
-  if (user.roleType === 'corporate_admin' && user.permissions?.manageTenants) {
+  if (user.role_type === 'corporate_admin' && user.permissions?.manageTenants) {
     return next();
   }
 

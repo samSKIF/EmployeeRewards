@@ -104,7 +104,7 @@ describe('Shop Routes', () => {
       mockStorage.redeemPoints.mockResolvedValue(mockTransaction);
       mockStorage.createOrder.mockResolvedValue({
         id: 200,
-        userId: 1,
+        user_id: 1,
         productId: 1,
         status: 'pending',
       });

@@ -23,19 +23,19 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin,
-          organizationId: users.organizationId,
+          roleType: users.role_type,
+          isAdmin: users.is_admin,
+          organizationId: users.organization_id,
           status: users.status
         })
         .from(users)
-        .where(eq(users.isAdmin, true));
+        .where(eq(users.is_admin, true));
 
       console.log('=== ADMIN USERS AUDIT ===');
       adminUsers.forEach(user => {
         console.log(`User ${user.id}: ${user.name} (${user.email})`);
-        console.log(`  Role Type: ${user.roleType || 'NULL'}`);
-        console.log(`  Organization: ${user.organizationId || 'NULL'}`);
+        console.log(`  Role Type: ${user.role_type || 'NULL'}`);
+        console.log(`  Organization: ${user.organization_id || 'NULL'}`);
         console.log(`  Status: ${user.status}`);
       });
 
@@ -44,10 +44,10 @@ describe('Admin Role Validation and Integrity Tests', () => {
       // Validate each admin user has proper role_type
       adminUsers.forEach(user => {
         // This is the critical check that failed for shams initially
-        expect(user.isAdmin).toBe(true);
-        expect(user.roleType).not.toBe(null);
-        expect(user.roleType).not.toBe('');
-        expect(['admin', 'client_admin', 'corporate_admin'].includes(user.roleType!)).toBe(true);
+        expect(user.is_admin).toBe(true);
+        expect(user.role_type).not.toBe(null);
+        expect(user.role_type).not.toBe('');
+        expect(['admin', 'client_admin', 'corporate_admin'].includes(user.role_type!)).toBe(true);
       });
     });
 
@@ -57,11 +57,11 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin,
-          organizationId: users.organizationId,
-          avatarUrl: users.avatarUrl,
-          coverPhotoUrl: users.coverPhotoUrl,
+          roleType: users.role_type,
+          isAdmin: users.is_admin,
+          organizationId: users.organization_id,
+          avatarUrl: users.avatar_url,
+          coverPhotoUrl: users.cover_photo_url,
           status: users.status
         })
         .from(users)
@@ -71,18 +71,18 @@ describe('Admin Role Validation and Integrity Tests', () => {
       
       const user = shamsUser[0];
       expect(user.name).toBe('shams');
-      expect(user.isAdmin).toBe(true);
-      expect(user.roleType).toBe('admin'); // Fixed from null
-      expect(user.organizationId).toBe(1); // Canva
-      expect(user.avatarUrl).not.toBe(null);
-      expect(user.coverPhotoUrl).not.toBe(null); // Should now have default cover
+      expect(user.is_admin).toBe(true);
+      expect(user.role_type).toBe('admin'); // Fixed from null
+      expect(user.organization_id).toBe(1); // Canva
+      expect(user.avatar_url).not.toBe(null);
+      expect(user.cover_photo_url).not.toBe(null); // Should now have default cover
       expect(user.status).toBe('active');
 
       console.log('=== SHAMS USER VALIDATION ===');
       console.log(`Fixed user: ${user.name} (${user.email})`);
-      console.log(`Role Type: ${user.roleType} (was null)`);
-      console.log(`Has Avatar: ${user.avatarUrl ? 'Yes' : 'No'}`);
-      console.log(`Has Cover: ${user.coverPhotoUrl ? 'Yes' : 'No'}`);
+      console.log(`Role Type: ${user.role_type} (was null)`);
+      console.log(`Has Avatar: ${user.avatar_url ? 'Yes' : 'No'}`);
+      console.log(`Has Cover: ${user.cover_photo_url ? 'Yes' : 'No'}`);
     });
 
     it('should find users with problematic admin configurations', async () => {
@@ -92,15 +92,15 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin
+          roleType: users.role_type,
+          isAdmin: users.is_admin
         })
         .from(users)
         .where(
           and(
-            eq(users.isAdmin, true),
+            eq(users.is_admin, true),
             // Role type is either null or not a valid admin role
-            users.roleType.notIn(['admin', 'client_admin', 'corporate_admin'])
+            users.role_type.notIn(['admin', 'client_admin', 'corporate_admin'])
           )
         );
 
@@ -109,7 +109,7 @@ describe('Admin Role Validation and Integrity Tests', () => {
       
       problematicUsers.forEach(user => {
         console.log(`⚠️  User ${user.id}: ${user.name} (${user.email})`);
-        console.log(`   is_admin=true but role_type='${user.roleType || 'NULL'}'`);
+        console.log(`   is_admin=true but role_type='${user.role_type || 'NULL'}'`);
       });
 
       // After our fix, there should be no problematic users
@@ -122,15 +122,15 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          organizationId: users.organizationId
+          roleType: users.role_type,
+          organizationId: users.organization_id
         })
         .from(users)
-        .where(eq(users.roleType, 'corporate_admin'));
+        .where(eq(users.role_type, 'corporate_admin'));
 
       corporateAdmins.forEach(admin => {
         // Corporate admins must have organization_id = NULL
-        expect(admin.organizationId).toBe(null);
+        expect(admin.organization_id).toBe(null);
         console.log(`✅ Corporate admin ${admin.name} properly isolated (org_id=null)`);
       });
     });
@@ -143,23 +143,23 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          avatarUrl: users.avatarUrl,
-          coverPhotoUrl: users.coverPhotoUrl,
-          organizationId: users.organizationId
+          avatarUrl: users.avatar_url,
+          coverPhotoUrl: users.cover_photo_url,
+          organizationId: users.organization_id
         })
         .from(users)
         .where(
           and(
             eq(users.status, 'active'),
-            isNotNull(users.organizationId) // Regular organization users
+            isNotNull(users.organization_id) // Regular organization users
           )
         )
         .limit(10);
 
       console.log('=== PROFILE ASSETS AUDIT ===');
       usersWithAssets.forEach(user => {
-        const hasAvatar = user.avatarUrl !== null;
-        const hasCover = user.coverPhotoUrl !== null;
+        const hasAvatar = user.avatar_url !== null;
+        const hasCover = user.cover_photo_url !== null;
         
         console.log(`User ${user.name}:`);
         console.log(`  Avatar: ${hasAvatar ? 'Yes' : 'Missing'}`);
@@ -174,8 +174,8 @@ describe('Admin Role Validation and Integrity Tests', () => {
       const assetStats = await db
         .select({
           totalUsers: users.id, // Will be counted
-          hasAvatar: users.avatarUrl,
-          hasCover: users.coverPhotoUrl
+          hasAvatar: users.avatar_url,
+          hasCover: users.cover_photo_url
         })
         .from(users)
         .where(eq(users.status, 'active'));
@@ -219,10 +219,10 @@ describe('Admin Role Validation and Integrity Tests', () => {
 
       testCases.forEach(testCase => {
         // This is the actual logic used in the admin middleware
-        const hasAdminAccess = testCase.isAdmin && (
-          testCase.roleType === 'admin' || 
-          testCase.roleType === 'client_admin' || 
-          testCase.roleType === 'corporate_admin'
+        const hasAdminAccess = testCase.is_admin && (
+          testCase.role_type === 'admin' || 
+          testCase.role_type === 'client_admin' || 
+          testCase.role_type === 'corporate_admin'
         );
 
         expect(hasAdminAccess).toBe(testCase.expected);
@@ -254,13 +254,13 @@ describe('Admin Role Validation and Integrity Tests', () => {
 
       adminScopes.forEach(scope => {
         // Corporate admins can access any organization
-        if (scope.roleType === 'corporate_admin') {
-          expect(scope.organizationId).toBe(null);
+        if (scope.role_type === 'corporate_admin') {
+          expect(scope.organization_id).toBe(null);
           expect(scope.canAccessOrg.length).toBeGreaterThan(0);
         } else {
           // Regular/client admins are scoped to their organization
-          expect(scope.organizationId).not.toBe(null);
-          expect(scope.canAccessOrg.includes(scope.organizationId)).toBe(true);
+          expect(scope.organization_id).not.toBe(null);
+          expect(scope.canAccessOrg.includes(scope.organization_id)).toBe(true);
         }
       });
     });
@@ -274,14 +274,14 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin
+          roleType: users.role_type,
+          isAdmin: users.is_admin
         })
         .from(users)
         .where(
           and(
-            eq(users.roleType, 'employee'),
-            eq(users.isAdmin, true)
+            eq(users.role_type, 'employee'),
+            eq(users.is_admin, true)
           )
         );
 
@@ -302,33 +302,33 @@ describe('Admin Role Validation and Integrity Tests', () => {
           id: users.id,
           name: users.name,
           email: users.email,
-          roleType: users.roleType,
-          isAdmin: users.isAdmin,
+          roleType: users.role_type,
+          isAdmin: users.is_admin,
           status: users.status
         })
         .from(users)
         .where(
           and(
-            eq(users.organizationId, 1), // Canva
-            eq(users.isAdmin, true)
+            eq(users.organization_id, 1), // Canva
+            eq(users.is_admin, true)
           )
         );
 
       console.log('=== CANVA ORGANIZATION ADMINS ===');
       canvaAdmins.forEach(admin => {
         console.log(`Admin: ${admin.name} (${admin.email})`);
-        console.log(`  Role: ${admin.roleType}`);
+        console.log(`  Role: ${admin.role_type}`);
         console.log(`  Status: ${admin.status}`);
 
         // All should have valid admin role types
-        expect(['admin', 'client_admin'].includes(admin.roleType!)).toBe(true);
-        expect(admin.isAdmin).toBe(true);
+        expect(['admin', 'client_admin'].includes(admin.role_type!)).toBe(true);
+        expect(admin.is_admin).toBe(true);
       });
 
       // Should include our fixed shams user
       const shamsFixed = canvaAdmins.find(a => a.email === 'shams.aranib@canva.com');
       expect(shamsFixed).toBeTruthy();
-      expect(shamsFixed?.roleType).toBe('admin');
+      expect(shamsFixed?.role_type).toBe('admin');
     });
   });
 
@@ -336,19 +336,19 @@ describe('Admin Role Validation and Integrity Tests', () => {
     it('should provide admin user monitoring data', async () => {
       const monitoringQueries = await Promise.all([
         // Total admin users
-        db.select({ count: users.id }).from(users).where(eq(users.isAdmin, true)),
+        db.select({ count: users.id }).from(users).where(eq(users.is_admin, true)),
         
         // Admin users by organization
         db.select({ 
-          organizationId: users.organizationId,
+          organizationId: users.organization_id,
           count: users.id 
-        }).from(users).where(eq(users.isAdmin, true)),
+        }).from(users).where(eq(users.is_admin, true)),
         
         // Admin users by role type
         db.select({ 
-          roleType: users.roleType,
+          roleType: users.role_type,
           count: users.id 
-        }).from(users).where(eq(users.isAdmin, true))
+        }).from(users).where(eq(users.is_admin, true))
       ]);
 
       console.log('=== ADMIN USER MONITORING ===');

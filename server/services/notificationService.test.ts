@@ -19,11 +19,11 @@ describe('NotificationService', () => {
   describe('createNotification', () => {
     it('should create notification successfully', async () => {
       const notificationData = {
-        userId: 1,
+        user_id: 1,
         type: 'recognition',
         title: 'You received recognition!',
         message: 'John Doe recognized you for great work',
-        data: { recognitionId: 123, points: 100 },
+        data: { recognition_id: 123, points: 100 },
         organizationId: 1,
       };
 
@@ -48,7 +48,7 @@ describe('NotificationService', () => {
 
     it('should handle database errors during creation', async () => {
       const notificationData = {
-        userId: 1,
+        user_id: 1,
         type: 'system',
         title: 'Test notification',
         message: 'Test message',
@@ -68,7 +68,7 @@ describe('NotificationService', () => {
 
     it('should validate required fields', async () => {
       const invalidData = {
-        // Missing userId
+        // Missing user_id
         type: 'system',
         title: 'Test',
         message: 'Test message',
@@ -82,7 +82,7 @@ describe('NotificationService', () => {
 
     it('should validate notification type', async () => {
       const invalidData = {
-        userId: 1,
+        user_id: 1,
         type: 'invalid_type',
         title: 'Test',
         message: 'Test message',
@@ -96,7 +96,7 @@ describe('NotificationService', () => {
 
     it('should handle optional data field', async () => {
       const notificationData = {
-        userId: 1,
+        user_id: 1,
         type: 'system',
         title: 'Simple notification',
         message: 'No additional data',
@@ -129,7 +129,7 @@ describe('NotificationService', () => {
       const mockNotifications = [
         {
           id: 1,
-          userId: 1,
+          user_id: 1,
           type: 'recognition',
           title: 'Recognition received',
           message: 'You were recognized for excellent work',
@@ -139,7 +139,7 @@ describe('NotificationService', () => {
         },
         {
           id: 2,
-          userId: 1,
+          user_id: 1,
           type: 'system',
           title: 'System update',
           message: 'System maintenance scheduled',
@@ -174,7 +174,7 @@ describe('NotificationService', () => {
       const mockUnreadNotifications = [
         {
           id: 1,
-          userId: 1,
+          user_id: 1,
           type: 'recognition',
           isRead: false,
           createdAt: new Date(),
@@ -207,7 +207,7 @@ describe('NotificationService', () => {
       const mockRecognitionNotifications = [
         {
           id: 1,
-          userId: 1,
+          user_id: 1,
           type: 'recognition',
           isRead: false,
           createdAt: new Date(),
@@ -280,7 +280,7 @@ describe('NotificationService', () => {
     it('should mark single notification as read', async () => {
       const mockUpdatedNotification = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         isRead: true,
         updatedAt: new Date(),
       };
@@ -482,7 +482,7 @@ describe('NotificationService', () => {
 
   describe('sendBulkNotifications', () => {
     it('should send notifications to multiple users', async () => {
-      const userIds = [1, 2, 3];
+      const user_ids = [1, 2, 3];
       const notificationData = {
         type: 'system',
         title: 'System Announcement',
@@ -490,9 +490,9 @@ describe('NotificationService', () => {
         organizationId: 1,
       };
 
-      const mockCreatedNotifications = userIds.map(userId => ({
-        id: userId,
-        userId,
+      const mockCreatedNotifications = user_ids.map(user_id => ({
+        id: user_id,
+        user_id,
         ...notificationData,
         isRead: false,
         createdAt: new Date(),
@@ -505,7 +505,7 @@ describe('NotificationService', () => {
       });
 
       const result = await notificationService.sendBulkNotifications(
-        userIds,
+        user_ids,
         notificationData
       );
 
@@ -531,7 +531,7 @@ describe('NotificationService', () => {
     });
 
     it('should validate bulk notification data', async () => {
-      const userIds = [1, 2];
+      const user_ids = [1, 2];
       const invalidData = {
         // Missing type
         title: 'Test',
@@ -540,7 +540,7 @@ describe('NotificationService', () => {
       } as any;
 
       await expect(
-        notificationService.sendBulkNotifications(userIds, invalidData)
+        notificationService.sendBulkNotifications(user_ids, invalidData)
       ).rejects.toThrow('Invalid notification data');
     });
   });
@@ -550,14 +550,14 @@ describe('NotificationService', () => {
       const mockRecognitionNotifications = [
         {
           id: 1,
-          userId: 1,
+          user_id: 1,
           type: 'recognition',
           title: 'Recognition 1',
           createdAt: new Date(),
         },
         {
           id: 2,
-          userId: 1,
+          user_id: 1,
           type: 'recognition',
           title: 'Recognition 2',
           createdAt: new Date(),
@@ -630,7 +630,7 @@ describe('NotificationService', () => {
   describe('getNotificationPreferences', () => {
     it('should return user notification preferences', async () => {
       const mockPreferences = {
-        userId: 1,
+        user_id: 1,
         email: true,
         push: false,
         sms: false,
@@ -660,7 +660,7 @@ describe('NotificationService', () => {
       const result = await notificationService.getNotificationPreferences(1);
 
       expect(result).toEqual({
-        userId: 1,
+        user_id: 1,
         email: true,
         push: true,
         sms: false,
@@ -680,7 +680,7 @@ describe('NotificationService', () => {
       };
 
       const mockUpdatedPreferences = {
-        userId: 1,
+        user_id: 1,
         ...preferences,
         updatedAt: new Date(),
       };
@@ -718,7 +718,7 @@ describe('NotificationService', () => {
 
       // Then insert creates new preferences
       const mockCreatedPreferences = {
-        userId: 1,
+        user_id: 1,
         ...preferences,
         createdAt: new Date(),
       };
@@ -768,7 +768,7 @@ describe('NotificationService', () => {
 
     it('should sanitize notification content', async () => {
       const maliciousData = {
-        userId: 1,
+        user_id: 1,
         type: 'system',
         title: '<script>alert("xss")</script>Important',
         message: 'Clean message <b>bold</b>',
@@ -777,7 +777,7 @@ describe('NotificationService', () => {
 
       const sanitizedNotification = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         type: 'system',
         title: 'Important', // Script tags removed
         message: 'Clean message bold', // HTML tags removed but content preserved
@@ -802,12 +802,12 @@ describe('NotificationService', () => {
   describe('Integration with Other Services', () => {
     it('should create notification for recognition events', async () => {
       const recognitionData = {
-        userId: 2,
+        user_id: 2,
         type: 'recognition',
         title: 'You received recognition!',
         message: 'John Doe recognized you for excellent teamwork',
         data: {
-          recognitionId: 123,
+          recognition_id: 123,
           points: 150,
           recognizedBy: 'John Doe',
           category: 'teamwork',
@@ -837,7 +837,7 @@ describe('NotificationService', () => {
 
     it('should create notification for leave request updates', async () => {
       const leaveData = {
-        userId: 3,
+        user_id: 3,
         type: 'leave',
         title: 'Leave request approved',
         message: 'Your vacation request for Aug 1-5 has been approved',
