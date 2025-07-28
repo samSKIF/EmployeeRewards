@@ -208,17 +208,20 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { department, location, search, limit = 50, offset = 0 } = req.query;
-
+    const { department, location, search, offset = 0 } = req.query;
     const organizationId = req.user.organization_id;
+
+    // Get subscription limit for this organization
+    const subscription = await storage.getActiveSubscription(organizationId);
+    const subscriptionLimit = subscription?.subscribed_users || 1000; // Default fallback
 
     const userCount = await storage.getUserCount(organizationId);
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
-    logger.info(`Fetching users with limit: ${limit}, offset: ${offset}`);
+    logger.info(`Using subscription limit: ${subscriptionLimit}, offset: ${offset}`);
 
     const users = await storage.getUsers(
       organizationId,
-      parseInt(limit as string),
+      subscriptionLimit, // Use subscription limit instead of hardcoded 50
       parseInt(offset as string)
     );
 
