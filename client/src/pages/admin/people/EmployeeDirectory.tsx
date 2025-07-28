@@ -158,26 +158,15 @@ export default function EmployeeDirectory() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6 border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Employees</p>
-              <p className="text-3xl font-bold text-gray-900">{totalEmployees}</p>
-              <p className="text-xs text-gray-500 mt-1">All employees in the system</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-full">
-              <Users className="h-6 w-6 text-gray-400" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg p-6 border shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Active Employees</p>
+              <p className="text-sm font-medium text-gray-600">Team Members</p>
               <p className="text-3xl font-bold text-gray-900">{activeEmployees}</p>
-              <p className="text-xs text-gray-500 mt-1">Currently active team members</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {activeEmployees} active • {totalEmployees - activeEmployees} inactive • {totalEmployees} total
+              </p>
             </div>
             <div className="p-3 bg-green-50 rounded-full">
               <Users className="h-6 w-6 text-green-500" />
@@ -185,35 +174,28 @@ export default function EmployeeDirectory() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 border shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Departments</p>
-              <p className="text-3xl font-bold text-gray-900">{totalDepartments}</p>
-              <p className="text-xs text-gray-500 mt-1">Active departments</p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded-full">
-              <Filter className="h-6 w-6 text-blue-500" />
-            </div>
-          </div>
-        </div>
-
-        {/* Subscription Usage Card */}
-        <div className="bg-white rounded-lg p-6 border shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        {/* Subscription Usage Card - Enhanced */}
+        <div className="bg-white rounded-lg p-6 border shadow-sm col-span-2">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Subscription Usage</p>
               <p className="text-2xl font-bold text-gray-900">{activeEmployees}/{subscriptionLimit}</p>
-              <p className="text-xs text-gray-500 mt-1">{usagePercentage}% of capacity used</p>
+              <p className="text-xs text-gray-500 mt-1">{usagePercentage}% capacity used • {subscriptionLimit - activeEmployees} seats available</p>
             </div>
-            <div className={`p-3 rounded-full ${usagePercentage > 90 ? 'bg-red-50' : usagePercentage > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
-              <Users className={`h-6 w-6 ${usagePercentage > 90 ? 'text-red-500' : usagePercentage > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-600">Departments</p>
+                <p className="text-2xl font-bold text-gray-900">{totalDepartments}</p>
+              </div>
+              <div className={`p-3 rounded-full ${usagePercentage > 90 ? 'bg-red-50' : usagePercentage > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+                <Users className={`h-6 w-6 ${usagePercentage > 90 ? 'text-red-500' : usagePercentage > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
+              </div>
             </div>
           </div>
           {/* Usage Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
             <div 
-              className={`h-2.5 rounded-full transition-all duration-300 ${
+              className={`h-3 rounded-full transition-all duration-300 ${
                 usagePercentage > 90 ? 'bg-red-500' : 
                 usagePercentage > 75 ? 'bg-yellow-500' : 
                 'bg-green-500'
@@ -221,9 +203,9 @@ export default function EmployeeDirectory() {
               style={{ width: `${Math.min(usagePercentage, 100)}%` }}
             ></div>
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Available: {subscriptionLimit - activeEmployees}</span>
-            <span>{100 - usagePercentage}% remaining</span>
+          <div className="flex justify-between text-xs text-gray-500 mt-2">
+            <span>Active employees using subscription seats</span>
+            <span>{100 - usagePercentage}% capacity remaining</span>
           </div>
         </div>
       </div>
