@@ -10,6 +10,7 @@ import spacesRoutes from './spacesRoutes';
 import featuredPostsRoutes from './featuredPostsRoutes';
 import prioritiesRoutes from './prioritiesRoutes';
 import postsRoutes from './postsRoutes';
+import subscriptionRoutes from './subscriptionRoutes';
 import { logger } from '@shared/logger';
 
 // Import microservices
@@ -53,6 +54,9 @@ export function registerRoutes(app: Express) {
 
   // Priorities management routes
   app.use('/api/priorities', prioritiesRoutes);
+
+  // Subscription management routes
+  app.use('/api/admin/subscription', subscriptionRoutes);
 
   // Mount microservices with prefixes to avoid conflicts
   app.use('/api/recognition', recognitionMicroservice);

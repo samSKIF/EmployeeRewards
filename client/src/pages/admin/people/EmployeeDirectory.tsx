@@ -72,10 +72,22 @@ export default function EmployeeDirectory() {
     queryKey: ['/api/users/locations'],
   });
 
+  // Get subscription information
+  const { data: subscriptionInfo } = useQuery<{
+    subscribed_users: number;
+    current_usage: number;
+    active_employees: number;
+    total_employees: number;
+  }>({
+    queryKey: ['/api/admin/subscription/usage'],
+  });
+
   // Calculate stats
-  const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(emp => emp.status === 'active').length;
+  const totalEmployees = subscriptionInfo?.total_employees || employees.length;
+  const activeEmployees = subscriptionInfo?.active_employees || employees.filter(emp => emp.status === 'active').length;
   const totalDepartments = new Set(employees.map(emp => emp.department).filter(Boolean)).size;
+  const subscriptionLimit = subscriptionInfo?.subscribed_users || 500;
+  const usagePercentage = subscriptionLimit > 0 ? Math.round((activeEmployees / subscriptionLimit) * 100) : 0;
 
   // Filter employees based on search and filters
   const filteredEmployees = employees.filter((employee) => {
@@ -146,7 +158,7 @@ export default function EmployeeDirectory() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6 border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
@@ -167,8 +179,8 @@ export default function EmployeeDirectory() {
               <p className="text-3xl font-bold text-gray-900">{activeEmployees}</p>
               <p className="text-xs text-gray-500 mt-1">Currently active team members</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-full">
-              <Users className="h-6 w-6 text-gray-400" />
+            <div className="p-3 bg-green-50 rounded-full">
+              <Users className="h-6 w-6 text-green-500" />
             </div>
           </div>
         </div>
@@ -180,12 +192,72 @@ export default function EmployeeDirectory() {
               <p className="text-3xl font-bold text-gray-900">{totalDepartments}</p>
               <p className="text-xs text-gray-500 mt-1">Active departments</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-full">
-              <Filter className="h-6 w-6 text-gray-400" />
+            <div className="p-3 bg-blue-50 rounded-full">
+              <Filter className="h-6 w-6 text-blue-500" />
             </div>
           </div>
         </div>
+
+        {/* Subscription Usage Card */}
+        <div className="bg-white rounded-lg p-6 border shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Subscription Usage</p>
+              <p className="text-2xl font-bold text-gray-900">{activeEmployees}/{subscriptionLimit}</p>
+              <p className="text-xs text-gray-500 mt-1">{usagePercentage}% of capacity used</p>
+            </div>
+            <div className={`p-3 rounded-full ${usagePercentage > 90 ? 'bg-red-50' : usagePercentage > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+              <Users className={`h-6 w-6 ${usagePercentage > 90 ? 'text-red-500' : usagePercentage > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
+            </div>
+          </div>
+          {/* Usage Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+            <div 
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                usagePercentage > 90 ? 'bg-red-500' : 
+                usagePercentage > 75 ? 'bg-yellow-500' : 
+                'bg-green-500'
+              }`}
+              style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>Available: {subscriptionLimit - activeEmployees}</span>
+            <span>{100 - usagePercentage}% remaining</span>
+          </div>
+        </div>
       </div>
+
+      {/* Usage Alert */}
+      {usagePercentage > 90 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="text-red-400 mr-3">⚠️</div>
+            <div>
+              <h4 className="text-red-800 font-medium">Subscription Limit Warning</h4>
+              <p className="text-red-700 text-sm">
+                You're using {usagePercentage}% of your subscription capacity ({activeEmployees}/{subscriptionLimit}). 
+                Consider upgrading your plan or removing inactive employees.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {usagePercentage > 75 && usagePercentage <= 90 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="text-yellow-400 mr-3">💡</div>
+            <div>
+              <h4 className="text-yellow-800 font-medium">Subscription Usage Notice</h4>
+              <p className="text-yellow-700 text-sm">
+                You're using {usagePercentage}% of your subscription capacity ({activeEmployees}/{subscriptionLimit}). 
+                You have {subscriptionLimit - activeEmployees} employee slots remaining.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search & Filter Section */}
       <div className="bg-white rounded-lg p-6 border shadow-sm">
