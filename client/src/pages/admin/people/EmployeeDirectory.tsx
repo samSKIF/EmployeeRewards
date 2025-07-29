@@ -47,6 +47,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDate, formatDistanceToNow } from 'date-fns';
 import { apiRequest } from '@/lib/queryClient';
+import { CreateEmployeeForm } from '@/components/admin/employee-management/CreateEmployeeForm';
+import { EmployeeFormData } from '@/components/admin/employee-management/types';
 
 interface Employee {
   id: number;
@@ -117,6 +119,7 @@ export default function EmployeeDirectory() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
   // Debug dialog state
   useEffect(() => {
@@ -177,6 +180,37 @@ export default function EmployeeDirectory() {
       });
     },
   });
+
+  // Create employee mutation
+  const createEmployeeMutation = useMutation({
+    mutationFn: async (data: EmployeeFormData) => {
+      const response = await apiRequest('/api/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Employee created successfully',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setIsCreateDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create employee',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Handle creating employee
+  const handleCreateEmployee = async (data: EmployeeFormData) => {
+    await createEmployeeMutation.mutateAsync(data);
+  };
 
   // Handle opening edit dialog
   const handleEditEmployee = (employee: Employee) => {
@@ -412,7 +446,10 @@ export default function EmployeeDirectory() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button className="bg-teal-600 hover:bg-teal-700">
+          <Button 
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Employee
           </Button>
@@ -875,6 +912,16 @@ export default function EmployeeDirectory() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Employee Form */}
+      <CreateEmployeeForm
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleCreateEmployee}
+        departments={departments}
+        locations={locations}
+        isLoading={createEmployeeMutation.isPending}
+      />
     </div>
   );
 }
