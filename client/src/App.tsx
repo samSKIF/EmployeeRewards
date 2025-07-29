@@ -50,6 +50,7 @@ import GroupsPageFacebook from '@/pages/groups-facebook';
 import SpacesPage from '@/pages/spaces-new-design';
 import SpaceDetailPage from '@/pages/space-detail';
 import CorporateLoginPage from '@/pages/corporate-login';
+import DepartmentManagement from '@/pages/admin/settings/DepartmentManagement';
 
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -211,6 +212,11 @@ function App() {
                   <Route path="/admin/system/organization">
                     <SocialLayout>
                       <OrganizationSettings />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/settings/departments">
+                    <SocialLayout>
+                      <DepartmentManagement />
                     </SocialLayout>
                   </Route>
                   {/* Legacy route redirects */}

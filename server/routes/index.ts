@@ -2,6 +2,8 @@ import { Express } from 'express';
 import authRoutes from './authRoutes';
 import { userRoutes } from './userRoutes';
 import adminRoutes from './adminRoutes';
+import departmentsRoutes from './admin/departmentsRoutes';
+import bulkUploadRoutes from './admin/bulkUploadRoutes';
 import celebrationRoutes from './celebrationRoutes';
 import { celebrationPostRoutes } from './celebrationPostRoutes';
 import pointsRoutes from './pointsRoutes';
@@ -32,6 +34,12 @@ export function registerRoutes(app: Express) {
 
   // Admin functionality routes
   app.use('/api/admin', adminRoutes);
+  
+  // Department management routes
+  app.use(departmentsRoutes);
+  
+  // Bulk upload routes
+  app.use(bulkUploadRoutes);
 
   // Celebration routes (birthdays, anniversaries)
   app.use('/api/celebrations', celebrationRoutes);

@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
-import { adminMiddleware } from '../../middleware/adminMiddleware';
+import { verifyToken } from '../../middleware/auth';
+import { verifyAdmin } from '../../middleware/auth';
 import { storage } from '../../storage';
 
 const router = Router();
 
 // Get all departments for organization
-router.get('/api/admin/departments', authMiddleware, adminMiddleware, async (req, res) => {
+router.get('/api/admin/departments', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const organizationId = req.user!.organizationId;
+    const organizationId = (req.user as any).organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -23,9 +23,9 @@ router.get('/api/admin/departments', authMiddleware, adminMiddleware, async (req
 });
 
 // Create new department
-router.post('/api/admin/departments', authMiddleware, adminMiddleware, async (req, res) => {
+router.post('/api/admin/departments', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const organizationId = req.user!.organizationId;
+    const organizationId = (req.user as any).organization_id;
     const { name, description, manager_id, color } = req.body;
     
     if (!organizationId) {
@@ -60,10 +60,10 @@ router.post('/api/admin/departments', authMiddleware, adminMiddleware, async (re
 });
 
 // Update department
-router.put('/api/admin/departments/:id', authMiddleware, adminMiddleware, async (req, res) => {
+router.put('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
-    const organizationId = req.user!.organizationId;
+    const organizationId = (req.user as any).organization_id;
     const { name, description, manager_id, color, is_active } = req.body;
     
     if (!organizationId) {
@@ -102,10 +102,10 @@ router.put('/api/admin/departments/:id', authMiddleware, adminMiddleware, async 
 });
 
 // Delete department
-router.delete('/api/admin/departments/:id', authMiddleware, adminMiddleware, async (req, res) => {
+router.delete('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
-    const organizationId = req.user!.organizationId;
+    const organizationId = (req.user as any).organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -135,10 +135,10 @@ router.delete('/api/admin/departments/:id', authMiddleware, adminMiddleware, asy
 });
 
 // Get department usage statistics
-router.get('/api/admin/departments/:id/stats', authMiddleware, adminMiddleware, async (req, res) => {
+router.get('/api/admin/departments/:id/stats', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
-    const organizationId = req.user!.organizationId;
+    const organizationId = (req.user as any).organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });

@@ -55,6 +55,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { Link } from 'wouter';
+import BulkUploadWithApproval from '@/components/admin/employee-management/BulkUploadWithApproval';
 
 interface Employee {
   id: number;
@@ -267,20 +268,53 @@ export default function EmployeeBulkActions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/people/employee-directory">
+          <Link href="/admin/employees">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Directory
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Bulk Employee Actions</h1>
+            <h1 className="text-3xl font-bold">Employee Bulk Operations</h1>
             <p className="text-muted-foreground">
-              Perform actions on multiple employees at once
+              Upload new employees or perform bulk actions
             </p>
           </div>
         </div>
+        <div className="flex gap-2">
+          <Button
+            variant={activeTab === 'bulk-upload' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('bulk-upload')}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Upload
+          </Button>
+          <Button
+            variant={activeTab === 'bulk-actions' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('bulk-actions')}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Bulk Actions
+          </Button>
+        </div>
       </div>
+
+      {/* Bulk Upload Tab */}
+      {activeTab === 'bulk-upload' && (
+        <BulkUploadWithApproval onUploadComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+        }} />
+      )}
+
+      {/* Bulk Actions Tab */}
+      {activeTab === 'bulk-actions' && (
+        <>
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Bulk Employee Actions</h2>
+            <p className="text-muted-foreground mb-6">
+              Select employees and perform actions on multiple employees at once
+            </p>
+          </div>
 
       {/* Selection Summary */}
       <Card>
@@ -522,6 +556,8 @@ export default function EmployeeBulkActions() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 }

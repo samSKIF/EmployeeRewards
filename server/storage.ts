@@ -2658,6 +2658,20 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Additional helper methods for bulk upload
+  async getUsersByEmails(emails: string[]) {
+    try {
+      const results = await db
+        .select()
+        .from(users)
+        .where(inArray(users.email, emails));
+      return results;
+    } catch (error) {
+      console.error('Error fetching users by emails:', error);
+      throw error;
+    }
+  }
 }
 
 interface ShopConfig {
