@@ -52,6 +52,8 @@ import {
   surveyAnswers,
   SurveyAnswer,
   InsertSurveyAnswer,
+  departments,
+  locations,
 } from '@shared/schema';
 import {
   eq,
@@ -2543,6 +2545,118 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(users.name));
 
     return usersData;
+  }
+
+  // Department Management Methods
+  async getDepartmentsByOrganization(organizationId: number) {
+    try {
+      const results = await db
+        .select({
+          id: departments.id,
+          name: departments.name,
+          description: departments.description,
+          manager_id: departments.manager_id,
+          color: departments.color,
+          is_active: departments.is_active,
+          created_at: departments.created_at,
+        })
+        .from(departments)
+        .where(eq(departments.organization_id, organizationId))
+        .orderBy(departments.name);
+
+      return results;
+    } catch (error) {
+      console.error('Error fetching departments by organization:', error);
+      throw error;
+    }
+  }
+
+  async getDepartmentById(id: number) {
+    try {
+      const [result] = await db
+        .select()
+        .from(departments)
+        .where(eq(departments.id, id));
+      return result;
+    } catch (error) {
+      console.error('Error fetching department by id:', error);
+      throw error;
+    }
+  }
+
+  async getDepartmentByName(organizationId: number, name: string) {
+    try {
+      const [result] = await db
+        .select()
+        .from(departments)
+        .where(
+          and(
+            eq(departments.organization_id, organizationId),
+            eq(departments.name, name)
+          )
+        );
+      return result;
+    } catch (error) {
+      console.error('Error fetching department by name:', error);
+      throw error;
+    }
+  }
+
+  async createDepartment(departmentData: any) {
+    try {
+      const [result] = await db
+        .insert(departments)
+        .values(departmentData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error creating department:', error);
+      throw error;
+    }
+  }
+
+  async updateDepartment(id: number, departmentData: any) {
+    try {
+      const [result] = await db
+        .update(departments)
+        .set(departmentData)
+        .where(eq(departments.id, id))
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error updating department:', error);
+      throw error;
+    }
+  }
+
+  async deleteDepartment(id: number) {
+    try {
+      await db
+        .delete(departments)
+        .where(eq(departments.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting department:', error);
+      throw error;
+    }
+  }
+
+  async getEmployeeCountByDepartment(organizationId: number, departmentName: string) {
+    try {
+      const [result] = await db
+        .select({ count: count(users.id) })
+        .from(users)
+        .where(
+          and(
+            eq(users.organization_id, organizationId),
+            eq(users.department, departmentName)
+          )
+        );
+      return Number(result.count);
+    } catch (error) {
+      console.error('Error getting employee count by department:', error);
+      throw error;
+    }
   }
 }
 

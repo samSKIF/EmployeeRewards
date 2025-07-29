@@ -78,6 +78,36 @@ export const organization_features = pgTable('organization_features', {
   settings: jsonb('settings'), // Feature-specific settings/configuration
 });
 
+// Custom departments per organization
+export const departments = pgTable('departments', {
+  id: serial('id').primaryKey(),
+  organization_id: integer('organization_id')
+    .references(() => organizations.id)
+    .notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  manager_id: integer('manager_id').references(() => users.id), // Department manager
+  color: text('color').default('#6B7280'), // For UI theming
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_by: integer('created_by').references(() => users.id),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Custom locations per organization  
+export const locations = pgTable('locations', {
+  id: serial('id').primaryKey(),
+  organization_id: integer('organization_id')
+    .references(() => organizations.id)
+    .notNull(),
+  name: text('name').notNull(),
+  address: text('address'),
+  timezone: text('timezone'),
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_by: integer('created_by').references(() => users.id),
+});
+
 // Users table (extended)
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
