@@ -130,6 +130,14 @@ function App() {
       <Toaster />
       {appReady && (
         <Switch>
+          {/* Public routes - No authentication required */}
+          <Route path="/auth">
+            <AuthPage />
+          </Route>
+          <Route path="/corporate-login">
+            <CorporateLoginPage />
+          </Route>
+
           {/* Management Dashboard - Separate from social platform (no AuthProvider) */}
           <Route path="/management">
             <ManagementDashboard />
