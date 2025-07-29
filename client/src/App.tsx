@@ -53,6 +53,7 @@ import CorporateLoginPage from '@/pages/corporate-login';
 
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';
+import AuthGuard from '@/components/AuthGuard';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import SocialLayout from '@/layouts/SocialLayout';
 import { Loader2 } from 'lucide-react';
@@ -137,11 +138,12 @@ function App() {
             <CreateOrganization />
           </Route>
 
-          {/* All other routes use AuthProvider */}
+          {/* All other routes use AuthProvider with AuthGuard */}
           <Route>
             <AuthProvider>
-              <BrandingProvider>
-                <Switch>
+              <AuthGuard>
+                <BrandingProvider>
+                  <Switch>
                   {/* Main dashboard routes */}
                   <Route path="/social">
                     <SocialLayout>
@@ -476,11 +478,12 @@ function App() {
                       </svg>
                     </div>
                   </Route>
-                  <Route>
-                    <NotFound />
-                  </Route>
-                </Switch>
-              </BrandingProvider>
+                    <Route>
+                      <NotFound />
+                    </Route>
+                  </Switch>
+                </BrandingProvider>
+              </AuthGuard>
             </AuthProvider>
           </Route>
         </Switch>

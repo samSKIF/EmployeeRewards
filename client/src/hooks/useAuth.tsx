@@ -87,17 +87,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.log('useAuth: Setting user state:', user);
             setUser(user);
           } else {
-            console.log('useAuth: API FAILED - clearing state');
+            console.log('useAuth: API FAILED - clearing state and redirecting to login');
+            localStorage.removeItem('token');
             localStorage.removeItem('firebaseToken');
+            localStorage.removeItem('managementToken');
             setUser(null);
+            // Force redirect to login on authentication failure
+            if (window.location.pathname !== '/auth' && window.location.pathname !== '/corporate-login') {
+              window.location.href = '/auth';
+            }
           }
         } else {
-          console.log('useAuth: No token - setting user to null');
+          console.log('useAuth: No token - setting user to null and redirecting to login');
           setUser(null);
+          // Force redirect to login if no token
+          if (window.location.pathname !== '/auth' && window.location.pathname !== '/corporate-login') {
+            window.location.href = '/auth';
+          }
         }
       } catch (error) {
         console.error('useAuth: ERROR:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('firebaseToken');
+        localStorage.removeItem('managementToken');
         setUser(null);
+        // Force redirect to login on error
+        if (window.location.pathname !== '/auth' && window.location.pathname !== '/corporate-login') {
+          window.location.href = '/auth';
+        }
       } finally {
         setIsLoading(false);
         console.log('useAuth: initAuth complete');
