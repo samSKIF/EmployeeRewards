@@ -1,29 +1,20 @@
 import { Router } from 'express';
-import { verifyToken } from '../../middleware/auth';
-import { verifyAdmin } from '../../middleware/auth';
+import { verifyToken, verifyAdmin } from '../../middleware/auth';
 import { storage } from '../../storage';
-import { db, departmentsTable } from '../../db/db';
-import { eq, and } from 'drizzle-orm';
 
 const router = Router();
 
 // Get all departments for organization
 router.get('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const user = req.user as any;
-
-    if (!user.organization_id) {
-      console.error('User missing organization_id:', user);
-      return res.status(400).json({ message: 'User organization not found' });
+    const organizationId = (req.user as any).organization_id;
+    
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User not associated with an organization' });
     }
 
-    const departments = await db
-      .select()
-      .from(departmentsTable)
-      .where(eq(departmentsTable.organization_id, user.organization_id));
-
-    console.log(`Fetched ${departments.length} departments for organization ${user.organization_id}`);
-    res.json(departments || []);
+    const departments = await storage.getDepartmentsByOrganization(organizationId);
+    res.json(departments);
   } catch (error) {
     console.error('Error fetching departments:', error);
     res.status(500).json({ message: 'Failed to fetch departments' });
@@ -33,46 +24,29 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 // Create new department
 router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const user = req.user as any;
     const { name, description, color } = req.body;
+    const organizationId = (req.user as any).organization_id;
+    const userId = (req.user as any).id;
 
-    console.log('Creating department with data:', { name, description, color, organization_id: user.organization_id });
-
-    if (!name || name.trim() === '') {
-      return res.status(400).json({ message: 'Department name is required' });
+    if (!name || !organizationId) {
+      return res.status(400).json({ message: 'Name and organization are required' });
     }
 
-    if (!user.organization_id) {
-      return res.status(400).json({ message: 'User organization not found' });
+    // Check if department already exists
+    const existingDepartment = await storage.getDepartmentByName(name, organizationId);
+    if (existingDepartment) {
+      return res.status(409).json({ message: 'Department with this name already exists' });
     }
 
-    // Check if department with same name already exists
-    const existingDepartment = await db
-      .select()
-      .from(departmentsTable)
-      .where(
-        and(
-          eq(departmentsTable.name, name.trim()),
-          eq(departmentsTable.organization_id, user.organization_id)
-        )
-      )
-      .limit(1);
+    const newDepartment = await storage.createDepartment({
+      name,
+      description: description || '',
+      color: color || '#3B82F6',
+      organization_id: organizationId,
+      created_by: userId,
+      is_active: true
+    });
 
-    if (existingDepartment.length > 0) {
-      return res.status(400).json({ message: 'Department with this name already exists' });
-    }
-
-    const [newDepartment] = await db
-      .insert(departmentsTable)
-      .values({
-        name: name.trim(),
-        description: description?.trim() || '',
-        color: color || '#3B82F6',
-        organization_id: user.organization_id,
-      })
-      .returning();
-
-    console.log('Created department:', newDepartment);
     res.status(201).json(newDepartment);
   } catch (error) {
     console.error('Error creating department:', error);
@@ -99,7 +73,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 
     // Check if new name conflicts with existing department (if name is changing)
     if (name && name !== existingDepartment.name) {
-      const nameConflict = await storage.getDepartmentByName(organizationId, name);
+      const nameConflict = await storage.getDepartmentByName(name, organizationId);
       if (nameConflict) {
         return res.status(409).json({ message: 'Department with this name already exists' });
       }
