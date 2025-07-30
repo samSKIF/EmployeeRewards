@@ -36,7 +36,7 @@ export function registerRoutes(app: Express) {
   app.use('/api/admin', adminRoutes);
   
   // Department management routes
-  app.use(departmentsRoutes);
+  app.use('/api/admin/departments', departmentsRoutes);
   
   // Bulk upload routes
   app.use(bulkUploadRoutes);
