@@ -80,13 +80,14 @@ export default function DepartmentManagement() {
   // Create department mutation
   const createDepartmentMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/admin/departments', 'POST', data);
+      const response = await apiRequest('POST', '/api/admin/departments', data);
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department created successfully' });
-      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
       setIsCreateDialogOpen(false);
       resetForm();
+      fetchDepartments(); // Refresh the departments list
     },
     onError: (error: any) => {
       toast({
@@ -100,14 +101,15 @@ export default function DepartmentManagement() {
   // Update department mutation
   const updateDepartmentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest(`/api/admin/departments/${id}`, 'PUT', data);
+      const response = await apiRequest('PUT', `/api/admin/departments/${id}`, data);
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department updated successfully' });
-      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
       setIsEditDialogOpen(false);
       setEditingDepartment(null);
       resetForm();
+      fetchDepartments(); // Refresh the departments list
     },
     onError: (error: any) => {
       toast({
@@ -121,11 +123,12 @@ export default function DepartmentManagement() {
   // Delete department mutation
   const deleteDepartmentMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/departments/${id}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/admin/departments/${id}`);
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department deleted successfully' });
-      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
+      fetchDepartments(); // Refresh the departments list
     },
     onError: (error: any) => {
       toast({
