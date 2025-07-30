@@ -18,19 +18,10 @@ interface Department {
   id: number;
   name: string;
   description: string | null;
-  manager_id: number | null;
   color: string;
   is_active: boolean;
   created_at: string;
   employee_count?: number;
-  manager_name?: string;
-}
-
-interface Employee {
-  id: number;
-  name: string;
-  surname: string;
-  email: string;
 }
 
 const DEPARTMENT_COLORS = [
@@ -45,7 +36,6 @@ export default function DepartmentManagement() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    manager_id: 'none',
     color: '#6B7280',
   });
 
@@ -55,11 +45,6 @@ export default function DepartmentManagement() {
   // Fetch departments
   const { data: departments = [], isLoading } = useQuery<Department[]>({
     queryKey: ['/api/admin/departments'],
-  });
-
-  // Fetch employees for manager selection
-  const { data: employees = [] } = useQuery<Employee[]>({
-    queryKey: ['/api/users'],
   });
 
   // Create department mutation
@@ -125,7 +110,6 @@ export default function DepartmentManagement() {
     setFormData({
       name: '',
       description: '',
-      manager_id: 'none',
       color: '#6B7280',
     });
   };
@@ -140,7 +124,6 @@ export default function DepartmentManagement() {
     setFormData({
       name: department.name,
       description: department.description || '',
-      manager_id: department.manager_id?.toString() || 'none',
       color: department.color,
     });
     setIsEditDialogOpen(true);
@@ -150,7 +133,6 @@ export default function DepartmentManagement() {
     const submitData = {
       name: formData.name,
       description: formData.description || null,
-      manager_id: formData.manager_id && formData.manager_id !== 'none' ? parseInt(formData.manager_id) : null,
       color: formData.color,
     };
     createDepartmentMutation.mutate(submitData);
@@ -162,7 +144,6 @@ export default function DepartmentManagement() {
     const submitData = {
       name: formData.name,
       description: formData.description || null,
-      manager_id: formData.manager_id && formData.manager_id !== 'none' ? parseInt(formData.manager_id) : null,
       color: formData.color,
     };
     updateDepartmentMutation.mutate({ id: editingDepartment.id, data: submitData });
@@ -408,25 +389,7 @@ export default function DepartmentManagement() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="manager">Department Manager</Label>
-              <Select 
-                value={formData.manager_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, manager_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select manager (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No manager</SelectItem>
-                  {employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id.toString()}>
-                      {employee.name} {employee.surname} ({employee.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
 
             <div>
               <Label htmlFor="color">Department Color</Label>
@@ -491,25 +454,7 @@ export default function DepartmentManagement() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="edit-manager">Department Manager</Label>
-              <Select 
-                value={formData.manager_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, manager_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select manager (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No manager</SelectItem>
-                  {employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id.toString()}>
-                      {employee.name} {employee.surname} ({employee.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
 
             <div>
               <Label htmlFor="edit-color">Department Color</Label>

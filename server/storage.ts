@@ -2555,7 +2555,6 @@ export class DatabaseStorage implements IStorage {
           id: departments.id,
           name: departments.name,
           description: departments.description,
-          manager_id: departments.manager_id,
           color: departments.color,
           is_active: departments.is_active,
           created_at: departments.created_at,
