@@ -38,7 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical } from 'lucide-react';
+import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical, Building2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -446,6 +446,12 @@ export default function EmployeeDirectory() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+          <Link href="/admin/settings/departments">
+            <Button variant="outline" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50">
+              <Building2 className="h-4 w-4 mr-2" />
+              Manage Departments
+            </Button>
+          </Link>
           <Button 
             onClick={() => setIsCreateDialogOpen(true)}
             className="bg-teal-600 hover:bg-teal-700"
@@ -455,6 +461,29 @@ export default function EmployeeDirectory() {
           </Button>
         </div>
       </div>
+
+      {/* Department Quick Info */}
+      {totalDepartments === 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Building2 className="h-8 w-8 text-blue-600 mr-3" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">No Departments Set Up</h3>
+                  <p className="text-sm text-gray-600">Create departments to organize your team members</p>
+                </div>
+              </div>
+              <Link href="/admin/settings/departments">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Departments
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-6">
