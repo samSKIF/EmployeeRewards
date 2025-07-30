@@ -65,10 +65,7 @@ export default function DepartmentManagement() {
   // Create department mutation
   const createDepartmentMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/admin/departments', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('/api/admin/departments', 'POST', data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department created successfully' });
@@ -88,10 +85,7 @@ export default function DepartmentManagement() {
   // Update department mutation
   const updateDepartmentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest(`/api/admin/departments/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return apiRequest(`/api/admin/departments/${id}`, 'PUT', data);
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department updated successfully' });
@@ -112,9 +106,7 @@ export default function DepartmentManagement() {
   // Delete department mutation
   const deleteDepartmentMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/admin/departments/${id}`, {
-        method: 'DELETE',
-      });
+      return apiRequest(`/api/admin/departments/${id}`, 'DELETE');
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department deleted successfully' });
@@ -201,11 +193,39 @@ export default function DepartmentManagement() {
           <h1 className="text-2xl font-bold text-gray-900">Department Management</h1>
           <p className="text-gray-600">Manage your organization's departments and structure</p>
         </div>
-        <Button onClick={handleCreateDepartment} className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Department
+        <Button 
+          onClick={handleCreateDepartment} 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 shadow-lg"
+          size="lg"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Create Department
         </Button>
       </div>
+
+      {/* Quick Action Card for HR */}
+      {departments.length > 0 && (
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Plus className="h-8 w-8 text-green-600 mr-3" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">Quick Actions</h3>
+                  <p className="text-sm text-gray-600">Organize your company structure</p>
+                </div>
+              </div>
+              <Button 
+                onClick={handleCreateDepartment} 
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Department
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-6">
@@ -246,8 +266,28 @@ export default function DepartmentManagement() {
         </Card>
       </div>
 
+      {/* Quick Actions for Empty State */}
+      {departments.length === 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-8 text-center">
+            <Building2 className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Departments Yet</h3>
+            <p className="text-gray-600 mb-6">Start organizing your company by creating your first department</p>
+            <Button 
+              onClick={handleCreateDepartment} 
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3"
+              size="lg"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create Your First Department
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Departments Table */}
-      <Card>
+      {departments.length > 0 && (
+        <Card>
         <CardHeader>
           <CardTitle>Departments</CardTitle>
           <CardDescription>Manage and organize your company departments</CardDescription>
@@ -333,7 +373,8 @@ export default function DepartmentManagement() {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      )}
 
       {/* Create Department Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
