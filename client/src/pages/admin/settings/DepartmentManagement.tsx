@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,9 +43,39 @@ export default function DepartmentManagement() {
   const { toast } = useToast();
 
   // Fetch departments
-  const { data: departments = [], isLoading } = useQuery<Department[]>({
-    queryKey: ['/api/admin/departments'],
-  });
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/departments', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setDepartments(Array.isArray(data) ? data : []);
+        } else {
+          console.error('Failed to fetch departments:', response.status, response.statusText);
+          setDepartments([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch departments:', error);
+        setDepartments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
 
   // Create department mutation
   const createDepartmentMutation = useMutation({
@@ -54,7 +84,7 @@ export default function DepartmentManagement() {
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
+      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
       setIsCreateDialogOpen(false);
       resetForm();
     },
@@ -74,7 +104,7 @@ export default function DepartmentManagement() {
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
+      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
       setIsEditDialogOpen(false);
       setEditingDepartment(null);
       resetForm();
@@ -95,7 +125,7 @@ export default function DepartmentManagement() {
     },
     onSuccess: () => {
       toast({ title: 'Success', description: 'Department deleted successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
+      //queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
     },
     onError: (error: any) => {
       toast({
@@ -140,7 +170,7 @@ export default function DepartmentManagement() {
 
   const handleSubmitEdit = () => {
     if (!editingDepartment) return;
-    
+
     const submitData = {
       name: formData.name,
       description: formData.description || null,
@@ -158,7 +188,7 @@ export default function DepartmentManagement() {
   const totalEmployees = departments.reduce((sum, dept) => sum + (dept.employee_count || 0), 0);
   const activeDepartments = departments.filter(dept => dept.is_active).length;
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -221,7 +251,7 @@ export default function DepartmentManagement() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -341,7 +371,7 @@ export default function DepartmentManagement() {
               ))}
             </TableBody>
           </Table>
-          
+
           {departments.length === 0 && (
             <div className="text-center py-8">
               <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -366,7 +396,7 @@ export default function DepartmentManagement() {
               Add a new department to your organization structure
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="name">Department Name *</Label>
@@ -431,7 +461,7 @@ export default function DepartmentManagement() {
               Modify department information
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="edit-name">Department Name *</Label>

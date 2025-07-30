@@ -2,20 +2,28 @@ import { Router } from 'express';
 import { verifyToken } from '../../middleware/auth';
 import { verifyAdmin } from '../../middleware/auth';
 import { storage } from '../../storage';
+import { db, departmentsTable } from '../../db/db';
+import { eq, and } from 'drizzle-orm';
 
 const router = Router();
 
 // Get all departments for organization
 router.get('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
-    
-    if (!organizationId) {
-      return res.status(400).json({ message: 'User not associated with an organization' });
+    const user = req.user as any;
+
+    if (!user.organization_id) {
+      console.error('User missing organization_id:', user);
+      return res.status(400).json({ message: 'User organization not found' });
     }
 
-    const departments = await storage.getDepartmentsByOrganization(organizationId);
-    res.json(departments);
+    const departments = await db
+      .select()
+      .from(departmentsTable)
+      .where(eq(departmentsTable.organization_id, user.organization_id));
+
+    console.log(`Fetched ${departments.length} departments for organization ${user.organization_id}`);
+    res.json(departments || []);
   } catch (error) {
     console.error('Error fetching departments:', error);
     res.status(500).json({ message: 'Failed to fetch departments' });
@@ -25,33 +33,47 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 // Create new department
 router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const user = req.user as any;
     const { name, description, color } = req.body;
-    
-    if (!organizationId) {
-      return res.status(400).json({ message: 'User not associated with an organization' });
+
+    console.log('Creating department with data:', { name, description, color, organization_id: user.organization_id });
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Department name is required' });
     }
 
-    if (!name || typeof name !== 'string' || name.trim() === '') {
-      return res.status(400).json({ message: 'Department name is required and must be a valid string' });
+    if (!user.organization_id) {
+      return res.status(400).json({ message: 'User organization not found' });
     }
 
-    // Check if department name already exists in organization
-    const existingDepartment = await storage.getDepartmentByName(organizationId, name.trim());
-    if (existingDepartment) {
-      return res.status(409).json({ message: 'Department with this name already exists' });
+    // Check if department with same name already exists
+    const existingDepartment = await db
+      .select()
+      .from(departmentsTable)
+      .where(
+        and(
+          eq(departmentsTable.name, name.trim()),
+          eq(departmentsTable.organization_id, user.organization_id)
+        )
+      )
+      .limit(1);
+
+    if (existingDepartment.length > 0) {
+      return res.status(400).json({ message: 'Department with this name already exists' });
     }
 
-    const departmentData = {
-      organization_id: organizationId,
-      name: name.trim(),
-      description: description && typeof description === 'string' ? description.trim() : null,
-      color: (color && typeof color === 'string') ? color : '#6B7280',
-      created_by: req.user!.id,
-    };
+    const [newDepartment] = await db
+      .insert(departmentsTable)
+      .values({
+        name: name.trim(),
+        description: description?.trim() || '',
+        color: color || '#3B82F6',
+        organization_id: user.organization_id,
+      })
+      .returning();
 
-    const department = await storage.createDepartment(departmentData);
-    res.status(201).json(department);
+    console.log('Created department:', newDepartment);
+    res.status(201).json(newDepartment);
   } catch (error) {
     console.error('Error creating department:', error);
     res.status(500).json({ message: 'Failed to create department' });
@@ -64,7 +86,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
     const { name, description, color, is_active } = req.body;
-    
+
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
@@ -104,7 +126,7 @@ router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
-    
+
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
@@ -137,7 +159,7 @@ router.get('/api/admin/departments/:id/stats', verifyToken, verifyAdmin, async (
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
-    
+
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
