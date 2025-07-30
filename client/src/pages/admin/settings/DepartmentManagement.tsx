@@ -46,34 +46,33 @@ export default function DepartmentManagement() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/departments', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDepartments(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Failed to fetch departments:', response.status, response.statusText);
+        setDepartments([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch departments:', error);
+      setDepartments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/admin/departments', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setDepartments(Array.isArray(data) ? data : []);
-        } else {
-          console.error('Failed to fetch departments:', response.status, response.statusText);
-          setDepartments([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch departments:', error);
-        setDepartments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDepartments();
   }, []);
 
@@ -336,7 +335,7 @@ export default function DepartmentManagement() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {department.manager_name || 'No manager assigned'}
+                    No manager assigned
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">

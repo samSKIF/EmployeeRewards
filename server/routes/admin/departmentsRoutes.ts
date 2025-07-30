@@ -33,7 +33,7 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
     }
 
     // Check if department already exists
-    const existingDepartment = await storage.getDepartmentByName(name, organizationId);
+    const existingDepartment = await storage.getDepartmentByName(organizationId, name);
     if (existingDepartment) {
       return res.status(409).json({ message: 'Department with this name already exists' });
     }
@@ -73,7 +73,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 
     // Check if new name conflicts with existing department (if name is changing)
     if (name && name !== existingDepartment.name) {
-      const nameConflict = await storage.getDepartmentByName(name, organizationId);
+      const nameConflict = await storage.getDepartmentByName(organizationId, name);
       if (nameConflict) {
         return res.status(409).json({ message: 'Department with this name already exists' });
       }
