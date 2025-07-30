@@ -6,7 +6,7 @@ import { storage } from '../../storage';
 const router = Router();
 
 // Get all departments for organization
-router.get('/api/admin/departments', verifyToken, verifyAdmin, async (req, res) => {
+router.get('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const organizationId = (req.user as any).organization_id;
     
@@ -23,31 +23,30 @@ router.get('/api/admin/departments', verifyToken, verifyAdmin, async (req, res) 
 });
 
 // Create new department
-router.post('/api/admin/departments', verifyToken, verifyAdmin, async (req, res) => {
+router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const organizationId = (req.user as any).organization_id;
-    const { name, description, manager_id, color } = req.body;
+    const { name, description, color } = req.body;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
 
-    if (!name) {
-      return res.status(400).json({ message: 'Department name is required' });
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return res.status(400).json({ message: 'Department name is required and must be a valid string' });
     }
 
     // Check if department name already exists in organization
-    const existingDepartment = await storage.getDepartmentByName(organizationId, name);
+    const existingDepartment = await storage.getDepartmentByName(organizationId, name.trim());
     if (existingDepartment) {
       return res.status(409).json({ message: 'Department with this name already exists' });
     }
 
     const departmentData = {
       organization_id: organizationId,
-      name,
-      description: description || null,
-      manager_id: manager_id || null,
-      color: color || '#6B7280',
+      name: name.trim(),
+      description: description && typeof description === 'string' ? description.trim() : null,
+      color: (color && typeof color === 'string') ? color : '#6B7280',
       created_by: req.user!.id,
     };
 
@@ -60,11 +59,11 @@ router.post('/api/admin/departments', verifyToken, verifyAdmin, async (req, res)
 });
 
 // Update department
-router.put('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
-    const { name, description, manager_id, color, is_active } = req.body;
+    const { name, description, color, is_active } = req.body;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -87,7 +86,6 @@ router.put('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, r
     const updateData = {
       name: name || existingDepartment.name,
       description: description !== undefined ? description : existingDepartment.description,
-      manager_id: manager_id !== undefined ? manager_id : existingDepartment.manager_id,
       color: color || existingDepartment.color,
       is_active: is_active !== undefined ? is_active : existingDepartment.is_active,
       updated_at: new Date(),
@@ -102,7 +100,7 @@ router.put('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, r
 });
 
 // Delete department
-router.delete('/api/admin/departments/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
