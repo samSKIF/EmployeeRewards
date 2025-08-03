@@ -2554,7 +2554,6 @@ export class DatabaseStorage implements IStorage {
         .select({
           id: departments.id,
           name: departments.name,
-          description: departments.description,
           color: departments.color,
           is_active: departments.is_active,
           created_at: departments.created_at,
