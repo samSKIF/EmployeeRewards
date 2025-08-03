@@ -37,7 +37,7 @@ interface EmployeeRow {
 }
 
 // Preview endpoint - analyzes CSV file without creating records
-router.post('/api/admin/employees/bulk-preview', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
+router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
     const organizationId = (req.user as any).organization_id;
     
@@ -73,8 +73,14 @@ router.post('/api/admin/employees/bulk-preview', verifyToken, verifyAdmin, uploa
 
           employees.push({
             name: row.name.trim(),
-            surname: row.surname.trim(),
+            surname: row.surname?.trim() || '',
             email: row.email.trim().toLowerCase(),
+            department: row.department?.trim() || '',
+            location: row.location?.trim() || '',
+            jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || '',
+            phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || '',
+            birthDate: row.birth_date?.trim() || row.birthDate?.trim() || '',
+            hireDate: row.hire_date?.trim() || row.hireDate?.trim() || '',
             department: row.department.trim(),
             location: row.location?.trim() || undefined,
             jobTitle: row.jobTitle?.trim() || undefined,

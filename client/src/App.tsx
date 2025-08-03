@@ -51,6 +51,7 @@ import SpacesPage from '@/pages/spaces-new-design';
 import SpaceDetailPage from '@/pages/space-detail';
 import CorporateLoginPage from '@/pages/corporate-login';
 import DepartmentManagement from '@/pages/admin/settings/DepartmentManagement';
+import LocationManagement from '@/pages/admin/settings/LocationManagement';
 
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';

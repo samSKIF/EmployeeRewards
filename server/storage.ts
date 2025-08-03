@@ -2677,6 +2677,73 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Location Management Methods
+  async getLocationsByOrganization(organizationId: number) {
+    try {
+      const results = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.organization_id, organizationId))
+        .orderBy(locations.name);
+      return results;
+    } catch (error) {
+      console.error('Error fetching locations by organization:', error);
+      throw error;
+    }
+  }
+
+  async createLocation(locationData: any) {
+    try {
+      const [result] = await db
+        .insert(locations)
+        .values(locationData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error creating location:', error);
+      throw error;
+    }
+  }
+
+  async updateLocation(id: number, locationData: any) {
+    try {
+      const [result] = await db
+        .update(locations)
+        .set(locationData)
+        .where(eq(locations.id, id))
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error updating location:', error);
+      throw error;
+    }
+  }
+
+  async deleteLocation(id: number) {
+    try {
+      await db
+        .delete(locations)
+        .where(eq(locations.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      throw error;
+    }
+  }
+
+  async getLocationById(id: number) {
+    try {
+      const [result] = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.id, id));
+      return result;
+    } catch (error) {
+      console.error('Error fetching location by id:', error);
+      throw error;
+    }
+  }
 }
 
 interface ShopConfig {

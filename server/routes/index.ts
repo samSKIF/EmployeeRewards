@@ -3,6 +3,7 @@ import authRoutes from './authRoutes';
 import { userRoutes } from './userRoutes';
 import adminRoutes from './adminRoutes';
 import departmentsRoutes from './admin/departmentsRoutes';
+import locationsRoutes from './admin/locationsRoutes';
 import bulkUploadRoutes from './admin/bulkUploadRoutes';
 import celebrationRoutes from './celebrationRoutes';
 import { celebrationPostRoutes } from './celebrationPostRoutes';
@@ -37,6 +38,9 @@ export function registerRoutes(app: Express) {
   
   // Department management routes
   app.use('/api/admin/departments', departmentsRoutes);
+  
+  // Location management routes
+  app.use('/api/admin/locations', locationsRoutes);
   
   // Bulk upload routes
   app.use(bulkUploadRoutes);
