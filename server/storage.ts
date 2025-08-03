@@ -2557,6 +2557,13 @@ export class DatabaseStorage implements IStorage {
           color: departments.color,
           is_active: departments.is_active,
           created_at: departments.created_at,
+          employee_count: sql<number>`(
+            SELECT COUNT(*)::int 
+            FROM ${users} 
+            WHERE ${users.department} = ${departments.name} 
+            AND ${users.organization_id} = ${organizationId}
+            AND ${users.status} = 'active'
+          )`,
         })
         .from(departments)
         .where(eq(departments.organization_id, organizationId))
