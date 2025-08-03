@@ -335,7 +335,7 @@ export default function EmployeeDirectory() {
   // Calculate stats
   const totalEmployees = subscriptionInfo?.total_employees || employees.length;
   const activeEmployees = subscriptionInfo?.active_employees || employees.filter(emp => emp.status === 'active').length;
-  const totalDepartments = new Set(employees.map(emp => emp.department).filter(Boolean)).size;
+  const totalDepartments = departments.length; // Use actual departments count, not employee departments
   const subscriptionLimit = subscriptionInfo?.subscribed_users || 500;
   const usagePercentage = subscriptionLimit > 0 ? Math.round((activeEmployees / subscriptionLimit) * 100) : 0;
 
