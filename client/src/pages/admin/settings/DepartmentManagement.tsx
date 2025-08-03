@@ -40,6 +40,11 @@ export default function DepartmentManagement() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Fetch employees (same as Employee Directory)
+  const { data: employees = [] } = useQuery<any[]>({
+    queryKey: ['/api/users'],
+  });
+
   // Fetch departments
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -181,7 +186,8 @@ export default function DepartmentManagement() {
     }
   };
 
-  const totalEmployees = departments.reduce((sum, dept) => sum + (dept.employee_count || 0), 0);
+  // Calculate stats (same logic as Employee Directory)
+  const totalEmployees = employees.length; // Use actual employee count like Employee Directory
   const activeDepartments = departments.filter(dept => dept.is_active).length;
 
   if (loading) {
@@ -306,7 +312,7 @@ export default function DepartmentManagement() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
-                      {department.employee_count || 0} employees
+                      {employees.filter(emp => emp.department === department.name && emp.status === 'active').length} employees
                     </Badge>
                   </TableCell>
                   <TableCell>
