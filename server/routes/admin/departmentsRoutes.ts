@@ -24,7 +24,7 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 // Create new department
 router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { name, description, color } = req.body;
+    const { name, color } = req.body;
     const organizationId = (req.user as any).organization_id;
     const userId = (req.user as any).id;
 
@@ -40,7 +40,6 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
 
     const newDepartment = await storage.createDepartment({
       name,
-      description: description || '',
       color: color || '#3B82F6',
       organization_id: organizationId,
       created_by: userId,
@@ -59,7 +58,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
-    const { name, description, color, is_active } = req.body;
+    const { name, color, is_active } = req.body;
 
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -81,7 +80,6 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 
     const updateData = {
       name: name || existingDepartment.name,
-      description: description !== undefined ? description : existingDepartment.description,
       color: color || existingDepartment.color,
       is_active: is_active !== undefined ? is_active : existingDepartment.is_active,
       updated_at: new Date(),

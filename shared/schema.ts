@@ -85,7 +85,6 @@ export const departments = pgTable('departments', {
     .references(() => organizations.id)
     .notNull(),
   name: text('name').notNull(),
-  description: text('description'),
   color: text('color').default('#6B7280'), // For UI theming
   is_active: boolean('is_active').default(true).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),

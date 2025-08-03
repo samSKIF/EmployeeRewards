@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface Department {
   id: number;
   name: string;
-  description: string | null;
   color: string;
   is_active: boolean;
   created_at: string;
@@ -35,7 +34,6 @@ export default function DepartmentManagement() {
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     color: '#6B7280',
   });
 
@@ -141,7 +139,6 @@ export default function DepartmentManagement() {
   const resetForm = () => {
     setFormData({
       name: '',
-      description: '',
       color: '#6B7280',
     });
   };
@@ -155,7 +152,6 @@ export default function DepartmentManagement() {
     setEditingDepartment(department);
     setFormData({
       name: department.name,
-      description: department.description || '',
       color: department.color,
     });
     setIsEditDialogOpen(true);
@@ -164,7 +160,6 @@ export default function DepartmentManagement() {
   const handleSubmitCreate = () => {
     const submitData = {
       name: formData.name,
-      description: formData.description || null,
       color: formData.color,
     };
     createDepartmentMutation.mutate(submitData);
@@ -175,7 +170,6 @@ export default function DepartmentManagement() {
 
     const submitData = {
       name: formData.name,
-      description: formData.description || null,
       color: formData.color,
     };
     updateDepartmentMutation.mutate({ id: editingDepartment.id, data: submitData });
@@ -288,7 +282,6 @@ export default function DepartmentManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>Department</TableHead>
-                <TableHead>Description</TableHead>
                 <TableHead>Manager</TableHead>
                 <TableHead>Employees</TableHead>
                 <TableHead>Status</TableHead>
@@ -307,11 +300,7 @@ export default function DepartmentManagement() {
                       <span className="font-medium">{department.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-xs">
-                    <span className="text-sm text-gray-600">
-                      {department.description || 'No description'}
-                    </span>
-                  </TableCell>
+
                   <TableCell>
                     No manager assigned
                   </TableCell>
@@ -388,16 +377,7 @@ export default function DepartmentManagement() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Brief description of the department"
-                rows={3}
-              />
-            </div>
+
 
 
 
@@ -453,16 +433,7 @@ export default function DepartmentManagement() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Brief description of the department"
-                rows={3}
-              />
-            </div>
+
 
 
 
