@@ -556,6 +556,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
                         <li>Download your original file or create a new one</li>
                         <li>Fix the errors listed above in the specified rows</li>
                         <li>Make sure dates are in DD/MM/YYYY format (e.g., 25/12/1990)</li>
+                        <li>Use exact department names (check Department Management for the list)</li>
                         <li>Ensure all required fields (name, email, department, job title) are filled</li>
                         <li>Upload the corrected file again</li>
                       </ol>
@@ -573,9 +574,26 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
                 </div>
                 <p className="text-sm text-green-600">
                   {uploadResult.successCount} employee(s) were successfully created and can now access the system.
-                  {uploadResult.departmentsCreated && uploadResult.departmentsCreated > 0 && 
-                    ` ${uploadResult.departmentsCreated} new department(s) were also created.`}
                 </p>
+              </div>
+            )}
+            
+            {uploadResult.errorCount > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <h4 className="font-semibold text-blue-700">Need to Create New Departments?</h4>
+                </div>
+                <p className="text-sm text-blue-600 mb-3">
+                  If you need to create new departments before uploading employees, visit Department Management first.
+                </p>
+                <Link 
+                  href="/admin/settings/departments" 
+                  className="inline-flex items-center text-sm text-blue-700 hover:text-blue-800 underline"
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Go to Department Management
+                </Link>
               </div>
             )}
           </CardContent>

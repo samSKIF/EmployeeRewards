@@ -381,34 +381,67 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
       suggestion: string;
     }> = [];
 
-    // Auto-create new departments found in CSV
+    // Enhanced department validation with fuzzy matching
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
-    const existingDeptNames = existingDepartments.map(dept => dept.name.toLowerCase());
+    const existingDeptNames = existingDepartments.map(dept => dept.name);
     
     const fileDepartments = Array.from(new Set(employees.map(emp => emp.department)));
-    const newDepartments = fileDepartments.filter(dept => 
-      !existingDeptNames.includes(dept.toLowerCase())
-    );
+    const validatedDepartments = [];
+    const rejectedEmployees: number[] = [];
 
-    for (const departmentName of newDepartments) {
-      try {
-        await storage.createDepartment({
-          organization_id: organizationId,
-          name: departmentName,
-          description: `Auto-created during bulk employee upload`,
-          color: '#6B7280',
-          created_by: (req as any).user.id,
-        });
-        departmentsCreated++;
-      } catch (error) {
-        console.error(`Error creating department ${departmentName}:`, error);
-        // Continue with other departments
+    // Validate each department and employee against existing departments
+    for (let i = 0; i < employees.length; i++) {
+      const employee = employees[i];
+      const deptName = employee.department;
+      
+      // Check exact match (case insensitive)
+      const exactMatch = existingDeptNames.find(existing => 
+        existing.toLowerCase() === deptName.toLowerCase()
+      );
+      
+      if (exactMatch) {
+        // Use the exact existing department name
+        employee.department = exactMatch;
+        validatedDepartments.push(employee);
+      } else {
+        // Check for potential typos using fuzzy matching
+        const matches = existingDeptNames.map(existing => ({
+          name: existing,
+          ratio: fuzz.ratio(deptName.toLowerCase(), existing.toLowerCase())
+        })).sort((a, b) => b.ratio - a.ratio);
+        
+        const bestMatch = matches[0];
+        
+        // If similarity > 70%, it's likely a typo - suggest correction
+        if (bestMatch && bestMatch.ratio > 70) {
+          detailedErrors.push({
+            row: i + 2,
+            email: employee.email,
+            name: `${employee.name} ${employee.surname}`.trim(),
+            error: `Department name appears to be a typo: "${deptName}"`,
+            suggestion: `Please use the correct department name: "${bestMatch.name}" (${bestMatch.ratio}% similarity)`
+          });
+          rejectedEmployees.push(i);
+        } else {
+          // New department - requires explicit approval
+          detailedErrors.push({
+            row: i + 2,
+            email: employee.email,
+            name: `${employee.name} ${employee.surname}`.trim(),
+            error: `New department detected: "${deptName}"`,
+            suggestion: `This department doesn't exist. Please either: 1) Use an existing department, or 2) Create "${deptName}" in Department Management first, then re-upload this file`
+          });
+          rejectedEmployees.push(i);
+        }
       }
     }
 
-    // Create employees with detailed error tracking
-    for (let i = 0; i < employees.length; i++) {
-      const employeeData = employees[i];
+    // Remove rejected employees from processing
+    const validEmployees = employees.filter((_, index) => !rejectedEmployees.includes(index));
+
+    // Create employees with detailed error tracking (only validated employees)
+    for (let i = 0; i < validEmployees.length; i++) {
+      const employeeData = validEmployees[i];
       try {
         const userData = {
           name: employeeData.name,
@@ -459,8 +492,10 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
           }
         }
         
+        // Find original row index for this employee
+        const originalIndex = employees.findIndex(emp => emp.email === employeeData.email);
         detailedErrors.push({
-          row: i + 2, // +2 because first row is header and arrays are 0-indexed
+          row: originalIndex + 2, // +2 because first row is header and arrays are 0-indexed
           email: employeeData.email || 'N/A',
           name: `${employeeData.name} ${employeeData.surname}`.trim() || 'N/A',
           error: userFriendlyError,
@@ -470,11 +505,11 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
     }
 
     res.json({
-      message: employeesCreated === employees.length 
+      message: detailedErrors.length === 0
         ? 'Bulk upload completed successfully' 
         : `Bulk upload completed with ${detailedErrors.length} errors`,
       successCount: employeesCreated,
-      errorCount: employees.length - employeesCreated,
+      errorCount: detailedErrors.length,
       departmentsCreated,
       totalRequested: employees.length,
       errors: detailedErrors,

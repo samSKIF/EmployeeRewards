@@ -281,6 +281,12 @@ export interface IStorage {
     limit?: number,
     offset?: number
   ): Promise<User[]>;
+
+  // Department helper methods
+  getUsersByDepartment(organizationId: number, departmentName: string): Promise<any[]>;
+  updateUserDepartment(userId: number, newDepartment: string): Promise<void>;
+  updateDepartment(departmentId: number, updates: { name?: string; description?: string; color?: string }): Promise<void>;
+  deleteDepartment(departmentId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2260,6 +2266,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Channel methods implementation
+  // Department helper methods implementation
+  async getUsersByDepartment(organizationId: number, departmentName: string): Promise<any[]> {
+    const result = await this.query(
+      'SELECT * FROM users WHERE organization_id = $1 AND department = $2',
+      [organizationId, departmentName]
+    );
+    return result.rows;
+  }
+
+  async updateUserDepartment(userId: number, newDepartment: string): Promise<void> {
+    await this.query(
+      'UPDATE users SET department = $1 WHERE id = $2',
+      [newDepartment, userId]
+    );
+  }
+
+  async updateDepartment(departmentId: number, updates: { name?: string; description?: string; color?: string }): Promise<void> {
+    const setParts = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (updates.name) {
+      setParts.push(`name = $${paramIndex++}`);
+      values.push(updates.name);
+    }
+    if (updates.description) {
+      setParts.push(`description = $${paramIndex++}`);
+      values.push(updates.description);
+    }
+    if (updates.color) {
+      setParts.push(`color = $${paramIndex++}`);
+      values.push(updates.color);
+    }
+
+    if (setParts.length > 0) {
+      values.push(departmentId);
+      await this.query(
+        `UPDATE departments SET ${setParts.join(', ')} WHERE id = $${paramIndex}`,
+        values
+      );
+    }
+  }
+
+  async deleteDepartment(departmentId: number): Promise<void> {
+    await this.query('DELETE FROM departments WHERE id = $1', [departmentId]);
+  }
+
   async getTrendingChannels(): Promise<any[]> {
     const { interestChannels, interestChannelMembers, users, interests } =
       await import('@shared/schema');
