@@ -66,6 +66,9 @@ export interface IUserStorage {
   createUser(user: InsertUser): Promise<User>;
   getUserWithBalance(id: number): Promise<UserWithBalance | undefined>;
   getAllUsersWithBalance(): Promise<UserWithBalance[]>;
+  getUsers(): Promise<User[]>;
+  getUsersByOrganization(organizationId: number): Promise<User[]>;
+  getUserCount(): Promise<number>;
 
   // Authentication
   verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean>;

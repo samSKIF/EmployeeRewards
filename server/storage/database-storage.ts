@@ -340,4 +340,34 @@ export class DatabaseStorage implements IStorage {
   async getUserCount(): Promise<number> {
     return this.userStorage.getUserCount();
   }
+
+  async getUsersByOrganization(organizationId: number) {
+    return this.userStorage.getUsersByOrganization(organizationId);
+  }
+
+  // Social storage methods for channels and comments
+  async getTrendingChannels() {
+    return this.socialStorage.getTrendingChannels();
+  }
+
+  async getChannelSuggestions() {
+    return this.socialStorage.getChannelSuggestions();
+  }
+
+  async getUserChannels(userId: number) {
+    return this.socialStorage.getUserChannels(userId);
+  }
+
+  async getOrganizationFeatures(organizationId: number) {
+    return this.organizationStorage.getOrganizationFeatures(organizationId);
+  }
+
+  // User management methods
+  async getUsers() {
+    return this.userStorage.getUsers();
+  }
+
+  async getAllUsersWithBalance() {
+    return this.userStorage.getAllUsersWithBalance();
+  }
 }

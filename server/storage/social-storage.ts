@@ -30,6 +30,36 @@ import type {
 import type { ISocialStorage } from './interfaces';
 
 export class SocialStorage implements ISocialStorage {
+  // Channel management methods
+  async getTrendingChannels() {
+    try {
+      // Return empty array for now - can be enhanced later
+      return [];
+    } catch (error: any) {
+      console.error('Error getting trending channels:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
+
+  async getChannelSuggestions() {
+    try {
+      // Return empty array for now - can be enhanced later
+      return [];
+    } catch (error: any) {
+      console.error('Error getting channel suggestions:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
+
+  async getUserChannels(userId: number) {
+    try {
+      // Return empty array for now - can be enhanced later
+      return [];
+    } catch (error: any) {
+      console.error('Error getting user channels:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
   async createPost(postData: InsertPost): Promise<Post> {
     try {
       const [post] = await db.insert(posts).values(postData).returning();

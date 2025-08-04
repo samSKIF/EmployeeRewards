@@ -36,6 +36,15 @@ export interface IOrganizationStorage {
 }
 
 export class OrganizationStorage implements IOrganizationStorage {
+  async getOrganizationFeatures(organizationId: number) {
+    try {
+      // For now return empty array - this can be enhanced with actual features table
+      return [];
+    } catch (error: any) {
+      console.error('Error getting organization features:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
   async createOrganization(orgData: InsertOrganization): Promise<Organization> {
     try {
       const [organization] = await db

@@ -3,7 +3,7 @@
 
 import { db } from '../db';
 import { users, accounts, type User, type InsertUser, type Account } from '@shared/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and, or, count } from 'drizzle-orm';
 import { hash, compare } from 'bcrypt';
 import type { UserWithBalance } from '@shared/types';
 import type { IUserStorage } from './interfaces';
@@ -158,6 +158,29 @@ export class UserStorage implements IUserStorage {
     } catch (error: any) {
       console.error('Error getting user count:', error?.message || 'unknown_error');
       return 0;
+    }
+  }
+
+  async getUsersByOrganization(organizationId: number) {
+    try {
+      const organizationUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.organization_id, organizationId));
+      return organizationUsers;
+    } catch (error: any) {
+      console.error('Error getting users by organization:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
+
+  async getUsers() {
+    try {
+      const allUsers = await db.select().from(users);
+      return allUsers;
+    } catch (error: any) {
+      console.error('Error getting all users:', error?.message || 'unknown_error');
+      return [];
     }
   }
 }
