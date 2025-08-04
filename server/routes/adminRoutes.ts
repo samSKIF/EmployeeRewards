@@ -619,6 +619,66 @@ router.patch(
   }
 );
 
+// Delete employee
+router.delete(
+  '/users/:id',
+  verifyToken,
+  verifyAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+      const organizationId = req.user.organization_id;
+
+      logger.info('Deleting employee:', { employeeId, organizationId });
+
+      // Check if employee exists and belongs to the same organization
+      const checkResult = await pool.query(
+        'SELECT id, name, email FROM users WHERE id = $1 AND organization_id = $2',
+        [employeeId, organizationId]
+      );
+
+      if (checkResult.rows.length === 0) {
+        return res.status(404).json({ message: 'Employee not found or access denied' });
+      }
+
+      const employee = checkResult.rows[0];
+
+      // Prevent deleting self
+      if (employeeId === req.user.id) {
+        return res.status(400).json({ message: 'Cannot delete your own account' });
+      }
+
+      // Delete employee from database
+      const deleteResult = await pool.query(
+        'DELETE FROM users WHERE id = $1 AND organization_id = $2 RETURNING id, name, email',
+        [employeeId, organizationId]
+      );
+
+      if (deleteResult.rows.length === 0) {
+        return res.status(500).json({ message: 'Failed to delete employee' });
+      }
+
+      logger.info('Employee deleted successfully:', {
+        id: employee.id,
+        name: employee.name,
+        email: employee.email
+      });
+
+      res.json({ 
+        message: 'Employee deleted successfully',
+        deletedEmployee: {
+          id: employee.id,
+          name: employee.name,
+          email: employee.email
+        }
+      });
+    } catch (error: any) {
+      logger.error('Error deleting employee:', error);
+      res.status(500).json({ message: error.message || 'Error deleting employee' });
+    }
+  }
+);
+
 // Update admin permissions (for existing admins)
 router.patch(
   '/permissions/:id',

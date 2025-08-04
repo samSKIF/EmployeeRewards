@@ -38,7 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical, Building2, Settings, Upload } from 'lucide-react';
+import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical, Building2, Settings, Upload, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,6 +120,8 @@ export default function EmployeeDirectory() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Debug dialog state
   useEffect(() => {
@@ -176,6 +178,30 @@ export default function EmployeeDirectory() {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update employee',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete employee mutation
+  const deleteEmployeeMutation = useMutation({
+    mutationFn: async (employeeId: number) => {
+      const response = await apiRequest('DELETE', `/api/admin/users/${employeeId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setIsDeleteDialogOpen(false);
+      setDeleteEmployee(null);
+      toast({
+        title: 'Success',
+        description: 'Employee deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete employee',
         variant: 'destructive',
       });
     },
@@ -278,6 +304,19 @@ export default function EmployeeDirectory() {
   // Handle form submission
   const handleSaveEmployee = () => {
     updateEmployeeMutation.mutate(formData);
+  };
+
+  // Handle delete employee
+  const handleDeleteEmployee = (employee: Employee) => {
+    setDeleteEmployee(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (deleteEmployee) {
+      deleteEmployeeMutation.mutate(deleteEmployee.id);
+    }
   };
 
   // Sorting functions
@@ -754,6 +793,13 @@ export default function EmployeeDirectory() {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit Employee
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteEmployee(employee)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Employee
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -943,6 +989,34 @@ export default function EmployeeDirectory() {
               disabled={updateEmployeeMutation.isPending}
             >
               {updateEmployeeMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Employee Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Employee</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {deleteEmployee?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteEmployeeMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteEmployeeMutation.isPending}
+            >
+              {deleteEmployeeMutation.isPending ? 'Deleting...' : 'Delete Employee'}
             </Button>
           </DialogFooter>
         </DialogContent>
