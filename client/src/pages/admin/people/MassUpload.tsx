@@ -44,22 +44,22 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
+interface UploadError {
+  row: number;
+  email: string;
+  name: string;
+  error: string;
+  suggestion: string;
+}
+
 interface UploadResult {
-  success: boolean;
-  totalRows: number;
+  message: string;
   successCount: number;
   errorCount: number;
-  errors: Array<{
-    row: number;
-    field: string;
-    message: string;
-    email?: string;
-  }>;
-  createdUsers: Array<{
-    name: string;
-    email: string;
-    department: string;
-  }>;
+  departmentsCreated?: number;
+  totalRequested: number;
+  errors?: UploadError[];
+  success: boolean;
 }
 
 interface PreviewEmployee {
@@ -489,7 +489,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold">{uploadResult.totalRows}</div>
+                <div className="text-2xl font-bold">{uploadResult.totalRequested}</div>
                 <div className="text-sm text-gray-600">Total Rows</div>
               </div>
               <div className="text-center">
@@ -501,33 +501,81 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
                 <div className="text-sm text-gray-600">Errors</div>
               </div>
             </div>
-
-            {/* Success List */}
-            {uploadResult.createdUsers && uploadResult.createdUsers.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-green-700 mb-2">Successfully Created Employees</h4>
-                <div className="max-h-32 overflow-y-auto">
-                  {uploadResult.createdUsers.map((user, index) => (
-                    <div key={index} className="text-sm p-2 bg-green-50 rounded mb-1">
-                      <strong>{user.name}</strong> - {user.email} ({user.department})
-                    </div>
-                  ))}
-                </div>
+            
+            {uploadResult.departmentsCreated && uploadResult.departmentsCreated > 0 && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>New Departments Created:</strong> {uploadResult.departmentsCreated} department(s) were automatically created from your file.
+                </p>
               </div>
             )}
 
-            {/* Error List */}
+            {/* Detailed Error List with Solutions */}
             {uploadResult.errors && uploadResult.errors.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-red-700 mb-2">Errors</h4>
-                <div className="max-h-32 overflow-y-auto">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-red-700 mb-3 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  Errors Found - How to Fix Them
+                </h4>
+                <div className="space-y-3">
                   {uploadResult.errors.map((error, index) => (
-                    <div key={index} className="text-sm p-2 bg-red-50 rounded mb-1">
-                      <strong>Row {error.row}:</strong> {error.message}
-                      {error.email && <span className="text-gray-600"> ({error.email})</span>}
+                    <div key={index} className="border border-red-200 rounded-lg p-4 bg-red-50">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-red-800">
+                            Row {error.row}: {error.name || 'Unknown Employee'}
+                          </div>
+                          <div className="text-sm text-gray-600 mb-1">
+                            Email: {error.email || 'Not provided'}
+                          </div>
+                        </div>
+                        <Badge variant="destructive" className="ml-2">Error</Badge>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="bg-white p-3 rounded border border-red-200">
+                          <div className="text-sm font-medium text-red-700 mb-1">Problem:</div>
+                          <div className="text-sm text-red-600">{error.error}</div>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                          <div className="text-sm font-medium text-blue-700 mb-1">How to Fix:</div>
+                          <div className="text-sm text-blue-600">{error.suggestion}</div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
+                
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
+                    <div>
+                      <h5 className="font-medium text-orange-800 mb-2">Next Steps:</h5>
+                      <ol className="list-decimal list-inside space-y-1 text-sm text-orange-700">
+                        <li>Download your original file or create a new one</li>
+                        <li>Fix the errors listed above in the specified rows</li>
+                        <li>Make sure dates are in DD/MM/YYYY format (e.g., 25/12/1990)</li>
+                        <li>Ensure all required fields (name, email, department, job title) are filled</li>
+                        <li>Upload the corrected file again</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {uploadResult.successCount > 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <h4 className="font-semibold text-green-700">Success Summary</h4>
+                </div>
+                <p className="text-sm text-green-600">
+                  {uploadResult.successCount} employee(s) were successfully created and can now access the system.
+                  {uploadResult.departmentsCreated && uploadResult.departmentsCreated > 0 && 
+                    ` ${uploadResult.departmentsCreated} new department(s) were also created.`}
+                </p>
               </div>
             )}
           </CardContent>

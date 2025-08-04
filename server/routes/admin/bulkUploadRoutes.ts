@@ -13,6 +13,9 @@ import * as fuzz from 'fuzzball';
 function convertDateFormat(dateStr?: string): string | undefined {
   if (!dateStr) return undefined;
   
+  // Trim whitespace
+  dateStr = dateStr.trim();
+  
   // Check if already in YYYY-MM-DD format
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
@@ -22,6 +25,13 @@ function convertDateFormat(dateStr?: string): string | undefined {
   const match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (match) {
     const [, day, month, year] = match;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  // Handle other common formats like DD-MM-YYYY
+  const dashMatch = dateStr.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (dashMatch) {
+    const [, day, month, year] = dashMatch;
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
   
@@ -363,6 +373,13 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
 
     let departmentsCreated = 0;
     let employeesCreated = 0;
+    const detailedErrors: Array<{
+      row: number;
+      email: string;
+      name: string;
+      error: string;
+      suggestion: string;
+    }> = [];
 
     // Auto-create new departments found in CSV
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
@@ -389,8 +406,9 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
       }
     }
 
-    // Create employees
-    for (const employeeData of employees) {
+    // Create employees with detailed error tracking
+    for (let i = 0; i < employees.length; i++) {
+      const employeeData = employees[i];
       try {
         const userData = {
           name: employeeData.name,
@@ -412,18 +430,55 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
 
         await storage.createUser(userData as any);
         employeesCreated++;
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error creating employee ${employeeData.email}:`, error);
-        // Continue with other employees
+        
+        let userFriendlyError = 'Unknown error occurred';
+        let suggestion = 'Please check the data format and try again';
+        
+        // Parse specific database errors
+        if (error.message && typeof error.message === 'string') {
+          if (error.message.includes('date/time field value out of range')) {
+            userFriendlyError = 'Invalid date format';
+            suggestion = 'Please use DD/MM/YYYY format for dates (e.g., 25/12/1990)';
+          } else if (error.message.includes('duplicate key value violates unique constraint')) {
+            if (error.message.includes('email')) {
+              userFriendlyError = 'Email address already exists';
+              suggestion = 'This email is already in use. Please use a different email address';
+            } else {
+              userFriendlyError = 'Duplicate data found';
+              suggestion = 'This record already exists in the system';
+            }
+          } else if (error.message.includes('null value in column')) {
+            const column = error.message.match(/null value in column "(\w+)"/)?.[1];
+            userFriendlyError = `Missing required field: ${column}`;
+            suggestion = `Please provide a value for ${column}`;
+          } else if (error.message.includes('invalid input syntax')) {
+            userFriendlyError = 'Invalid data format';
+            suggestion = 'Please check the data format matches the expected format';
+          }
+        }
+        
+        detailedErrors.push({
+          row: i + 2, // +2 because first row is header and arrays are 0-indexed
+          email: employeeData.email || 'N/A',
+          name: `${employeeData.name} ${employeeData.surname}`.trim() || 'N/A',
+          error: userFriendlyError,
+          suggestion: suggestion
+        });
       }
     }
 
     res.json({
-      message: 'Bulk upload completed successfully',
+      message: employeesCreated === employees.length 
+        ? 'Bulk upload completed successfully' 
+        : `Bulk upload completed with ${detailedErrors.length} errors`,
       successCount: employeesCreated,
       errorCount: employees.length - employeesCreated,
       departmentsCreated,
       totalRequested: employees.length,
+      errors: detailedErrors,
+      success: employeesCreated > 0
     });
 
   } catch (error) {
