@@ -503,7 +503,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
             </div>
 
             {/* Success List */}
-            {uploadResult.createdUsers.length > 0 && (
+            {uploadResult.createdUsers && uploadResult.createdUsers.length > 0 && (
               <div>
                 <h4 className="font-semibold text-green-700 mb-2">Successfully Created Employees</h4>
                 <div className="max-h-32 overflow-y-auto">
@@ -517,7 +517,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
             )}
 
             {/* Error List */}
-            {uploadResult.errors.length > 0 && (
+            {uploadResult.errors && uploadResult.errors.length > 0 && (
               <div>
                 <h4 className="font-semibold text-red-700 mb-2">Errors</h4>
                 <div className="max-h-32 overflow-y-auto">

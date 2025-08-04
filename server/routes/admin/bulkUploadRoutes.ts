@@ -9,6 +9,25 @@ import path from 'path';
 import * as XLSX from 'xlsx';
 import * as fuzz from 'fuzzball';
 
+// Helper function to convert DD/MM/YYYY to YYYY-MM-DD
+function convertDateFormat(dateStr?: string): string | undefined {
+  if (!dateStr) return undefined;
+  
+  // Check if already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // Handle DD/MM/YYYY format
+  const match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (match) {
+    const [, day, month, year] = match;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  return undefined;
+}
+
 const router = Router();
 
 // Configure multer for file uploads
@@ -97,8 +116,8 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
             location: row.location?.trim() || undefined,
             jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
             phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
-            birthDate: row.birth_date?.trim() || row.birthDate?.trim() || undefined,
-            hireDate: row.hire_date?.trim() || row.hireDate?.trim() || undefined,
+            birthDate: convertDateFormat(row.birth_date?.trim() || row.birthDate?.trim()),
+            hireDate: convertDateFormat(row.hire_date?.trim() || row.hireDate?.trim()),
             rowIndex,
           });
         })
