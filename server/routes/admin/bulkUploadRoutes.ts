@@ -321,8 +321,8 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
           location: row.location?.toString().trim() || undefined,
           jobTitle: row.job_title?.toString().trim() || row.jobTitle?.toString().trim() || undefined,
           phoneNumber: row.phone_number?.toString().trim() || row.phoneNumber?.toString().trim() || undefined,
-          birthDate: row.birth_date?.toString().trim() || row.birthDate?.toString().trim() || undefined,
-          hireDate: row.hire_date?.toString().trim() || row.hireDate?.toString().trim() || undefined,
+          birthDate: convertDateFormat(row.birth_date?.toString().trim() || row.birthDate?.toString().trim()),
+          hireDate: convertDateFormat(row.hire_date?.toString().trim() || row.hireDate?.toString().trim()),
         });
       });
     } else {
@@ -352,8 +352,8 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
               location: row.location?.trim() || undefined,
               jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
               phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
-              birthDate: row.birth_date?.trim() || row.birthDate?.trim() || undefined,
-              hireDate: row.hire_date?.trim() || row.hireDate?.trim() || undefined,
+              birthDate: convertDateFormat(row.birth_date?.trim() || row.birthDate?.trim()),
+              hireDate: convertDateFormat(row.hire_date?.trim() || row.hireDate?.trim()),
             });
           })
           .on('end', resolve)
