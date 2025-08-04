@@ -82,6 +82,46 @@ Preferred communication style: Simple, everyday language.
 - Mandatory unit, integration, component, and end-to-end tests.
 - Automated regression testing before deployment.
 
+### AI-Ready Architecture & Comprehensive Activity Tracking
+- **Every Single User Action Must Be Tracked**:
+  - User ID, precise timestamp, action type, affected resources, IP address, user agent
+  - Session details, organization context, role permissions at time of action
+  - Before/after states for all data modifications (complete audit trail)
+  - Performance metrics (response time, resource usage) per action
+  - Geographic location, device type, and browser information
+  - Failed attempts and security events (login failures, permission denials)
+
+- **AI Connector Infrastructure**:
+  - Standardized data export APIs for AI model training and analysis
+  - Real-time event streaming for live AI processing (WebSocket/SSE)
+  - Structured JSON schemas for consistent AI data consumption
+  - Integration-ready endpoints for AI platforms (OpenAI, Anthropic, Google AI)
+  - Webhook support for external AI service notifications and callbacks
+  - API versioning for AI connector backward compatibility
+
+- **Data Analytics Foundation**:
+  - Time-series data storage for user behavior pattern analysis
+  - Pre-computed aggregation tables for instant analytics queries
+  - Data warehouse-ready export formats (Parquet, JSON, CSV)
+  - GDPR-compliant data retention and automated deletion policies
+  - User consent management for AI processing and data usage
+  - Data lineage tracking for compliance and debugging
+
+- **Event-Driven Architecture for AI**:
+  - Publish-subscribe pattern for all major user interactions
+  - Event sourcing for complete action history reconstruction
+  - Message queues for reliable AI data processing pipelines
+  - Dead letter queues for failed AI integrations and retry logic
+  - Event replay capability for AI model retraining
+
+- **AI Training Data Standards**:
+  - Anonymized user interaction datasets with privacy protection
+  - Feature engineering pipelines for ML model preparation
+  - A/B testing framework for AI-driven feature rollouts
+  - Model performance tracking and feedback loops
+  - Bias detection and fairness monitoring in AI recommendations
+  - Automated data quality checks for AI training datasets
+
 ## External Dependencies
 
 ### Core Dependencies
