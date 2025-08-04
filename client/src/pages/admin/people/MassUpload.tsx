@@ -249,7 +249,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-        <Link href="/admin/people" className="flex items-center hover:text-blue-600 transition-colors">
+        <Link href="/admin/employees" className="flex items-center hover:text-blue-600 transition-colors">
           <Users className="h-4 w-4 mr-1" />
           Employee Directory
         </Link>
@@ -260,7 +260,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
       {/* Enhanced Header with Back Button */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Link href="/admin/people">
+          <Link href="/admin/employees">
             <Button variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-100">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Employees

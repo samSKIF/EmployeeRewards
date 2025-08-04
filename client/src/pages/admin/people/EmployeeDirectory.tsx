@@ -446,7 +446,7 @@ export default function EmployeeDirectory() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Link href="/admin/people/mass-upload">
+          <Link href="/admin/employees/mass-upload">
             <Button variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50">
               <Upload className="h-4 w-4 mr-2" />
               Mass Upload

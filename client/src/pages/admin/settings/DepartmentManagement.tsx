@@ -203,7 +203,7 @@ export default function DepartmentManagement() {
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-        <Link href="/admin/people" className="flex items-center hover:text-blue-600 transition-colors">
+        <Link href="/admin/employees" className="flex items-center hover:text-blue-600 transition-colors">
           <Users className="h-4 w-4 mr-1" />
           Employee Directory
         </Link>
@@ -214,7 +214,7 @@ export default function DepartmentManagement() {
       {/* Enhanced Header with Back Button */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Link href="/admin/people">
+          <Link href="/admin/employees">
             <Button variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-100">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Employees
@@ -226,7 +226,7 @@ export default function DepartmentManagement() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Link href="/admin/people/mass-upload">
+          <Link href="/admin/employees/mass-upload">
             <Button variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50">
               <Upload className="h-4 w-4 mr-2" />
               Mass Upload

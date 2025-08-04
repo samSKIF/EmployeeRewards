@@ -221,7 +221,7 @@ function App() {
                       <DepartmentManagement />
                     </SocialLayout>
                   </Route>
-                  <Route path="/admin/people/mass-upload">
+                  <Route path="/admin/employees/mass-upload">
                     <SocialLayout>
                       <MassUpload />
                     </SocialLayout>
