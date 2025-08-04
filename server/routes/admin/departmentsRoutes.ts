@@ -67,7 +67,11 @@ router.post('/',
 });
 
 // Update department
-router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.put('/:id', 
+  verifyToken, 
+  verifyAdmin,
+  activityLogger({ action_type: 'update_department', resource_type: 'department' }),
+  async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
@@ -99,6 +103,18 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
     };
 
     const updatedDepartment = await storage.updateDepartment(departmentId, updateData);
+
+    // Log the department update activity
+    await logActivity(req as any, 'update_department', 'department', departmentId, {
+      changes: updateData,
+      old_values: {
+        name: existingDepartment.name,
+        color: existingDepartment.color,
+        is_active: existingDepartment.is_active,
+      },
+      success: true,
+    });
+
     res.json(updatedDepartment);
   } catch (error) {
     logger.error('Error updating department:', { error, departmentId });
@@ -107,7 +123,11 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // Delete department
-router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.delete('/:id', 
+  verifyToken, 
+  verifyAdmin,
+  activityLogger({ action_type: 'delete_department', resource_type: 'department' }),
+  async (req, res) => {
   try {
     const departmentId = parseInt(req.params.id);
     const organizationId = (req.user as any).organization_id;
@@ -131,7 +151,21 @@ router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
       });
     }
 
+    // Store department data before deletion for audit
+    const departmentToDelete = await storage.getDepartmentById(departmentId);
+    
     await storage.deleteDepartment(departmentId);
+
+    // Log the department deletion activity
+    await logActivity(req as any, 'delete_department', 'department', departmentId, {
+      deleted_department: {
+        name: departmentToDelete?.name,
+        color: departmentToDelete?.color,
+        is_active: departmentToDelete?.is_active,
+      },
+      success: true,
+    });
+
     res.json({ message: 'Department deleted successfully' });
   } catch (error) {
     logger.error('Error deleting department:', { error, departmentId });

@@ -2797,6 +2797,128 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Enhanced employee management methods for activity tracking
+  async getEmployeesWithFilters(
+    organizationId: number, 
+    filters: {
+      search?: string;
+      department?: string;
+      status?: string;
+      limit?: number;
+      offset?: number;
+      sortBy?: string;
+      sortOrder?: string;
+    }
+  ) {
+    let whereConditions = [eq(users.organization_id, organizationId)];
+
+    if (filters.search) {
+      whereConditions.push(
+        or(
+          ilike(users.name, `%${filters.search}%`),
+          ilike(users.email, `%${filters.search}%`),
+          ilike(users.job_title, `%${filters.search}%`)
+        )
+      );
+    }
+
+    if (filters.department) {
+      whereConditions.push(eq(users.department, filters.department));
+    }
+
+    if (filters.status) {
+      whereConditions.push(eq(users.status, filters.status));
+    }
+
+    let query = db
+      .select()
+      .from(users)
+      .where(and(...whereConditions));
+
+    // Apply sorting
+    if (filters.sortBy === 'name') {
+      query = query.orderBy(filters.sortOrder === 'desc' ? desc(users.name) : users.name);
+    } else if (filters.sortBy === 'department') {
+      query = query.orderBy(filters.sortOrder === 'desc' ? desc(users.department) : users.department);
+    } else {
+      query = query.orderBy(desc(users.created_at));
+    }
+
+    if (filters.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if (filters.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async searchEmployees(
+    organizationId: number, 
+    searchQuery: string, 
+    filters?: {
+      department?: string;
+      status?: string;
+      limit?: number;
+    }
+  ) {
+    let whereConditions = [
+      eq(users.organization_id, organizationId),
+      or(
+        ilike(users.name, `%${searchQuery}%`),
+        ilike(users.email, `%${searchQuery}%`),
+        ilike(users.job_title, `%${searchQuery}%`),
+        ilike(users.department, `%${searchQuery}%`)
+      )
+    ];
+
+    if (filters?.department) {
+      whereConditions.push(eq(users.department, filters.department));
+    }
+
+    if (filters?.status) {
+      whereConditions.push(eq(users.status, filters.status));
+    }
+
+    let query = db
+      .select()
+      .from(users)
+      .where(and(...whereConditions))
+      .orderBy(users.name);
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    return await query;
+  }
+
+  async checkUserDependencies(userId: number) {
+    // Check for active posts
+    const activePosts = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(posts)
+      .where(eq(posts.user_id, userId));
+
+    // Check for active recognitions
+    const activeRecognitions = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(recognitions)
+      .where(or(
+        eq(recognitions.giver_id, userId),
+        eq(recognitions.receiver_id, userId)
+      ));
+
+    return {
+      hasActivePosts: activePosts[0]?.count > 0,
+      hasActiveRecognitions: activeRecognitions[0]?.count > 0,
+      postsCount: activePosts[0]?.count || 0,
+      recognitionsCount: activeRecognitions[0]?.count || 0,
+    };
+  }
 }
 
 interface ShopConfig {

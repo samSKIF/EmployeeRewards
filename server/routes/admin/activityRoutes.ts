@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyToken, verifyAdmin } from '../../middleware/auth';
+import { verifyToken, verifyAdmin, AuthenticatedRequest } from '../../middleware/auth';
 import { db } from '../../db';
 import { user_activities, audit_logs } from '@shared/schema';
 import { desc, eq, and, gte, lte, sql } from 'drizzle-orm';
@@ -11,9 +11,9 @@ const router = Router();
  * Get user activities for analytics and monitoring
  * AI-ready endpoint for behavior analysis
  */
-router.get('/activities', verifyToken, verifyAdmin, async (req, res) => {
+router.get('/activities', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const organizationId = req.user?.organization_id;
     const { 
       limit = 50, 
       offset = 0, 
@@ -24,7 +24,7 @@ router.get('/activities', verifyToken, verifyAdmin, async (req, res) => {
       end_date 
     } = req.query;
 
-    let whereConditions = [eq(user_activities.organization_id, organizationId)];
+    let whereConditions: any[] = [eq(user_activities.organization_id, organizationId)];
 
     // Add filters
     if (action_type) {
@@ -61,7 +61,7 @@ router.get('/activities', verifyToken, verifyAdmin, async (req, res) => {
     });
 
   } catch (error) {
-    logger.error('Error fetching user activities', { error, organizationId: (req.user as any).organization_id });
+    logger.error('Error fetching user activities', { error, organizationId: req.user?.organization_id });
     res.status(500).json({ message: 'Failed to fetch user activities' });
   }
 });
@@ -70,9 +70,9 @@ router.get('/activities', verifyToken, verifyAdmin, async (req, res) => {
  * Get audit logs for compliance tracking
  * Essential for data modification tracking
  */
-router.get('/audit-logs', verifyToken, verifyAdmin, async (req, res) => {
+router.get('/audit-logs', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const organizationId = req.user?.organization_id;
     const { 
       limit = 50, 
       offset = 0, 
@@ -83,7 +83,7 @@ router.get('/audit-logs', verifyToken, verifyAdmin, async (req, res) => {
       end_date 
     } = req.query;
 
-    let whereConditions = [eq(audit_logs.organization_id, organizationId)];
+    let whereConditions: any[] = [eq(audit_logs.organization_id, organizationId)];
 
     // Add filters
     if (action) {
@@ -120,7 +120,7 @@ router.get('/audit-logs', verifyToken, verifyAdmin, async (req, res) => {
     });
 
   } catch (error) {
-    logger.error('Error fetching audit logs', { error, organizationId: (req.user as any).organization_id });
+    logger.error('Error fetching audit logs', { error, organizationId: req.user?.organization_id });
     res.status(500).json({ message: 'Failed to fetch audit logs' });
   }
 });
@@ -129,9 +129,9 @@ router.get('/audit-logs', verifyToken, verifyAdmin, async (req, res) => {
  * Get activity analytics for AI training data
  * Aggregated metrics for behavior analysis
  */
-router.get('/analytics', verifyToken, verifyAdmin, async (req, res) => {
+router.get('/analytics', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const organizationId = req.user?.organization_id;
     const { period = '7d' } = req.query; // 1d, 7d, 30d, 90d
 
     // Calculate date range
@@ -169,11 +169,11 @@ router.get('/analytics', verifyToken, verifyAdmin, async (req, res) => {
     const analytics = {
       total_activities: activities.length,
       unique_users: new Set(activities.map(a => a.user_id)).size,
-      action_types: {},
-      resource_types: {},
-      hourly_distribution: {},
+      action_types: {} as Record<string, number>,
+      resource_types: {} as Record<string, number>,
+      hourly_distribution: {} as Record<number, number>,
       average_response_time: 0,
-      most_active_users: {},
+      most_active_users: {} as Record<number, number>,
       period: period,
       date_range: {
         start: startDate.toISOString(),
@@ -224,14 +224,14 @@ router.get('/analytics', verifyToken, verifyAdmin, async (req, res) => {
       .reduce((obj, [key, value]) => {
         obj[key] = value;
         return obj;
-      }, {});
+      }, {} as Record<string, number>);
 
     analytics.most_active_users = sortedUsers;
 
     res.json(analytics);
 
   } catch (error) {
-    logger.error('Error generating activity analytics', { error, organizationId: (req.user as any).organization_id });
+    logger.error('Error generating activity analytics', { error, organizationId: req.user?.organization_id });
     res.status(500).json({ message: 'Failed to generate analytics' });
   }
 });
