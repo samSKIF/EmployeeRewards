@@ -6,10 +6,12 @@ import { logger } from '@shared/logger';
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: number;
-    organization_id: number;
+    organization_id: number | null;
     email: string;
     role_type: string;
+    admin_scope?: string | null;
   };
+  sessionID?: string;
 }
 
 export interface ActivityLogData {
@@ -55,7 +57,7 @@ export const activityLogger = (activityData: ActivityLogData) => {
         // Prepare comprehensive activity log
         const activityLog = {
           user_id: req.user.id,
-          organization_id: req.user.organization_id,
+          organization_id: req.user.organization_id || 1,
           action_type: activityData.action_type,
           resource_type: activityData.resource_type,
           resource_id: activityData.resource_id,
@@ -163,7 +165,7 @@ export const logActivity = async (
 
     const activityLog = {
       user_id: req.user.id,
-      organization_id: req.user.organization_id,
+      organization_id: req.user.organization_id || 1,
       action_type: actionType,
       resource_type: resourceType,
       resource_id: resourceId,

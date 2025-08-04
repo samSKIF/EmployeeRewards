@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { verifyToken, verifyAdmin, AuthenticatedRequest } from '../../middleware/auth';
+import { verifyToken, verifyAdmin } from '../../middleware/auth';
+import { AuthenticatedRequest } from '../../middleware/activityLogger';
 import { storage } from '../../storage';
 import { logger } from '@shared/logger';
 import { activityLogger, logActivity, auditLogger } from '../../middleware/activityLogger';
