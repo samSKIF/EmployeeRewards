@@ -335,4 +335,9 @@ export class DatabaseStorage implements IStorage {
   async updateLocation(id: number, updates: any) {
     return this.organizationStorage.updateLocation(id, updates);
   }
+
+  // Additional methods for API compatibility
+  async getUserCount(): Promise<number> {
+    return this.userStorage.getUserCount();
+  }
 }

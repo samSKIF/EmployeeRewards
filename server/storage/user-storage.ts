@@ -150,4 +150,14 @@ export class UserStorage implements IUserStorage {
       return false;
     }
   }
+
+  async getUserCount(): Promise<number> {
+    try {
+      const result = await db.select({ count: count() }).from(users);
+      return result[0]?.count || 0;
+    } catch (error: any) {
+      console.error('Error getting user count:', error?.message || 'unknown_error');
+      return 0;
+    }
+  }
 }
