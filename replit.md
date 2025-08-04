@@ -7,9 +7,62 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 Preferred communication style: Simple, everyday language.
 
 ## Development Rules & Guidelines
-- **Temporary Script Policy**: All temporary scripts, routes, or utilities created for one-time tasks (like bulk operations, data cleanup, testing) must be deleted immediately after use
-- **Code Hygiene**: Keep the codebase clean - no leftover debugging code, temporary files, or unused utilities
-- **Documentation**: Always document why temporary code was created and confirm its removal in project updates
+
+### Code Quality & Standards
+- **Naming Convention**: MANDATORY snake_case for all database fields, API parameters, and backend variables
+- **TypeScript Strict Mode**: All code must be fully typed - no `any` types without explicit justification
+- **Error Handling**: Every API endpoint must have comprehensive error handling with user-friendly messages
+- **Input Validation**: All user inputs must be validated using Zod schemas before processing
+- **SQL Injection Prevention**: Use parameterized queries only - never string concatenation for SQL
+- **Authentication Required**: All sensitive endpoints must verify tokens and permissions
+
+### Security & Multi-tenancy Rules
+- **Organization Isolation**: Every database query MUST include organizationId filtering
+- **Role-Based Access**: Implement proper admin/employee role checks on all admin endpoints
+- **Data Sanitization**: Sanitize all user inputs, especially file uploads and text fields
+- **Secret Management**: Never hardcode credentials - use environment variables only
+- **Session Security**: JWT tokens must have proper expiration and validation
+
+### Database & Performance
+- **Drizzle ORM Only**: Use Drizzle for all database operations - no raw SQL except for complex queries
+- **Index Requirements**: All foreign keys and frequently queried fields must be indexed
+- **Transaction Usage**: Use database transactions for multi-table operations
+- **Connection Pooling**: Implement proper database connection management
+- **Query Optimization**: Monitor and optimize slow queries (>100ms)
+
+### File & Upload Management
+- **File Validation**: Validate file types, sizes, and content before processing
+- **Path Sanitization**: Prevent directory traversal attacks in file operations
+- **Temporary File Cleanup**: Always clean up uploaded files after processing
+- **Storage Limits**: Enforce organization-specific storage quotas
+
+### API Design Standards
+- **RESTful Routes**: Follow REST conventions for all API endpoints
+- **Consistent Responses**: Use standardized response formats (success/error/data structure)
+- **Rate Limiting**: Implement rate limiting on all public endpoints
+- **Bulk Operations**: Provide batch processing for large data operations
+- **Pagination**: Implement pagination for all list endpoints
+
+### Code Maintenance
+- **Temporary Script Policy**: Delete all one-time scripts immediately after use
+- **Code Reviews**: No direct commits to main - all changes via pull requests
+- **Testing Requirements**: Unit tests required for all business logic functions
+- **Documentation**: Update API documentation with every endpoint change
+- **Performance Monitoring**: Log slow operations and memory usage
+
+### Error Handling & Logging
+- **Structured Logging**: Use consistent log formats with severity levels
+- **Error Tracking**: Log all errors with context and user-friendly messages
+- **Audit Trail**: Log all admin actions and data modifications
+- **Graceful Degradation**: System must function even if optional services fail
+- **User Feedback**: Provide clear, actionable error messages to end users
+
+### Deployment & Reliability
+- **Environment Separation**: Strict separation between dev/staging/production
+- **Backup Strategy**: Automated daily backups with tested restore procedures
+- **Monitoring**: Health checks on all critical system components
+- **Rollback Plan**: Quick rollback capability for failed deployments
+- **Dependency Management**: Keep all dependencies updated and secure
 
 ## System Architecture
 
