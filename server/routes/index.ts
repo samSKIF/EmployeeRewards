@@ -7,6 +7,8 @@ import locationsRoutes from './admin/locationsRoutes';
 import bulkUploadRoutes from './admin/bulkUploadRoutes';
 import activityRoutes from './admin/activityRoutes';
 import employeeRoutes from './admin/employeeRoutes';
+import enhancedEmployeeRoutes from './admin/enhancedEmployeeRoutes';
+import enterpriseAuditRoutes from './admin/enterpriseAuditRoutes';
 import celebrationRoutes from './celebrationRoutes';
 import { celebrationPostRoutes } from './celebrationPostRoutes';
 import pointsRoutes from './pointsRoutes';
@@ -49,6 +51,12 @@ export function registerRoutes(app: Express) {
   
   // Employee management routes with activity tracking
   app.use('/api/admin/employees', employeeRoutes);
+  
+  // Enhanced employee management routes with comprehensive audit tracking
+  app.use('/api/admin/employees-enhanced', enhancedEmployeeRoutes);
+  
+  // Enterprise audit and compliance routes
+  app.use('/api/admin/enterprise', enterpriseAuditRoutes);
   
   // Bulk upload routes
   app.use(bulkUploadRoutes);

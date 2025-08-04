@@ -2282,36 +2282,7 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
-  async updateDepartment(departmentId: number, updates: { name?: string; description?: string; color?: string }): Promise<void> {
-    const setParts = [];
-    const values = [];
-    let paramIndex = 1;
-
-    if (updates.name) {
-      setParts.push(`name = $${paramIndex++}`);
-      values.push(updates.name);
-    }
-    if (updates.description) {
-      setParts.push(`description = $${paramIndex++}`);
-      values.push(updates.description);
-    }
-    if (updates.color) {
-      setParts.push(`color = $${paramIndex++}`);
-      values.push(updates.color);
-    }
-
-    if (setParts.length > 0) {
-      values.push(departmentId);
-      await this.query(
-        `UPDATE departments SET ${setParts.join(', ')} WHERE id = $${paramIndex}`,
-        values
-      );
-    }
-  }
-
-  async deleteDepartment(departmentId: number): Promise<void> {
-    await this.query('DELETE FROM departments WHERE id = $1', [departmentId]);
-  }
+  // Legacy methods - replaced with enhanced versions below
 
   async getTrendingChannels(): Promise<any[]> {
     const { interestChannels, interestChannelMembers, users, interests } =
@@ -2673,13 +2644,25 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateDepartment(id: number, departmentData: any) {
+  // Enhanced department methods with proper typing and validation
+  async updateDepartment(departmentId: number, updates: { name?: string; description?: string; color?: string }): Promise<any> {
     try {
+      const updateData: any = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.color !== undefined) updateData.color = updates.color;
+      
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('No valid update fields provided');
+      }
+
       const [result] = await db
         .update(departments)
-        .set(departmentData)
-        .where(eq(departments.id, id))
+        .set(updateData)
+        .where(eq(departments.id, departmentId))
         .returning();
+      
       return result;
     } catch (error) {
       console.error('Error updating department:', error);
@@ -2687,11 +2670,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async deleteDepartment(id: number) {
+  async deleteDepartment(departmentId: number): Promise<boolean> {
     try {
-      await db
+      const result = await db
         .delete(departments)
-        .where(eq(departments.id, id));
+        .where(eq(departments.id, departmentId));
+      
       return true;
     } catch (error) {
       console.error('Error deleting department:', error);
@@ -2713,6 +2697,306 @@ export class DatabaseStorage implements IStorage {
       return Number(result.count);
     } catch (error) {
       console.error('Error getting employee count by department:', error);
+      throw error;
+    }
+  }
+
+  // Enterprise Audit Methods - Supporting Comprehensive Compliance
+  async getOrganizationAuditTrail(organizationId: number, options: {
+    startDate?: string;
+    endDate?: string;
+    actionTypes?: string[];
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    try {
+      const { activityLogs } = await import('@shared/schema');
+      const { eq, and, gte, lte, inArray, desc } = await import('drizzle-orm');
+      
+      let query = db
+        .select()
+        .from(activityLogs)
+        .where(eq(activityLogs.organization_id, organizationId));
+
+      // Add date filters if provided
+      if (options.startDate) {
+        query = query.where(and(
+          eq(activityLogs.organization_id, organizationId),
+          gte(activityLogs.timestamp, new Date(options.startDate))
+        ));
+      }
+      
+      if (options.endDate) {
+        query = query.where(and(
+          eq(activityLogs.organization_id, organizationId),
+          lte(activityLogs.timestamp, new Date(options.endDate))
+        ));
+      }
+
+      // Add action type filters if provided
+      if (options.actionTypes && options.actionTypes.length > 0) {
+        query = query.where(and(
+          eq(activityLogs.organization_id, organizationId),
+          inArray(activityLogs.action_type, options.actionTypes)
+        ));
+      }
+
+      // Add ordering and pagination
+      query = query
+        .orderBy(desc(activityLogs.timestamp))
+        .limit(options.limit || 100)
+        .offset(options.offset || 0);
+
+      const results = await query;
+      return results;
+    } catch (error) {
+      console.error('Error fetching organization audit trail:', error);
+      throw error;
+    }
+  }
+
+  async updateOrganizationFeature(organizationId: number, featureName: string, enabled: boolean) {
+    try {
+      const { organizations } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      // Get current organization
+      const [currentOrg] = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, organizationId));
+      
+      if (!currentOrg) {
+        throw new Error('Organization not found');
+      }
+
+      // Update the feature in the features object
+      const updatedFeatures = {
+        ...currentOrg.features,
+        [featureName]: enabled
+      };
+
+      const [result] = await db
+        .update(organizations)
+        .set({ features: updatedFeatures })
+        .where(eq(organizations.id, organizationId))
+        .returning();
+      
+      return result;
+    } catch (error) {
+      console.error('Error updating organization feature:', error);
+      throw error;
+    }
+  }
+
+  async updateOrganizationSubscription(organizationId: number, subscriptionData: {
+    subscription_plan?: string;
+    user_limit?: number;
+    billing_email?: string;
+    billing_status?: string;
+  }) {
+    try {
+      const { organizations } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const updateData: any = {};
+      if (subscriptionData.subscription_plan !== undefined) {
+        updateData.subscription_plan = subscriptionData.subscription_plan;
+      }
+      if (subscriptionData.user_limit !== undefined) {
+        updateData.user_limit = subscriptionData.user_limit;
+      }
+      if (subscriptionData.billing_email !== undefined) {
+        updateData.billing_email = subscriptionData.billing_email;
+      }
+      if (subscriptionData.billing_status !== undefined) {
+        updateData.billing_status = subscriptionData.billing_status;
+      }
+
+      const [result] = await db
+        .update(organizations)
+        .set(updateData)
+        .where(eq(organizations.id, organizationId))
+        .returning();
+      
+      return result;
+    } catch (error) {
+      console.error('Error updating organization subscription:', error);
+      throw error;
+    }
+  }
+
+  async generateComplianceReport(options: {
+    organizationId?: number;
+    startDate?: string;
+    endDate?: string;
+    reportType?: string;
+    includeAuditTrail?: boolean;
+  } = {}) {
+    try {
+      const { activityLogs, auditLogs } = await import('@shared/schema');
+      const { eq, and, gte, lte, desc } = await import('drizzle-orm');
+      
+      let activityQuery = db.select().from(activityLogs);
+      let auditQuery = db.select().from(auditLogs);
+
+      // Add organization filter if specified
+      if (options.organizationId) {
+        activityQuery = activityQuery.where(eq(activityLogs.organization_id, options.organizationId));
+        auditQuery = auditQuery.where(eq(auditLogs.organization_id, options.organizationId));
+      }
+
+      // Add date filters
+      if (options.startDate) {
+        const startDate = new Date(options.startDate);
+        activityQuery = activityQuery.where(gte(activityLogs.timestamp, startDate));
+        auditQuery = auditQuery.where(gte(auditLogs.timestamp, startDate));
+      }
+      
+      if (options.endDate) {
+        const endDate = new Date(options.endDate);
+        activityQuery = activityQuery.where(lte(activityLogs.timestamp, endDate));
+        auditQuery = auditQuery.where(lte(auditLogs.timestamp, endDate));
+      }
+
+      // Order by timestamp
+      activityQuery = activityQuery.orderBy(desc(activityLogs.timestamp));
+      auditQuery = auditQuery.orderBy(desc(auditLogs.timestamp));
+
+      const [activities, audits] = await Promise.all([
+        activityQuery.limit(1000),
+        options.includeAuditTrail ? auditQuery.limit(1000) : Promise.resolve([])
+      ]);
+
+      return {
+        report_type: options.reportType || 'full',
+        organization_id: options.organizationId,
+        date_range: { start: options.startDate, end: options.endDate },
+        activities: activities,
+        audit_trail: options.includeAuditTrail ? audits : null,
+        summary: {
+          total_activities: activities.length,
+          total_audits: audits.length,
+          generated_at: new Date().toISOString(),
+        }
+      };
+    } catch (error) {
+      console.error('Error generating compliance report:', error);
+      throw error;
+    }
+  }
+
+  async checkUserDependencies(userId: number) {
+    try {
+      // Check for posts, recognitions, and other dependencies
+      const [posts, recognitions] = await Promise.all([
+        this.query('SELECT COUNT(*) as count FROM posts WHERE user_id = $1', [userId]),
+        this.query('SELECT COUNT(*) as count FROM recognitions WHERE giver_id = $1 OR receiver_id = $1', [userId])
+      ]);
+
+      const postsCount = parseInt(posts.rows[0]?.count || '0');
+      const recognitionsCount = parseInt(recognitions.rows[0]?.count || '0');
+
+      return {
+        hasActivePosts: postsCount > 0,
+        hasActiveRecognitions: recognitionsCount > 0,
+        postsCount,
+        recognitionsCount,
+        canDelete: postsCount === 0 && recognitionsCount === 0
+      };
+    } catch (error) {
+      console.error('Error checking user dependencies:', error);
+      return {
+        hasActivePosts: false,
+        hasActiveRecognitions: false,
+        postsCount: 0,
+        recognitionsCount: 0,
+        canDelete: true
+      };
+    }
+  }
+
+  async getEmployeesWithFilters(organizationId: number, filters: {
+    search?: string;
+    department?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  } = {}) {
+    try {
+      const { eq, and, like, or, desc, asc } = await import('drizzle-orm');
+      
+      let query = db
+        .select()
+        .from(users)
+        .where(eq(users.organization_id, organizationId));
+
+      // Add search filter
+      if (filters.search) {
+        query = query.where(and(
+          eq(users.organization_id, organizationId),
+          or(
+            like(users.name, `%${filters.search}%`),
+            like(users.email, `%${filters.search}%`),
+            like(users.job_title, `%${filters.search}%`)
+          )
+        ));
+      }
+
+      // Add department filter
+      if (filters.department) {
+        query = query.where(and(
+          eq(users.organization_id, organizationId),
+          eq(users.department, filters.department)
+        ));
+      }
+
+      // Add status filter
+      if (filters.status) {
+        query = query.where(and(
+          eq(users.organization_id, organizationId),
+          eq(users.status, filters.status)
+        ));
+      }
+
+      // Add sorting
+      const sortField = filters.sortBy === 'name' ? users.name :
+                       filters.sortBy === 'email' ? users.email :
+                       filters.sortBy === 'department' ? users.department :
+                       users.created_at;
+      
+      const sortOrder = filters.sortOrder === 'desc' ? desc(sortField) : asc(sortField);
+      query = query.orderBy(sortOrder);
+
+      // Add pagination
+      query = query
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
+
+      const results = await query;
+      return results;
+    } catch (error) {
+      console.error('Error fetching employees with filters:', error);
+      throw error;
+    }
+  }
+
+  // Organization Management Methods - Supporting Enterprise Audit Routes
+  async getOrganizationById(organizationId: number) {
+    try {
+      const { organizations } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const [result] = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, organizationId));
+      
+      return result;
+    } catch (error) {
+      console.error('Error fetching organization by ID:', error);
       throw error;
     }
   }
