@@ -11,6 +11,23 @@ Preferred communication style: Simple, everyday language.
 ### Code Quality & Standards
 - **Naming Convention**: MANDATORY snake_case for all database fields, API parameters, and backend variables
 - **TypeScript Strict Mode**: All code must be fully typed - no `any` types without explicit justification
+- **File Size Limits**:
+  - Individual files: Max 500 lines (split into smaller modules if exceeded)
+  - React components: Max 300 lines (use composition for complex components)
+  - API route files: Max 400 lines (group related endpoints)
+  - Utility functions: Max 100 lines per function
+- **Code Homogeneity Standards**:
+  - Consistent import order: External libs → Internal modules → Types → Styles
+  - Uniform error handling: Use custom error classes with standardized messages
+  - Consistent function signatures: (data, options?) pattern for all utilities
+  - Standardized component structure: Props interface → Component → Export
+  - Uniform async patterns: async/await only, no mixed Promise chains
+  - Consistent logging format: [timestamp] [level] [module] message
+- **Code Organization**:
+  - Group related functionality in dedicated modules
+  - Use index.ts files for clean exports
+  - Maintain consistent folder structure across features
+  - Extract constants to dedicated files (max 50 constants per file)
 - **Error Handling**: Every API endpoint must have comprehensive error handling with user-friendly messages
 - **Input Validation**: All user inputs must be validated using Zod schemas before processing
 - **SQL Injection Prevention**: Use parameterized queries only - never string concatenation for SQL
@@ -31,10 +48,19 @@ Preferred communication style: Simple, everyday language.
 - **Query Optimization**: Monitor and optimize slow queries (>100ms)
 
 ### File & Upload Management
+- **File Size Limits**: 
+  - CSV/Excel uploads: Max 10MB per file, 1000 rows per batch
+  - Avatar images: Max 2MB, 512x512px recommended
+  - Document attachments: Max 25MB per file
+  - Bulk operations: Process in chunks of 100 records
+- **File Type Restrictions**: 
+  - Images: JPG, PNG, WebP only
+  - Documents: PDF, DOCX, XLSX, CSV only
+  - Archives: ZIP only (scanned for malware)
 - **File Validation**: Validate file types, sizes, and content before processing
 - **Path Sanitization**: Prevent directory traversal attacks in file operations
 - **Temporary File Cleanup**: Always clean up uploaded files after processing
-- **Storage Limits**: Enforce organization-specific storage quotas
+- **Storage Limits**: Enforce organization-specific storage quotas (500MB base, 1GB premium)
 
 ### API Design Standards
 - **RESTful Routes**: Follow REST conventions for all API endpoints
