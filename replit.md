@@ -105,6 +105,32 @@ Preferred communication style: Simple, everyday language.
   - Database query performance benchmarks
   - File upload stress testing with concurrent users
 
+### Team Development & Handover Standards
+- **Code Documentation Requirements**:
+  - Every function must have JSDoc comments explaining purpose, parameters, and return values
+  - Complex business logic must include inline comments explaining the "why"
+  - README files required for each major module/feature
+  - Architecture Decision Records (ADRs) for all major technical decisions
+  - Database schema must be documented with relationships and constraints
+- **Knowledge Transfer Protocols**:
+  - All features must have comprehensive documentation before handover
+  - Code must be self-documenting with clear variable and function names
+  - No tribal knowledge - all processes must be written down
+  - Video walkthroughs required for complex features
+  - Onboarding documentation for new team members
+- **Code Maintainability Standards**:
+  - No magic numbers - use named constants with clear explanations
+  - No deep nesting (max 3 levels) - extract functions for readability
+  - Clear separation of concerns - business logic separate from UI logic
+  - Standardized project structure that new developers can navigate easily
+  - All environment variables documented with examples and purposes
+- **Team Collaboration Rules**:
+  - All major changes require design review before implementation
+  - Breaking changes must have migration guides and backward compatibility plans
+  - Feature flags for gradual rollouts and safe experimentation
+  - Standardized Git commit messages following conventional commits
+  - Pull request templates with checklists for consistency
+
 ### Code Maintenance
 - **Temporary Script Policy**: Delete all one-time scripts immediately after use
 - **Code Reviews**: No direct commits to main - all changes via pull requests
@@ -114,8 +140,11 @@ Preferred communication style: Simple, everyday language.
   - No TypeScript errors or warnings
   - Security scan completed
   - Performance benchmarks within acceptable range
+  - Documentation updated for any new features
+  - Migration scripts tested if database changes included
 - **Documentation**: Update API documentation with every endpoint change
 - **Performance Monitoring**: Log slow operations and memory usage
+- **Knowledge Management**: Keep team wiki updated with troubleshooting guides and FAQs
 
 ### Error Handling & Logging
 - **Structured Logging**: Use consistent log formats with severity levels
