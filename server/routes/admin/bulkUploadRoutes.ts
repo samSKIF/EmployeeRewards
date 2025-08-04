@@ -55,7 +55,7 @@ interface DepartmentAnalysis {
 // Preview endpoint - analyzes CSV file without creating records
 router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const organizationId = (req as any).user?.organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -132,8 +132,9 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     }
 
     // Check for existing emails in database
-    const existingUsers = await storage.getUsersByEmails(Array.from(emailSet));
-    const existingEmails = existingUsers.map(user => user.email);
+    const emailArray = Array.from(emailSet) as string[];
+    const existingUsers = await storage.getUsersByEmails(emailArray);
+    const existingEmails = existingUsers.map((user: any) => user.email);
     
     if (existingEmails.length > 0) {
       warnings.push(`${existingEmails.length} emails already exist in system: ${existingEmails.slice(0, 5).join(', ')}${existingEmails.length > 5 ? '...' : ''}`);
@@ -143,7 +144,7 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
     const existingDeptNames = existingDepartments.map(dept => dept.name);
     
-    const fileDepartments = [...new Set(employees.map(emp => emp.department))];
+    const fileDepartments = Array.from(new Set(employees.map(emp => emp.department)));
     const departmentAnalysis: DepartmentAnalysis[] = [];
     
     fileDepartments.forEach(deptName => {
@@ -247,7 +248,7 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
 // Execute bulk upload - creates departments and employees
 router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
-    const organizationId = (req.user as any).organization_id;
+    const organizationId = (req as any).user?.organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -348,7 +349,7 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
     const existingDeptNames = existingDepartments.map(dept => dept.name.toLowerCase());
     
-    const fileDepartments = [...new Set(employees.map(emp => emp.department))];
+    const fileDepartments = Array.from(new Set(employees.map(emp => emp.department)));
     const newDepartments = fileDepartments.filter(dept => 
       !existingDeptNames.includes(dept.toLowerCase())
     );
@@ -360,7 +361,7 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
           name: departmentName,
           description: `Auto-created during bulk employee upload`,
           color: '#6B7280',
-          created_by: req.user!.id,
+          created_by: (req as any).user.id,
         });
         departmentsCreated++;
       } catch (error) {
@@ -390,7 +391,7 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
           status: 'active',
         };
 
-        await storage.createUser(userData);
+        await storage.createUser(userData as any);
         employeesCreated++;
       } catch (error) {
         console.error(`Error creating employee ${employeeData.email}:`, error);

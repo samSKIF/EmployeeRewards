@@ -178,9 +178,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await apiRequest('POST', '/api/admin/employees/preview', formData, {
-        'Content-Type': 'multipart/form-data',
-      });
+      const response = await apiRequest('POST', '/api/admin/employees/preview', formData);
       return response.json();
     },
     onSuccess: (data) => {
@@ -217,9 +215,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
       }, 200);
       
       try {
-        const response = await apiRequest('POST', '/api/admin/employees/bulk-upload', formData, {
-          'Content-Type': 'multipart/form-data',
-        });
+        const response = await apiRequest('POST', '/api/admin/employees/bulk-upload', formData);
         
         clearInterval(progressInterval);
         setUploadProgress(100);
