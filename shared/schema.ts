@@ -1495,6 +1495,36 @@ export const createOrganizationSchema = z.object({
 
 export type CreateOrganizationData = z.infer<typeof createOrganizationSchema>;
 
+// Activity Tracking Tables for AI-Ready Architecture
+export const user_activities = pgTable('user_activities', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id).notNull(),
+  organization_id: integer('organization_id').references(() => organizations.id).notNull(),
+  action_type: text('action_type').notNull(), // 'login', 'create_employee', 'update_department', etc.
+  resource_type: text('resource_type'), // 'employee', 'department', 'organization', etc.
+  resource_id: integer('resource_id'), // ID of the affected resource
+  details: jsonb('details'), // Complete before/after states, metadata
+  ip_address: text('ip_address'),
+  user_agent: text('user_agent'),
+  session_id: text('session_id'),
+  performance_metrics: jsonb('performance_metrics'), // Response time, resource usage
+  created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const audit_logs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id),
+  organization_id: integer('organization_id').references(() => organizations.id).notNull(),
+  action: text('action').notNull(),
+  table_name: text('table_name'), // Which table was affected
+  record_id: integer('record_id'), // Which record was affected
+  old_values: jsonb('old_values'), // Before state
+  new_values: jsonb('new_values'), // After state
+  ip_address: text('ip_address'),
+  user_agent: text('user_agent'),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Export types
 // Organization types
 export type Organization = typeof organizations.$inferSelect;
@@ -1511,6 +1541,23 @@ export type InsertSeller = z.infer<typeof insertSellerSchema>;
 // Subscription types
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+
+// Activity tracking types
+export const insertUserActivitySchema = createInsertSchema(user_activities).omit({
+  id: true,
+  created_at: true,
+});
+
+export const insertAuditLogSchema = createInsertSchema(audit_logs).omit({
+  id: true,
+  created_at: true,
+});
+
+export type UserActivity = typeof user_activities.$inferSelect;
+export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
+
+export type AuditLog = typeof audit_logs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 
 export type ProductCategory = typeof productCategories.$inferSelect;
 export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;

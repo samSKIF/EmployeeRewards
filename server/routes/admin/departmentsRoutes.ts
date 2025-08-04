@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { verifyToken, verifyAdmin } from '../../middleware/auth';
 import { storage } from '../../storage';
 import { logger } from '@shared/logger';
+import { activityLogger, logActivity, auditLogger } from '../../middleware/activityLogger';
 
 const router = Router();
 
@@ -23,7 +24,11 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // Create new department
-router.post('/', verifyToken, verifyAdmin, async (req, res) => {
+router.post('/', 
+  verifyToken, 
+  verifyAdmin,
+  activityLogger({ action_type: 'create_department', resource_type: 'department' }),
+  async (req, res) => {
   try {
     const { name, color } = req.body;
     const organizationId = (req.user as any).organization_id;
@@ -45,6 +50,13 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
       organization_id: organizationId,
       created_by: userId,
       is_active: true
+    });
+
+    // Log the department creation activity
+    await logActivity(req as any, 'create_department', 'department', newDepartment.id, {
+      department_name: name,
+      color: color || '#3B82F6',
+      success: true,
     });
 
     res.status(201).json(newDepartment);
