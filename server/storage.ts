@@ -825,6 +825,9 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...orderData.order,
+      user: orderData.user!,
+      product: orderData.product!,
+      transaction: null,
       productName: orderData.product?.name || 'Unknown Product',
       userName: orderData.user?.name || 'Unknown User',
       points: orderData.product?.points || 0,
@@ -925,7 +928,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        userId: user_id,
+        user_id: user_id,
       })
       .returning();
 
@@ -942,7 +945,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        userId: user_id,
+        user_id: user_id,
         type: 'poll',
       })
       .returning();
@@ -952,7 +955,7 @@ export class DatabaseStorage implements IStorage {
       .insert(polls)
       .values({
         ...pollData,
-        postId: post.id,
+        post_id: post.id,
       })
       .returning();
 
@@ -969,7 +972,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        userId: user_id,
+        user_id: user_id,
         type: 'recognition',
       })
       .returning();
@@ -979,18 +982,18 @@ export class DatabaseStorage implements IStorage {
       .insert(recognitions)
       .values({
         ...recognitionData,
-        recognizerId: user_id,
-        postId: post.id,
+        recognizer_id: user_id,
+        post_id: post.id,
       })
       .returning();
 
     // If there are points awarded with the recognition, create a transaction
     if (recognition.points > 0) {
-      const recipient = await this.getUser(recognition.recipientId);
+      const recipient = await this.getUser(recognition.recipient_id);
 
       if (recipient) {
         const transaction = await this.earnPoints(
-          recognition.recipientId,
+          recognition.recipient_id,
           recognition.points,
           'recognition',
           `Recognition from ${user_id}: ${recognition.message}`,
@@ -1001,7 +1004,7 @@ export class DatabaseStorage implements IStorage {
         await db
           .update(recognitions)
           .set({
-            recognition_id: transaction.id,
+            transaction_id: transaction.id,
           })
           .where(eq(recognitions.id, recognition.id));
       }
@@ -1021,8 +1024,8 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(posts)
-      .leftJoin(users, eq(posts.user_id, users.id))
-      .orderBy(desc(posts.created_at))
+      .leftJoin(users, eq(posts.userId, users.id))
+      .orderBy(desc(posts.createdAt))
       .limit(limit)
       .offset(offset);
 
