@@ -28,6 +28,15 @@ Preferred communication style: Simple, everyday language.
   - Use index.ts files for clean exports
   - Maintain consistent folder structure across features
   - Extract constants to dedicated files (max 50 constants per file)
+- **Internationalization Requirements**:
+  - ALL pages and labels must support multiple languages from creation
+  - Use i18next with translation keys, never hardcoded strings
+  - Support minimum: English, Spanish, French, German, Japanese, Chinese
+  - Date/time formatting must respect user locale
+  - Number formatting (currency, decimals) must be locale-aware
+  - All error messages must be translatable
+  - Email templates must support multiple languages
+  - Database content requiring translation must use separate translation tables
 - **Error Handling**: Every API endpoint must have comprehensive error handling with user-friendly messages
 - **Input Validation**: All user inputs must be validated using Zod schemas before processing
 - **SQL Injection Prevention**: Use parameterized queries only - never string concatenation for SQL
