@@ -8,7 +8,10 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **GOLD STANDARD TYPE SAFETY** (August 4, 2025): Implemented enterprise-grade error handling with proper TypeScript strict mode compliance, soft delete patterns, and comprehensive audit trail preservation.
 
 ## User Preferences
-Preferred communication style: Simple, everyday language.
+- **Communication Style**: Simple, everyday language
+- **Development Standards**: Maintain Gold Standard compliance score of 92-95/100
+- **Code Quality**: Zero tolerance for LSP diagnostics, enterprise-grade error handling
+- **Compliance Framework**: Follow GOLD_STANDARD_COMPLIANCE_RULES_2025.md for all development
 
 ## System Architecture
 
@@ -72,19 +75,29 @@ Preferred communication style: Simple, everyday language.
 - Rate limiting and bulk operation support.
 - Pagination for all list endpoints.
 
-### Code Quality & Standards
-- Mandatory snake_case for database fields, API parameters, and backend variables.
-- Full TypeScript strict mode.
-- File size limits for individual files, React components, and API routes.
-- Consistent code homogeneity standards for imports, error handling, function signatures, and component structure.
-- Comprehensive internationalization support for all pages, labels, dates, numbers, and error messages.
-- Input validation using Zod schemas and SQL injection prevention via parameterized queries.
-- Strict authentication and authorization for sensitive endpoints.
+### Gold Standard Code Quality & Standards (Target: 92-95/100)
+- **MANDATORY COMPLIANCE**: All development must maintain gold standard score of 92-95/100
+- **Zero LSP Diagnostics**: No TypeScript errors, warnings, or type safety issues permitted
+- **Enterprise Error Handling**: All catch blocks must use proper typing (`catch (error: any)`) with null-safe message access (`error?.message || 'unknown_error'`)
+- **Schema Validation Consistency**: All insert schemas must use streamlined `.omit({ id: true })` pattern unless specific fields require exclusion
+- **Type Safety Compliance**: Full TypeScript strict mode with 100% type coverage
+- **Soft Delete Pattern**: Never use hard deletes; implement status-based soft deletes with audit trail preservation
+- **Comprehensive Audit Tracking**: Every user action must be logged with before/after states, user context, and performance metrics
+- **Snake_case Enforcement**: Mandatory for all database fields, API parameters, and backend variables
+- **File Size Governance**: Individual files <500 lines, React components <300 lines, API routes <200 lines
+- **Code Homogeneity Standards**: Consistent imports, error handling, function signatures, and component structure
+- **Internationalization**: Complete i18n support for all user-facing text, dates, numbers, and error messages
+- **Security Standards**: Zod validation, parameterized queries, JWT authentication, role-based access control
+- **Performance Standards**: API responses <200ms, database queries optimized, efficient memory usage
 
-### Testing & Quality Assurance
-- Minimum 80% code coverage for business logic, 100% for security functions.
-- Mandatory unit, integration, component, and end-to-end tests.
-- Automated regression testing before deployment.
+### Gold Standard Testing & Quality Assurance
+- **Code Coverage Requirements**: Minimum 85% for business logic, 100% for security functions, 90% for API routes
+- **Mandatory Test Types**: Unit tests, integration tests, component tests, end-to-end tests, performance tests
+- **LSP Compliance**: Zero tolerance for TypeScript diagnostics - all must be resolved immediately
+- **Error Handling Tests**: Comprehensive testing of all error scenarios with proper type safety
+- **Schema Validation Tests**: All insert/update schemas must have corresponding validation tests
+- **Automated Quality Gates**: Pre-commit hooks, automated regression testing, performance benchmarking
+- **Gold Standard Monitoring**: Continuous monitoring of code quality metrics to maintain 92-95/100 score
 
 ### AI-Ready Architecture & Comprehensive Activity Tracking
 - **Every Single User Action Must Be Tracked**:
