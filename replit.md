@@ -69,10 +69,42 @@ Preferred communication style: Simple, everyday language.
 - **Bulk Operations**: Provide batch processing for large data operations
 - **Pagination**: Implement pagination for all list endpoints
 
+### Testing & Quality Assurance
+- **Test Coverage Requirements**:
+  - Minimum 80% code coverage for all business logic
+  - 100% coverage for authentication and security functions
+  - All API endpoints must have integration tests
+  - Database operations must have transaction rollback tests
+- **Test Types Mandatory**:
+  - Unit tests: All utility functions, validators, and business logic
+  - Integration tests: API endpoints with database interactions
+  - Component tests: React components with user interactions
+  - End-to-end tests: Critical user workflows (login, file upload, data processing)
+- **Regression Testing Protocol**:
+  - Run full test suite before any deployment
+  - Test existing features when adding new ones
+  - Automated CI/CD pipeline must pass all tests
+  - Breaking changes require explicit approval and migration plan
+- **Test Organization**:
+  - Mirror production folder structure in test directories
+  - Group tests by feature modules, not by test type
+  - Use descriptive test names: "should reject invalid email format"
+  - Mock external services consistently across test suite
+- **Performance Testing**:
+  - Load testing for bulk operations (1000+ records)
+  - Memory leak detection for long-running processes
+  - Database query performance benchmarks
+  - File upload stress testing with concurrent users
+
 ### Code Maintenance
 - **Temporary Script Policy**: Delete all one-time scripts immediately after use
 - **Code Reviews**: No direct commits to main - all changes via pull requests
-- **Testing Requirements**: Unit tests required for all business logic functions
+- **Pre-deployment Checklist**:
+  - All tests passing (unit, integration, e2e)
+  - Code coverage threshold met
+  - No TypeScript errors or warnings
+  - Security scan completed
+  - Performance benchmarks within acceptable range
 - **Documentation**: Update API documentation with every endpoint change
 - **Performance Monitoring**: Log slow operations and memory usage
 
@@ -85,10 +117,17 @@ Preferred communication style: Simple, everyday language.
 
 ### Deployment & Reliability
 - **Environment Separation**: Strict separation between dev/staging/production
+- **Continuous Integration**:
+  - Automated testing on every commit
+  - Staging deployment for integration testing
+  - Production deployment only after full test suite passes
+  - Automatic rollback if post-deployment tests fail
 - **Backup Strategy**: Automated daily backups with tested restore procedures
 - **Monitoring**: Health checks on all critical system components
+- **Feature Flags**: Use feature toggles for gradual rollouts of new functionality
 - **Rollback Plan**: Quick rollback capability for failed deployments
 - **Dependency Management**: Keep all dependencies updated and secure
+- **Zero-Downtime Deployments**: Blue-green deployment strategy for production updates
 
 ## System Architecture
 
