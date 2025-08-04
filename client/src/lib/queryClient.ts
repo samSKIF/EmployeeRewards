@@ -10,16 +10,20 @@ async function throwIfResNotOk(res: Response) {
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined
+  data?: unknown | undefined,
+  customHeaders?: Record<string, string>
 ): Promise<Response> {
   // Get JWT token from localStorage
   const token = localStorage.getItem('token');
 
   // Prepare headers with auth token
-  const headers: Record<string, string> = {};
-  if (data) {
+  const headers: Record<string, string> = { ...customHeaders };
+  
+  // Only set Content-Type for JSON data, not for FormData
+  if (data && !(data instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
+  
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -27,7 +31,7 @@ export async function apiRequest(
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
     credentials: 'include',
   });
 
