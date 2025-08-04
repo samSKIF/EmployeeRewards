@@ -6,6 +6,11 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Development Rules & Guidelines
+- **Temporary Script Policy**: All temporary scripts, routes, or utilities created for one-time tasks (like bulk operations, data cleanup, testing) must be deleted immediately after use
+- **Code Hygiene**: Keep the codebase clean - no leftover debugging code, temporary files, or unused utilities
+- **Documentation**: Always document why temporary code was created and confirm its removal in project updates
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -69,4 +74,10 @@ Preferred communication style: Simple, everyday language.
 - **MongoDB**: For social features (migration in progress).
 - **Redis**: For caching.
 - **Elasticsearch**: For audit logging and search.
+
+## Recent Changes
+- **August 4, 2025**: Enhanced department validation system with strict typo detection (70% similarity threshold)
+- **August 4, 2025**: Fixed critical date format conversion bug in bulk upload (DD/MM/YYYY to YYYY-MM-DD)
+- **August 4, 2025**: Added comprehensive error reporting with actionable suggestions for HR users
+- **August 4, 2025**: Removed temporary bulk delete script after cleaning up test data (40 employees)
 ```
