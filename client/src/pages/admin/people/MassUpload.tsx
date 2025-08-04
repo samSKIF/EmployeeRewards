@@ -77,11 +77,38 @@ interface PreviewEmployee {
   sex: string;
 }
 
+interface DepartmentAnalysis {
+  name: string;
+  action: 'existing' | 'new' | 'typo';
+  suggestion?: string;
+  confidence?: number;
+  rows: number[];
+}
+
+interface EnhancedPreviewData {
+  employees: PreviewEmployee[];
+  departmentAnalysis: {
+    new: DepartmentAnalysis[];
+    typos: DepartmentAnalysis[];
+    existing: DepartmentAnalysis[];
+    total: number;
+  };
+  employeeCount: number;
+  validation: {
+    hasErrors: boolean;
+    errors: string[];
+    warnings: string[];
+    needsReview: boolean;
+  };
+}
+
 export default function MassUpload() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [previewData, setPreviewData] = useState<PreviewEmployee[]>([]);
+  const [enhancedPreview, setEnhancedPreview] = useState<EnhancedPreviewData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showDepartmentDialog, setShowDepartmentDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -157,8 +184,14 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
       return response.json();
     },
     onSuccess: (data) => {
-      setPreviewData(data.preview || []);
+      setPreviewData(data.employees || []);
+      setEnhancedPreview(data);
       setShowPreview(true);
+      
+      // Check if department review is needed
+      if (data.validation?.needsReview) {
+        setShowDepartmentDialog(true);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -239,9 +272,19 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
     setUploadFile(null);
     setUploadResult(null);
     setPreviewData([]);
+    setEnhancedPreview(null);
     setShowPreview(false);
+    setShowDepartmentDialog(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDepartmentConfirm = () => {
+    setShowDepartmentDialog(false);
+    // Proceed with upload after user confirms departments
+    if (uploadFile) {
+      uploadMutation.mutate(uploadFile);
     }
   };
 
@@ -493,6 +536,105 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Department Review Dialog */}
+      {showDepartmentDialog && enhancedPreview && (
+        <Dialog open={showDepartmentDialog} onOpenChange={setShowDepartmentDialog}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                Department Review Required
+              </DialogTitle>
+              <DialogDescription>
+                We found some departments that need your attention before proceeding with the upload.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Typo Suggestions */}
+              {enhancedPreview.departmentAnalysis.typos.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-amber-700 flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    Possible Typos Detected
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    These departments look similar to existing ones. Please review:
+                  </p>
+                  <div className="space-y-2">
+                    {enhancedPreview.departmentAnalysis.typos.map((dept, index) => (
+                      <div key={index} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-amber-800">"{dept.name}"</p>
+                            <p className="text-sm text-amber-600">
+                              Found in rows: {dept.rows.join(', ')}
+                            </p>
+                            <p className="text-sm text-green-700 mt-1">
+                              💡 Did you mean: "<strong>{dept.suggestion}</strong>"? 
+                              <span className="text-gray-500 ml-1">({dept.confidence}% match)</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      💡 <strong>Tip:</strong> Typos will create duplicate departments. 
+                      Consider fixing them in your file before uploading.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* New Departments */}
+              {enhancedPreview.departmentAnalysis.new.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    New Departments to Create
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    These departments will be automatically created:
+                  </p>
+                  <div className="space-y-2">
+                    {enhancedPreview.departmentAnalysis.new.map((dept, index) => (
+                      <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-blue-800">"{dept.name}"</p>
+                            <p className="text-sm text-blue-600">
+                              Found in rows: {dept.rows.join(', ')}
+                            </p>
+                          </div>
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDepartmentDialog(false)}
+              >
+                Cancel & Fix File
+              </Button>
+              <Button 
+                onClick={handleDepartmentConfirm}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Proceed with Upload
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

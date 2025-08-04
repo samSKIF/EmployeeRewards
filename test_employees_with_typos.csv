@@ -1,0 +1,6 @@
+name,surname,email,department,job_title,location,phone_number,manager_email,hire_date,birth_date,nationality,sex
+Sarah,Johnson,sarah.johnson@loylogic.com,Enginnering,Senior Developer,London Office,+44-20-7946-0958,admin@loylogic.com,2024-01-15,1990-05-20,British,Female
+Michael,Brown,michael.brown@loylogic.com,Marketting,Marketing Specialist,London Office,+44-20-7946-0959,admin@loylogic.com,2024-02-10,1985-08-12,British,Male
+Emily,Davis,emily.davis@loylogic.com,Engineering,Junior Developer,Manchester Office,+44-161-123-4567,admin@loylogic.com,2024-03-05,1992-11-25,British,Female
+James,Wilson,james.wilson@loylogic.com,Customer Suport,Support Agent,Birmingham Office,+44-121-456-7890,admin@loylogic.com,2024-04-01,1988-03-18,British,Male
+Lisa,Taylor,lisa.taylor@loylogic.com,Data Science,Data Analyst,Edinburgh Office,+44-131-789-0123,admin@loylogic.com,2024-05-15,1991-07-09,British,Female

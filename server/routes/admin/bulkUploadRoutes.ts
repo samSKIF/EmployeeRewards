@@ -7,6 +7,7 @@ import csv from 'csv-parser';
 import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
+import * as fuzz from 'fuzzball';
 
 const router = Router();
 
@@ -40,6 +41,15 @@ interface EmployeeRow {
   phoneNumber?: string;
   birthDate?: string;
   hireDate?: string;
+  rowIndex?: number; // Track row number for error reporting
+}
+
+interface DepartmentAnalysis {
+  name: string;
+  action: 'existing' | 'new' | 'typo';
+  suggestion?: string;
+  confidence?: number;
+  rows: number[]; // Which rows contain this department
 }
 
 // Preview endpoint - analyzes CSV file without creating records
@@ -60,20 +70,22 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     const warnings: string[] = [];
 
     // Parse CSV file
+    let rowIndex = 0;
     await new Promise((resolve, reject) => {
       fs.createReadStream(req.file!.path)
         .pipe(csv())
         .on('data', (row) => {
+          rowIndex++;
           // Validate required fields
           if (!row.name || !row.surname || !row.email || !row.department) {
-            errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
+            errors.push(`Row ${rowIndex} missing required fields: ${JSON.stringify(row)}`);
             return;
           }
 
           // Email validation
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(row.email)) {
-            errors.push(`Invalid email format: ${row.email}`);
+            errors.push(`Row ${rowIndex} - Invalid email format: ${row.email}`);
             return;
           }
 
@@ -87,6 +99,7 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
             phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
             birthDate: row.birth_date?.trim() || row.birthDate?.trim() || undefined,
             hireDate: row.hire_date?.trim() || row.hireDate?.trim() || undefined,
+            rowIndex,
           });
         })
         .on('end', resolve)
@@ -126,32 +139,91 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
       warnings.push(`${existingEmails.length} emails already exist in system: ${existingEmails.slice(0, 5).join(', ')}${existingEmails.length > 5 ? '...' : ''}`);
     }
 
-    // Analyze departments
+    // Smart department analysis with typo detection
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
-    const existingDeptNames = existingDepartments.map(dept => dept.name.toLowerCase());
+    const existingDeptNames = existingDepartments.map(dept => dept.name);
     
     const fileDepartments = [...new Set(employees.map(emp => emp.department))];
-    const newDepartments = fileDepartments.filter(dept => 
-      !existingDeptNames.includes(dept.toLowerCase())
-    );
-    const existingDeptList = fileDepartments.filter(dept => 
-      existingDeptNames.includes(dept.toLowerCase())
-    );
+    const departmentAnalysis: DepartmentAnalysis[] = [];
+    
+    fileDepartments.forEach(deptName => {
+      const rows = employees
+        .filter(emp => emp.department === deptName)
+        .map(emp => emp.rowIndex!)
+        .filter(Boolean);
+      
+      // Check exact match (case insensitive)
+      const exactMatch = existingDeptNames.find(existing => 
+        existing.toLowerCase() === deptName.toLowerCase()
+      );
+      
+      if (exactMatch) {
+        departmentAnalysis.push({
+          name: deptName,
+          action: 'existing',
+          rows
+        });
+      } else {
+        // Check for potential typos using fuzzy matching
+        const matches = existingDeptNames.map(existing => ({
+          name: existing,
+          ratio: fuzz.ratio(deptName.toLowerCase(), existing.toLowerCase())
+        })).sort((a, b) => b.ratio - a.ratio);
+        
+        const bestMatch = matches[0];
+        
+        // If similarity > 70%, it's likely a typo
+        if (bestMatch && bestMatch.ratio > 70) {
+          departmentAnalysis.push({
+            name: deptName,
+            action: 'typo',
+            suggestion: bestMatch.name,
+            confidence: bestMatch.ratio,
+            rows
+          });
+        } else {
+          departmentAnalysis.push({
+            name: deptName,
+            action: 'new',
+            rows
+          });
+        }
+      }
+    });
 
     // Additional validations
     if (employees.length > 1000) {
       warnings.push('Large upload detected. Consider splitting into smaller batches for better performance.');
     }
 
+    // Separate departments by type for better UX
+    const newDepartments = departmentAnalysis.filter(d => d.action === 'new');
+    const typoSuggestions = departmentAnalysis.filter(d => d.action === 'typo');
+    const existingDepartmentsList = departmentAnalysis.filter(d => d.action === 'existing');
+    
+    // Add department warnings
+    if (typoSuggestions.length > 0) {
+      warnings.push(`Potential typos detected in department names. Please review suggestions below.`);
+    }
+    
+    if (newDepartments.length > 0) {
+      warnings.push(`${newDepartments.length} new departments will be created. Please confirm or correct any typos.`);
+    }
+
     const previewData = {
       employees: employees.filter(emp => !existingEmails.includes(emp.email)), // Only new employees
-      newDepartments,
-      existingDepartments: existingDeptList,
+      departmentAnalysis: {
+        new: newDepartments,
+        typos: typoSuggestions,
+        existing: existingDepartmentsList,
+        total: departmentAnalysis.length
+      },
       employeeCount: employees.filter(emp => !existingEmails.includes(emp.email)).length,
       validation: {
         hasErrors: errors.length > 0,
         errors,
         warnings,
+        needsReview: typoSuggestions.length > 0, // Flag for frontend to show review UI
       },
     };
 
