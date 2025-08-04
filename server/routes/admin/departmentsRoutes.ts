@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { verifyToken, verifyAdmin } from '../../middleware/auth';
 import { storage } from '../../storage';
+import { logger } from '@shared/logger';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
     const departments = await storage.getDepartmentsByOrganization(organizationId);
     res.json(departments);
   } catch (error) {
-    console.error('Error fetching departments:', error);
+    logger.error('Error fetching departments:', { error, organizationId });
     res.status(500).json({ message: 'Failed to fetch departments' });
   }
 });
@@ -48,7 +49,7 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
 
     res.status(201).json(newDepartment);
   } catch (error) {
-    console.error('Error creating department:', error);
+    logger.error('Error creating department:', { error, name, organizationId });
     res.status(500).json({ message: 'Failed to create department' });
   }
 });
@@ -88,7 +89,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
     const updatedDepartment = await storage.updateDepartment(departmentId, updateData);
     res.json(updatedDepartment);
   } catch (error) {
-    console.error('Error updating department:', error);
+    logger.error('Error updating department:', { error, departmentId });
     res.status(500).json({ message: 'Failed to update department' });
   }
 });
@@ -121,7 +122,7 @@ router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
     await storage.deleteDepartment(departmentId);
     res.json({ message: 'Department deleted successfully' });
   } catch (error) {
-    console.error('Error deleting department:', error);
+    logger.error('Error deleting department:', { error, departmentId });
     res.status(500).json({ message: 'Failed to delete department' });
   }
 });
@@ -150,7 +151,7 @@ router.get('/api/admin/departments/:id/stats', verifyToken, verifyAdmin, async (
 
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching department stats:', error);
+    logger.error('Error fetching department stats:', { error, organizationId });
     res.status(500).json({ message: 'Failed to fetch department statistics' });
   }
 });

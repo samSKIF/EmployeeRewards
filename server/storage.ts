@@ -569,7 +569,7 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db
       .insert(orders)
       .values({
-        user_id,
+        userId: user_id,
         productId,
         transactionId: transaction.id,
         status: 'pending',
@@ -714,7 +714,7 @@ export class DatabaseStorage implements IStorage {
     return db
       .select()
       .from(products)
-      .where(eq(products.is_active, true))
+      .where(eq(products.isActive, true))
       .orderBy(products.points);
   }
 
@@ -758,10 +758,10 @@ export class DatabaseStorage implements IStorage {
         user: users,
       })
       .from(orders)
-      .where(eq(orders.user_id, user_id))
+      .where(eq(orders.userId, user_id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users, eq(orders.user_id, users.id))
-      .orderBy(desc(orders.created_at));
+      .leftJoin(users, eq(orders.userId, users.id))
+      .orderBy(desc(orders.createdAt));
 
     return userOrders.map((row) => ({
       ...row.order,
@@ -780,8 +780,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(orders)
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users, eq(orders.user_id, users.id))
-      .orderBy(desc(orders.created_at));
+      .leftJoin(users, eq(orders.userId, users.id))
+      .orderBy(desc(orders.createdAt));
 
     return allOrders.map((row) => ({
       ...row.order,
@@ -879,7 +879,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)`,
       })
       .from(orders)
-      .where(eq(orders.user_id, user_id));
+      .where(eq(orders.userId, user_id));
 
     const redemptions = redemptionsResult?.count || 0;
 
@@ -907,7 +907,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        user_id,
+        userId: user_id,
       })
       .returning();
 
@@ -924,7 +924,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        user_id,
+        userId: user_id,
         type: 'poll',
       })
       .returning();
@@ -951,7 +951,7 @@ export class DatabaseStorage implements IStorage {
       .insert(posts)
       .values({
         ...postData,
-        user_id,
+        userId: user_id,
         type: 'recognition',
       })
       .returning();

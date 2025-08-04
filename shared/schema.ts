@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { relations, type InferSelectModel } from 'drizzle-orm';
 
 // Organizations table (Corporate, Client, Seller)
-export const organizations: any = pgTable('organizations', {
+export const organizations = pgTable('organizations', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   slug: text('slug').unique(), // URL-friendly organization identifier
@@ -40,7 +40,7 @@ export const organizations: any = pgTable('organizations', {
   created_by: integer('created_by'),
   logo_url: text('logo_url'),
   settings: jsonb('settings'), // Store org-specific settings like enabled features
-  parent_org_id: integer('parent_org_id').references(() => organizations.id), // For hierarchical relationships
+  parent_org_id: integer('parent_org_id'), // For hierarchical relationships
   current_subscription_id: integer('current_subscription_id'), // Will reference subscriptions table
 });
 
@@ -134,7 +134,7 @@ export const users = pgTable('users', {
   about_me: text('about_me'), // About me section for profile
   cover_photo_url: text('cover_photo_url'), // Profile cover photo
   last_seen_at: timestamp('last_seen_at'), // Last login/activity timestamp
-  manager_id: integer('manager_id').references(() => users.id), // Reference to manager (self-referencing)
+  manager_id: integer('manager_id'), // Reference to manager (self-referencing)
   manager_email: text('manager_email'), // Manager's email address for building org hierarchy
   admin_scope: text('admin_scope').default('none'), // 'super', 'site', 'department', 'hybrid', 'none'
   allowed_sites: text('allowed_sites').array().default([]), // Array of sites this admin can manage (multiple sites possible)
@@ -199,7 +199,7 @@ export const productCategories = pgTable('product_categories', {
   name: text('name').notNull(),
   description: text('description'),
   imageUrl: text('image_url'),
-  parentId: integer('parent_id').references(() => productCategories.id), // For nested categories
+  parentId: integer('parent_id'),
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   createdBy: integer('created_by').references(() => users.id),
