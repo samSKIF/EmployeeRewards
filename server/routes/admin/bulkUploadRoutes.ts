@@ -6,6 +6,7 @@ import multer from 'multer';
 import csv from 'csv-parser';
 import fs from 'fs';
 import path from 'path';
+import * as XLSX from 'xlsx';
 
 const router = Router();
 
@@ -13,10 +14,15 @@ const router = Router();
 const upload = multer({
   dest: 'server/uploads/',
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+    if (file.mimetype === 'text/csv' || 
+        file.originalname.endsWith('.csv') ||
+        file.mimetype === 'application/vnd.ms-excel' ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.originalname.endsWith('.xlsx') ||
+        file.originalname.endsWith('.xls')) {
       cb(null, true);
     } else {
-      cb(new Error('Only CSV files are allowed'));
+      cb(new Error('Only CSV and Excel files are allowed'));
     }
   },
   limits: {
@@ -75,18 +81,12 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
             name: row.name.trim(),
             surname: row.surname?.trim() || '',
             email: row.email.trim().toLowerCase(),
-            department: row.department?.trim() || '',
-            location: row.location?.trim() || '',
-            jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || '',
-            phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || '',
-            birthDate: row.birth_date?.trim() || row.birthDate?.trim() || '',
-            hireDate: row.hire_date?.trim() || row.hireDate?.trim() || '',
             department: row.department.trim(),
             location: row.location?.trim() || undefined,
-            jobTitle: row.jobTitle?.trim() || undefined,
-            phoneNumber: row.phoneNumber?.trim() || undefined,
-            birthDate: row.birthDate?.trim() || undefined,
-            hireDate: row.hireDate?.trim() || undefined,
+            jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
+            phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
+            birthDate: row.birth_date?.trim() || row.birthDate?.trim() || undefined,
+            hireDate: row.hire_date?.trim() || row.hireDate?.trim() || undefined,
           });
         })
         .on('end', resolve)
@@ -173,38 +173,127 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
 });
 
 // Execute bulk upload - creates departments and employees
-router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, async (req, res) => {
+router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload.single('file'), async (req, res) => {
   try {
     const organizationId = (req.user as any).organization_id;
-    const { employees, createDepartments } = req.body;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
 
-    if (!employees || !Array.isArray(employees)) {
-      return res.status(400).json({ message: 'Invalid employee data' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Parse file to get employees data
+    const employees: EmployeeRow[] = [];
+    const errors: string[] = [];
+
+    // Parse file (CSV or Excel)
+    if (req.file.originalname.endsWith('.xlsx') || req.file.originalname.endsWith('.xls')) {
+      // Parse Excel file
+      const workbook = XLSX.readFile(req.file.path);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      jsonData.forEach((row: any) => {
+        // Validate required fields
+        if (!row.name || !row.surname || !row.email || !row.department) {
+          errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
+          return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(row.email)) {
+          errors.push(`Invalid email format: ${row.email}`);
+          return;
+        }
+
+        employees.push({
+          name: row.name.toString().trim(),
+          surname: row.surname?.toString().trim() || '',
+          email: row.email.toString().trim().toLowerCase(),
+          department: row.department.toString().trim(),
+          location: row.location?.toString().trim() || undefined,
+          jobTitle: row.job_title?.toString().trim() || row.jobTitle?.toString().trim() || undefined,
+          phoneNumber: row.phone_number?.toString().trim() || row.phoneNumber?.toString().trim() || undefined,
+          birthDate: row.birth_date?.toString().trim() || row.birthDate?.toString().trim() || undefined,
+          hireDate: row.hire_date?.toString().trim() || row.hireDate?.toString().trim() || undefined,
+        });
+      });
+    } else {
+      // Parse CSV file
+      await new Promise((resolve, reject) => {
+        fs.createReadStream(req.file!.path)
+          .pipe(csv())
+          .on('data', (row) => {
+            // Validate required fields
+            if (!row.name || !row.surname || !row.email || !row.department) {
+              errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
+              return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(row.email)) {
+              errors.push(`Invalid email format: ${row.email}`);
+              return;
+            }
+
+            employees.push({
+              name: row.name.trim(),
+              surname: row.surname?.trim() || '',
+              email: row.email.trim().toLowerCase(),
+              department: row.department.trim(),
+              location: row.location?.trim() || undefined,
+              jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
+              phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
+              birthDate: row.birth_date?.trim() || row.birthDate?.trim() || undefined,
+              hireDate: row.hire_date?.trim() || row.hireDate?.trim() || undefined,
+            });
+          })
+          .on('end', resolve)
+          .on('error', reject);
+      });
+    }
+
+    // Clean up uploaded file
+    fs.unlinkSync(req.file.path);
+
+    if (employees.length === 0) {
+      return res.status(400).json({ 
+        message: 'No valid employee records found in the CSV file',
+        errors 
+      });
     }
 
     let departmentsCreated = 0;
     let employeesCreated = 0;
 
-    // Create new departments first
-    if (createDepartments && Array.isArray(createDepartments)) {
-      for (const departmentName of createDepartments) {
-        try {
-          await storage.createDepartment({
-            organization_id: organizationId,
-            name: departmentName,
-            description: `Auto-created during bulk employee upload`,
-            color: '#6B7280',
-            created_by: req.user!.id,
-          });
-          departmentsCreated++;
-        } catch (error) {
-          console.error(`Error creating department ${departmentName}:`, error);
-          // Continue with other departments
-        }
+    // Auto-create new departments found in CSV
+    const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
+    const existingDeptNames = existingDepartments.map(dept => dept.name.toLowerCase());
+    
+    const fileDepartments = [...new Set(employees.map(emp => emp.department))];
+    const newDepartments = fileDepartments.filter(dept => 
+      !existingDeptNames.includes(dept.toLowerCase())
+    );
+
+    for (const departmentName of newDepartments) {
+      try {
+        await storage.createDepartment({
+          organization_id: organizationId,
+          name: departmentName,
+          description: `Auto-created during bulk employee upload`,
+          color: '#6B7280',
+          created_by: req.user!.id,
+        });
+        departmentsCreated++;
+      } catch (error) {
+        console.error(`Error creating department ${departmentName}:`, error);
+        // Continue with other departments
       }
     }
 
@@ -239,8 +328,9 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, async 
 
     res.json({
       message: 'Bulk upload completed successfully',
+      successCount: employeesCreated,
+      errorCount: employees.length - employeesCreated,
       departmentsCreated,
-      employeesCreated,
       totalRequested: employees.length,
     });
 
