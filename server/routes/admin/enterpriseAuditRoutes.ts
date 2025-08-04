@@ -125,7 +125,9 @@ router.post('/organizations/:id/features/:feature/toggle',
 
     // Get current feature state for audit trail
     const currentOrg = await storage.getOrganizationById(organizationId);
-    const currentFeatureState = currentOrg?.features?.[featureName];
+    const currentFeatureState = currentOrg?.features && typeof currentOrg.features === 'object' 
+      ? (currentOrg.features as any)[featureName] 
+      : undefined;
 
     // Update feature state
     const updatedOrg = await storage.updateOrganizationFeature(organizationId, featureName, enabled);

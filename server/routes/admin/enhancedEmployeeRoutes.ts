@@ -81,7 +81,7 @@ router.get('/',
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Enhanced employee fetch failed:', { 
       error, 
       organizationId: req.user?.organization_id,
@@ -90,7 +90,7 @@ router.get('/',
 
     // Log the error for audit purposes
     await logActivity(req, 'employees_fetch_error', 'employees', undefined, {
-      error_type: error.message,
+      error_type: error?.message || 'unknown_error',
       request_params: req.query,
       failure_reason: 'database_query_failed',
     });
@@ -180,7 +180,7 @@ router.post('/',
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Enhanced employee creation failed:', { 
       error, 
       organizationId: req.user?.organization_id,
@@ -188,7 +188,7 @@ router.post('/',
     });
 
     await logActivity(req, 'create_employee_error', 'employee', undefined, {
-      error_type: error.message,
+      error_type: error?.message || 'unknown_error',
       attempted_data: { 
         name: req.body.name,
         email: req.body.email,
@@ -300,7 +300,7 @@ router.put('/:id',
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Enhanced employee update failed:', { 
       error, 
       employeeId: req.params.id,
@@ -308,7 +308,7 @@ router.put('/:id',
     });
 
     await logActivity(req, 'update_employee_error', 'employee', parseInt(req.params.id), {
-      error_type: error.message,
+      error_type: error?.message || 'unknown_error',
       attempted_changes: req.body,
       failure_context: 'database_update_failed',
     });
@@ -391,8 +391,8 @@ router.delete('/:id',
       req
     );
 
-    // Perform the deletion
-    await storage.deleteUser(employeeId);
+    // Perform the deletion (soft delete by updating status)
+    await storage.updateUser(employeeId, { status: 'deleted', deleted_at: new Date() });
 
     // Log comprehensive employee deletion activity
     await logActivity(req, 'delete_employee', 'employee', employeeId, {
@@ -425,7 +425,7 @@ router.delete('/:id',
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Enhanced employee deletion failed:', { 
       error, 
       employeeId: req.params.id,
@@ -433,7 +433,7 @@ router.delete('/:id',
     });
 
     await logActivity(req, 'delete_employee_error', 'employee', parseInt(req.params.id), {
-      error_type: error.message,
+      error_type: error?.message || 'unknown_error',
       failure_context: 'database_deletion_failed',
     });
 
@@ -506,15 +506,15 @@ router.post('/bulk-action',
         });
         
         results.push({ employee_id: employeeId, success: true, result });
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Bulk action failed for employee:', { employeeId, action, error });
-        errors.push({ employee_id: employeeId, success: false, error: error.message });
+        errors.push({ employee_id: employeeId, success: false, error: error?.message || 'unknown_error' });
         
         auditTrail.push({
           employee_id: employeeId,
           action: action,
           success: false,
-          error: error.message
+          error: error?.message || 'unknown_error'
         });
       }
     }
@@ -548,7 +548,7 @@ router.post('/bulk-action',
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Enhanced bulk operation failed:', { 
       error, 
       action: req.body.action,
@@ -556,7 +556,7 @@ router.post('/bulk-action',
     });
 
     await logActivity(req, 'bulk_employee_action_error', 'employees', undefined, {
-      error_type: error.message,
+      error_type: error?.message || 'unknown_error',
       attempted_action: req.body.action,
       employee_ids: req.body.employee_ids,
       failure_context: 'bulk_operation_failed',

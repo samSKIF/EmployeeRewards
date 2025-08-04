@@ -1374,67 +1374,51 @@ export const insertOrganizationFeatureSchema = createInsertSchema(
 ).omit({ id: true });
 export const insertSellerSchema = createInsertSchema(sellers).omit({
   id: true,
-  created_at: true,
-  updated_at: true,
 });
 export const insertProductCategorySchema = createInsertSchema(
   productCategories
-).omit({ id: true, created_at: true });
+).omit({ id: true });
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
   id: true,
-  created_at: true,
 });
 export const insertSupportTicketSchema = createInsertSchema(
   supportTickets
-).omit({ id: true, created_at: true, updated_at: true });
+).omit({ id: true });
 export const insertTicketMessageSchema = createInsertSchema(
   ticketMessages
-).omit({ id: true, created_at: true });
+).omit({ id: true });
 export const insertProductReviewSchema = createInsertSchema(
   productReviews
-).omit({ id: true, created_at: true, updated_at: true });
+).omit({ id: true });
 export const insertAccountSchema = createInsertSchema(accounts).omit({
   id: true,
-  created_at: true,
 });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
-  created_at: true,
 });
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
-  created_at: true,
 });
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
-  created_at: true,
-  updated_at: true,
 });
 export const insertPostSchema = createInsertSchema(posts).omit({
   id: true,
-  created_at: true,
-  updated_at: true,
 });
 export const insertCommentSchema = createInsertSchema(comments).omit({
   id: true,
-  created_at: true,
-  updated_at: true,
 });
 export const insertReactionSchema = createInsertSchema(reactions).omit({
   id: true,
-  created_at: true,
 });
 export const insertPollSchema = createInsertSchema(polls).omit({
   id: true,
-  created_at: true,
 });
 export const insertPollVoteSchema = createInsertSchema(pollVotes).omit({
   id: true,
-  created_at: true,
 });
 export const insertRecognitionSchema = createInsertSchema(recognitions).omit({
   id: true,
-  created_at: true,
 });
 export const insertRecognitionSettingsSchema = createInsertSchema(
   recognitionSettings
@@ -1480,7 +1464,7 @@ export const insertSurveyAnswerSchema = createInsertSchema(surveyAnswers).omit({
 });
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
   id: true,
-  createdAt: true,
+  created_at: true,
 });
 
 // Extended organization schema for form validation
