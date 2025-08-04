@@ -34,6 +34,13 @@ export const organizations = pgTable('organizations', {
   industry: text('industry'),
   address: jsonb('address'), // {street, city, state, country, zip}
 
+  // Enterprise & Billing Fields
+  features: jsonb('features'), // Enabled features for this organization
+  subscription_plan: text('subscription_plan'), // Plan type: 'basic', 'pro', 'enterprise'
+  user_limit: integer('user_limit').default(50), // Maximum users allowed
+  billing_email: text('billing_email'), // Billing contact email
+  billing_status: text('billing_status').default('active'), // 'active', 'overdue', 'suspended'
+
   // Legacy and System Fields
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),

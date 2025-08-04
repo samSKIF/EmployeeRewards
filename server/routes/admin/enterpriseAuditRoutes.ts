@@ -36,7 +36,7 @@ router.get('/organizations/:id/audit',
     // Verify admin access to this organization
     if (req.user?.organization_id !== organizationId && req.user?.admin_scope !== 'site') {
       if (req.user?.id && req.user?.organization_id) {
-        await logActivity(req as any, 'organization_audit_access_denied', 'organization', organizationId, {
+        await logActivity(req, 'organization_audit_access_denied', 'organization', organizationId, {
           denial_reason: 'insufficient_permissions',
           user_org: req.user.organization_id,
           requested_org: organizationId,
@@ -57,7 +57,7 @@ router.get('/organizations/:id/audit',
 
     // Log audit access for compliance
     if (req.user?.id && req.user?.organization_id) {
-      await logActivity(req as any, 'view_organization_audit', 'organization', organizationId, {
+      await logActivity(req, 'view_organization_audit', 'organization', organizationId, {
         audit_scope: { start_date, end_date, action_types },
         records_retrieved: auditTrail.length,
         accessed_by_admin: req.user.id,
@@ -251,7 +251,7 @@ router.put('/organizations/:id/subscription',
 
     // Log detailed subscription change activity
     if (req.user?.id && req.user?.organization_id) {
-      await logActivity(req as any, 'update_organization_subscription', 'organization_subscription', organizationId, {
+      await logActivity(req, 'update_organization_subscription', 'organization_subscription', organizationId, {
       organization_name: currentOrg?.name,
       subscription_changes: subscriptionUpdates,
       previous_subscription: currentSubscription,
@@ -290,7 +290,7 @@ router.put('/organizations/:id/subscription',
     });
 
     if (req.user?.id && req.user?.organization_id) {
-      await logActivity(req as any, 'subscription_update_error', 'organization_subscription', parseInt(req.params.id), {
+      await logActivity(req, 'subscription_update_error', 'organization_subscription', parseInt(req.params.id), {
         error_type: error?.message || 'unknown_error',
         attempted_changes: req.body,
         failure_context: 'subscription_update_failed',
