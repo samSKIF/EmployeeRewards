@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, MoreVertical, Building2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, MoreVertical, Building2, ArrowLeft, ChevronRight, Home, Upload } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -199,21 +200,47 @@ export default function DepartmentManagement() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+        <Link href="/admin/people" className="flex items-center hover:text-blue-600 transition-colors">
+          <Users className="h-4 w-4 mr-1" />
+          Employee Directory
+        </Link>
+        <ChevronRight className="h-4 w-4" />
+        <span className="text-gray-900 font-medium">Department Management</span>
+      </div>
+
+      {/* Enhanced Header with Back Button */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Department Management</h1>
-          <p className="text-gray-600">Manage your organization's departments and structure</p>
+        <div className="flex items-center space-x-4">
+          <Link href="/admin/people">
+            <Button variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-100">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Employees
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Department Management</h1>
+            <p className="text-gray-600">Organize your workforce by departments and manage organizational structure</p>
+          </div>
         </div>
-        <Button 
-          onClick={handleCreateDepartment} 
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 shadow-lg"
-          size="lg"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Create Department
-        </Button>
+        <div className="flex gap-3">
+          <Link href="/admin/people/mass-upload">
+            <Button variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50">
+              <Upload className="h-4 w-4 mr-2" />
+              Mass Upload
+            </Button>
+          </Link>
+          <Button 
+            onClick={handleCreateDepartment} 
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 shadow-lg"
+            size="lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Create Department
+          </Button>
+        </div>
       </div>
 
 

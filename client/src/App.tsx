@@ -52,6 +52,7 @@ import SpaceDetailPage from '@/pages/space-detail';
 import CorporateLoginPage from '@/pages/corporate-login';
 import DepartmentManagement from '@/pages/admin/settings/DepartmentManagement';
 import LocationManagement from '@/pages/admin/settings/LocationManagement';
+import MassUpload from '@/pages/admin/people/MassUpload';
 
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -218,6 +219,16 @@ function App() {
                   <Route path="/admin/settings/departments">
                     <SocialLayout>
                       <DepartmentManagement />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/people/mass-upload">
+                    <SocialLayout>
+                      <MassUpload />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/settings/locations">
+                    <SocialLayout>
+                      <LocationManagement />
                     </SocialLayout>
                   </Route>
                   {/* Legacy route redirects */}

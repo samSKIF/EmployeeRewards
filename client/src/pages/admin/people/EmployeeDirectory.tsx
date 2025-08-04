@@ -38,7 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical, Building2 } from 'lucide-react';
+import { Search, Plus, Filter, Users, Download, ArrowUpDown, ArrowUp, ArrowDown, Edit, MoreVertical, Building2, Settings, Upload } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -442,10 +442,16 @@ export default function EmployeeDirectory() {
         <h1 className="text-2xl font-bold text-gray-900">Employee Directory</h1>
         <p className="text-gray-600 text-base">Manage your team members and their information</p>
         <div className="flex gap-3">
-          <Button onClick={handleExport} variant="outline" className="border-2 border-gray-300">
+          <Button onClick={handleExport} variant="outline" className="border-2 border-gray-300 hover:bg-gray-50">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+          <Link href="/admin/people/mass-upload">
+            <Button variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50">
+              <Upload className="h-4 w-4 mr-2" />
+              Mass Upload
+            </Button>
+          </Link>
           <Link href="/admin/settings/departments">
             <Button variant="outline" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50">
               <Building2 className="h-4 w-4 mr-2" />

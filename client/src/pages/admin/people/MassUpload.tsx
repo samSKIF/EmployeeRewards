@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import {
   Card,
   CardContent,
@@ -37,7 +38,9 @@ import {
   CheckCircle, 
   Users, 
   FileText,
-  X
+  X,
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -243,14 +246,32 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+        <Link href="/admin/people" className="flex items-center hover:text-blue-600 transition-colors">
+          <Users className="h-4 w-4 mr-1" />
+          Employee Directory
+        </Link>
+        <ChevronRight className="h-4 w-4" />
+        <span className="text-gray-900 font-medium">Mass Upload</span>
+      </div>
+
+      {/* Enhanced Header with Back Button */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mass Employee Upload</h1>
-          <p className="text-gray-600">Upload multiple employees at once using CSV or Excel files</p>
+        <div className="flex items-center space-x-4">
+          <Link href="/admin/people">
+            <Button variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-100">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Employees
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Mass Employee Upload</h1>
+            <p className="text-gray-600">Upload multiple employees at once using CSV or Excel files</p>
+          </div>
         </div>
-        <Button onClick={downloadTemplate} variant="outline">
+        <Button onClick={downloadTemplate} variant="outline" className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50">
           <Download className="h-4 w-4 mr-2" />
           Download Template
         </Button>
