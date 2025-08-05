@@ -505,6 +505,25 @@ const ManagementLogin = ({
   );
 };
 
+// Analytics interface matching backend response
+interface Analytics {
+  organizationStats: {
+    totalOrganizations: number;
+    activeOrganizations: number;
+    totalBillableUsers: number;
+    averageUsersPerOrg: number;
+    totalSubscriptions: number;
+    activeSubscriptions: number;
+    totalSubscribedCapacity: number;
+    totalMonthlyRevenue: number;
+    currentEmployees: number;
+  };
+  platformStats: {
+    status: string;
+    uptime: string;
+  };
+}
+
 // Dashboard Stats Component
 const DashboardStats = () => {
   const { data: stats } = useQuery<Analytics>({
@@ -518,37 +537,37 @@ const DashboardStats = () => {
   const statCards = [
     {
       title: 'Organizations',
-      value: stats?.totals.organizations || 0,
+      value: stats?.organizationStats?.totalOrganizations || 0,
       icon: Building2,
       color: 'bg-blue-500',
     },
     {
       title: 'Users',
-      value: stats?.totals.users || 0,
+      value: stats?.organizationStats?.currentEmployees || 0,
       icon: Users,
       color: 'bg-green-500',
     },
     {
-      title: 'Products',
-      value: stats?.totals.products || 0,
+      title: 'Subscriptions',
+      value: stats?.organizationStats?.activeSubscriptions || 0,
       icon: Package,
       color: 'bg-purple-500',
     },
     {
-      title: 'Orders',
-      value: stats?.totals.orders || 0,
+      title: 'Capacity',
+      value: stats?.organizationStats?.totalSubscribedCapacity || 0,
       icon: ShoppingCart,
       color: 'bg-orange-500',
     },
     {
       title: 'Revenue',
-      value: `$${stats?.totals.revenue || '0'}`,
+      value: `$${stats?.organizationStats?.totalMonthlyRevenue || '0'}`,
       icon: DollarSign,
       color: 'bg-red-500',
     },
     {
-      title: 'Period',
-      value: stats?.period || 'All Time',
+      title: 'Status',
+      value: stats?.platformStats?.status || 'Unknown',
       icon: TrendingUp,
       color: 'bg-indigo-500',
     },
@@ -813,6 +832,15 @@ const SubscriptionManagement = ({
     },
   });
 
+  // Get analytics data for consistent user counts
+  const { data: stats } = useQuery<Analytics>({
+    queryKey: ['/api/management/analytics'],
+    queryFn: async () => {
+      const result = await managementApi('/analytics');
+      return result;
+    },
+  });
+
   const subscriptionForm = useForm({
     defaultValues: {
       lastPaymentDate: new Date().toISOString().split('T')[0],
@@ -1025,7 +1053,7 @@ const SubscriptionManagement = ({
                     Current Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {subscription?.currentUserCount || 0}
+                    {stats?.organizationStats?.currentEmployees || 0}
                   </p>
                 </div>
                 <div>
