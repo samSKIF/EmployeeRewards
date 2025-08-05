@@ -19,6 +19,26 @@ import { eq, desc, and, gte, lte, sum, count } from 'drizzle-orm';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
+// Helper function to calculate total user count including main super user
+async function calculateTotalUserCount(organizationUserCount: number): Promise<number> {
+  try {
+    // Count main super user (corporate admin without organization)
+    const result = await pool.query(`
+      SELECT COUNT(*) as super_user_count 
+      FROM users 
+      WHERE organization_id IS NULL AND role_type = 'corporate_admin'
+    `);
+    
+    const superUserCount = parseInt(result.rows[0].super_user_count) || 0;
+    
+    // Return Active + Pending + Main super user account only
+    return organizationUserCount + superUserCount;
+  } catch (error: any) {
+    console.error('Error calculating total user count:', error?.message || 'unknown_error');
+    return organizationUserCount; // Fallback to just organization count
+  }
+}
+
 // Corporate Admin Authentication Middleware
 interface AuthenticatedManagementRequest extends express.Request {
   corporateAdmin?: any;
@@ -207,9 +227,11 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
         s.last_payment_date
       FROM organizations o
       LEFT JOIN (
+        -- BUSINESS RULE: Count Active + Pending + Main super user account only
+        -- Additional super user accounts are excluded from billing calculations
         SELECT organization_id, COUNT(*) as user_count 
         FROM users 
-        WHERE status = 'active' 
+        WHERE status IN ('active', 'pending')
         GROUP BY organization_id
       ) u ON o.id = u.organization_id
       LEFT JOIN (
@@ -226,14 +248,14 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
       ${limitClause}
     `, params);
 
-    const transformedList = result.rows.map(row => ({
+    const transformedList = await Promise.all(result.rows.map(async row => ({
         id: row.id,
         name: row.name,
         status: row.status || 'active',
         description: 'ThrivioHR Client Organization',
         isActive: row.status === 'active',
         createdAt: row.created_at,
-        userCount: parseInt(row.user_count) || 0,
+        userCount: await calculateTotalUserCount(parseInt(row.user_count) || 0),
         maxUsers: row.max_users,
         contactEmail: row.contact_email,
         industry: row.industry,
@@ -248,7 +270,7 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
           pricePerUserPerMonth: row.price_per_user_per_month,
           lastPaymentDate: row.last_payment_date
         } : null,
-    }));
+    })));
 
     console.log(`Fetched ${transformedList.length} organizations with subscription data`);
     res.json(transformedList);
@@ -394,9 +416,11 @@ router.get('/organizations/:id', async (req, res) => {
         s.last_payment_date
       FROM organizations o
       LEFT JOIN (
+        -- BUSINESS RULE: Count Active + Pending + Main super user account only
+        -- Additional super user accounts are excluded from billing calculations
         SELECT organization_id, COUNT(*) as user_count 
         FROM users 
-        WHERE status = 'active' 
+        WHERE status IN ('active', 'pending')
         GROUP BY organization_id
       ) u ON o.id = u.organization_id
       LEFT JOIN (
@@ -438,7 +462,7 @@ router.get('/organizations/:id', async (req, res) => {
       description: '',
       logoUrl: row.logo_url || '',
       createdAt: row.created_at,
-      userCount: parseInt(row.user_count) || 0,
+      userCount: await calculateTotalUserCount(parseInt(row.user_count) || 0),
       address: row.address || {
         street: '',
         city: '',
