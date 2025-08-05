@@ -48,13 +48,13 @@ router.get(
       }
 
       const stats = result.rows[0];
-      const billableUsers = parseInt(stats.billable_employees) + parseInt(stats.super_user_count);
+      const billableUsers = parseInt(stats.billable_employees); // BUSINESS DECISION: Exclude super user from billing
       
       res.json({
         organizationName: stats.organization_name,
         maxUsers: parseInt(stats.max_users) || 0,
         subscribedUsers: parseInt(stats.subscribed_users) || 0,
-        currentEmployees: billableUsers, // BUSINESS RULE: Use billable count (Active + Pending + Main super user)
+        currentEmployees: billableUsers, // BUSINESS RULE: Use billable count (Active + Pending only)
         activeEmployees: parseInt(stats.active_employees) || 0,
         totalEmployees: parseInt(stats.total_employees) || 0,
         billableUsers: billableUsers,

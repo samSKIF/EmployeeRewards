@@ -49,19 +49,13 @@ router.get('/usage', verifyToken, async (req: AuthenticatedRequest, res) => {
       WHERE organization_id = $1
     `, [organizationId]);
 
-    // Add main super user account to billing count
-    const superUserResult = await pool.query(`
-      SELECT COUNT(*) as count 
-      FROM users 
-      WHERE organization_id IS NULL AND role_type = 'corporate_admin'
-    `);
-
+    // BUSINESS DECISION: Do NOT bill main corporate super user to client organizations
+    // Super users are platform administrators, not client employees
     const employeeCounts = employeeResult.rows[0];
-    const superUserCount = superUserResult.rows[0];
 
     const subscriptionLimit = orgData.subscribed_users || 500;
     const activeEmployees = Number(employeeCounts.active_employees);
-    const billableUsers = Number(employeeCounts.billable_employees) + Number(superUserCount.count);
+    const billableUsers = Number(employeeCounts.billable_employees); // Only Active + Pending employees
     const totalEmployees = Number(employeeCounts.total_employees);
 
     const usageData = {
@@ -80,7 +74,7 @@ router.get('/usage', verifyToken, async (req: AuthenticatedRequest, res) => {
       organization_name: orgData.name,
     };
 
-    logger.info(`Subscription usage for org ${organizationId}: ${billableUsers}/${subscriptionLimit} (${usageData.usage_percentage}%) - Active: ${activeEmployees}, Pending: ${employeeCounts.pending_employees}, Super User: ${superUserCount.count}`);
+    logger.info(`Subscription usage for org ${organizationId}: ${billableUsers}/${subscriptionLimit} (${usageData.usage_percentage}%) - Active: ${activeEmployees}, Pending: ${employeeCounts.pending_employees} (Super user excluded from billing)`);
 
     res.json(usageData);
   } catch (error: any) {
