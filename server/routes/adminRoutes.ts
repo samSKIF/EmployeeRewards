@@ -30,8 +30,10 @@ router.get(
         o.name as organization_name,
         o.max_users,
         s.subscribed_users,
-        COUNT(CASE WHEN u.status = 'active' THEN 1 END) as current_employees,
-        COUNT(u.id) as total_employees
+        COUNT(CASE WHEN u.status = 'active' THEN 1 END) as active_employees,
+        COUNT(CASE WHEN u.status IN ('active', 'pending') THEN 1 END) as billable_employees,
+        COUNT(u.id) as total_employees,
+        (SELECT COUNT(*) FROM users WHERE organization_id IS NULL AND role_type = 'corporate_admin') as super_user_count
       FROM organizations o
       LEFT JOIN subscriptions s ON o.current_subscription_id = s.id
       LEFT JOIN users u ON u.organization_id = o.id
@@ -46,12 +48,16 @@ router.get(
       }
 
       const stats = result.rows[0];
+      const billableUsers = parseInt(stats.billable_employees) + parseInt(stats.super_user_count);
+      
       res.json({
         organizationName: stats.organization_name,
         maxUsers: parseInt(stats.max_users) || 0,
         subscribedUsers: parseInt(stats.subscribed_users) || 0,
-        currentEmployees: parseInt(stats.current_employees) || 0,
+        currentEmployees: billableUsers, // BUSINESS RULE: Use billable count (Active + Pending + Main super user)
+        activeEmployees: parseInt(stats.active_employees) || 0,
         totalEmployees: parseInt(stats.total_employees) || 0,
+        billableUsers: billableUsers,
       });
     } catch (error) {
       logger.error('Error fetching usage stats:', error);
