@@ -363,8 +363,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User management methods
-  async getUsers() {
-    return this.userStorage.getUsers();
+  async getUsers(organizationId?: number, limit?: number, offset?: number) {
+    return this.userStorage.getUsers(organizationId, limit, offset);
   }
 
   async getAllUsersWithBalance() {

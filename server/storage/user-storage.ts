@@ -174,12 +174,30 @@ export class UserStorage implements IUserStorage {
     }
   }
 
-  async getUsers() {
+  async getUsers(organizationId?: number, limit?: number, offset?: number) {
     try {
-      const allUsers = await db.select().from(users);
-      return allUsers;
+      // CRITICAL SECURITY FIX: Always filter by organization_id for multi-tenant isolation
+      if (!organizationId) {
+        throw new Error('Organization ID is required for multi-tenant data isolation');
+      }
+      
+      let query = db
+        .select()
+        .from(users)
+        .where(eq(users.organization_id, organizationId));
+        
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      if (offset) {
+        query = query.offset(offset);
+      }
+      
+      const organizationUsers = await query;
+      return organizationUsers;
     } catch (error: any) {
-      console.error('Error getting all users:', error?.message || 'unknown_error');
+      console.error('Error getting users for organization:', error?.message || 'unknown_error');
       return [];
     }
   }
