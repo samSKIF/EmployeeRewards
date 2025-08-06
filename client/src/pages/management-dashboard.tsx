@@ -1063,61 +1063,70 @@ const SubscriptionManagement = ({
               </div>
             </div>
 
-            {/* User Count Limit Display */}
+            {/* Subscription Usage Display */}
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium mb-3">User Limits</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-muted-foreground">
-                    Current Users
-                  </Label>
-                  <p className="text-lg font-semibold">
-                    {subscriptionUsage?.billable_users || subscriptionUsage?.current_usage || 0}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">
-                    Subscribed Users
-                  </Label>
-                  <p className="text-lg font-semibold">
-                    {subscription?.subscribedUsers || 'N/A'}
-                  </p>
-                </div>
-              </div>
+              
+              {/* Admin-style usage display */}
               {subscription?.subscribedUsers && subscriptionUsage && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                    <span>Usage</span>
-                    <span>
-                      {subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0} /{' '}
-                      {subscription.subscribedUsers}
-                    </span>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700">Subscription Usage</h3>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-gray-900">
+                          {subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0}
+                        </span>
+                        <span className="text-lg text-gray-500">
+                          /{subscription.subscribedUsers}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {Math.round(((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}% capacity used • {subscription.subscribedUsers - (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0)} seats available
+                      </p>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${
-                        (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
-                          subscription.subscribedUsers >=
-                        0.9
-                          ? 'bg-red-500'
-                          : (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
-                                subscription.subscribedUsers >=
-                              0.8
-                            ? 'bg-orange-500'
-                            : 'bg-green-500'
-                      }`}
-                      style={{
-                        width: `${Math.min(100, ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}%`,
-                      }}
-                    />
+                  
+                  {/* Progress bar */}
+                  <div className="space-y-2">
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className={`h-3 rounded-full transition-all ${
+                          (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
+                            subscription.subscribedUsers >=
+                          0.9
+                            ? 'bg-red-500'
+                            : (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
+                                  subscription.subscribedUsers >=
+                                0.8
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
+                        }`}
+                        style={{
+                          width: `${Math.min(100, ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Active employees using subscription seats</span>
+                      <span>
+                        {Math.round(100 - ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}% capacity remaining
+                      </span>
+                    </div>
                   </div>
+
+                  {/* Warning for high usage */}
                   {(subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
                     subscription.subscribedUsers >=
                     0.9 && (
-                    <p className="text-xs text-red-600 mt-1">
-                      ⚠️ Approaching user limit - new registrations may be
-                      blocked
-                    </p>
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                      <p className="text-sm text-red-700 font-medium">
+                        ⚠️ Approaching user limit
+                      </p>
+                      <p className="text-xs text-red-600 mt-1">
+                        New registrations may be blocked when capacity is reached
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
