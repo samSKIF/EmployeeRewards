@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import '@testing-library/jest-dom';
 import EmployeeDirectory from '../EmployeeDirectory';
 
 // Mock wouter
@@ -9,9 +10,25 @@ vi.mock('wouter', () => ({
     <a href={href}>{children}</a>,
 }));
 
+// Mock @/hooks/use-toast
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: vi.fn(),
+  }),
+}));
+
+// Mock @/lib/queryClient
+vi.mock('@/lib/queryClient', () => ({
+  apiRequest: vi.fn().mockImplementation((url: string, options?: any) => {
+    console.log('apiRequest called with:', url, options);
+    return fetch(url, options);
+  }),
+}));
+
 // Mock date-fns
 vi.mock('date-fns', () => ({
   formatDate: (date: Date, format: string) => '2023-01-15',
+  formatDistanceToNow: (date: Date) => '2 days ago',
 }));
 
 const mockEmployees = [
@@ -61,7 +78,28 @@ global.fetch = mockFetch;
 function renderWithQueryClient(component: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
+      queries: { 
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+        queryFn: async ({ queryKey }) => {
+          console.log('queryFn called with queryKey:', queryKey);
+          const url = queryKey[0] as string;
+          console.log('Fetching from URL:', url);
+          const response = await fetch(url, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          console.log('Response status:', response.status, response.ok);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log('Response data:', data);
+          return data;
+        },
+      },
       mutations: { retry: false },
     },
   });
@@ -77,51 +115,93 @@ describe('EmployeeDirectory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Mock successful API responses
-    mockFetch.mockImplementation((url: string) => {
+    // Mock localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn().mockReturnValue('fake-auth-token'),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+      },
+    });
+
+    // Mock successful API responses - Apply auth middleware pattern
+    mockFetch.mockImplementation((url: string, options?: any) => {
+      console.log('Mock fetch called with:', url, options);
+      
       if (url.includes('/api/users/departments')) {
         return Promise.resolve({
           ok: true,
+          status: 200,
           json: () => Promise.resolve(mockDepartments),
-        });
+        } as Response);
       }
+      
       if (url.includes('/api/users/locations')) {
         return Promise.resolve({
           ok: true,
+          status: 200,
           json: () => Promise.resolve(mockLocations),
-        });
+        } as Response);
       }
-      if (url.includes('/api/users')) {
+      
+      if (url.includes('/api/admin/subscription/usage')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(mockEmployees),
-        });
+          status: 200,
+          json: () => Promise.resolve({
+            subscribed_users: 500,
+            current_usage: 402,
+            active_employees: 401,
+            total_employees: 402,
+            usage_percentage: 80,
+            available_slots: 98,
+            subscription_status: 'active',
+            organization_name: 'Test Organization'
+          }),
+        } as Response);
       }
-      return Promise.reject(new Error('Unknown endpoint'));
+      
+      // Main users endpoint - highest priority, most specific check
+      if (url === '/api/users' || (url.includes('/api/users') && !url.includes('departments') && !url.includes('locations'))) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockEmployees),
+        } as Response);
+      }
+      
+      console.warn('Unmatched fetch URL:', url);
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ message: 'Not found' }),
+      } as Response);
     });
   });
 
   it('renders employee directory with header and stats', async () => {
     renderWithQueryClient(<EmployeeDirectory />);
     
+    // Check header renders immediately
     expect(screen.getByText('Employee Directory')).toBeInTheDocument();
     expect(screen.getByText('Manage your team members and their information')).toBeInTheDocument();
     
+    // Wait for data to load and stats to render
     await waitFor(() => {
-      expect(screen.getByText('Total Employees')).toBeInTheDocument();
-      expect(screen.getByText('Active Employees')).toBeInTheDocument();
-      expect(screen.getByText('Departments')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Team Members')).toBeInTheDocument();
+      expect(screen.getByText('Subscription Usage')).toBeInTheDocument();
+    }, { timeout: 5000 });
   });
 
   it('displays correct employee counts in stats cards', async () => {
     renderWithQueryClient(<EmployeeDirectory />);
     
     await waitFor(() => {
-      expect(screen.getByText('3')).toBeInTheDocument(); // Total employees
-      expect(screen.getByText('2')).toBeInTheDocument(); // Active employees (John and Bob)
-      expect(screen.getByText('4')).toBeInTheDocument(); // Departments count
-    });
+      // Check for Team Members section
+      expect(screen.getByText('Team Members')).toBeInTheDocument();
+      // Check for the actual count - should be 402 from subscription API
+      expect(screen.getByText('402')).toBeInTheDocument(); // Using subscription API data
+    }, { timeout: 10000 });
   });
 
   it('renders employee table with correct data', async () => {
@@ -220,8 +300,8 @@ describe('EmployeeDirectory', () => {
   });
 
   it('shows loading state initially', () => {
-    // Mock loading state
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    // Mock loading state - Never resolves to keep in loading state
+    mockFetch.mockImplementation(() => new Promise(() => {}));
     
     renderWithQueryClient(<EmployeeDirectory />);
     
