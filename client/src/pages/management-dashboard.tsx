@@ -837,10 +837,17 @@ const SubscriptionManagement = ({
     queryKey: [`/api/admin/subscription/usage-${organizationId}`],
     queryFn: async () => {
       try {
+        // Get the admin token from localStorage for authentication
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+          throw new Error('No admin token available');
+        }
+        
         // Use admin endpoint to get organization-scoped billing data (402 users)
         const response = await fetch('/api/admin/subscription/usage', {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}`,
             'Cache-Control': 'no-cache'
           }
         });
