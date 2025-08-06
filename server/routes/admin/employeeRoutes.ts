@@ -277,9 +277,10 @@ router.post('/bulk-action',
         }
         
         results.push({ employee_id: employeeId, success: true, result });
-      } catch (error) {
-        logger.error('Bulk action failed for employee:', { employeeId, action, error });
-        errors.push({ employee_id: employeeId, success: false, error: error.message });
+      } catch (error: any) {
+        const message = error?.message || 'unknown_error';
+        logger.error('Bulk action failed for employee:', { employeeId, action, error, message });
+        errors.push({ employee_id: employeeId, success: false, error: message });
       }
     }
 
@@ -303,8 +304,9 @@ router.post('/bulk-action',
       }
     });
 
-  } catch (error) {
-    logger.error('Error in bulk employee action:', { error, action: req.body.action });
+  } catch (error: any) {
+    const message = error?.message || 'unknown_error';
+    logger.error('Error in bulk employee action:', { error, message, action: req.body.action });
     res.status(500).json({ message: 'Failed to perform bulk action' });
   }
 });

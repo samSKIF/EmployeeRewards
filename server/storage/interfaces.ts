@@ -56,6 +56,7 @@ import type {
 export interface IUserStorage {
   // User management
   getUser(id: number): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByName(name: string, surname: string): Promise<User | undefined>;
   checkDuplicateUser(
@@ -64,11 +65,43 @@ export interface IUserStorage {
     surname?: string
   ): Promise<{ emailExists: boolean; nameExists: boolean }>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<User>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   getUserWithBalance(id: number): Promise<UserWithBalance | undefined>;
   getAllUsersWithBalance(): Promise<UserWithBalance[]>;
   getUsers(organizationId?: number, limit?: number, offset?: number): Promise<User[]>;
   getUsersByOrganization(organizationId: number): Promise<User[]>;
   getUserCount(): Promise<number>;
+
+  // Enhanced employee management methods
+  getEmployeesWithFilters(
+    organizationId: number, 
+    filters: {
+      search?: string;
+      department?: string;
+      status?: string;
+      limit?: number;
+      offset?: number;
+      sortBy?: string;
+      sortOrder?: string;
+    }
+  ): Promise<User[]>;
+  
+  searchEmployees(
+    organizationId: number, 
+    query: string, 
+    filters?: {
+      department?: string;
+      status?: string;
+      limit?: number;
+    }
+  ): Promise<User[]>;
+  
+  checkUserDependencies(userId: number): Promise<{
+    hasActivePosts: boolean;
+    hasActiveRecognitions: boolean;
+    hasActiveOrders: boolean;
+  }>;
 
   // Authentication
   verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean>;
