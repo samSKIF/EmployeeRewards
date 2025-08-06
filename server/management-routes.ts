@@ -238,11 +238,10 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
         s.last_payment_date
       FROM organizations o
       LEFT JOIN (
-        -- BUSINESS RULE: Count Active + Pending + Main super user account only
-        -- Additional super user accounts are excluded from billing calculations
-        SELECT organization_id, COUNT(*) as user_count 
+        -- BUSINESS RULE: Count Active + Pending users only (consistent with billing)
+        -- STANDARDIZED SQL: Using same CASE WHEN pattern as other endpoints
+        SELECT organization_id, COUNT(CASE WHEN status IN ('active', 'pending') THEN 1 END) as user_count 
         FROM users 
-        WHERE status IN ('active', 'pending')
         GROUP BY organization_id
       ) u ON o.id = u.organization_id
       LEFT JOIN (
@@ -427,11 +426,10 @@ router.get('/organizations/:id', async (req, res) => {
         s.last_payment_date
       FROM organizations o
       LEFT JOIN (
-        -- BUSINESS RULE: Count Active + Pending + Main super user account only
-        -- Additional super user accounts are excluded from billing calculations
-        SELECT organization_id, COUNT(*) as user_count 
+        -- BUSINESS RULE: Count Active + Pending users only (consistent with billing)
+        -- STANDARDIZED SQL: Using same CASE WHEN pattern as other endpoints
+        SELECT organization_id, COUNT(CASE WHEN status IN ('active', 'pending') THEN 1 END) as user_count 
         FROM users 
-        WHERE status IN ('active', 'pending')
         GROUP BY organization_id
       ) u ON o.id = u.organization_id
       LEFT JOIN (
