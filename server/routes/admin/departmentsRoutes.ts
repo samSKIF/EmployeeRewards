@@ -61,7 +61,7 @@ router.post('/',
 
     res.status(201).json(newDepartment);
   } catch (error) {
-    logger.error('Error creating department:', { error, name, organizationId });
+    logger.error('Error creating department:', { error: error?.message || 'unknown_error', organizationId });
     res.status(500).json({ message: 'Failed to create department' });
   }
 });
