@@ -832,31 +832,12 @@ const SubscriptionManagement = ({
     },
   });
 
-  // Get organization-specific subscription usage data for accurate billing user counts
-  const { data: subscriptionUsage } = useQuery({
-    queryKey: [`/api/admin/subscription/usage-${organizationId}`],
+  // Get organization data which includes user count and subscription details
+  const { data: organizationData } = useQuery({
+    queryKey: [`/api/management/organizations/${organizationId}`],
     queryFn: async () => {
-      try {
-        // Get the admin token from localStorage for authentication
-        const adminToken = localStorage.getItem('adminToken');
-        if (!adminToken) {
-          throw new Error('No admin token available');
-        }
-        
-        // Use admin endpoint to get organization-scoped billing data (402 users)
-        const response = await fetch('/api/admin/subscription/usage', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminToken}`,
-            'Cache-Control': 'no-cache'
-          }
-        });
-        if (!response.ok) throw new Error('Failed to fetch subscription usage');
-        return await response.json();
-      } catch (error) {
-        console.error('Failed to fetch subscription usage:', error);
-        throw error;
-      }
+      const result = await managementApi(`/organizations/${organizationId}`);
+      return result;
     },
   });
 
@@ -1068,21 +1049,21 @@ const SubscriptionManagement = ({
               <h4 className="text-sm font-medium mb-3">User Limits</h4>
               
               {/* Admin-style usage display */}
-              {subscription?.subscribedUsers && subscriptionUsage && (
+              {subscription?.subscribedUsers && organizationData && (
                 <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-sm font-medium text-gray-700">Subscription Usage</h3>
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-bold text-gray-900">
-                          {subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0}
+                          {organizationData.userCount || 0}
                         </span>
                         <span className="text-lg text-gray-500">
                           /{subscription.subscribedUsers}
                         </span>
                       </div>
                       <p className="text-sm text-gray-600">
-                        {Math.round(((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}% capacity used • {subscription.subscribedUsers - (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0)} seats available
+                        {Math.round(((organizationData.userCount || 0) / subscription.subscribedUsers) * 100)}% capacity used • {subscription.subscribedUsers - (organizationData.userCount || 0)} seats available
                       </p>
                     </div>
                   </div>
@@ -1092,33 +1073,27 @@ const SubscriptionManagement = ({
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className={`h-3 rounded-full transition-all ${
-                          (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
-                            subscription.subscribedUsers >=
-                          0.9
+                          (organizationData.userCount || 0) / subscription.subscribedUsers >= 0.9
                             ? 'bg-red-500'
-                            : (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
-                                  subscription.subscribedUsers >=
-                                0.8
+                            : (organizationData.userCount || 0) / subscription.subscribedUsers >= 0.8
                               ? 'bg-yellow-500'
                               : 'bg-green-500'
                         }`}
                         style={{
-                          width: `${Math.min(100, ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}%`,
+                          width: `${Math.min(100, ((organizationData.userCount || 0) / subscription.subscribedUsers) * 100)}%`,
                         }}
                       />
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>Active employees using subscription seats</span>
                       <span>
-                        {Math.round(100 - ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}% capacity remaining
+                        {Math.round(100 - ((organizationData.userCount || 0) / subscription.subscribedUsers) * 100)}% capacity remaining
                       </span>
                     </div>
                   </div>
 
                   {/* Warning for high usage */}
-                  {(subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
-                    subscription.subscribedUsers >=
-                    0.9 && (
+                  {(organizationData.userCount || 0) / subscription.subscribedUsers >= 0.9 && (
                     <div className="bg-red-50 border border-red-200 rounded-md p-3">
                       <p className="text-sm text-red-700 font-medium">
                         ⚠️ Approaching user limit
