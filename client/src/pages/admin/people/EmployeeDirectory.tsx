@@ -371,7 +371,7 @@ export default function EmployeeDirectory() {
     queryKey: ['/api/admin/subscription/usage'],
   });
 
-  // Calculate stats
+  // Calculate stats - Use API data for consistency, fallback to frontend calculation only if API unavailable
   const totalEmployees = subscriptionInfo?.total_employees || employees.length;
   const activeEmployees = subscriptionInfo?.active_employees || employees.filter(emp => emp.status === 'active').length;
   const totalDepartments = departments.length; // Use actual departments count, not employee departments
@@ -463,8 +463,9 @@ export default function EmployeeDirectory() {
     console.log('Exporting employee data...');
   };
 
-  const activeEmployeeCount = employees.filter(emp => emp.status === 'active').length;
-  const totalEmployeeCount = employees.length;
+  // Remove duplicate calculations - use API-consistent values throughout
+  // const activeEmployeeCount = employees.filter(emp => emp.status === 'active').length;
+  // const totalEmployeeCount = employees.length;
 
   if (isLoading) {
     return (

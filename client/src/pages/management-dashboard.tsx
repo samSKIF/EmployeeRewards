@@ -832,11 +832,11 @@ const SubscriptionManagement = ({
     },
   });
 
-  // Get analytics data for consistent user counts
-  const { data: stats } = useQuery<Analytics>({
-    queryKey: ['/api/management/analytics'],
+  // Get organization-specific data for accurate user counts
+  const { data: orgStats } = useQuery({
+    queryKey: [`/api/management/organizations/${organizationId}`],
     queryFn: async () => {
-      const result = await managementApi('/analytics');
+      const result = await managementApi(`/organizations/${organizationId}`);
       return result;
     },
   });
@@ -1053,7 +1053,7 @@ const SubscriptionManagement = ({
                     Current Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {stats?.organizationStats?.currentEmployees || 0}
+                    {orgStats?.userCount || 0}
                   </p>
                 </div>
                 <div>
