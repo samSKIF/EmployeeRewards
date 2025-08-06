@@ -13,12 +13,12 @@ This document outlines the comprehensive regression prevention system implemente
 - **Key Field**: `billable_users` (excludes super user from billing)
 - **SQL Pattern**: `COUNT(CASE WHEN status IN ('active', 'pending') THEN 1 END) WHERE organization_id = 1`
 
-### Corporate Organizations (Management View)
-- **Display**: 403 total users  
-- **Purpose**: Management oversight (includes super user for complete view)
+### Corporate Organizations (Organization-Scoped)
+- **Display**: 402 total users  
+- **Purpose**: Organization management (super user never included in any organization counts)
 - **Data Source**: `/api/management/organizations/:id` endpoint
-- **Key Field**: `userCount` (includes super user via `calculateTotalUserCount()`)
-- **SQL Pattern**: Organization count + super user count
+- **Key Field**: `userCount` (organization-only count, no super user)
+- **SQL Pattern**: `COUNT(CASE WHEN status IN ('active', 'pending') THEN 1 END) WHERE organization_id = 1`
 
 ### Subscription Management (Organization-Scoped Billing)
 - **Display**: 402 total users
@@ -35,7 +35,7 @@ This document outlines the comprehensive regression prevention system implemente
 **Expected Output**:
 ```
 Employee Directory: 402 users
-Corporate Organizations: 403 users  
+Corporate Organizations: 402 users  
 Subscription Management: 402 users
 ```
 
@@ -88,9 +88,9 @@ Subscription Management: 402 users
 
 ### Critical Checkpoints
 - **Employee Directory**: Must show 402 billable users (organization-scoped)
-- **Corporate Organizations**: Must show 403 total users (includes super user)
+- **Corporate Organizations**: Must show 402 total users (organization-scoped, super user never included)
 - **Subscription Management**: Must show 402 billable users (organization-scoped)
-- **Breakdown**: 401 active + 1 pending = 402 billable (super user excluded from billing)
+- **Breakdown**: 401 active + 1 pending = 402 total (super user never included in any organization counts)
 
 ## Common Regression Patterns to Watch
 

@@ -14,8 +14,8 @@
  * no regressions are introduced.
  */
 
-const { exec } = require('child_process');
-const util = require('util');
+import { exec } from 'child_process';
+import util from 'util';
 const execAsync = util.promisify(exec);
 
 console.log('🔍 STARTING COMPREHENSIVE REGRESSION PREVENTION TEST SUITE');

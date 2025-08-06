@@ -77,7 +77,7 @@ describe('User Count Consistency Tests', () => {
   });
 
   describe('CRITICAL: Corporate Organizations User Count', () => {
-    test('should show exactly 403 users (includes super user for management)', async () => {
+    test('should show exactly 402 users (same as billing, super user never included)', async () => {
       const response = await request(app)
         .get('/api/management/organizations')
         .set('Authorization', `Bearer ${corporateAdminToken}`);
@@ -86,18 +86,18 @@ describe('User Count Consistency Tests', () => {
       
       const canvaOrg = response.body.find(org => org.name === 'Canva');
       expect(canvaOrg).toBeDefined();
-      expect(canvaOrg.userCount).toBe(403);
+      expect(canvaOrg.userCount).toBe(402);
       expect(canvaOrg.status).toBe('active');
     });
 
-    test('should use consistent SQL pattern with super user inclusion', async () => {
+    test('should use consistent SQL pattern without super user inclusion', async () => {
       const response = await request(app)
         .get('/api/management/organizations/1')
         .set('Authorization', `Bearer ${corporateAdminToken}`);
 
       expect(response.status).toBe(200);
-      // This endpoint includes super user via calculateTotalUserCount()
-      expect(response.body.userCount).toBe(403);
+      // This endpoint now excludes super user (organization-only count)
+      expect(response.body.userCount).toBe(402);
     });
   });
 
@@ -136,7 +136,7 @@ describe('User Count Consistency Tests', () => {
       expect(employeeResponse.body.billable_users).toBe(402);
     });
 
-    test('Corporate Organizations must show +1 vs billing endpoints (403 vs 402)', async () => {
+    test('Corporate Organizations must match billing endpoints exactly (402 = 402)', async () => {
       const [billingResponse, managementResponse] = await Promise.all([
         request(app)
           .get('/api/admin/subscription/usage')
@@ -149,9 +149,9 @@ describe('User Count Consistency Tests', () => {
       expect(billingResponse.status).toBe(200);
       expect(managementResponse.status).toBe(200);
       
-      // Management includes super user (+1)
-      expect(managementResponse.body.userCount).toBe(billingResponse.body.billable_users + 1);
-      expect(managementResponse.body.userCount).toBe(403);
+      // Management and billing must show same count (super user never included)
+      expect(managementResponse.body.userCount).toBe(billingResponse.body.billable_users);
+      expect(managementResponse.body.userCount).toBe(402);
       expect(billingResponse.body.billable_users).toBe(402);
     });
   });
@@ -175,7 +175,7 @@ describe('User Count Consistency Tests', () => {
       expect(responses[0].body.active_employees).toBe(401);
       
       const canvaOrg = responses[1].body.find(org => org.name === 'Canva');
-      expect(canvaOrg.userCount).toBe(403); // 402 + 1 super user
+      expect(canvaOrg.userCount).toBe(402); // Same as billing (super user never included)
     });
   });
 
@@ -235,14 +235,14 @@ describe('End-to-End User Count Display', () => {
       .get('/api/admin/subscription/usage')
       .set('Authorization', `Bearer ${canvaToken}`);
 
-    // Verify consistency across all locations
+    // Verify consistency across all locations - ALL MUST SHOW 402
     expect(employeeDir.body.billable_users).toBe(402);
     expect(subscription.body.current_usage).toBe(402);
     
     const canvaOrg = corpOrgs.body.find(org => org.name === 'Canva');
-    expect(canvaOrg.userCount).toBe(403);
+    expect(canvaOrg.userCount).toBe(402);
 
-    // CRITICAL: These must be the exact values user expects
+    // CRITICAL: All three locations must show 402 users
     console.log('✅ CONSISTENCY TEST PASSED:');
     console.log(`   Employee Directory: ${employeeDir.body.billable_users} users`);
     console.log(`   Corporate Organizations: ${canvaOrg.userCount} users`);

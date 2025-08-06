@@ -265,7 +265,7 @@ router.get('/organizations', verifyCorporateAdmin, async (req, res) => {
         description: 'ThrivioHR Client Organization',
         isActive: row.status === 'active',
         createdAt: row.created_at,
-        userCount: await calculateTotalUserCount(parseInt(row.user_count) || 0),
+        userCount: parseInt(row.user_count) || 0,
         maxUsers: row.max_users,
         contactEmail: row.contact_email,
         industry: row.industry,
@@ -471,7 +471,7 @@ router.get('/organizations/:id', async (req, res) => {
       description: '',
       logoUrl: row.logo_url || '',
       createdAt: row.created_at,
-      userCount: await calculateTotalUserCount(parseInt(row.user_count) || 0),
+      userCount: parseInt(row.user_count) || 0,
       address: row.address || {
         street: '',
         city: '',
