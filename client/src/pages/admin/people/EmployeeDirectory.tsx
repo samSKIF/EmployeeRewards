@@ -537,9 +537,9 @@ export default function EmployeeDirectory() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Team Members</p>
-              <p className="text-3xl font-bold text-gray-900">{activeEmployees}</p>
+              <p className="text-3xl font-bold text-gray-900">{subscriptionInfo?.billable_users || totalEmployees}</p>
               <p className="text-xs text-gray-500 mt-1">
-                {activeEmployees} active • {totalEmployees - activeEmployees} inactive • {totalEmployees} total
+                {subscriptionInfo?.active_employees || activeEmployees} active • {(subscriptionInfo?.billable_users || totalEmployees) - (subscriptionInfo?.active_employees || activeEmployees)} pending • {subscriptionInfo?.billable_users || totalEmployees} total
               </p>
             </div>
             <div className="p-3 bg-green-50 rounded-full">
@@ -553,16 +553,16 @@ export default function EmployeeDirectory() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Subscription Usage</p>
-              <p className="text-2xl font-bold text-gray-900">{activeEmployees}/{subscriptionLimit}</p>
-              <p className="text-xs text-gray-500 mt-1">{usagePercentage}% capacity used • {subscriptionLimit - activeEmployees} seats available</p>
+              <p className="text-2xl font-bold text-gray-900">{subscriptionInfo?.billable_users || activeEmployees}/{subscriptionLimit}</p>
+              <p className="text-xs text-gray-500 mt-1">{Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100)}% capacity used • {subscriptionLimit - (subscriptionInfo?.billable_users || activeEmployees)} seats available</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Departments</p>
                 <p className="text-2xl font-bold text-gray-900">{totalDepartments}</p>
               </div>
-              <div className={`p-3 rounded-full ${usagePercentage > 90 ? 'bg-red-50' : usagePercentage > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
-                <Users className={`h-6 w-6 ${usagePercentage > 90 ? 'text-red-500' : usagePercentage > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
+              <div className={`p-3 rounded-full ${Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'bg-red-50' : Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+                <Users className={`h-6 w-6 ${Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'text-red-500' : Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
               </div>
             </div>
           </div>
