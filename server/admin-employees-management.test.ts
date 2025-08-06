@@ -1,62 +1,37 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { storage } from './storage';
-import { createTestApp } from './test-setup/employee-test-setup';
+import employeeRoutes from './routes/admin/employee';
+import { createTestExpressApp } from './test-utils/express-test-utils';
+import { setupMockStorage, createMockEmployee, createMockEmployees } from './test-utils/employee-test-utils';
 
-// Mock storage
+// Mock storage module
 jest.mock('./storage');
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
 // Admin Employees Management Test Suite
-// Tests for all features worked on since admin restructuring
 describe('Admin Employees Management Features', () => {
-  let app: ReturnType<typeof createTestApp>;
-  let authToken: string;
+  let app: express.Application;
+  const authToken = 'Bearer test-token';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    app = createTestApp();
-    // Mock authenticated admin user
-    authToken = 'valid-admin-token';
+    app = createTestExpressApp(employeeRoutes);
     
-    // Setup default mocks
-    mockStorage.getEmployeesWithFilters = jest.fn();
-    mockStorage.getUserById = jest.fn();
-    mockStorage.updateUser = jest.fn();
-    mockStorage.deleteUser = jest.fn();
-    mockStorage.searchEmployees = jest.fn();
-    mockStorage.checkUserDependencies = jest.fn();
+    // Setup mock storage with default behaviors
+    const mockImpl = setupMockStorage();
+    Object.assign(mockStorage, mockImpl);
   });
 
   describe('Employee Directory Management', () => {
     describe('GET /api/users - Employee List', () => {
       it('should return paginated employee list with proper filtering', async () => {
-        const mockEmployees = [
-          {
-            id: 1,
-            name: 'John Smith',
-            email: 'john@company.com',
-            department: 'Engineering',
-            jobTitle: 'Senior Developer',
-            status: 'active',
-            organizationId: 1
-          },
-          {
-            id: 2,
-            name: 'Jane Doe',
-            email: 'jane@company.com',
-            department: 'Marketing',
-            jobTitle: 'Marketing Manager',
-            status: 'active',
-            organizationId: 1
-          }
-        ];
-
+        const mockEmployees = createMockEmployees(2);
         mockStorage.getEmployeesWithFilters.mockResolvedValue(mockEmployees);
 
         const response = await request(app)
           .get('/api/users?status=active&limit=10&offset=0')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', authToken)
           .expect(200);
 
         expect(response.body).toHaveProperty('employees');
