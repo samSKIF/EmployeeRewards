@@ -1,22 +1,31 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
-import express from 'express';
-import { storage } from '../server/storage';
+import { storage } from './storage';
+import { createTestApp } from './test-setup/employee-test-setup';
 
 // Mock storage
-jest.mock('../server/storage');
+jest.mock('./storage');
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
 // Admin Employees Management Test Suite
 // Tests for all features worked on since admin restructuring
 describe('Admin Employees Management Features', () => {
-  let app: express.Application;
+  let app: ReturnType<typeof createTestApp>;
   let authToken: string;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    app = createTestApp();
     // Mock authenticated admin user
     authToken = 'valid-admin-token';
+    
+    // Setup default mocks
+    mockStorage.getEmployeesWithFilters = jest.fn();
+    mockStorage.getUserById = jest.fn();
+    mockStorage.updateUser = jest.fn();
+    mockStorage.deleteUser = jest.fn();
+    mockStorage.searchEmployees = jest.fn();
+    mockStorage.checkUserDependencies = jest.fn();
   });
 
   describe('Employee Directory Management', () => {
@@ -43,20 +52,23 @@ describe('Admin Employees Management Features', () => {
           }
         ];
 
-        mockStorage.getUsers.mockResolvedValue(mockEmployees);
-        mockStorage.getUserCount.mockResolvedValue(2);
+        mockStorage.getEmployeesWithFilters.mockResolvedValue(mockEmployees);
 
         const response = await request(app)
-          .get('/api/users?page=1&limit=10&status=active')
+          .get('/api/users?status=active&limit=10&offset=0')
           .set('Authorization', `Bearer ${authToken}`)
           .expect(200);
 
-        expect(response.body).toHaveProperty('users');
-        expect(response.body).toHaveProperty('total');
-        expect(response.body.users).toHaveLength(2);
-        expect(mockStorage.getUsers).toHaveBeenCalledWith(
+        expect(response.body).toHaveProperty('employees');
+        expect(response.body).toHaveProperty('pagination');
+        expect(response.body.employees).toHaveLength(2);
+        expect(mockStorage.getEmployeesWithFilters).toHaveBeenCalledWith(
           1, // organizationId
-          { page: 1, limit: 10, status: 'active' }
+          expect.objectContaining({
+            status: 'active',
+            limit: 10,
+            offset: 0
+          })
         );
       });
 
