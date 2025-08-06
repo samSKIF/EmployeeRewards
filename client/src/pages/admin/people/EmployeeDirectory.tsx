@@ -210,10 +210,7 @@ export default function EmployeeDirectory() {
   // Create employee mutation
   const createEmployeeMutation = useMutation({
     mutationFn: async (data: EmployeeFormData) => {
-      const response = await apiRequest('/api/users', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest('POST', '/api/users', data);
       return response;
     },
     onSuccess: () => {
@@ -273,13 +270,13 @@ export default function EmployeeDirectory() {
         surname: normalizedEmployee.surname || '',
         email: normalizedEmployee.email || '',
         phoneNumber: normalizedEmployee.phoneNumber || normalizedEmployee.phone_number || '',
-        jobTitle: normalizedEmployee.jobTitle || normalizedEmployee.job_title || normalizedEmployee.title || '',
+        jobTitle: normalizedEmployee.jobTitle || normalizedEmployee.job_title || '',
         department: normalizedEmployee.department || '',
         location: matchedLocation,
         status: normalizedEmployee.status || 'active',
         hireDate: normalizedEmployee.hireDate || normalizedEmployee.hire_date || '',
         birthDate: normalizedEmployee.birthDate || normalizedEmployee.birth_date || '',
-        managerEmail: normalizedEmployee.managerEmail || normalizedEmployee.manager_email || '',
+        managerEmail: normalizedEmployee.managerEmail || '',
         nationality: normalizedEmployee.nationality || '',
         sex: normalizedEmployee.sex || '',
       };
@@ -346,7 +343,7 @@ export default function EmployeeDirectory() {
     phoneNumber: employee.phoneNumber || employee.phone_number || '',
     birthDate: employee.birthDate || employee.birth_date || '',
     aboutMe: employee.aboutMe || employee.about_me || '',
-    managerEmail: employee.managerEmail || employee.manager_email || '',
+    managerEmail: employee.managerEmail || '',
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
@@ -367,6 +364,7 @@ export default function EmployeeDirectory() {
     current_usage: number;
     active_employees: number;
     total_employees: number;
+    billable_users?: number;
   }>({
     queryKey: ['/api/admin/subscription/usage'],
   });
@@ -470,7 +468,7 @@ export default function EmployeeDirectory() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" data-testid="loading-spinner"></div>
       </div>
     );
   }
@@ -537,9 +535,9 @@ export default function EmployeeDirectory() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Team Members</p>
-              <p className="text-3xl font-bold text-gray-900">{subscriptionInfo?.billable_users || totalEmployees}</p>
+              <p className="text-3xl font-bold text-gray-900">{subscriptionInfo?.total_employees || totalEmployees}</p>
               <p className="text-xs text-gray-500 mt-1">
-                {subscriptionInfo?.active_employees || activeEmployees} active • {(subscriptionInfo?.billable_users || totalEmployees) - (subscriptionInfo?.active_employees || activeEmployees)} pending • {subscriptionInfo?.billable_users || totalEmployees} total
+                {subscriptionInfo?.active_employees || activeEmployees} active • {(subscriptionInfo?.total_employees || totalEmployees) - (subscriptionInfo?.active_employees || activeEmployees)} pending • {subscriptionInfo?.total_employees || totalEmployees} total
               </p>
             </div>
             <div className="p-3 bg-green-50 rounded-full">
@@ -553,16 +551,16 @@ export default function EmployeeDirectory() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Subscription Usage</p>
-              <p className="text-2xl font-bold text-gray-900">{subscriptionInfo?.billable_users || activeEmployees}/{subscriptionLimit}</p>
-              <p className="text-xs text-gray-500 mt-1">{Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100)}% capacity used • {subscriptionLimit - (subscriptionInfo?.billable_users || activeEmployees)} seats available</p>
+              <p className="text-2xl font-bold text-gray-900">{subscriptionInfo?.total_employees || activeEmployees}/{subscriptionLimit}</p>
+              <p className="text-xs text-gray-500 mt-1">{Math.round(((subscriptionInfo?.total_employees || activeEmployees) / subscriptionLimit) * 100)}% capacity used • {subscriptionLimit - (subscriptionInfo?.total_employees || activeEmployees)} seats available</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Departments</p>
                 <p className="text-2xl font-bold text-gray-900">{totalDepartments}</p>
               </div>
-              <div className={`p-3 rounded-full ${Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'bg-red-50' : Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
-                <Users className={`h-6 w-6 ${Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'text-red-500' : Math.round(((subscriptionInfo?.billable_users || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
+              <div className={`p-3 rounded-full ${Math.round(((subscriptionInfo?.total_employees || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'bg-red-50' : Math.round(((subscriptionInfo?.total_employees || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+                <Users className={`h-6 w-6 ${Math.round(((subscriptionInfo?.total_employees || activeEmployees) / subscriptionLimit) * 100) > 90 ? 'text-red-500' : Math.round(((subscriptionInfo?.total_employees || activeEmployees) / subscriptionLimit) * 100) > 75 ? 'text-yellow-500' : 'text-green-500'}`} />
               </div>
             </div>
           </div>
