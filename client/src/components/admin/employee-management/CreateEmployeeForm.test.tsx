@@ -4,6 +4,19 @@ import { describe, it, expect, vi } from 'vitest';
 import { CreateEmployeeForm } from './CreateEmployeeForm';
 import { EmployeeFormData } from './types';
 
+// Global mock for fetch API with auth middleware pattern
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock useAuth hook for authentication
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Admin User', email: 'admin@company.com', isAdmin: true },
+    isAuthenticated: true,
+    isLoading: false
+  }),
+}));
+
 const mockDepartments = ['Engineering', 'Marketing', 'Sales'];
 const mockLocations = ['New York', 'London', 'Tokyo'];
 

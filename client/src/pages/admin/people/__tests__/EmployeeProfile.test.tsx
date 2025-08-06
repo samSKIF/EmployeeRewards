@@ -45,9 +45,18 @@ const mockEmployee = {
 const mockDepartments = ['Engineering', 'Product', 'Design', 'Marketing'];
 const mockLocations = ['New York', 'San Francisco', 'Remote', 'London'];
 
-// Mock fetch function
+// Global mock for fetch API with auth middleware pattern
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+// Mock useAuth hook for authentication
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Admin User', email: 'admin@company.com', isAdmin: true },
+    isAuthenticated: true,
+    isLoading: false
+  }),
+}));
 
 function renderWithQueryClient(component: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -68,8 +77,10 @@ describe('EmployeeProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Mock successful API responses
+    // Mock successful API responses with auth headers
     mockFetch.mockImplementation((url: string, options?: any) => {
+      console.log('Mock fetch called with:', url, options);
+      
       if (url.includes('/api/users/1')) {
         if (options?.method === 'PATCH') {
           return Promise.resolve({

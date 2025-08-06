@@ -4,6 +4,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import EmployeeDirectory from '../EmployeeDirectory';
 import React from 'react';
 
+// Global mock for fetch API with auth middleware pattern
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock useAuth hook for authentication
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Admin User', email: 'admin@company.com', isAdmin: true },
+    isAuthenticated: true,
+    isLoading: false
+  }),
+}));
+
 // Server Integration Tests - Testing against real data patterns from the database
 const realEmployeeDataScenarios = [
   // Complete data scenario (like Canva Administrator)

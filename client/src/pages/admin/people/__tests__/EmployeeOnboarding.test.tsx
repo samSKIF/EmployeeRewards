@@ -18,9 +18,18 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockDepartments = ['Engineering', 'Product', 'Design', 'Marketing'];
 const mockLocations = ['New York', 'San Francisco', 'Remote', 'London'];
 
-// Mock fetch function
+// Global mock for fetch API with auth middleware pattern
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+// Mock useAuth hook for authentication
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Admin User', email: 'admin@company.com', isAdmin: true },
+    isAuthenticated: true,
+    isLoading: false
+  }),
+}));
 
 function renderWithQueryClient(component: React.ReactElement) {
   const queryClient = new QueryClient({
