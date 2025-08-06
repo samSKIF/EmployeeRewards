@@ -1077,34 +1077,34 @@ const SubscriptionManagement = ({
                   </p>
                 </div>
               </div>
-              {subscription?.subscribedUsers && (
+              {subscription?.subscribedUsers && subscriptionUsage && (
                 <div className="mt-3">
                   <div className="flex justify-between text-sm text-muted-foreground mb-1">
                     <span>Usage</span>
                     <span>
-                      {subscription.currentUserCount || 0} /{' '}
+                      {subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0} /{' '}
                       {subscription.subscribedUsers}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        (subscription.currentUserCount || 0) /
+                        (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
                           subscription.subscribedUsers >=
                         0.9
                           ? 'bg-red-500'
-                          : (subscription.currentUserCount || 0) /
+                          : (subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
                                 subscription.subscribedUsers >=
                               0.8
                             ? 'bg-orange-500'
                             : 'bg-green-500'
                       }`}
                       style={{
-                        width: `${Math.min(100, ((subscription.currentUserCount || 0) / subscription.subscribedUsers) * 100)}%`,
+                        width: `${Math.min(100, ((subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) / subscription.subscribedUsers) * 100)}%`,
                       }}
                     />
                   </div>
-                  {(subscription.currentUserCount || 0) /
+                  {(subscriptionUsage.billable_users || subscriptionUsage.current_usage || 0) /
                     subscription.subscribedUsers >=
                     0.9 && (
                     <p className="text-xs text-red-600 mt-1">
