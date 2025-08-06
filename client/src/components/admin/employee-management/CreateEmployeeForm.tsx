@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +39,7 @@ const initialFormData: EmployeeFormData = {
   adminScope: '',
   allowedSites: [],
   allowedDepartments: [],
+  responsibilities: '',
 };
 
 export function CreateEmployeeForm({
@@ -48,6 +50,7 @@ export function CreateEmployeeForm({
   locations,
   isLoading,
 }: CreateEmployeeFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<EmployeeFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -70,34 +73,34 @@ export function CreateEmployeeForm({
     const newErrors: Record<string, string> = {};
 
     // Required fields
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.surname.trim()) newErrors.surname = 'Surname is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    if (!formData.name.trim()) newErrors.name = t('employeeManagement.nameRequired');
+    if (!formData.surname.trim()) newErrors.surname = t('employeeManagement.surnameRequired');
+    if (!formData.email.trim()) newErrors.email = t('employeeManagement.emailRequired');
+    if (!formData.password.trim()) newErrors.password = t('employeeManagement.passwordRequired');
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('employeeManagement.validEmailRequired');
     }
 
     // Password validation
     if (formData.password && formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('employeeManagement.passwordMinLength');
     }
 
     // Phone number validation (optional but format check if provided)
     if (formData.phoneNumber && !/^[\d\s\-\+\(\)]+$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid phone number';
+      newErrors.phoneNumber = t('employeeManagement.validPhoneRequired');
     }
 
     // Date validation
     if (formData.birthDate && new Date(formData.birthDate) > new Date()) {
-      newErrors.birthDate = 'Birth date cannot be in the future';
+      newErrors.birthDate = t('employeeManagement.birthDateFutureError');
     }
 
     if (formData.hireDate && new Date(formData.hireDate) > new Date()) {
-      newErrors.hireDate = 'Hire date cannot be in the future';
+      newErrors.hireDate = t('employeeManagement.hireDateFutureError');
     }
 
     setErrors(newErrors);
@@ -153,7 +156,7 @@ export function CreateEmployeeForm({
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter first name"
+                  placeholder={t('employeeManagement.enterFirstName')}
                   className={errors.name ? 'border-red-500' : ''}
                 />
                 {errors.name && (
@@ -167,7 +170,7 @@ export function CreateEmployeeForm({
                   id="surname"
                   value={formData.surname}
                   onChange={(e) => handleInputChange('surname', e.target.value)}
-                  placeholder="Enter last name"
+                  placeholder={t('employeeManagement.enterLastName')}
                   className={errors.surname ? 'border-red-500' : ''}
                 />
                 {errors.surname && (
@@ -183,7 +186,7 @@ export function CreateEmployeeForm({
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="Enter email address"
+                placeholder={t('employeeManagement.enterEmailAddress')}
                 className={errors.email ? 'border-red-500' : ''}
               />
               {errors.email && (
@@ -198,7 +201,7 @@ export function CreateEmployeeForm({
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                placeholder="Enter temporary password"
+                placeholder={t('employeeManagement.enterTempPassword')}
                 className={errors.password ? 'border-red-500' : ''}
               />
               {errors.password && (
@@ -215,7 +218,7 @@ export function CreateEmployeeForm({
                 id="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                placeholder="Enter phone number"
+                placeholder={t('employeeManagement.enterPhoneNumber')}
                 className={errors.phoneNumber ? 'border-red-500' : ''}
               />
               {errors.phoneNumber && (
@@ -235,7 +238,7 @@ export function CreateEmployeeForm({
                   id="jobTitle"
                   value={formData.jobTitle}
                   onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-                  placeholder="Enter job title"
+                  placeholder={t('employeeManagement.enterJobTitle')}
                 />
               </div>
 
@@ -246,7 +249,7 @@ export function CreateEmployeeForm({
                   onValueChange={(value) => handleInputChange('department', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
+                    <SelectValue placeholder={t('employeeManagement.selectDepartment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {departments.map((dept) => (
@@ -267,7 +270,7 @@ export function CreateEmployeeForm({
                   onValueChange={(value) => handleInputChange('location', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select location" />
+                    <SelectValue placeholder={t('employeeManagement.selectLocation')} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations.map((loc) => (
@@ -286,7 +289,7 @@ export function CreateEmployeeForm({
                   type="email"
                   value={formData.managerEmail}
                   onChange={(e) => handleInputChange('managerEmail', e.target.value)}
-                  placeholder="Enter manager's email"
+                  placeholder={t('employeeManagement.enterManagerEmail')}
                 />
               </div>
             </div>
@@ -318,13 +321,13 @@ export function CreateEmployeeForm({
                   onValueChange={(value) => handleInputChange('sex', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue placeholder={t('employeeManagement.selectGender')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                    <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                    <SelectItem value="Male">{t('employeeManagement.male')}</SelectItem>
+                    <SelectItem value="Female">{t('employeeManagement.female')}</SelectItem>
+                    <SelectItem value="Other">{t('employeeManagement.other')}</SelectItem>
+                    <SelectItem value="Prefer not to say">{t('employeeManagement.preferNotToSay')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -335,7 +338,7 @@ export function CreateEmployeeForm({
                   id="nationality"
                   value={formData.nationality}
                   onChange={(e) => handleInputChange('nationality', e.target.value)}
-                  placeholder="Enter nationality"
+                  placeholder={t('employeeManagement.enterNationality')}
                 />
               </div>
 
@@ -367,7 +370,7 @@ export function CreateEmployeeForm({
                   onValueChange={(value) => handleInputChange('status', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('employeeManagement.selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -15,6 +16,7 @@ import { CreateEmployeeForm } from './CreateEmployeeForm';
 import { Employee, EmployeeFormData, BulkAction, EmployeeFilters as FiltersType } from './types';
 
 export function AdminEmployeesPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -31,15 +33,15 @@ export function AdminEmployeesPage() {
   });
 
   // Data fetching
-  const { data: employees = [], isLoading: employeesLoading } = useQuery({
+  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
     queryKey: ['/api/users'],
   });
 
-  const { data: departments = [] } = useQuery({
+  const { data: departments = [] } = useQuery<string[]>({
     queryKey: ['/api/departments'],
   });
 
-  const { data: locations = [] } = useQuery({
+  const { data: locations = [] } = useQuery<string[]>({
     queryKey: ['/api/locations'],
   });
 
@@ -51,14 +53,14 @@ export function AdminEmployeesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       toast({
-        title: 'Success',
-        description: 'Employee created successfully',
+        title: t('employeeManagement.success'),
+        description: t('employeeManagement.employeeCreatedSuccessfully'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create employee',
+        title: t('employeeManagement.error'),
+        description: error.message || t('employeeManagement.failedToCreateEmployee'),
         variant: 'destructive',
       });
     },
@@ -91,7 +93,14 @@ export function AdminEmployeesPage() {
           }));
           
           const csv = [
-            ['Name', 'Email', 'Department', 'Location', 'Status', 'Hire Date'],
+            [
+              t('employeeManagement.csvHeaders.name'), 
+              t('employeeManagement.csvHeaders.email'), 
+              t('employeeManagement.csvHeaders.department'), 
+              t('employeeManagement.csvHeaders.location'), 
+              t('employeeManagement.csvHeaders.status'), 
+              t('employeeManagement.csvHeaders.hireDate')
+            ],
             ...employeeData.map(emp => Object.values(emp))
           ].map(row => row.join(',')).join('\n');
           
@@ -111,14 +120,14 @@ export function AdminEmployeesPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setSelectedEmployees([]);
       toast({
-        title: 'Success',
-        description: 'Bulk action completed successfully',
+        title: t('employeeManagement.success'),
+        description: t('employeeManagement.bulkActionCompleted'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to complete bulk action',
+        title: t('employeeManagement.error'),
+        description: error.message || t('employeeManagement.failedToBulkAction'),
         variant: 'destructive',
       });
     },
@@ -183,8 +192,8 @@ export function AdminEmployeesPage() {
   const handleEditEmployee = (employee: Employee) => {
     // Navigate to edit page or open edit modal
     toast({
-      title: 'Edit Employee',
-      description: `Edit functionality for ${employee.name} ${employee.surname}`,
+      title: t('employeeManagement.editEmployee'),
+      description: t('employeeManagement.editEmployeeDescription', { name: `${employee.name} ${employee.surname}` }),
     });
   };
 
@@ -215,11 +224,11 @@ export function AdminEmployeesPage() {
 
   // Get unique values for filters
   const uniqueDepartments = useMemo(() => {
-    return Array.from(new Set(employees.map((emp: Employee) => emp.department).filter(Boolean)));
+    return Array.from(new Set(employees.map((emp: Employee) => emp.department).filter((dept): dept is string => Boolean(dept))));
   }, [employees]);
 
   const uniqueLocations = useMemo(() => {
-    return Array.from(new Set(employees.map((emp: Employee) => emp.location).filter(Boolean)));
+    return Array.from(new Set(employees.map((emp: Employee) => emp.location).filter((loc): loc is string => Boolean(loc))));
   }, [employees]);
 
   return (
@@ -227,18 +236,18 @@ export function AdminEmployeesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employee Management</h1>
-          <p className="text-gray-600">Manage team members and their information</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('employeeManagement.title')}</h1>
+          <p className="text-gray-600">{t('employeeManagement.subtitle')}</p>
         </div>
         
         <div className="flex gap-3">
           <Button variant="outline" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Import CSV
+            {t('employeeManagement.importCSV')}
           </Button>
           <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add Employee
+            {t('employeeManagement.addEmployee')}
           </Button>
         </div>
       </div>
@@ -247,7 +256,7 @@ export function AdminEmployeesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Employees</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('employeeManagement.totalEmployees')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -259,7 +268,7 @@ export function AdminEmployeesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('employeeManagement.active')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -273,7 +282,7 @@ export function AdminEmployeesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Departments</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('employeeManagement.departments')}</CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold">{uniqueDepartments.length}</span>
@@ -282,7 +291,7 @@ export function AdminEmployeesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Locations</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('employeeManagement.locations')}</CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold">{uniqueLocations.length}</span>
@@ -293,7 +302,7 @@ export function AdminEmployeesPage() {
       {/* Main Content */}
       <Card>
         <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+          <CardTitle>{t('employeeManagement.teamMembers')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Filters */}

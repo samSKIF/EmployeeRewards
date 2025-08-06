@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -22,6 +23,7 @@ export function BulkActions({
   departments,
   isLoading,
 }: BulkActionsProps) {
+  const { t } = useTranslation();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null);
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -65,13 +67,15 @@ export function BulkActions({
   const getActionDescription = () => {
     if (!pendingAction) return '';
 
+    const plural = selectedCount !== 1 ? 's' : '';
+    
     switch (pendingAction.type) {
       case 'delete':
-        return `This will permanently delete ${selectedCount} employee${selectedCount !== 1 ? 's' : ''} from the system. This action cannot be undone.`;
+        return t('employeeManagement.bulkDeleteWarning', { count: selectedCount, plural });
       case 'updateStatus':
-        return `This will update the status of ${selectedCount} employee${selectedCount !== 1 ? 's' : ''} to "${pendingAction.value}".`;
+        return t('employeeManagement.bulkStatusUpdateWarning', { count: selectedCount, plural, status: pendingAction.value });
       case 'updateDepartment':
-        return `This will move ${selectedCount} employee${selectedCount !== 1 ? 's' : ''} to the "${pendingAction.value}" department.`;
+        return t('employeeManagement.bulkDepartmentUpdateWarning', { count: selectedCount, plural, department: pendingAction.value });
       default:
         return '';
     }
@@ -89,10 +93,10 @@ export function BulkActions({
             <Users className="h-5 w-5 text-blue-600" />
             <div>
               <p className="font-medium text-blue-900">
-                {selectedCount} employee{selectedCount !== 1 ? 's' : ''} selected
+                {t('employeeManagement.employeesSelected', { count: selectedCount, plural: selectedCount !== 1 ? 's' : '' })}
               </p>
               <p className="text-sm text-blue-700">
-                Choose an action to apply to all selected employees
+                {t('employeeManagement.chooseActionPrompt')}
               </p>
             </div>
           </div>
@@ -103,7 +107,7 @@ export function BulkActions({
             onClick={onClearSelection}
             className="text-blue-700 hover:text-blue-900"
           >
-            Clear Selection
+            {t('employeeManagement.clearSelection')}
           </Button>
         </div>
 
@@ -117,20 +121,20 @@ export function BulkActions({
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            Export Selected
+            {t('employeeManagement.exportSelected')}
           </Button>
 
           {/* Status Update */}
           <div className="flex items-center gap-2">
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Update Status" />
+                <SelectValue placeholder={t('employeeManagement.updateStatusPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Set Active</SelectItem>
-                <SelectItem value="inactive">Set Inactive</SelectItem>
-                <SelectItem value="pending">Set Pending</SelectItem>
-                <SelectItem value="terminated">Set Terminated</SelectItem>
+                <SelectItem value="active">{t('employeeManagement.setActive')}</SelectItem>
+                <SelectItem value="inactive">{t('employeeManagement.setInactive')}</SelectItem>
+                <SelectItem value="pending">{t('employeeManagement.setPending')}</SelectItem>
+                <SelectItem value="terminated">{t('employeeManagement.setTerminated')}</SelectItem>
               </SelectContent>
             </Select>
             
@@ -142,7 +146,7 @@ export function BulkActions({
               className="flex items-center gap-2"
             >
               <UserCheck className="h-4 w-4" />
-              Apply
+              {t('employeeManagement.apply')}
             </Button>
           </div>
 
@@ -150,7 +154,7 @@ export function BulkActions({
           <div className="flex items-center gap-2">
             <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Move to Dept" />
+                <SelectValue placeholder={t('employeeManagement.moveToDeptPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {departments.map((dept) => (
@@ -168,7 +172,7 @@ export function BulkActions({
               disabled={!selectedDepartment || isLoading}
               className="flex items-center gap-2"
             >
-              Apply
+              {t('employeeManagement.apply')}
             </Button>
           </div>
 
@@ -181,7 +185,7 @@ export function BulkActions({
             className="flex items-center gap-2"
           >
             <Trash className="h-4 w-4" />
-            Delete Selected
+            {t('employeeManagement.deleteSelected')}
           </Button>
         </div>
 
@@ -195,7 +199,7 @@ export function BulkActions({
             ))}
             {selectedCount > 5 && (
               <Badge variant="secondary" className="text-xs">
-                +{selectedCount - 5} more
+                {t('employeeManagement.morePeopleSelected', { count: selectedCount - 5 })}
               </Badge>
             )}
           </div>
@@ -208,7 +212,7 @@ export function BulkActions({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Confirm Bulk Action
+              {t('employeeManagement.confirmBulkAction')}
             </DialogTitle>
           </DialogHeader>
           
@@ -221,14 +225,14 @@ export function BulkActions({
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 {pendingAction?.type === 'delete' 
-                  ? 'This action is permanent and cannot be undone.'
-                  : 'This action will affect multiple employees at once.'
+                  ? t('employeeManagement.actionPermanentWarning')
+                  : t('employeeManagement.actionMultipleEmployeesWarning')
                 }
               </AlertDescription>
             </Alert>
 
             <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm font-medium mb-2">Affected employees:</p>
+              <p className="text-sm font-medium mb-2">{t('employeeManagement.affectedEmployees')}</p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {selectedEmployees.map((employee) => (
                   <div key={employee.id} className="text-sm text-gray-600">
@@ -241,14 +245,14 @@ export function BulkActions({
 
           <DialogFooter>
             <Button variant="outline" onClick={cancelBulkAction}>
-              Cancel
+              {t('employeeManagement.cancel')}
             </Button>
             <Button 
               variant={pendingAction?.type === 'delete' ? 'destructive' : 'default'}
               onClick={confirmBulkAction}
               disabled={isLoading}
             >
-              {isLoading ? 'Processing...' : 'Confirm'}
+              {isLoading ? t('employeeManagement.processing') : t('employeeManagement.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -31,11 +32,22 @@ export function EmployeeList({
   onViewProfile,
   isLoading,
 }: EmployeeListProps) {
+  const { t } = useTranslation();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Employee | null>(null);
+  const selectAllCheckboxRef = useRef<HTMLButtonElement>(null);
 
   const isAllSelected = employees.length > 0 && selectedEmployees.length === employees.length;
   const isPartiallySelected = selectedEmployees.length > 0 && selectedEmployees.length < employees.length;
+  
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      const input = selectAllCheckboxRef.current.querySelector('input');
+      if (input) {
+        input.indeterminate = isPartiallySelected;
+      }
+    }
+  }, [isPartiallySelected]);
 
   const handleSelectAll = () => {
     onSelectAll(!isAllSelected);
@@ -72,7 +84,7 @@ export function EmployeeList({
     try {
       return format(new Date(dateString), 'MMM dd, yyyy');
     } catch {
-      return 'Invalid date';
+      return t('employeeManagement.invalidDate');
     }
   };
 
@@ -96,8 +108,8 @@ export function EmployeeList({
     return (
       <div className="text-center py-12">
         <User className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
-        <p className="text-gray-600">Try adjusting your search criteria or add new employees.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">{t('employeeManagement.noEmployeesFound')}</h3>
+        <p className="text-gray-600">{t('employeeManagement.noEmployeesMessage')}</p>
       </div>
     );
   }
@@ -111,20 +123,18 @@ export function EmployeeList({
               <TableHead className="w-12">
                 <Checkbox
                   checked={isAllSelected}
-                  ref={(el) => {
-                    if (el) el.indeterminate = isPartiallySelected;
-                  }}
+                  ref={selectAllCheckboxRef}
                   onCheckedChange={handleSelectAll}
-                  aria-label="Select all employees"
+                  aria-label={t('employeeManagement.selectAll')}
                 />
               </TableHead>
-              <TableHead>Employee</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Hire Date</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>{t('employeeManagement.employee')}</TableHead>
+              <TableHead>{t('employeeManagement.contact')}</TableHead>
+              <TableHead>{t('employeeManagement.department')}</TableHead>
+              <TableHead>{t('employeeManagement.location')}</TableHead>
+              <TableHead>{t('employeeManagement.status')}</TableHead>
+              <TableHead>{t('employeeManagement.hireDate')}</TableHead>
+              <TableHead>{t('employeeManagement.role')}</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
@@ -190,7 +200,7 @@ export function EmployeeList({
                   
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(employee.status)}>
-                      {employee.status || 'Unknown'}
+                      {employee.status || t('employeeManagement.unknown')}
                     </Badge>
                   </TableCell>
                   
@@ -206,7 +216,7 @@ export function EmployeeList({
                         </Badge>
                       )}
                       <span className="text-sm text-gray-500">
-                        {employee.isAdmin ? employee.adminScope || 'Admin' : 'User'}
+                        {employee.isAdmin ? employee.adminScope || t('employeeManagement.admin') : t('employeeManagement.user')}
                       </span>
                     </div>
                   </TableCell>
@@ -221,18 +231,18 @@ export function EmployeeList({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleViewProfile(employee)}>
                           <User className="h-4 w-4 mr-2" />
-                          View Profile
+                          {t('employeeManagement.viewProfile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onEditEmployee(employee)}>
                           <Edit className="h-4 w-4 mr-2" />
-                          Edit Employee
+                          {t('employeeManagement.editEmployee')}
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => onDeleteEmployee(employee)}
                           className="text-red-600"
                         >
                           <Trash className="h-4 w-4 mr-2" />
-                          Delete Employee
+                          {t('employeeManagement.deleteEmployee')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -248,7 +258,7 @@ export function EmployeeList({
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Employee Profile</DialogTitle>
+            <DialogTitle>{t('employeeManagement.employeeProfile')}</DialogTitle>
           </DialogHeader>
           
           {selectedProfile && (
@@ -273,42 +283,42 @@ export function EmployeeList({
               
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">Email</p>
+                  <p className="text-gray-500">{t('employeeManagement.email')}</p>
                   <p>{selectedProfile.email}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Phone</p>
+                  <p className="text-gray-500">{t('employeeManagement.phoneNumber')}</p>
                   <p>{selectedProfile.phoneNumber || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Department</p>
+                  <p className="text-gray-500">{t('employeeManagement.department')}</p>
                   <p>{selectedProfile.department || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Location</p>
+                  <p className="text-gray-500">{t('employeeManagement.location')}</p>
                   <p>{selectedProfile.location || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Hire Date</p>
+                  <p className="text-gray-500">{t('employeeManagement.hireDate')}</p>
                   <p>{formatDate(selectedProfile.hireDate)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Role</p>
-                  <p>{selectedProfile.isAdmin ? 'Admin' : 'User'}</p>
+                  <p className="text-gray-500">{t('employeeManagement.role')}</p>
+                  <p>{selectedProfile.isAdmin ? t('employeeManagement.admin') : t('employeeManagement.employee')}</p>
                 </div>
               </div>
               
               <div className="flex gap-2">
                 <Button onClick={() => onEditEmployee(selectedProfile)} className="flex-1">
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  {t('employeeManagement.edit')}
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => setShowProfileDialog(false)}
                   className="flex-1"
                 >
-                  Close
+                  {t('employeeManagement.close')}
                 </Button>
               </div>
             </div>

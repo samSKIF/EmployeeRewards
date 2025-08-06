@@ -14,6 +14,7 @@ export interface EmployeeFormData {
   nationality: string;
   birthDate: string;
   hireDate: string;
+  responsibilities: string;
   isAdmin: boolean;
   status: string;
   avatarUrl: string;
