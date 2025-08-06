@@ -832,12 +832,24 @@ const SubscriptionManagement = ({
     },
   });
 
-  // Get organization-specific data for accurate user counts
-  const { data: orgStats } = useQuery({
-    queryKey: [`/api/management/organizations/${organizationId}`],
+  // Get organization-specific subscription usage data for accurate billing user counts
+  const { data: subscriptionUsage } = useQuery({
+    queryKey: [`/api/admin/subscription/usage-${organizationId}`],
     queryFn: async () => {
-      const result = await managementApi(`/organizations/${organizationId}`);
-      return result;
+      try {
+        // Use admin endpoint to get organization-scoped billing data (402 users)
+        const response = await fetch('/api/admin/subscription/usage', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch subscription usage');
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to fetch subscription usage:', error);
+        throw error;
+      }
     },
   });
 
@@ -1053,7 +1065,7 @@ const SubscriptionManagement = ({
                     Current Users
                   </Label>
                   <p className="text-lg font-semibold">
-                    {orgStats?.userCount || 0}
+                    {subscriptionUsage?.billable_users || subscriptionUsage?.current_usage || 0}
                   </p>
                 </div>
                 <div>
