@@ -644,6 +644,161 @@ router.put('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
+// Get organization hierarchy for org chart
+router.get('/org-chart/hierarchy', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const organizationId = req.user.organization_id;
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User has no organization' });
+    }
+
+    // Get all users in the organization with their hierarchy info
+    const orgUsers = await storage.getOrganizationHierarchy(organizationId);
+    
+    // Build the hierarchical tree structure
+    const buildHierarchy = (users: any[], managerId: number | null = null): any[] => {
+      return users
+        .filter(user => user.manager_id === managerId)
+        .map(user => ({
+          id: user.id,
+          name: user.name,
+          surname: user.surname,
+          email: user.email,
+          jobTitle: user.job_title,
+          department: user.department,
+          avatarUrl: user.avatar_url,
+          children: buildHierarchy(users, user.id)
+        }));
+    };
+
+    const hierarchy = buildHierarchy(orgUsers);
+    
+    res.json({
+      success: true,
+      data: hierarchy,
+      total: orgUsers.length
+    });
+  } catch (error: any) {
+    logger.error('Error getting org hierarchy:', error);
+    res.status(500).json({ message: error.message || 'Failed to get organization hierarchy' });
+  }
+});
+
+// Get user's hierarchical relationships (N+2, N+1, N-1, N-2, peers)
+router.get('/org-chart/relationships/:userId?', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Use provided userId or default to current user
+    const userId = req.params.userId ? parseInt(req.params.userId) : req.user.id;
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    // Get hierarchical relationships
+    const hierarchy = await storage.getUserHierarchy(userId);
+    
+    // Format response with camelCase for frontend
+    const response = {
+      user: {
+        id: hierarchy.user.id,
+        name: hierarchy.user.name,
+        surname: hierarchy.user.surname,
+        email: hierarchy.user.email,
+        jobTitle: hierarchy.user.job_title,
+        department: hierarchy.user.department,
+        avatarUrl: hierarchy.user.avatar_url,
+      },
+      manager: hierarchy.manager ? {
+        id: hierarchy.manager.id,
+        name: hierarchy.manager.name,
+        surname: hierarchy.manager.surname,
+        email: hierarchy.manager.email,
+        jobTitle: hierarchy.manager.job_title,
+        department: hierarchy.manager.department,
+        avatarUrl: hierarchy.manager.avatar_url,
+      } : null,
+      skipManager: hierarchy.skipManager ? {
+        id: hierarchy.skipManager.id,
+        name: hierarchy.skipManager.name,
+        surname: hierarchy.skipManager.surname,
+        email: hierarchy.skipManager.email,
+        jobTitle: hierarchy.skipManager.job_title,
+        department: hierarchy.skipManager.department,
+        avatarUrl: hierarchy.skipManager.avatar_url,
+      } : null,
+      directReports: hierarchy.directReports.map(report => ({
+        id: report.id,
+        name: report.name,
+        surname: report.surname,
+        email: report.email,
+        jobTitle: report.job_title,
+        department: report.department,
+        avatarUrl: report.avatar_url,
+      })),
+      indirectReports: hierarchy.indirectReports.map(report => ({
+        id: report.id,
+        name: report.name,
+        surname: report.surname,
+        email: report.email,
+        jobTitle: report.job_title,
+        department: report.department,
+        avatarUrl: report.avatar_url,
+      })),
+      peers: hierarchy.peers.map(peer => ({
+        id: peer.id,
+        name: peer.name,
+        surname: peer.surname,
+        email: peer.email,
+        jobTitle: peer.job_title,
+        department: peer.department,
+        avatarUrl: peer.avatar_url,
+      })),
+    };
+    
+    res.json({
+      success: true,
+      data: response
+    });
+  } catch (error: any) {
+    logger.error('Error getting user hierarchy:', error);
+    res.status(500).json({ message: error.message || 'Failed to get user hierarchy' });
+  }
+});
+
+// Get user's reporting tree (subordinates)
+router.get('/org-chart/reporting-tree/:userId?', verifyToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Use provided userId or default to current user
+    const userId = req.params.userId ? parseInt(req.params.userId) : req.user.id;
+    const maxDepth = req.query.maxDepth ? parseInt(req.query.maxDepth as string) : 3;
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    const tree = await storage.getReportingTree(userId, maxDepth);
+    
+    res.json({
+      success: true,
+      data: tree
+    });
+  } catch (error: any) {
+    logger.error('Error getting reporting tree:', error);
+    res.status(500).json({ message: error.message || 'Failed to get reporting tree' });
+  }
+});
+
 // Get specific user by ID (must be last to avoid conflicts with other routes)
 router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
   try {

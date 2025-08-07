@@ -251,7 +251,7 @@ export class UserStorage implements IUserStorage {
   ): Promise<User[]> {
     try {
       // Build where conditions array
-      const conditions = [eq(users.organization_id, organizationId)];
+      const conditions: any[] = [eq(users.organization_id, organizationId)];
 
       if (filters.status) {
         conditions.push(eq(users.status, filters.status));
@@ -262,16 +262,17 @@ export class UserStorage implements IUserStorage {
       }
 
       if (filters.search) {
-        conditions.push(
-          or(
-            like(users.name, `%${filters.search}%`),
-            like(users.email, `%${filters.search}%`)
-          )
+        const searchCondition = or(
+          like(users.name, `%${filters.search}%`),
+          like(users.email, `%${filters.search}%`)
         );
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
       }
 
       // Build query with all conditions
-      let query = db.select().from(users).where(and(...conditions));
+      let query = db.select().from(users).where(and(...conditions)) as any;
 
       // Add pagination
       if (filters.limit) {
@@ -300,14 +301,16 @@ export class UserStorage implements IUserStorage {
   ): Promise<User[]> {
     try {
       // Build where conditions array
-      const conditions = [
-        eq(users.organization_id, organizationId),
-        or(
-          like(users.name, `%${searchQuery}%`),
-          like(users.email, `%${searchQuery}%`),
-          like(users.job_title, `%${searchQuery}%`)
-        )
-      ];
+      const searchCondition = or(
+        like(users.name, `%${searchQuery}%`),
+        like(users.email, `%${searchQuery}%`),
+        like(users.job_title, `%${searchQuery}%`)
+      );
+      
+      const conditions: any[] = [eq(users.organization_id, organizationId)];
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
 
       if (filters?.department) {
         conditions.push(eq(users.department, filters.department));
@@ -318,7 +321,7 @@ export class UserStorage implements IUserStorage {
       }
 
       // Build query with all conditions
-      let query = db.select().from(users).where(and(...conditions));
+      let query = db.select().from(users).where(and(...conditions)) as any;
 
       if (filters?.limit) {
         query = query.limit(filters.limit);
@@ -353,6 +356,176 @@ export class UserStorage implements IUserStorage {
         hasActiveRecognitions: false,
         hasActiveOrders: false
       };
+    }
+  }
+
+  // Organization hierarchy methods
+  async getOrganizationHierarchy(organizationId: number): Promise<User[]> {
+    try {
+      const orgUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.organization_id, organizationId));
+      return orgUsers;
+    } catch (error: any) {
+      console.error('Error getting organization hierarchy:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
+
+  async getUserHierarchy(userId: number): Promise<{
+    user: User;
+    manager: User | null;
+    skipManager: User | null;
+    directReports: User[];
+    indirectReports: User[];
+    peers: User[];
+  }> {
+    try {
+      // Get the current user
+      const currentUser = await this.getUser(userId);
+      if (!currentUser) {
+        throw new Error('User not found');
+      }
+
+      // Get the manager (N+1)
+      let manager: User | null = null;
+      if (currentUser.manager_id) {
+        manager = await this.getUser(currentUser.manager_id) || null;
+      }
+
+      // Get skip-level manager (N+2)
+      let skipManager: User | null = null;
+      if (manager?.manager_id) {
+        skipManager = await this.getUser(manager.manager_id) || null;
+      }
+
+      // Get direct reports (N-1)
+      const directReports = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.manager_id, userId),
+            currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
+          )
+        );
+
+      // Get indirect reports (N-2) - reports of direct reports
+      const indirectReportPromises = directReports.map(async (report) => {
+        return await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.manager_id, report.id),
+              currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
+            )
+          );
+      });
+      const indirectReportArrays = await Promise.all(indirectReportPromises);
+      const indirectReports = indirectReportArrays.flat();
+
+      // Get peers (same manager, excluding self)
+      let peers: User[] = [];
+      if (currentUser.manager_id) {
+        const allPeers = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.manager_id, currentUser.manager_id),
+              currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
+            )
+          );
+        peers = allPeers.filter(p => p.id !== userId);
+      }
+
+      return {
+        user: currentUser,
+        manager,
+        skipManager,
+        directReports,
+        indirectReports,
+        peers
+      };
+    } catch (error: any) {
+      console.error('Error getting user hierarchy:', error?.message || 'unknown_error');
+      throw error;
+    }
+  }
+
+  async getManagerChain(userId: number): Promise<User[]> {
+    try {
+      const chain: User[] = [];
+      let currentUser = await this.getUser(userId);
+      
+      if (!currentUser) {
+        return [];
+      }
+
+      // Walk up the hierarchy
+      while (currentUser?.manager_id) {
+        const manager = await this.getUser(currentUser.manager_id);
+        if (manager) {
+          chain.push(manager);
+          currentUser = manager;
+        } else {
+          break;
+        }
+      }
+
+      return chain;
+    } catch (error: any) {
+      console.error('Error getting manager chain:', error?.message || 'unknown_error');
+      return [];
+    }
+  }
+
+  async getReportingTree(userId: number, maxDepth: number = 3): Promise<any> {
+    try {
+      const buildTree = async (id: number, depth: number): Promise<any> => {
+        if (depth >= maxDepth) {
+          return null;
+        }
+
+        const user = await this.getUser(id);
+        if (!user) {
+          return null;
+        }
+
+        // Get direct reports
+        const directReports = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.manager_id, id),
+              user.organization_id ? eq(users.organization_id, user.organization_id) : undefined
+            )
+          );
+
+        // Recursively build tree for each direct report
+        const children = await Promise.all(
+          directReports.map(report => buildTree(report.id, depth + 1))
+        );
+
+        return {
+          id: user.id,
+          name: user.name,
+          surname: user.surname,
+          email: user.email,
+          jobTitle: user.job_title,
+          department: user.department,
+          avatarUrl: user.avatar_url,
+          children: children.filter(child => child !== null)
+        };
+      };
+
+      return await buildTree(userId, 0);
+    } catch (error: any) {
+      console.error('Error getting reporting tree:', error?.message || 'unknown_error');
+      return null;
     }
   }
 }

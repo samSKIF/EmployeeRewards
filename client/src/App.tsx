@@ -44,7 +44,7 @@ import Recognition from '@/pages/recognition';
 import RecognitionAnalytics from '@/pages/recognition-analytics';
 import AdminStatusTypes from '@/pages/admin-status-types';
 import StatusDemo from '@/pages/status-demo';
-import OrgChart from '@/pages/org-chart';
+import OrgChartPage from '@/pages/OrgChartPage';
 import GroupsPage from '@/pages/groups';
 import GroupsPageFacebook from '@/pages/groups-facebook';
 import SpacesPage from '@/pages/spaces-new-design';
@@ -456,7 +456,7 @@ function App() {
 
                   <Route path="/org-chart">
                     <SocialLayout>
-                      <OrgChart />
+                      <OrgChartPage />
                     </SocialLayout>
                   </Route>
 

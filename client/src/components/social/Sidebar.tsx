@@ -16,6 +16,7 @@ import {
   LogOut,
   LucideIcon,
   MessageCircle,
+  GitBranch,
 } from 'lucide-react';
 import { SpacesDiscoveryWidget } from '@/components/spaces/SpacesDiscoveryWidget';
 // Removed ModularAdminSidebar import as it doesn't exist
@@ -132,6 +133,12 @@ const Sidebar = ({ user, closeMobileMenu }: SidebarProps) => {
       label: 'Groups',
       onClick: () => navigateTo('/groups'),
       isActive: location === '/groups',
+    },
+    {
+      icon: GitBranch,
+      label: 'Org Chart',
+      onClick: () => navigateTo('/org-chart'),
+      isActive: location === '/org-chart',
     },
   ];
 

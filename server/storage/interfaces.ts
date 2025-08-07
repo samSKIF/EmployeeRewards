@@ -102,6 +102,19 @@ export interface IUserStorage {
     hasActiveRecognitions: boolean;
     hasActiveOrders: boolean;
   }>;
+  
+  // Organization hierarchy methods
+  getOrganizationHierarchy(organizationId: number): Promise<User[]>;
+  getUserHierarchy(userId: number): Promise<{
+    user: User;
+    manager: User | null;
+    skipManager: User | null;
+    directReports: User[];
+    indirectReports: User[];
+    peers: User[];
+  }>;
+  getManagerChain(userId: number): Promise<User[]>;
+  getReportingTree(userId: number, maxDepth?: number): Promise<any>;
 
   // Authentication
   verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean>;
