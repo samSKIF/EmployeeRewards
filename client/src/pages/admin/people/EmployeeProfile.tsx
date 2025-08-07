@@ -555,7 +555,7 @@ export default function EmployeeProfile() {
                       id="managerEmail"
                       type="email"
                       value={formData.manager_email}
-                      onChange={(e) => handleInputChange('manager_email', e.target.value))
+                      onChange={(e) => handleInputChange('manager_email', e.target.value)}
                     />
                   ) : (
                     <p className="text-sm">{employee.manager_email || 'No manager assigned'}</p>
