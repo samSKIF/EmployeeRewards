@@ -187,6 +187,11 @@ function App() {
                       <EmployeeProfile />
                     </SocialLayout>
                   </Route>
+                  <Route path="/admin/people/employee-profile/:id">
+                    <SocialLayout>
+                      <EmployeeProfile />
+                    </SocialLayout>
+                  </Route>
                   <Route path="/admin/employees/onboarding">
                     <SocialLayout>
                       <EmployeeOnboarding />
