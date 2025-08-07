@@ -108,6 +108,12 @@ export default function EmployeeProfile() {
     enabled: !!employeeId,
   });
 
+  // Debug logging when employee data changes
+  if (employee) {
+    console.log('Employee API response:', employee);
+    console.log('Employee sex field:', employee?.sex);
+  }
+
   const { data: departments = [] } = useQuery<string[]>({
     queryKey: ['/api/users/departments'],
   });
@@ -118,10 +124,7 @@ export default function EmployeeProfile() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: UpdateEmployeeData) => {
-      return await apiRequest(`/api/admin/employees/${employeeId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('PATCH', `/api/admin/employees/${employeeId}`, data);
     },
     onSuccess: () => {
       toast({
@@ -143,6 +146,8 @@ export default function EmployeeProfile() {
 
   // Initialize form data when employee data loads
   if (employee && !isEditing && formData.email !== employee.email) {
+    console.log('Initializing form data with employee:', employee);
+    console.log('Setting sex to:', employee.sex);
     setFormData({
       name: employee.name || '',
       surname: employee.surname || '',
@@ -160,6 +165,7 @@ export default function EmployeeProfile() {
       nationality: employee.nationality || '',
       sex: employee.sex || '',
     });
+    console.log('Form data after initialization:', { sex: employee.sex || '' });
   }
 
   const handleInputChange = (field: keyof UpdateEmployeeData, value: string) => {
@@ -391,6 +397,7 @@ export default function EmployeeProfile() {
                       value={formData.sex}
                       onValueChange={(value) => handleInputChange('sex', value)}
                     >
+                      {console.log('Gender dropdown value:', formData.sex)}
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
