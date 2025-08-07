@@ -63,6 +63,7 @@ interface Employee {
   location?: string;
   managerId?: number;
   managerEmail?: string;
+  manager_email?: string;
   lastSeenAt?: string;
   job_title?: string;
   hire_date?: string;
@@ -343,7 +344,8 @@ export default function EmployeeDirectory() {
     phoneNumber: employee.phoneNumber || employee.phone_number || '',
     birthDate: employee.birthDate || employee.birth_date || '',
     aboutMe: employee.aboutMe || employee.about_me || '',
-    managerEmail: employee.managerEmail || '',
+    managerEmail: employee.managerEmail || employee.manager_email || '',
+    sex: employee.sex || '',
   });
 
   const { data: employees = [], isLoading } = useQuery<Employee[]>({
