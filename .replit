@@ -236,4 +236,4 @@ localPort = 46315
 externalPort = 8099
 
 [agent]
-integrations = ["javascript_sendgrid==1.0.0", "javascript_openai==1.0.0", "javascript_anthropic==1.0.0"]
+integrations = ["javascript_websocket==1.0.0", "javascript_sendgrid==1.0.0", "javascript_openai==1.0.0", "javascript_anthropic==1.0.0"]

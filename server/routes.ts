@@ -22,6 +22,8 @@ import { upload, documentUpload, getPublicUrl } from './file-upload';
 import recognitionAIRoutes from './api/recognition-ai';
 import recognitionRoutes from './microservices/recognition';
 import { CacheService } from './cache/cacheService';
+import { employeeRoutes } from './features/employee-management';
+import { employeeEventHandlers } from './features/employee-management/events/employee.event-handlers';
 import {
   users,
   insertUserSchema,
@@ -88,6 +90,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register corporate management routes
   app.use('/api/management', managementRoutes);
+
+  // Register employee management vertical slice
+  app.use('/api/employees', employeeRoutes);
+  
+  // Initialize employee management event handlers
+  employeeEventHandlers.initialize();
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get(
