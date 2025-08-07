@@ -1,5 +1,12 @@
 # ThrivioHR Platform
 
+## ⚠️ MANDATORY ARCHITECTURE COMPLIANCE
+**ALL CODE MUST FOLLOW:** [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)
+- This is the single source of truth for all architectural decisions
+- Non-compliance will result in code rejection
+- Review BEFORE writing any code
+- Validate compliance using the Implementation Checklist (Section 9)
+
 ## Overview
 ThrivioHR is a comprehensive, modular HR and employee engagement platform designed for multi-tenant SaaS deployment. It provides social features, recognition systems, leave management, and marketplace functionality. The platform aims to enhance employee engagement and streamline HR processes, offering a scalable solution for organizations.
 
@@ -171,3 +178,30 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **MongoDB**: For social features.
 - **Redis**: For caching.
 - **Elasticsearch**: For audit logging and search.
+
+## Architecture Enforcement
+
+### Before Writing Any Code
+1. **READ**: [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md)
+2. **CHECK**: Service boundaries (Section 4)
+3. **FOLLOW**: Golden Development Standards (Section 3)
+4. **VALIDATE**: Implementation Checklist (Section 9)
+
+### Architecture Compliance Rules
+- Every service must have its own database
+- No shared code between services
+- Events for all state changes
+- Soft deletes only (no hard deletes)
+- Error handling with proper typing
+- 95% test coverage for business logic
+
+### Service Locations
+As defined in SYSTEM_ARCHITECTURE.md:
+- **Employee Core Service**: `/services/employee-core/` (Port 3001)
+- **Social Engagement Service**: `/services/social-engagement/` (Port 3002)
+- **Recognition & Rewards Service**: `/services/recognition-rewards/` (Port 3003)
+- **HR Operations Service**: `/services/hr-operations/` (Port 3004)
+- **Communication Service**: `/services/communication/` (Port 3005)
+- **Onboarding Service**: `/services/onboarding/` (Port 3006)
+- **Analytics Service**: `/services/analytics/` (Port 3007)
+- **Marketplace Service**: `/services/marketplace/` (Port 3008)
