@@ -62,14 +62,21 @@ router.get('/:id', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, r
   try {
     const employeeId = parseInt(req.params.id);
     const organizationId = req.user?.organization_id;
+    const isCorporateAdmin = req.user?.role_type === 'corporate_admin';
 
-    if (!organizationId) {
+    // Corporate admins can access all employees
+    if (!isCorporateAdmin && !organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
     }
 
     const employee = await storage.getUserById(employeeId);
     
-    if (!employee || employee.organization_id !== organizationId) {
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    
+    // Check organization match only for non-corporate admins
+    if (!isCorporateAdmin && employee.organization_id !== organizationId) {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
@@ -79,7 +86,30 @@ router.get('/:id', verifyToken, verifyAdmin, async (req: AuthenticatedRequest, r
       employee_department: employee.department,
     });
 
-    res.json(employee);
+    // Return employee data with snake_case field naming as per replit.md
+    const responseData = {
+      id: employee.id,
+      username: employee.username,
+      name: employee.name,
+      surname: employee.surname,
+      email: employee.email,
+      phone_number: employee.phone_number,
+      job_title: employee.job_title,
+      department: employee.department,
+      location: employee.location,
+      manager_email: employee.manager_email,
+      sex: employee.sex,
+      nationality: employee.nationality,
+      birth_date: employee.birth_date,
+      hire_date: employee.hire_date,
+      status: employee.status,
+      avatar_url: employee.avatar_url,
+      responsibilities: employee.responsibilities,
+      about_me: employee.about_me,
+      cover_photo_url: employee.cover_photo_url,
+    };
+    
+    res.json(responseData);
 
   } catch (error: any) {
     const message = error?.message || 'unknown_error';

@@ -38,6 +38,10 @@ export class DatabaseStorage implements IStorage {
     return this.userStorage.getUser(id);
   }
 
+  async getUserById(id: number) {
+    return this.userStorage.getUser(id);
+  }
+
   async getUserByEmail(email: string) {
     return this.userStorage.getUserByEmail(email);
   }
@@ -52,6 +56,14 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(user: any) {
     return this.userStorage.createUser(user);
+  }
+
+  async updateUser(id: number, userData: any) {
+    return this.userStorage.updateUser(id, userData);
+  }
+
+  async deleteUser(id: number) {
+    return this.userStorage.deleteUser(id);
   }
 
   async getUserWithBalance(id: number) {
@@ -343,6 +355,18 @@ export class DatabaseStorage implements IStorage {
 
   async getUsersByOrganization(organizationId: number) {
     return this.userStorage.getUsersByOrganization(organizationId);
+  }
+
+  async getEmployeesWithFilters(organizationId: number, filters: any) {
+    return this.userStorage.getEmployeesWithFilters(organizationId, filters);
+  }
+
+  async searchEmployees(organizationId: number, query: string, filters?: any) {
+    return this.userStorage.searchEmployees(organizationId, query, filters);
+  }
+
+  async checkUserDependencies(userId: number) {
+    return this.userStorage.checkUserDependencies(userId);
   }
 
   // Social storage methods for channels and comments

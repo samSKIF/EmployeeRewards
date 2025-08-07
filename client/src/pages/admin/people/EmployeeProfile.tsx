@@ -44,18 +44,18 @@ interface Employee {
   name: string;
   surname?: string;
   email: string;
-  phoneNumber?: string;
-  jobTitle?: string;
+  phone_number?: string;
+  job_title?: string;
   department?: string;
   location?: string;
   status: string;
-  avatarUrl?: string;
-  hireDate?: string;
-  birthDate?: string;
-  managerId?: number;
+  avatar_url?: string;
+  hire_date?: string;
+  birth_date?: string;
+  manager_id?: number;
   manager_email?: string;
   responsibilities?: string;
-  aboutMe?: string;
+  about_me?: string;
   nationality?: string;
   sex?: string;
 }
@@ -64,16 +64,16 @@ interface UpdateEmployeeData {
   name: string;
   surname?: string;
   email: string;
-  phoneNumber?: string;
-  jobTitle?: string;
+  phone_number?: string;
+  job_title?: string;
   department?: string;
   location?: string;
   status: string;
-  hireDate?: string;
-  birthDate?: string;
+  hire_date?: string;
+  birth_date?: string;
   manager_email?: string;
   responsibilities?: string;
-  aboutMe?: string;
+  about_me?: string;
   nationality?: string;
   sex?: string;
 }
@@ -86,16 +86,16 @@ export default function EmployeeProfile() {
     name: '',
     surname: '',
     email: '',
-    phoneNumber: '',
-    jobTitle: '',
+    phone_number: '',
+    job_title: '',
     department: '',
     location: '',
     status: 'active',
-    hireDate: '',
-    birthDate: '',
+    hire_date: '',
+    birth_date: '',
     manager_email: '',
     responsibilities: '',
-    aboutMe: '',
+    about_me: '',
     nationality: '',
     sex: '',
   });
@@ -104,7 +104,7 @@ export default function EmployeeProfile() {
   const queryClient = useQueryClient();
 
   const { data: employee, isLoading } = useQuery<Employee>({
-    queryKey: [`/api/users/${employeeId}`],
+    queryKey: [`/api/admin/employees/${employeeId}`],
     enabled: !!employeeId,
   });
 
@@ -129,7 +129,7 @@ export default function EmployeeProfile() {
         description: 'Employee profile updated successfully',
       });
       setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${employeeId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/employees/${employeeId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
     },
     onError: (error: Error) => {
@@ -147,16 +147,16 @@ export default function EmployeeProfile() {
       name: employee.name || '',
       surname: employee.surname || '',
       email: employee.email || '',
-      phoneNumber: employee.phoneNumber || '',
-      jobTitle: employee.jobTitle || '',
+      phone_number: employee.phone_number || '',
+      job_title: employee.job_title || '',
       department: employee.department || '',
       location: employee.location || '',
       status: employee.status || 'active',
-      hireDate: employee.hireDate || '',
-      birthDate: employee.birthDate || '',
+      hire_date: employee.hire_date || '',
+      birth_date: employee.birth_date || '',
       manager_email: employee.manager_email || '',
       responsibilities: employee.responsibilities || '',
-      aboutMe: employee.aboutMe || '',
+      about_me: employee.about_me || '',
       nationality: employee.nationality || '',
       sex: employee.sex || '',
     });
@@ -178,16 +178,16 @@ export default function EmployeeProfile() {
         name: employee.name || '',
         surname: employee.surname || '',
         email: employee.email || '',
-        phoneNumber: employee.phoneNumber || '',
-        jobTitle: employee.jobTitle || '',
+        phone_number: employee.phone_number || '',
+        job_title: employee.job_title || '',
         department: employee.department || '',
         location: employee.location || '',
         status: employee.status || 'active',
-        hireDate: employee.hireDate || '',
-        birthDate: employee.birthDate || '',
+        hire_date: employee.hire_date || '',
+        birth_date: employee.birth_date || '',
         manager_email: employee.manager_email || '',
         responsibilities: employee.responsibilities || '',
-        aboutMe: employee.aboutMe || '',
+        about_me: employee.about_me || '',
         nationality: employee.nationality || '',
         sex: employee.sex || '',
       });
@@ -280,7 +280,7 @@ export default function EmployeeProfile() {
         <CardContent className="pt-6">
           <div className="flex items-start gap-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={employee.avatarUrl} />
+              <AvatarImage src={employee.avatar_url} />
               <AvatarFallback className="text-lg">
                 {employee.name.charAt(0)}
                 {employee.surname?.charAt(0)}
@@ -301,7 +301,7 @@ export default function EmployeeProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />
-                  {employee.jobTitle || 'No job title'}
+                  {employee.job_title || 'No job title'}
                 </div>
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4" />
@@ -313,8 +313,8 @@ export default function EmployeeProfile() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Hired: {employee.hireDate 
-                    ? formatDate(new Date(employee.hireDate), 'MMM dd, yyyy')
+                  Hired: {employee.hire_date 
+                    ? formatDate(new Date(employee.hire_date), 'MMM dd, yyyy')
                     : 'Not specified'
                   }
                 </div>
@@ -372,13 +372,13 @@ export default function EmployeeProfile() {
                     <Input
                       id="birthDate"
                       type="date"
-                      value={formData.birthDate}
-                      onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                      value={formData.birth_date}
+                      onChange={(e) => handleInputChange('birth_date', e.target.value)}
                     />
                   ) : (
                     <p className="text-sm">
-                      {employee.birthDate 
-                        ? formatDate(new Date(employee.birthDate), 'MMM dd, yyyy')
+                      {employee.birth_date 
+                        ? formatDate(new Date(employee.birth_date), 'MMM dd, yyyy')
                         : 'Not specified'
                       }
                     </p>
@@ -423,13 +423,13 @@ export default function EmployeeProfile() {
                 {isEditing ? (
                   <Textarea
                     id="aboutMe"
-                    value={formData.aboutMe}
-                    onChange={(e) => handleInputChange('aboutMe', e.target.value)}
+                    value={formData.about_me}
+                    onChange={(e) => handleInputChange('about_me', e.target.value)}
                     placeholder="Tell us about yourself..."
                     rows={3}
                   />
                 ) : (
-                  <p className="text-sm">{employee.aboutMe || 'No description provided'}</p>
+                  <p className="text-sm">{employee.about_me || 'No description provided'}</p>
                 )}
               </div>
             </CardContent>
@@ -451,11 +451,11 @@ export default function EmployeeProfile() {
                   {isEditing ? (
                     <Input
                       id="jobTitle"
-                      value={formData.jobTitle}
-                      onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                      value={formData.job_title}
+                      onChange={(e) => handleInputChange('job_title', e.target.value)}
                     />
                   ) : (
-                    <p className="text-sm">{employee.jobTitle || 'Not specified'}</p>
+                    <p className="text-sm">{employee.job_title || 'Not specified'}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -510,13 +510,13 @@ export default function EmployeeProfile() {
                     <Input
                       id="hireDate"
                       type="date"
-                      value={formData.hireDate}
-                      onChange={(e) => handleInputChange('hireDate', e.target.value)}
+                      value={formData.hire_date}
+                      onChange={(e) => handleInputChange('hire_date', e.target.value)}
                     />
                   ) : (
                     <p className="text-sm">
-                      {employee.hireDate 
-                        ? formatDate(new Date(employee.hireDate), 'MMM dd, yyyy')
+                      {employee.hire_date 
+                        ? formatDate(new Date(employee.hire_date), 'MMM dd, yyyy')
                         : 'Not specified'
                       }
                     </p>
@@ -614,11 +614,11 @@ export default function EmployeeProfile() {
                       <Input
                         id="phoneNumber"
                         type="tel"
-                        value={formData.phoneNumber}
-                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        value={formData.phone_number}
+                        onChange={(e) => handleInputChange('phone_number', e.target.value)}
                       />
                     ) : (
-                      <p className="text-sm">{employee.phoneNumber || 'Not provided'}</p>
+                      <p className="text-sm">{employee.phone_number || 'Not provided'}</p>
                     )}
                   </div>
                 </div>
