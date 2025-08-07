@@ -281,10 +281,6 @@ export default function EmployeeDirectory() {
         nationality: normalizedEmployee.nationality || '',
         sex: normalizedEmployee.sex ? normalizedEmployee.sex.toLowerCase() : '',
       };
-      console.log('EmployeeDirectory: Opening edit dialog for:', normalizedEmployee.name);
-      console.log('EmployeeDirectory: Original sex value:', normalizedEmployee.sex);
-      console.log('EmployeeDirectory: Normalized sex value:', normalizedEmployee.sex ? normalizedEmployee.sex.toLowerCase() : '');
-      console.log('EmployeeDirectory: Form data being set:', formDataToSet);
       setFormData(formDataToSet);
       setIsEditDialogOpen(true);
     } catch (error) {
@@ -965,11 +961,7 @@ export default function EmployeeDirectory() {
 
             <div className="space-y-2">
               <Label htmlFor="sex">Gender</Label>
-              <Select value={formData.sex || ''} onValueChange={(value) => {
-                console.log('EmployeeDirectory: Gender dropdown changed to:', value);
-                console.log('EmployeeDirectory: Gender dropdown current value:', formData.sex);
-                handleInputChange('sex', value);
-              }}>
+              <Select value={formData.sex || ''} onValueChange={(value) => handleInputChange('sex', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>

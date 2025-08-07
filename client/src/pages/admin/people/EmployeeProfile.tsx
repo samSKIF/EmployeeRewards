@@ -142,7 +142,6 @@ export default function EmployeeProfile() {
   // Initialize form data when employee data loads
   if (employee && !isEditing && formData.email !== employee.email) {
     const normalizedSex = employee.sex ? employee.sex.toLowerCase() : '';
-    console.log('Normalizing sex value:', employee.sex, '->', normalizedSex);
     setFormData({
       name: employee.name || '',
       surname: employee.surname || '',
@@ -390,10 +389,7 @@ export default function EmployeeProfile() {
                   {isEditing ? (
                     <Select
                       value={formData.sex}
-                      onValueChange={(value) => {
-                        console.log('Gender dropdown changed to:', value);
-                        handleInputChange('sex', value);
-                      }}
+                      onValueChange={(value) => handleInputChange('sex', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
