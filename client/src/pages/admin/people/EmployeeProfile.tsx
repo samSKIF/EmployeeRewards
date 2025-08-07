@@ -395,7 +395,6 @@ export default function EmployeeProfile() {
                         handleInputChange('sex', value);
                       }}
                     >
-                      {console.log('Gender dropdown current value:', formData.sex)}
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
