@@ -239,7 +239,11 @@ export default function EmployeeDirectory() {
   // Handle opening edit dialog
   const handleEditEmployee = (employee: Employee) => {
     try {
+      console.log('handleEditEmployee called with employee:', employee);
+      
       const normalizedEmployee = normalizeEmployee(employee);
+      console.log('normalizedEmployee:', normalizedEmployee);
+      
       setEditingEmployee(employee);
       
       // Robust location matching - handles case insensitivity, trimming, and fallbacks
@@ -281,10 +285,14 @@ export default function EmployeeDirectory() {
         nationality: normalizedEmployee.nationality || '',
         sex: normalizedEmployee.sex || '',
       };
+      console.log('formDataToSet:', formDataToSet);
+      
       setFormData(formDataToSet);
+      console.log('About to open edit dialog...');
       setIsEditDialogOpen(true);
     } catch (error) {
       console.error('Error opening edit dialog:', error);
+      console.error('Error details:', error.message, error.stack);
     }
   };
 
