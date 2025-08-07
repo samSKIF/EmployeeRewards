@@ -16,6 +16,7 @@ const requireAdmin = (req: AuthenticatedRequest, res: any, next: any) => {
 import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 import { employeeCoreProxy } from '../dual-write/employee-core-proxy';
 import { migrationPhaseManager } from '../dual-write/migration-phases';
+import { runMigrationSimulation } from '../dual-write/simulate-migration';
 import { logger } from '@shared/logger';
 import { eventBus } from '../../services/shared/event-bus';
 
@@ -313,6 +314,35 @@ router.post('/increase-percentage', verifyToken, requireAdmin, (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to increase write percentage'
+    });
+  }
+});
+
+// Run migration simulation (testing only)
+router.post('/simulate-migration', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    logger.info('[DualWrite] Starting migration simulation requested by admin:', (req as any).user?.id);
+    
+    const result = await runMigrationSimulation();
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Migration simulation completed successfully',
+        result
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Migration simulation failed',
+        error: result.error
+      });
+    }
+  } catch (error: any) {
+    logger.error('Error running migration simulation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to run migration simulation'
     });
   }
 });
