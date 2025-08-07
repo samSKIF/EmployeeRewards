@@ -24,6 +24,8 @@ import recognitionRoutes from './microservices/recognition';
 import { CacheService } from './cache/cacheService';
 import { employeeRoutes } from './features/employee-management';
 import { employeeEventHandlers } from './features/employee-management/events/employee.event-handlers';
+import { recognitionRoutes as newRecognitionRoutes } from './features/recognition-system';
+import { recognitionEventHandlers } from './features/recognition-system/events/recognition.event-handlers';
 import {
   users,
   insertUserSchema,
@@ -94,8 +96,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register employee management vertical slice
   app.use('/api/employees', employeeRoutes);
   
+  // Register recognition system vertical slice
+  app.use('/api/recognitions', newRecognitionRoutes);
+  
   // Initialize employee management event handlers
   employeeEventHandlers.initialize();
+  
+  // Initialize recognition system event handlers
+  recognitionEventHandlers.initialize();
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get(

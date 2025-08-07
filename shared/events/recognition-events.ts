@@ -1,176 +1,212 @@
-// Recognition System Domain Events
-// Defines all events related to recognition, rewards, and points
+// Recognition Domain Events
+// Handles all recognition lifecycle events and cross-cutting concerns
 
 import { z } from 'zod';
-import { TypedEvent } from './event-system';
+import { type TypedEvent } from './event-system';
 
-// Recognition data schema for events
-const recognitionDataSchema = z.object({
-  id: z.number(),
-  giver_id: z.number(),
-  recipient_id: z.number(),
-  badge_type: z.string(),
-  message: z.string(),
-  points: z.number(),
-  status: z.enum(['pending', 'approved', 'rejected']),
-  organization_id: z.number(),
-  created_at: z.date(),
-});
-
-const pointsTransactionSchema = z.object({
-  id: z.number(),
-  user_id: z.number(),
-  amount: z.number(),
-  type: z.enum(['earned', 'spent', 'adjusted']),
-  reference_type: z.string(),
-  reference_id: z.number(),
-  description: z.string(),
-});
-
-// Event schemas
-export const recognitionGivenSchema = z.object({
-  recognition: recognitionDataSchema,
-  pointsTransaction: pointsTransactionSchema,
-  requiresApproval: z.boolean(),
-  socialPostCreated: z.boolean().default(false),
-});
-
-export const recognitionApprovedSchema = z.object({
-  recognition: recognitionDataSchema,
-  approvedBy: z.number(),
-  approvalNotes: z.string().optional(),
-  pointsAwarded: z.boolean(),
-  socialPostVisible: z.boolean(),
-});
-
-export const recognitionRejectedSchema = z.object({
-  recognition: recognitionDataSchema,
-  rejectedBy: z.number(),
-  rejectionReason: z.string(),
-  pointsRefunded: z.boolean(),
-});
-
-export const pointsEarnedSchema = z.object({
-  transaction: pointsTransactionSchema,
-  newBalance: z.number(),
-  milestone: z.object({
-    reached: z.boolean(),
-    level: z.string().optional(),
-    badge: z.string().optional(),
-  }).optional(),
-});
-
-export const pointsSpentSchema = z.object({
-  transaction: pointsTransactionSchema,
-  newBalance: z.number(),
-  item: z.object({
+/**
+ * Recognition Created Event
+ * Triggered when a new recognition is created
+ */
+export const recognitionCreatedSchema = z.object({
+  recognition: z.object({
+    id: z.number(),
+    recognizerId: z.number(),
+    recipientId: z.number(),
+    badgeType: z.string(),
+    message: z.string(),
+    points: z.number(),
+    status: z.enum(['pending', 'approved', 'rejected']),
+    createdAt: z.date(),
+  }),
+  organization: z.object({
     id: z.number(),
     name: z.string(),
-    category: z.string(),
-    pointsCost: z.number(),
   }),
-  fulfillmentRequired: z.boolean(),
+  recognizer: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  recipient: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  createdBy: z.number(),
 });
 
-export const recognitionSettingsUpdatedSchema = z.object({
-  organizationId: z.number(),
-  updatedBy: z.number(),
-  previousSettings: z.record(z.any()),
-  newSettings: z.record(z.any()),
-  changedFields: z.array(z.string()),
-  affectsExistingRecognitions: z.boolean(),
+export type RecognitionCreatedEvent = TypedEvent<z.infer<typeof recognitionCreatedSchema>>;
+
+/**
+ * Recognition Approved Event
+ * Triggered when a recognition is approved and points are awarded
+ */
+export const recognitionApprovedSchema = z.object({
+  recognition: z.object({
+    id: z.number(),
+    recognizerId: z.number(),
+    recipientId: z.number(),
+    badgeType: z.string(),
+    points: z.number(),
+    approvedAt: z.date(),
+  }),
+  transaction: z.object({
+    id: z.number(),
+    userId: z.number(),
+    amount: z.number(),
+    type: z.enum(['earned', 'redeemed']),
+    reason: z.string(),
+    description: z.string(),
+  }),
+  approvedBy: z.number(),
+  previousBalance: z.number(),
+  newBalance: z.number(),
 });
 
-// Event types
-export type RecognitionGivenEvent = TypedEvent<z.infer<typeof recognitionGivenSchema>>;
 export type RecognitionApprovedEvent = TypedEvent<z.infer<typeof recognitionApprovedSchema>>;
+
+/**
+ * Recognition Points Awarded Event
+ * Triggered when points are awarded for any reason
+ */
+export const pointsAwardedSchema = z.object({
+  transaction: z.object({
+    id: z.number(),
+    userId: z.number(),
+    amount: z.number(),
+    type: z.enum(['earned', 'redeemed']),
+    reason: z.string(),
+    description: z.string(),
+    createdAt: z.date(),
+  }),
+  user: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  awardedBy: z.number(),
+  previousBalance: z.number(),
+  newBalance: z.number(),
+  context: z.object({
+    source: z.enum(['recognition', 'admin_award', 'bonus', 'achievement']),
+    sourceId: z.number().nullable(),
+  }),
+});
+
+export type PointsAwardedEvent = TypedEvent<z.infer<typeof pointsAwardedSchema>>;
+
+/**
+ * Recognition Rejected Event
+ * Triggered when a recognition is rejected
+ */
+export const recognitionRejectedSchema = z.object({
+  recognition: z.object({
+    id: z.number(),
+    recognizerId: z.number(),
+    recipientId: z.number(),
+    badgeType: z.string(),
+    message: z.string(),
+    rejectedAt: z.date(),
+  }),
+  rejectedBy: z.number(),
+  reason: z.string(),
+});
+
 export type RecognitionRejectedEvent = TypedEvent<z.infer<typeof recognitionRejectedSchema>>;
-export type PointsEarnedEvent = TypedEvent<z.infer<typeof pointsEarnedSchema>>;
-export type PointsSpentEvent = TypedEvent<z.infer<typeof pointsSpentSchema>>;
-export type RecognitionSettingsUpdatedEvent = TypedEvent<z.infer<typeof recognitionSettingsUpdatedSchema>>;
 
-// Event type constants
-export const RECOGNITION_EVENTS = {
-  GIVEN: 'recognition.given',
-  APPROVED: 'recognition.approved',
-  REJECTED: 'recognition.rejected',
-  POINTS_EARNED: 'points.earned',
-  POINTS_SPENT: 'points.spent',
-  SETTINGS_UPDATED: 'recognition.settings_updated',
-} as const;
+/**
+ * Manager Budget Updated Event
+ * Triggered when manager budgets are modified
+ */
+export const managerBudgetUpdatedSchema = z.object({
+  budget: z.object({
+    id: z.number(),
+    managerId: z.number(),
+    organizationId: z.number(),
+    totalPoints: z.number(),
+    remainingPoints: z.number(),
+    month: z.number(),
+    year: z.number(),
+  }),
+  manager: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  updatedBy: z.number(),
+  previousBudget: z.number().nullable(),
+  newBudget: z.number(),
+});
 
-// Event factory functions
-export const createRecognitionGivenEvent = (
-  data: z.infer<typeof recognitionGivenSchema>,
-  correlationId?: string,
+export type ManagerBudgetUpdatedEvent = TypedEvent<z.infer<typeof managerBudgetUpdatedSchema>>;
+
+/**
+ * Event Factory Functions
+ * Convenient functions to create properly typed events
+ */
+
+export const createRecognitionCreatedEvent = (
+  data: z.infer<typeof recognitionCreatedSchema>,
+  organizationId: number,
   metadata?: Record<string, any>
-): Omit<RecognitionGivenEvent, 'id' | 'timestamp'> => ({
-  type: RECOGNITION_EVENTS.GIVEN,
-  source: 'recognition-system',
-  version: '1.0',
-  correlationId,
-  userId: data.recognition.giver_id,
-  organizationId: data.recognition.organization_id,
+): Omit<RecognitionCreatedEvent, 'id' | 'timestamp'> => ({
+  type: 'recognition.created',
   data,
-  metadata,
+  organizationId,
+  source: 'recognition-system',
+  correlationId: `recognition-${data.recognition.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
 export const createRecognitionApprovedEvent = (
   data: z.infer<typeof recognitionApprovedSchema>,
-  correlationId?: string,
+  organizationId: number,
   metadata?: Record<string, any>
 ): Omit<RecognitionApprovedEvent, 'id' | 'timestamp'> => ({
-  type: RECOGNITION_EVENTS.APPROVED,
-  source: 'recognition-system',
-  version: '1.0',
-  correlationId,
-  userId: data.approvedBy,
-  organizationId: data.recognition.organization_id,
+  type: 'recognition.approved',
   data,
-  metadata,
+  organizationId,
+  source: 'recognition-system',
+  correlationId: `recognition-approved-${data.recognition.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
-export const createPointsEarnedEvent = (
-  data: z.infer<typeof pointsEarnedSchema>,
-  correlationId?: string,
+export const createPointsAwardedEvent = (
+  data: z.infer<typeof pointsAwardedSchema>,
+  organizationId: number,
   metadata?: Record<string, any>
-): Omit<PointsEarnedEvent, 'id' | 'timestamp'> => ({
-  type: RECOGNITION_EVENTS.POINTS_EARNED,
-  source: 'recognition-system',
-  version: '1.0',
-  correlationId,
-  userId: data.transaction.user_id,
-  organizationId: metadata?.organizationId,
+): Omit<PointsAwardedEvent, 'id' | 'timestamp'> => ({
+  type: 'points.awarded',
   data,
-  metadata,
+  organizationId,
+  source: 'recognition-system',
+  correlationId: `points-${data.transaction.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
-export const createPointsSpentEvent = (
-  data: z.infer<typeof pointsSpentSchema>,
-  correlationId?: string,
+export const createRecognitionRejectedEvent = (
+  data: z.infer<typeof recognitionRejectedSchema>,
+  organizationId: number,
   metadata?: Record<string, any>
-): Omit<PointsSpentEvent, 'id' | 'timestamp'> => ({
-  type: RECOGNITION_EVENTS.POINTS_SPENT,
-  source: 'recognition-system',
-  version: '1.0',
-  correlationId,
-  userId: data.transaction.user_id,
-  organizationId: metadata?.organizationId,
+): Omit<RecognitionRejectedEvent, 'id' | 'timestamp'> => ({
+  type: 'recognition.rejected',
   data,
-  metadata,
+  organizationId,
+  source: 'recognition-system',
+  correlationId: `recognition-rejected-${data.recognition.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
-export const createRecognitionSettingsUpdatedEvent = (
-  data: z.infer<typeof recognitionSettingsUpdatedSchema>,
-  correlationId?: string,
+export const createManagerBudgetUpdatedEvent = (
+  data: z.infer<typeof managerBudgetUpdatedSchema>,
+  organizationId: number,
   metadata?: Record<string, any>
-): Omit<RecognitionSettingsUpdatedEvent, 'id' | 'timestamp'> => ({
-  type: RECOGNITION_EVENTS.SETTINGS_UPDATED,
-  source: 'recognition-system',
-  version: '1.0',
-  correlationId,
-  userId: data.updatedBy,
-  organizationId: data.organizationId,
+): Omit<ManagerBudgetUpdatedEvent, 'id' | 'timestamp'> => ({
+  type: 'manager.budget_updated',
   data,
-  metadata,
+  organizationId,
+  source: 'recognition-system',
+  correlationId: `budget-${data.budget.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
