@@ -26,6 +26,8 @@ import { employeeRoutes } from './features/employee-management';
 import { employeeEventHandlers } from './features/employee-management/events/employee.event-handlers';
 import { recognitionRoutes as newRecognitionRoutes } from './features/recognition-system';
 import { recognitionEventHandlers } from './features/recognition-system/events/recognition.event-handlers';
+import socialRoutes from './features/social-system/api/social.routes';
+import { socialEventHandlers } from './features/social-system/events/social.handlers';
 import {
   users,
   insertUserSchema,
@@ -99,11 +101,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register recognition system vertical slice
   app.use('/api/recognitions', newRecognitionRoutes);
   
+  // Register social system vertical slice
+  app.use('/api/social', socialRoutes);
+  
   // Initialize employee management event handlers
   employeeEventHandlers.initialize();
   
   // Initialize recognition system event handlers
   recognitionEventHandlers.initialize();
+  
+  // Initialize social system event handlers
+  socialEventHandlers.initialize();
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get(

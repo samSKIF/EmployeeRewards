@@ -1,179 +1,318 @@
-// Social Features Domain Events
-// Defines all events related to social feed, posts, comments, and reactions
+// Social Domain Events
+// Handles all social feature lifecycle events and cross-cutting concerns
 
 import { z } from 'zod';
-import { TypedEvent } from './event-system';
+import { type TypedEvent } from './event-system';
 
-// Social data schemas for events
-const postDataSchema = z.object({
-  id: z.number(),
-  user_id: z.number(),
-  content: z.string().optional(),
-  image_url: z.string().url().optional(),
-  type: z.enum(['standard', 'recognition', 'announcement', 'celebration']),
-  tags: z.array(z.string()).optional(),
-  created_at: z.date(),
-});
-
-const commentDataSchema = z.object({
-  id: z.number(),
-  post_id: z.number(),
-  user_id: z.number(),
-  content: z.string(),
-  created_at: z.date(),
-});
-
-const reactionDataSchema = z.object({
-  id: z.number(),
-  post_id: z.number().optional(),
-  comment_id: z.number().optional(),
-  user_id: z.number(),
-  type: z.enum(['like', 'celebrate', 'insightful', 'love', 'funny']),
-  created_at: z.date(),
-});
-
-// Event schemas
+/**
+ * Post Created Event
+ * Triggered when a new social post is created
+ */
 export const postCreatedSchema = z.object({
-  post: postDataSchema,
-  mentionedUsers: z.array(z.number()).default([]),
-  hashtags: z.array(z.string()).default([]),
-  notificationsToSend: z.array(z.object({
-    userId: z.number(),
-    type: z.enum(['mention', 'announcement']),
-  })).default([]),
-});
-
-export const postUpdatedSchema = z.object({
-  post: postDataSchema,
-  previousContent: z.string().optional(),
-  updatedBy: z.number(),
-  updatedFields: z.array(z.string()),
-});
-
-export const postDeletedSchema = z.object({
-  postId: z.number(),
-  post: postDataSchema,
-  deletedBy: z.number(),
-  deletionReason: z.string().optional(),
-  commentsCount: z.number(),
-  reactionsCount: z.number(),
-});
-
-export const commentCreatedSchema = z.object({
-  comment: commentDataSchema,
-  post: postDataSchema,
-  mentionedUsers: z.array(z.number()).default([]),
-  notifyPostAuthor: z.boolean().default(true),
-});
-
-export const reactionAddedSchema = z.object({
-  reaction: reactionDataSchema,
-  targetType: z.enum(['post', 'comment']),
-  targetId: z.number(),
-  targetAuthorId: z.number(),
-  previousReaction: z.object({
-    type: z.string(),
+  post: z.object({
+    id: z.string(),
+    authorId: z.number(),
+    authorName: z.string(),
+    organizationId: z.number(),
+    content: z.string(),
+    type: z.enum(['text', 'image', 'poll', 'recognition', 'announcement']),
+    visibility: z.enum(['public', 'team', 'department']),
+    imageUrl: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    createdAt: z.date(),
+  }),
+  author: z.object({
     id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+    avatar: z.string().optional(),
+  }),
+  organization: z.object({
+    id: z.number(),
+    name: z.string(),
+  }),
+  // Poll-specific data
+  pollData: z.object({
+    options: z.array(z.string()),
+    expiresAt: z.date().optional(),
   }).optional(),
-  actionType: z.enum(['added', 'updated', 'removed']),
+  // Recognition-specific data
+  recognitionData: z.object({
+    recipientId: z.number(),
+    recipientName: z.string(),
+    points: z.number(),
+    badgeType: z.string(),
+  }).optional(),
 });
 
-export const socialMilestoneReachedSchema = z.object({
-  userId: z.number(),
-  milestone: z.object({
-    type: z.enum(['posts_count', 'reactions_received', 'comments_made', 'engagement_score']),
-    value: z.number(),
-    level: z.string(),
-    badge: z.string().optional(),
-    points_awarded: z.number().optional(),
-  }),
-  stats: z.object({
-    totalPosts: z.number(),
-    totalReactions: z.number(),
-    totalComments: z.number(),
-    engagementScore: z.number(),
-  }),
-});
-
-// Event types
 export type PostCreatedEvent = TypedEvent<z.infer<typeof postCreatedSchema>>;
-export type PostUpdatedEvent = TypedEvent<z.infer<typeof postUpdatedSchema>>;
-export type PostDeletedEvent = TypedEvent<z.infer<typeof postDeletedSchema>>;
-export type CommentCreatedEvent = TypedEvent<z.infer<typeof commentCreatedSchema>>;
+
+/**
+ * Comment Added Event
+ * Triggered when a comment is added to a post
+ */
+export const commentAddedSchema = z.object({
+  comment: z.object({
+    id: z.string(),
+    postId: z.string(),
+    authorId: z.number(),
+    authorName: z.string(),
+    organizationId: z.number(),
+    content: z.string(),
+    parentCommentId: z.string().optional(),
+    createdAt: z.date(),
+  }),
+  post: z.object({
+    id: z.string(),
+    authorId: z.number(),
+    authorName: z.string(),
+    type: z.enum(['text', 'image', 'poll', 'recognition', 'announcement']),
+  }),
+  author: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  mentions: z.array(z.object({
+    userId: z.number(),
+    userName: z.string(),
+  })).optional(),
+  isReply: z.boolean(),
+});
+
+export type CommentAddedEvent = TypedEvent<z.infer<typeof commentAddedSchema>>;
+
+/**
+ * Reaction Added Event
+ * Triggered when a reaction is added to a post or comment
+ */
+export const reactionAddedSchema = z.object({
+  reaction: z.object({
+    userId: z.number(),
+    userName: z.string(),
+    type: z.enum(['like', 'love', 'celebrate', 'support', 'insightful']),
+    createdAt: z.date(),
+  }),
+  target: z.object({
+    id: z.string(),
+    type: z.enum(['post', 'comment']),
+    authorId: z.number(),
+    authorName: z.string(),
+    organizationId: z.number(),
+  }),
+  reactor: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  previousReaction: z.string().optional(), // If user changed reaction
+});
+
 export type ReactionAddedEvent = TypedEvent<z.infer<typeof reactionAddedSchema>>;
-export type SocialMilestoneReachedEvent = TypedEvent<z.infer<typeof socialMilestoneReachedSchema>>;
 
-// Event type constants
-export const SOCIAL_EVENTS = {
-  POST_CREATED: 'social.post_created',
-  POST_UPDATED: 'social.post_updated',
-  POST_DELETED: 'social.post_deleted',
-  COMMENT_CREATED: 'social.comment_created',
-  REACTION_ADDED: 'social.reaction_added',
-  MILESTONE_REACHED: 'social.milestone_reached',
-} as const;
+/**
+ * Post Deleted Event
+ * Triggered when a post is deleted (soft delete)
+ */
+export const postDeletedSchema = z.object({
+  post: z.object({
+    id: z.string(),
+    authorId: z.number(),
+    authorName: z.string(),
+    organizationId: z.number(),
+    type: z.enum(['text', 'image', 'poll', 'recognition', 'announcement']),
+    commentsCount: z.number(),
+    reactionsCount: z.number(),
+    deletedAt: z.date(),
+  }),
+  deletedBy: z.object({
+    id: z.number(),
+    name: z.string(),
+    isAuthor: z.boolean(),
+  }),
+  reason: z.string().optional(),
+});
 
-// Event factory functions
+export type PostDeletedEvent = TypedEvent<z.infer<typeof postDeletedSchema>>;
+
+/**
+ * User Mentioned Event
+ * Triggered when a user is mentioned in a post or comment
+ */
+export const userMentionedSchema = z.object({
+  mention: z.object({
+    mentionedUserId: z.number(),
+    mentionedUserName: z.string(),
+    mentionedByUserId: z.number(),
+    mentionedByUserName: z.string(),
+    organizationId: z.number(),
+  }),
+  content: z.object({
+    id: z.string(),
+    type: z.enum(['post', 'comment']),
+    content: z.string(),
+    createdAt: z.date(),
+  }),
+  context: z.object({
+    postId: z.string(),
+    postAuthorId: z.number(),
+    commentId: z.string().optional(),
+  }),
+});
+
+export type UserMentionedEvent = TypedEvent<z.infer<typeof userMentionedSchema>>;
+
+/**
+ * Poll Vote Cast Event
+ * Triggered when a user votes on a poll
+ */
+export const pollVoteCastSchema = z.object({
+  vote: z.object({
+    userId: z.number(),
+    userName: z.string(),
+    option: z.string(),
+    previousOption: z.string().optional(),
+    votedAt: z.date(),
+  }),
+  poll: z.object({
+    postId: z.string(),
+    authorId: z.number(),
+    authorName: z.string(),
+    organizationId: z.number(),
+    question: z.string(),
+    options: z.array(z.string()),
+    expiresAt: z.date().optional(),
+  }),
+  voter: z.object({
+    id: z.number(),
+    name: z.string(),
+    department: z.string().nullable(),
+  }),
+  isFirstVote: z.boolean(),
+});
+
+export type PollVoteCastEvent = TypedEvent<z.infer<typeof pollVoteCastSchema>>;
+
+/**
+ * Social Engagement Milestone Event
+ * Triggered when engagement thresholds are reached
+ */
+export const engagementMilestoneSchema = z.object({
+  milestone: z.object({
+    type: z.enum(['post_viral', 'user_popular', 'high_engagement']),
+    threshold: z.number(),
+    actualValue: z.number(),
+    period: z.enum(['daily', 'weekly', 'monthly']),
+    achievedAt: z.date(),
+  }),
+  entity: z.object({
+    id: z.string(),
+    type: z.enum(['post', 'user', 'organization']),
+    name: z.string(),
+    organizationId: z.number(),
+  }),
+  metrics: z.object({
+    reactions: z.number(),
+    comments: z.number(),
+    shares: z.number(),
+    views: z.number(),
+  }),
+});
+
+export type EngagementMilestoneEvent = TypedEvent<z.infer<typeof engagementMilestoneSchema>>;
+
+/**
+ * Event Factory Functions
+ * Convenient functions to create properly typed events
+ */
+
 export const createPostCreatedEvent = (
   data: z.infer<typeof postCreatedSchema>,
   organizationId: number,
-  correlationId?: string,
   metadata?: Record<string, any>
 ): Omit<PostCreatedEvent, 'id' | 'timestamp'> => ({
-  type: SOCIAL_EVENTS.POST_CREATED,
-  source: 'social-features',
-  version: '1.0',
-  correlationId,
-  userId: data.post.user_id,
-  organizationId,
+  type: 'social.post_created',
   data,
-  metadata,
+  organizationId,
+  source: 'social-system',
+  correlationId: `post-${data.post.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
-export const createCommentCreatedEvent = (
-  data: z.infer<typeof commentCreatedSchema>,
+export const createCommentAddedEvent = (
+  data: z.infer<typeof commentAddedSchema>,
   organizationId: number,
-  correlationId?: string,
   metadata?: Record<string, any>
-): Omit<CommentCreatedEvent, 'id' | 'timestamp'> => ({
-  type: SOCIAL_EVENTS.COMMENT_CREATED,
-  source: 'social-features',
-  version: '1.0',
-  correlationId,
-  userId: data.comment.user_id,
-  organizationId,
+): Omit<CommentAddedEvent, 'id' | 'timestamp'> => ({
+  type: 'social.comment_added',
   data,
-  metadata,
+  organizationId,
+  source: 'social-system',
+  correlationId: `comment-${data.comment.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
 export const createReactionAddedEvent = (
   data: z.infer<typeof reactionAddedSchema>,
   organizationId: number,
-  correlationId?: string,
   metadata?: Record<string, any>
 ): Omit<ReactionAddedEvent, 'id' | 'timestamp'> => ({
-  type: SOCIAL_EVENTS.REACTION_ADDED,
-  source: 'social-features',
-  version: '1.0',
-  correlationId,
-  userId: data.reaction.user_id,
-  organizationId,
+  type: 'social.reaction_added',
   data,
-  metadata,
+  organizationId,
+  source: 'social-system',
+  correlationId: `reaction-${data.target.id}-${data.reaction.userId}-${Date.now()}`,
+  metadata: metadata || {},
 });
 
-export const createSocialMilestoneReachedEvent = (
-  data: z.infer<typeof socialMilestoneReachedSchema>,
+export const createPostDeletedEvent = (
+  data: z.infer<typeof postDeletedSchema>,
   organizationId: number,
-  correlationId?: string,
   metadata?: Record<string, any>
-): Omit<SocialMilestoneReachedEvent, 'id' | 'timestamp'> => ({
-  type: SOCIAL_EVENTS.MILESTONE_REACHED,
-  source: 'social-features',
-  version: '1.0',
-  correlationId,
-  userId: data.userId,
-  organizationId,
+): Omit<PostDeletedEvent, 'id' | 'timestamp'> => ({
+  type: 'social.post_deleted',
   data,
-  metadata,
+  organizationId,
+  source: 'social-system',
+  correlationId: `post-deleted-${data.post.id}-${Date.now()}`,
+  metadata: metadata || {},
+});
+
+export const createUserMentionedEvent = (
+  data: z.infer<typeof userMentionedSchema>,
+  organizationId: number,
+  metadata?: Record<string, any>
+): Omit<UserMentionedEvent, 'id' | 'timestamp'> => ({
+  type: 'social.user_mentioned',
+  data,
+  organizationId,
+  source: 'social-system',
+  correlationId: `mention-${data.mention.mentionedUserId}-${Date.now()}`,
+  metadata: metadata || {},
+});
+
+export const createPollVoteCastEvent = (
+  data: z.infer<typeof pollVoteCastSchema>,
+  organizationId: number,
+  metadata?: Record<string, any>
+): Omit<PollVoteCastEvent, 'id' | 'timestamp'> => ({
+  type: 'social.poll_vote_cast',
+  data,
+  organizationId,
+  source: 'social-system',
+  correlationId: `poll-vote-${data.poll.postId}-${data.vote.userId}-${Date.now()}`,
+  metadata: metadata || {},
+});
+
+export const createEngagementMilestoneEvent = (
+  data: z.infer<typeof engagementMilestoneSchema>,
+  organizationId: number,
+  metadata?: Record<string, any>
+): Omit<EngagementMilestoneEvent, 'id' | 'timestamp'> => ({
+  type: 'social.engagement_milestone',
+  data,
+  organizationId,
+  source: 'social-system',
+  correlationId: `milestone-${data.entity.type}-${data.entity.id}-${Date.now()}`,
+  metadata: metadata || {},
 });
