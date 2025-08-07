@@ -205,6 +205,45 @@ export class EmployeeCoreProxy {
     }
   }
 
+  public async getUsers(filters: {
+    organization_id: number;
+    limit?: number;
+    page?: number;
+    department?: string;
+    search?: string;
+  }): Promise<any[] | null> {
+    if (!this.config.enabled || !this.isHealthy) {
+      return null;
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters.organization_id) queryParams.set('organization_id', filters.organization_id.toString());
+      if (filters.limit) queryParams.set('limit', filters.limit.toString());
+      if (filters.page) queryParams.set('page', filters.page.toString());
+      if (filters.department) queryParams.set('department', filters.department);
+      if (filters.search) queryParams.set('search', filters.search);
+
+      const response = await fetch(`${this.config.baseUrl}/api/v1/employees?${queryParams}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(this.config.timeout!)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        logger.info(`[DualWrite] Retrieved ${data?.users?.length || 0} users from Employee Core`);
+        return data?.users || data || [];
+      } else {
+        logger.warn('[DualWrite] Failed to get users from Employee Core:', response.status);
+        return null;
+      }
+    } catch (error: any) {
+      logger.error('[DualWrite] Error getting users from Employee Core:', error.message);
+      return null;
+    }
+  }
+
   public getStatus(): { enabled: boolean; healthy: boolean; url: string } {
     return {
       enabled: this.config.enabled,

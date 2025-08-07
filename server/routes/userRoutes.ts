@@ -7,6 +7,7 @@ import { eq, desc, sql, and, gte } from 'drizzle-orm';
 import { logger } from '@shared/logger';
 import { CacheService } from '../cache/cacheService';
 import { hash } from 'bcrypt';
+import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 
 const router = Router();
 
@@ -230,10 +231,17 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
     logger.info(`Using subscription limit: ${subscriptionLimit}, offset: ${offset}`);
 
-    const users = await storage.getUsers(
+    const users = await dualWriteAdapter.handleUsersList(
       organizationId,
       subscriptionLimit, // Use subscription limit instead of hardcoded 50
-      parseInt(offset as string)
+      parseInt(offset as string),
+      async () => {
+        return await storage.getUsers(
+          organizationId,
+          subscriptionLimit,
+          parseInt(offset as string)
+        );
+      }
     );
 
     logger.info(

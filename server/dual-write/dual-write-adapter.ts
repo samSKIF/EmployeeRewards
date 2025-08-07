@@ -316,6 +316,44 @@ export class DualWriteAdapter {
   }
 
   /**
+   * Handle reading users list with dual-read pattern
+   */
+  public async handleUsersList(
+    organizationId: number,
+    limit?: number,
+    offset?: number,
+    legacyReadFn: () => Promise<any[]>
+  ): Promise<any[]> {
+    try {
+      // If migration is complete (Phase 8), read from Employee Core
+      if (this.config.readFromNewService) {
+        this.metrics.newServiceReads++;
+        try {
+          const users = await employeeCoreProxy.getUsers({ 
+            organization_id: organizationId,
+            limit,
+            page: Math.floor((offset || 0) / (limit || 50)) + 1
+          });
+          logger.info(`[DualWrite] Read ${users?.length || 0} users from Employee Core`);
+          return users || [];
+        } catch (error: any) {
+          logger.error('[DualWrite] Failed to read from Employee Core, falling back to legacy:', error.message);
+          // Fall back to legacy on error
+        }
+      }
+      
+      // Default to legacy service
+      this.metrics.legacyReads++;
+      const users = await legacyReadFn();
+      logger.info(`[DualWrite] Read ${users.length} users from legacy storage`);
+      return users;
+    } catch (error: any) {
+      logger.error('[DualWrite] Error reading users:', error.message);
+      return [];
+    }
+  }
+
+  /**
    * Determine if a write should go to the new service based on percentage
    */
   private shouldWriteToNewService(): boolean {
