@@ -8,7 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
-import { Activity, AlertCircle, CheckCircle, Database, Settings, TrendingUp } from 'lucide-react';
+import { 
+  Activity, AlertCircle, CheckCircle, Database, Settings, TrendingUp, 
+  ChevronRight, RotateCcw, Clock, Target, RefreshCw 
+} from 'lucide-react';
 
 interface DualWriteStatus {
   config: {
@@ -42,29 +45,65 @@ interface MigrationProgress {
   serviceHealthy: boolean;
 }
 
+interface MigrationPhase {
+  id: number;
+  name: string;
+  description: string;
+  config: {
+    enableDualWrite: boolean;
+    writePercentage: number;
+    syncMode: 'async' | 'sync';
+    readFromNewService: boolean;
+  };
+  successCriteria: {
+    minSuccessRate: number;
+    minOperations: number;
+    stabilityHours: number;
+  };
+  status: 'pending' | 'active' | 'completed' | 'failed';
+  metrics?: {
+    successRate: number;
+    totalOperations: number;
+    failedOperations: number;
+  };
+}
+
+interface PhaseStatus {
+  phases: MigrationPhase[];
+  currentPhase: MigrationPhase;
+  overallProgress: number;
+  timeInCurrentPhase: number;
+  estimatedCompletion?: string;
+}
+
 export default function DualWriteMonitor() {
   const [status, setStatus] = useState<DualWriteStatus | null>(null);
   const [progress, setProgress] = useState<MigrationProgress | null>(null);
+  const [phaseStatus, setPhaseStatus] = useState<PhaseStatus | null>(null);
+  const [progressionCheck, setProgressionCheck] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const { toast } = useToast();
 
   const fetchStatus = async () => {
     try {
-      const [statusRes, progressRes] = await Promise.all([
-        fetch('/api/dual-write/status', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('/api/dual-write/migration-progress', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
+      const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+      const [statusRes, progressRes, phasesRes, checkRes] = await Promise.all([
+        fetch('/api/dual-write/status', { headers }),
+        fetch('/api/dual-write/migration-progress', { headers }),
+        fetch('/api/dual-write/phases', { headers }),
+        fetch('/api/dual-write/phases/check-progression', { headers })
       ]);
 
-      if (statusRes.ok && progressRes.ok) {
+      if (statusRes.ok && progressRes.ok && phasesRes.ok && checkRes.ok) {
         const statusData = await statusRes.json();
         const progressData = await progressRes.json();
+        const phasesData = await phasesRes.json();
+        const checkData = await checkRes.json();
         setStatus(statusData.status);
         setProgress(progressData.progress);
+        setPhaseStatus(phasesData);
+        setProgressionCheck(checkData);
       }
     } catch (error) {
       console.error('Error fetching dual-write status:', error);
@@ -84,6 +123,79 @@ export default function DualWriteMonitor() {
     return () => clearInterval(interval);
   }, []);
 
+  const progressPhase = async (force: boolean = false) => {
+    setUpdating(true);
+    try {
+      const response = await fetch('/api/dual-write/phases/progress', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ force })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        await fetchStatus();
+        toast({
+          title: 'Phase Progressed',
+          description: data.message
+        });
+      } else {
+        toast({
+          title: 'Cannot Progress',
+          description: data.message,
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to progress phase',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const rollbackPhase = async () => {
+    setUpdating(true);
+    try {
+      const response = await fetch('/api/dual-write/phases/rollback', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        await fetchStatus();
+        toast({
+          title: 'Phase Rolled Back',
+          description: data.message
+        });
+      } else {
+        toast({
+          title: 'Cannot Rollback',
+          description: data.message,
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to rollback phase',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const toggleDualWrite = async () => {
     setUpdating(true);
     try {
@@ -99,7 +211,7 @@ export default function DualWriteMonitor() {
         await fetchStatus();
         toast({
           title: 'Success',
-          description: `Dual-write ${status?.config.enableDualWrite ? 'disabled' : 'enabled'}`
+          description: 'Dual-write configuration updated'
         });
       }
     } catch (error) {
@@ -143,7 +255,7 @@ export default function DualWriteMonitor() {
     }
   };
 
-  const updateSyncMode = async (syncMode: 'async' | 'sync') => {
+  const updateSyncMode = async (mode: 'async' | 'sync') => {
     setUpdating(true);
     try {
       const response = await fetch('/api/dual-write/config', {
@@ -152,14 +264,14 @@ export default function DualWriteMonitor() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ syncMode })
+        body: JSON.stringify({ syncMode: mode })
       });
 
       if (response.ok) {
         await fetchStatus();
         toast({
           title: 'Success',
-          description: `Sync mode updated to ${syncMode}`
+          description: `Sync mode updated to ${mode}`
         });
       }
     } catch (error) {
@@ -174,26 +286,170 @@ export default function DualWriteMonitor() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading migration status...</div>;
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   const successRate = progress ? parseFloat(progress.successRate) : 0;
 
   return (
-    <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dual-Write Migration Monitor</h1>
-        <p className="text-gray-600 mt-2">
-          Monitor and control the gradual migration to Employee Core microservice
-        </p>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Dual-Write Migration Monitor</h1>
+          <p className="text-muted-foreground mt-2">
+            Monitor and control the gradual migration to Employee Core service
+          </p>
+        </div>
+        <Button onClick={fetchStatus} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
-      {/* Service Health Status */}
+      {/* Migration Phases Timeline */}
+      {phaseStatus && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Migration Phases
+            </CardTitle>
+            <CardDescription>
+              Overall Progress: {phaseStatus.overallProgress.toFixed(1)}%
+              {phaseStatus.estimatedCompletion && (
+                <span className="ml-2">
+                  • Estimated completion: {new Date(phaseStatus.estimatedCompletion).toLocaleDateString()}
+                </span>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Progress value={phaseStatus.overallProgress} className="mb-4" />
+            
+            <div className="space-y-3">
+              {phaseStatus.phases.map((phase) => (
+                <div
+                  key={phase.id}
+                  className={`p-3 rounded-lg border ${
+                    phase.status === 'active' ? 'border-primary bg-primary/5' :
+                    phase.status === 'completed' ? 'border-green-500 bg-green-50' :
+                    phase.status === 'failed' ? 'border-red-500 bg-red-50' :
+                    'border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {phase.status === 'completed' && <CheckCircle className="h-5 w-5 text-green-500" />}
+                      {phase.status === 'active' && <Activity className="h-5 w-5 text-primary animate-pulse" />}
+                      {phase.status === 'failed' && <AlertCircle className="h-5 w-5 text-red-500" />}
+                      {phase.status === 'pending' && <Clock className="h-5 w-5 text-gray-400" />}
+                      
+                      <div>
+                        <div className="font-medium">
+                          Phase {phase.id}: {phase.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {phase.description}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <Badge variant={
+                        phase.status === 'active' ? 'default' :
+                        phase.status === 'completed' ? 'secondary' :
+                        'outline'
+                      }>
+                        {phase.config.writePercentage}% • {phase.config.syncMode}
+                      </Badge>
+                      {phase.metrics && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Success: {phase.metrics.successRate.toFixed(1)}% ({phase.metrics.totalOperations} ops)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {phase.status === 'active' && (
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="text-sm space-y-1">
+                        <div>✓ Min Success Rate: {phase.successCriteria.minSuccessRate}%</div>
+                        <div>✓ Min Operations: {phase.successCriteria.minOperations}</div>
+                        <div>✓ Stability Period: {phase.successCriteria.stabilityHours} hours</div>
+                        <div className="font-medium mt-2">
+                          Time in phase: {phaseStatus.timeInCurrentPhase.toFixed(1)} hours
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Phase Control Buttons */}
+            {progressionCheck && phaseStatus.currentPhase.status === 'active' && (
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="font-medium">Phase Progression</div>
+                    <div className="text-sm text-muted-foreground">
+                      {progressionCheck.canProgress ? (
+                        <span className="text-green-600">✓ Ready to progress</span>
+                      ) : (
+                        <span>{progressionCheck.reason}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => rollbackPhase()}
+                      variant="outline"
+                      size="sm"
+                      disabled={updating || phaseStatus.currentPhase.id === 1}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      Rollback
+                    </Button>
+                    <Button
+                      onClick={() => progressPhase(false)}
+                      size="sm"
+                      disabled={updating || !progressionCheck.canProgress}
+                    >
+                      <ChevronRight className="h-4 w-4 mr-1" />
+                      Progress to Next
+                    </Button>
+                    {!progressionCheck.canProgress && (
+                      <Button
+                        onClick={() => progressPhase(true)}
+                        variant="destructive"
+                        size="sm"
+                        disabled={updating}
+                      >
+                        Force Progress
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Service Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Service Health
+            Service Status
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -210,13 +466,6 @@ export default function DualWriteMonitor() {
                 URL: {status?.serviceStatus.url}
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => fetchStatus()}
-              disabled={updating}
-            >
-              Refresh Status
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -226,11 +475,8 @@ export default function DualWriteMonitor() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Migration Progress
+            Current Metrics
           </CardTitle>
-          <CardDescription>
-            Track the success rate and progress of the dual-write migration
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -261,40 +507,21 @@ export default function DualWriteMonitor() {
               <div className="text-sm text-gray-600">Total Operations</div>
             </div>
           </div>
-
-          {successRate < 90 && progress?.totalOperations > 0 && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Success rate is below 90%. Investigate failures before increasing write percentage.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {successRate >= 99 && status?.config.writePercentage === 100 && (
-            <Alert>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription>
-                All writes are successfully going to Employee Core. Consider enabling read from new service.
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
 
-      {/* Configuration Controls */}
+      {/* Manual Configuration Controls */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Migration Controls
+            Manual Controls
           </CardTitle>
           <CardDescription>
-            Control the dual-write pattern configuration
+            Override phase configuration manually if needed
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Enable/Disable Dual-Write */}
           <div className="flex items-center justify-between">
             <Label htmlFor="dual-write-toggle" className="flex flex-col">
               <span>Enable Dual-Write</span>
@@ -310,7 +537,6 @@ export default function DualWriteMonitor() {
             />
           </div>
 
-          {/* Write Percentage Slider */}
           <div className="space-y-2">
             <Label className="flex justify-between">
               <span>Write Percentage</span>
@@ -324,12 +550,8 @@ export default function DualWriteMonitor() {
               disabled={updating || !status?.config.enableDualWrite}
               className="w-full"
             />
-            <p className="text-sm text-gray-600">
-              Percentage of write operations sent to Employee Core service
-            </p>
           </div>
 
-          {/* Sync Mode */}
           <div className="space-y-2">
             <Label>Sync Mode</Label>
             <div className="flex gap-4">
@@ -349,57 +571,6 @@ export default function DualWriteMonitor() {
               >
                 Sync
               </Button>
-            </div>
-            <p className="text-sm text-gray-600">
-              {status?.config.syncMode === 'async' 
-                ? 'Writes to new service happen in background (faster)'
-                : 'Writes to new service happen synchronously (safer)'}
-            </p>
-          </div>
-
-          {/* Read from New Service */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="read-toggle" className="flex flex-col">
-              <span>Read from New Service</span>
-              <span className="text-sm text-gray-600 font-normal">
-                Start reading data from Employee Core (Phase 4)
-              </span>
-            </Label>
-            <Switch
-              id="read-toggle"
-              checked={status?.config.readFromNewService || false}
-              disabled={true} // Will be enabled in Phase 4
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Migration Phases Guide */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Migration Phases</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className={`p-3 rounded ${status?.config.enableDualWrite ? 'bg-green-50' : 'bg-gray-50'}`}>
-              <div className="font-semibold">Phase 1: Enable Dual-Write (10%)</div>
-              <div className="text-sm text-gray-600">Start with 10% async writes to test the system</div>
-            </div>
-            <div className={`p-3 rounded ${status?.config.writePercentage >= 50 ? 'bg-green-50' : 'bg-gray-50'}`}>
-              <div className="font-semibold">Phase 2: Increase Write Percentage</div>
-              <div className="text-sm text-gray-600">Gradually increase to 100% while monitoring success rate</div>
-            </div>
-            <div className={`p-3 rounded ${status?.config.syncMode === 'sync' ? 'bg-green-50' : 'bg-gray-50'}`}>
-              <div className="font-semibold">Phase 3: Synchronous Writes</div>
-              <div className="text-sm text-gray-600">Switch to sync mode for data consistency</div>
-            </div>
-            <div className={`p-3 rounded ${status?.config.readFromNewService ? 'bg-green-50' : 'bg-gray-50'}`}>
-              <div className="font-semibold">Phase 4: Read from New Service</div>
-              <div className="text-sm text-gray-600">Start reading from Employee Core</div>
-            </div>
-            <div className="p-3 rounded bg-gray-50">
-              <div className="font-semibold">Phase 5: Complete Migration</div>
-              <div className="text-sm text-gray-600">Remove dual-write code, Employee Core becomes primary</div>
             </div>
           </div>
         </CardContent>

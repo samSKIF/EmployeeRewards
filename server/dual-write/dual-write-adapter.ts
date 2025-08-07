@@ -7,6 +7,8 @@
 import { logger } from '@shared/logger';
 import { employeeCoreProxy } from './employee-core-proxy';
 import { eventBus } from '../../services/shared/event-bus';
+import { migrationPhaseManager } from './migration-phases';
+import { migrationAlertManager } from './migration-alerts';
 
 export interface DualWriteConfig {
   enableDualWrite: boolean;
@@ -26,14 +28,17 @@ export class DualWriteAdapter {
   };
 
   constructor(config?: Partial<DualWriteConfig>) {
+    // Initialize with phase configuration if not provided
+    const currentPhase = migrationPhaseManager.getCurrentPhase();
     this.config = {
-      enableDualWrite: config?.enableDualWrite ?? false,
-      readFromNewService: config?.readFromNewService ?? false,
-      writePercentage: config?.writePercentage ?? 0,
-      syncMode: config?.syncMode ?? 'async'
+      enableDualWrite: config?.enableDualWrite ?? currentPhase.config.enableDualWrite,
+      readFromNewService: config?.readFromNewService ?? currentPhase.config.readFromNewService,
+      writePercentage: config?.writePercentage ?? currentPhase.config.writePercentage,
+      syncMode: config?.syncMode ?? currentPhase.config.syncMode
     };
 
     logger.info('[DualWrite] Adapter initialized with config:', this.config);
+    logger.info('[DualWrite] Current migration phase:', currentPhase.name);
     this.startMetricsReporting();
   }
 
@@ -53,6 +58,20 @@ export class DualWriteAdapter {
           source: 'dual-write-adapter',
           data: this.metrics
         });
+
+        // Check if we should progress to next phase
+        const progression = migrationPhaseManager.checkPhaseProgression(this.metrics);
+        if (progression.shouldProgress) {
+          logger.info('[DualWrite] Ready for phase progression:', progression.reason);
+          eventBus.publish({
+            type: 'migration.ready_for_progression',
+            source: 'dual-write-adapter',
+            data: { reason: progression.reason, metrics: this.metrics }
+          });
+        }
+
+        // Check for alerts
+        migrationAlertManager.checkMetrics(this.metrics);
       }
     }, 300000); // 5 minutes
   }
@@ -82,6 +101,7 @@ export class DualWriteAdapter {
           } else {
             logger.warn('[DualWrite] Login succeeded in legacy but failed in new service');
             this.metrics.failedDualWrites++;
+            migrationAlertManager.recordFailure();
           }
         } else {
           // Fire and forget for async mode
@@ -90,10 +110,12 @@ export class DualWriteAdapter {
               this.metrics.successfulDualWrites++;
             } else {
               this.metrics.failedDualWrites++;
+              migrationAlertManager.recordFailure();
             }
           }).catch(error => {
             logger.error('[DualWrite] Async login error:', error);
             this.metrics.failedDualWrites++;
+            migrationAlertManager.recordFailure();
           });
         }
 
@@ -322,19 +344,30 @@ export class DualWriteAdapter {
   /**
    * Get current configuration and metrics
    */
-  public getStatus(): { config: DualWriteConfig; metrics: typeof this.metrics; serviceStatus: any } {
+  public getStatus(): { config: DualWriteConfig; metrics: typeof this.metrics; serviceStatus: any; migrationPhase: any } {
     return {
       config: this.config,
       metrics: this.metrics,
-      serviceStatus: employeeCoreProxy.getStatus()
+      serviceStatus: employeeCoreProxy.getStatus(),
+      migrationPhase: migrationPhaseManager.getPhaseStatus()
     };
+  }
+
+  /**
+   * Apply phase configuration
+   */
+  public applyPhaseConfig(phaseConfig: Partial<DualWriteConfig>): void {
+    this.config = { ...this.config, ...phaseConfig };
+    logger.info('[DualWrite] Applied phase configuration:', this.config);
   }
 }
 
-// Singleton instance
-export const dualWriteAdapter = new DualWriteAdapter({
+// Singleton instance - initialized with current phase config if env vars not set
+const envConfig = process.env.ENABLE_DUAL_WRITE ? {
   enableDualWrite: process.env.ENABLE_DUAL_WRITE === 'true',
   readFromNewService: process.env.READ_FROM_NEW_SERVICE === 'true',
   writePercentage: parseInt(process.env.DUAL_WRITE_PERCENTAGE || '0'),
   syncMode: (process.env.DUAL_WRITE_MODE || 'async') as 'async' | 'sync'
-});
+} : undefined;
+
+export const dualWriteAdapter = new DualWriteAdapter(envConfig);

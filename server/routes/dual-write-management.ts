@@ -15,6 +15,7 @@ const requireAdmin = (req: AuthenticatedRequest, res: any, next: any) => {
 };
 import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 import { employeeCoreProxy } from '../dual-write/employee-core-proxy';
+import { migrationPhaseManager } from '../dual-write/migration-phases';
 import { logger } from '@shared/logger';
 import { eventBus } from '../../services/shared/event-bus';
 
@@ -127,6 +128,104 @@ router.get('/test-connection', verifyToken, requireAdmin, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to test connection'
+    });
+  }
+});
+
+// Get migration phases
+router.get('/phases', verifyToken, requireAdmin, (req, res) => {
+  try {
+    const phases = migrationPhaseManager.getAllPhases();
+    const status = migrationPhaseManager.getPhaseStatus();
+    
+    res.json({
+      success: true,
+      phases,
+      currentPhase: status.currentPhase,
+      overallProgress: status.progress,
+      timeInCurrentPhase: status.timeInPhase,
+      estimatedCompletion: status.estimatedCompletion
+    });
+  } catch (error: any) {
+    logger.error('Error getting migration phases:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get migration phases'
+    });
+  }
+});
+
+// Progress to next phase
+router.post('/phases/progress', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { force = false } = req.body;
+    const result = await migrationPhaseManager.progressToNextPhase(force);
+    
+    if (result.success && result.newPhase) {
+      // Apply the new phase configuration
+      dualWriteAdapter.applyPhaseConfig(result.newPhase.config);
+      
+      logger.info('[DualWrite] Phase progression:', {
+        adminId: (req as any).user?.id,
+        newPhase: result.newPhase.name,
+        forced: force
+      });
+    }
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error('Error progressing phase:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to progress phase'
+    });
+  }
+});
+
+// Rollback to previous phase
+router.post('/phases/rollback', verifyToken, requireAdmin, (req, res) => {
+  try {
+    const result = migrationPhaseManager.rollbackPhase();
+    
+    if (result.success) {
+      const currentPhase = migrationPhaseManager.getCurrentPhase();
+      dualWriteAdapter.applyPhaseConfig(currentPhase.config);
+      
+      logger.warn('[DualWrite] Phase rollback:', {
+        adminId: (req as any).user?.id,
+        newPhase: currentPhase.name
+      });
+    }
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error('Error rolling back phase:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to rollback phase'
+    });
+  }
+});
+
+// Check phase progression readiness
+router.get('/phases/check-progression', verifyToken, requireAdmin, (req, res) => {
+  try {
+    const status = dualWriteAdapter.getStatus();
+    const check = migrationPhaseManager.checkPhaseProgression(status.metrics);
+    const phaseStatus = migrationPhaseManager.getPhaseStatus();
+    
+    res.json({
+      success: true,
+      canProgress: check.shouldProgress,
+      reason: check.reason,
+      currentPhase: phaseStatus.currentPhase,
+      metrics: status.metrics
+    });
+  } catch (error: any) {
+    logger.error('Error checking phase progression:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check phase progression'
     });
   }
 });
