@@ -369,6 +369,23 @@ export class DatabaseStorage implements IStorage {
     return this.userStorage.checkUserDependencies(userId);
   }
 
+  // Organization hierarchy methods
+  async getOrganizationHierarchy(organizationId: number) {
+    return this.userStorage.getOrganizationHierarchy(organizationId);
+  }
+
+  async getUserHierarchy(userId: number) {
+    return this.userStorage.getUserHierarchy(userId);
+  }
+
+  async getManagerChain(userId: number) {
+    return this.userStorage.getManagerChain(userId);
+  }
+
+  async getReportingTree(userId: number, maxDepth?: number) {
+    return this.userStorage.getReportingTree(userId, maxDepth);
+  }
+
   // Social storage methods for channels and comments
   async getTrendingChannels() {
     return this.socialStorage.getTrendingChannels();

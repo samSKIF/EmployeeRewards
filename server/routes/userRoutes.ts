@@ -659,10 +659,10 @@ router.get('/org-chart/hierarchy', verifyToken, async (req: AuthenticatedRequest
     // Get all users in the organization with their hierarchy info
     const orgUsers = await storage.getOrganizationHierarchy(organizationId);
     
-    // Build the hierarchical tree structure
-    const buildHierarchy = (users: any[], managerId: number | null = null): any[] => {
+    // Build the hierarchical tree structure based on manager_email
+    const buildHierarchy = (users: any[], managerEmail: string | null = null): any[] => {
       return users
-        .filter(user => user.manager_id === managerId)
+        .filter(user => user.manager_email === managerEmail)
         .map(user => ({
           id: user.id,
           name: user.name,
@@ -671,7 +671,7 @@ router.get('/org-chart/hierarchy', verifyToken, async (req: AuthenticatedRequest
           jobTitle: user.job_title,
           department: user.department,
           avatarUrl: user.avatar_url,
-          children: buildHierarchy(users, user.id)
+          children: buildHierarchy(users, user.email)
         }));
     };
 

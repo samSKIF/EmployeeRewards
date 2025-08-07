@@ -388,37 +388,37 @@ export class UserStorage implements IUserStorage {
         throw new Error('User not found');
       }
 
-      // Get the manager (N+1)
+      // Get the manager (N+1) - person whose email is in my manager_email field
       let manager: User | null = null;
-      if (currentUser.manager_id) {
-        manager = await this.getUser(currentUser.manager_id) || null;
+      if (currentUser.manager_email) {
+        manager = await this.getUserByEmail(currentUser.manager_email) || null;
       }
 
-      // Get skip-level manager (N+2)
+      // Get skip-level manager (N+2) - my manager's manager
       let skipManager: User | null = null;
-      if (manager?.manager_id) {
-        skipManager = await this.getUser(manager.manager_id) || null;
+      if (manager?.manager_email) {
+        skipManager = await this.getUserByEmail(manager.manager_email) || null;
       }
 
-      // Get direct reports (N-1)
+      // Get direct reports (N-1) - people who have my email in their manager_email field
       const directReports = await db
         .select()
         .from(users)
         .where(
           and(
-            eq(users.manager_id, userId),
+            eq(users.manager_email, currentUser.email),
             currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
           )
         );
 
-      // Get indirect reports (N-2) - reports of direct reports
+      // Get indirect reports (N-2) - people who report to my direct reports
       const indirectReportPromises = directReports.map(async (report) => {
         return await db
           .select()
           .from(users)
           .where(
             and(
-              eq(users.manager_id, report.id),
+              eq(users.manager_email, report.email),
               currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
             )
           );
@@ -426,15 +426,15 @@ export class UserStorage implements IUserStorage {
       const indirectReportArrays = await Promise.all(indirectReportPromises);
       const indirectReports = indirectReportArrays.flat();
 
-      // Get peers (same manager, excluding self)
+      // Get peers - people with the same manager_email as me (excluding self)
       let peers: User[] = [];
-      if (currentUser.manager_id) {
+      if (currentUser.manager_email) {
         const allPeers = await db
           .select()
           .from(users)
           .where(
             and(
-              eq(users.manager_id, currentUser.manager_id),
+              eq(users.manager_email, currentUser.manager_email),
               currentUser.organization_id ? eq(users.organization_id, currentUser.organization_id) : undefined
             )
           );
@@ -464,9 +464,9 @@ export class UserStorage implements IUserStorage {
         return [];
       }
 
-      // Walk up the hierarchy
-      while (currentUser?.manager_id) {
-        const manager = await this.getUser(currentUser.manager_id);
+      // Walk up the hierarchy using manager_email
+      while (currentUser?.manager_email) {
+        const manager = await this.getUserByEmail(currentUser.manager_email);
         if (manager) {
           chain.push(manager);
           currentUser = manager;
@@ -494,13 +494,13 @@ export class UserStorage implements IUserStorage {
           return null;
         }
 
-        // Get direct reports
+        // Get direct reports - people who have this user's email as their manager_email
         const directReports = await db
           .select()
           .from(users)
           .where(
             and(
-              eq(users.manager_id, id),
+              eq(users.manager_email, user.email),
               user.organization_id ? eq(users.organization_id, user.organization_id) : undefined
             )
           );
