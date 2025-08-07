@@ -46,10 +46,17 @@ router.get('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     // Get the user's balance
     const balance = await storage.getUserBalance(req.user.id);
 
-    // Combine fresh user data with balance, ensuring isAdmin is explicitly set
+    // Combine fresh user data with balance, ensuring field mapping for frontend
     const userWithBalance = {
       ...freshUser,
       isAdmin: freshUser.is_admin === true, // Ensure boolean false for non-admins
+      avatarUrl: freshUser.avatar_url, // Map snake_case to camelCase for frontend
+      coverPhotoUrl: freshUser.cover_photo_url, // Map snake_case to camelCase
+      jobTitle: freshUser.job_title,
+      phoneNumber: freshUser.phone_number,
+      birthDate: freshUser.birth_date,
+      hireDate: freshUser.hire_date,
+      aboutMe: freshUser.about_me,
       balance,
     };
 
@@ -104,9 +111,16 @@ router.patch('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     // Get the user's balance
     const balance = await storage.getUserBalance(req.user.id);
 
-    // Combine user data with balance
+    // Combine user data with balance and proper field mapping
     const userWithBalance = {
       ...updatedUser,
+      avatarUrl: updatedUser.avatar_url, // Map snake_case to camelCase
+      coverPhotoUrl: updatedUser.cover_photo_url,
+      jobTitle: updatedUser.job_title,
+      phoneNumber: updatedUser.phone_number,
+      birthDate: updatedUser.birth_date,
+      hireDate: updatedUser.hire_date,
+      aboutMe: updatedUser.about_me,
       balance,
     };
 
@@ -142,7 +156,16 @@ router.post('/avatar', verifyToken, async (req: AuthenticatedRequest, res) => {
 
       res.json({
         message: 'Avatar updated successfully',
-        user: updatedUser,
+        user: {
+          ...updatedUser,
+          avatarUrl: updatedUser.avatar_url, // Map snake_case to camelCase for frontend
+          jobTitle: updatedUser.job_title,
+          phoneNumber: updatedUser.phone_number,
+          birthDate: updatedUser.birth_date,
+          hireDate: updatedUser.hire_date,
+          aboutMe: updatedUser.about_me,
+          coverPhotoUrl: updatedUser.cover_photo_url,
+        },
       });
     } catch (dbError) {
       logger.error('Database error updating avatar:', dbError);
@@ -150,7 +173,7 @@ router.post('/avatar', verifyToken, async (req: AuthenticatedRequest, res) => {
       // Fallback: If database update fails, still return the user with updated avatar
       const updatedUser = {
         ...req.user,
-        avatarUrl,
+        avatarUrl: avatarUrl,
       };
 
       res.json({
@@ -191,7 +214,16 @@ router.post(
 
       res.json({
         message: 'Cover photo updated successfully',
-        user: updatedUser,
+        user: {
+          ...updatedUser,
+          coverPhotoUrl: updatedUser.cover_photo_url, // Map snake_case to camelCase for frontend
+          avatarUrl: updatedUser.avatar_url,
+          jobTitle: updatedUser.job_title,
+          phoneNumber: updatedUser.phone_number,
+          birthDate: updatedUser.birth_date,
+          hireDate: updatedUser.hire_date,
+          aboutMe: updatedUser.about_me,
+        },
       });
     } catch (error: any) {
       logger.error('Error updating user cover photo:', error);
