@@ -141,6 +141,8 @@ export default function EmployeeProfile() {
 
   // Initialize form data when employee data loads
   if (employee && !isEditing && formData.email !== employee.email) {
+    const normalizedSex = employee.sex ? employee.sex.toLowerCase() : '';
+    console.log('Normalizing sex value:', employee.sex, '->', normalizedSex);
     setFormData({
       name: employee.name || '',
       surname: employee.surname || '',
@@ -156,7 +158,7 @@ export default function EmployeeProfile() {
       responsibilities: employee.responsibilities || '',
       about_me: employee.about_me || '',
       nationality: employee.nationality || '',
-      sex: employee.sex ? employee.sex.toLowerCase() : '',
+      sex: normalizedSex,
     });
   }
 
@@ -172,6 +174,7 @@ export default function EmployeeProfile() {
     setIsEditing(false);
     // Reset form data to original employee data
     if (employee) {
+      const normalizedSex = employee.sex ? employee.sex.toLowerCase() : '';
       setFormData({
         name: employee.name || '',
         surname: employee.surname || '',
@@ -187,7 +190,7 @@ export default function EmployeeProfile() {
         responsibilities: employee.responsibilities || '',
         about_me: employee.about_me || '',
         nationality: employee.nationality || '',
-        sex: employee.sex ? employee.sex.toLowerCase() : '',
+        sex: normalizedSex,
       });
     }
   };
@@ -387,8 +390,12 @@ export default function EmployeeProfile() {
                   {isEditing ? (
                     <Select
                       value={formData.sex}
-                      onValueChange={(value) => handleInputChange('sex', value)}
+                      onValueChange={(value) => {
+                        console.log('Gender dropdown changed to:', value);
+                        handleInputChange('sex', value);
+                      }}
                     >
+                      {console.log('Gender dropdown current value:', formData.sex)}
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -397,6 +404,7 @@ export default function EmployeeProfile() {
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
