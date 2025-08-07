@@ -53,6 +53,7 @@ import CorporateLoginPage from '@/pages/corporate-login';
 import DepartmentManagement from '@/pages/admin/settings/DepartmentManagement';
 import LocationManagement from '@/pages/admin/settings/LocationManagement';
 import MassUpload from '@/pages/admin/people/MassUpload';
+import DualWriteMonitor from '@/pages/admin/DualWriteMonitor';
 
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -351,6 +352,11 @@ function App() {
                   <Route path="/admin/onboarding">
                     <SocialLayout>
                       <OnboardingPage />
+                    </SocialLayout>
+                  </Route>
+                  <Route path="/admin/dual-write-monitor">
+                    <SocialLayout>
+                      <DualWriteMonitor />
                     </SocialLayout>
                   </Route>
                   <Route path="/hr-config">
