@@ -232,7 +232,7 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     logger.info(`Using subscription limit: ${subscriptionLimit}, offset: ${offset}`);
 
     const users = await dualWriteAdapter.handleUsersList(
-      organizationId,
+      organizationId!,
       subscriptionLimit, // Use subscription limit instead of hardcoded 50
       parseInt(offset as string),
       async () => {
@@ -436,7 +436,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       .where(
         and(
           eq(users.email, email),
-          eq(users.organization_id, req.user.organization_id)
+          eq(users.organization_id, req.user.organization_id!)
         )
       );
 
