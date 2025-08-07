@@ -33,7 +33,7 @@ import {
   insertFileTemplateSchema,
   FileTemplate,
   organizations,
-  organizationFeatures,
+  organization_features,
   sellers,
   productCategories,
   orderItems,
@@ -243,12 +243,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { subscriptions, organizations } = await import('@shared/schema');
         const [orgData] = await db
           .select({
-            subscribedUsers: subscriptions.subscribedUsers,
+            subscribedUsers: subscriptions.subscribed_users,
           })
           .from(organizations)
           .leftJoin(
             subscriptions,
-            eq(organizations.currentSubscriptionId, subscriptions.id)
+            eq(organizations.current_subscription_id, subscriptions.id)
           )
           .where(eq(organizations.id, organizationId));
 
