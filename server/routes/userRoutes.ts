@@ -87,7 +87,7 @@ router.patch('/me', verifyToken, async (req: AuthenticatedRequest, res) => {
     if (location !== undefined) updateData.location = location;
     if (responsibilities !== undefined)
       updateData.responsibilities = responsibilities;
-    if (aboutMe !== undefined) updateData.aboutMe = aboutMe;
+    if (aboutMe !== undefined) updateData.about_me = aboutMe;
     if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl;
 
     // Update user in database
@@ -136,7 +136,7 @@ router.post('/avatar', verifyToken, async (req: AuthenticatedRequest, res) => {
       // Update the user record in the database
       const [updatedUser] = await db
         .update(users)
-        .set({ avatarUrl })
+        .set({ avatar_url: avatarUrl })
         .where(eq(users.id, req.user.id))
         .returning();
 
@@ -185,7 +185,7 @@ router.post(
       // Update user with the cover photo URL in the database
       const [updatedUser] = await db
         .update(users)
-        .set({ coverPhotoUrl })
+        .set({ cover_photo_url: coverPhotoUrl })
         .where(eq(users.id, req.user.id))
         .returning();
 
@@ -218,7 +218,7 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       .from(subscriptions)
       .where(
         and(
-          eq(subscriptions.organization_id, organizationId),
+          eq(subscriptions.organization_id, organizationId!),
           eq(subscriptions.is_active, true),
           gte(subscriptions.expiration_date, new Date())
         )
@@ -227,7 +227,7 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     
     const subscriptionLimit = subscriptionData[0]?.subscribed_users || 1000; // Default fallback
 
-    const userCount = await storage.getUserCount(organizationId);
+    const userCount = await storage.getUserCount();
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
     logger.info(`Using subscription limit: ${subscriptionLimit}, offset: ${offset}`);
 
@@ -237,7 +237,7 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       parseInt(offset as string),
       async () => {
         return await storage.getUsers(
-          organizationId,
+          organizationId!,
           subscriptionLimit,
           parseInt(offset as string)
         );
@@ -357,7 +357,7 @@ router.post(
           .where(
             and(
               eq(users.email, email),
-              eq(users.organization_id, req.user.organization_id)
+              eq(users.organization_id, req.user.organization_id!)
             )
           );
         emailExists = existingEmail.length > 0;
@@ -372,7 +372,7 @@ router.post(
             and(
               eq(users.name, name),
               eq(users.surname, surname),
-              eq(users.organization_id, req.user.organization_id)
+              eq(users.organization_id, req.user.organization_id!)
             )
           );
         nameExists = existingName.length > 0;
@@ -475,26 +475,26 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
         password: hashedPassword,
         name,
         surname,
-        phoneNumber,
-        jobTitle,
+        phone_number: phoneNumber,
+        job_title: jobTitle,
         department,
         location,
         manager_email,
         sex,
         nationality,
-        birthDate: birthDate ? new Date(birthDate) : null,
-        hireDate: hireDate ? new Date(hireDate) : null,
-        isAdmin,
+        birth_date: birthDate ? new Date(birthDate) : null,
+        hire_date: hireDate ? new Date(hireDate) : null,
+        is_admin: isAdmin,
         status,
-        avatarUrl:
+        avatar_url:
           avatarUrl ||
           `https://api.dicebear.com/7.x/identicon/png?seed=${finalUsername}&backgroundColor=random&size=150`,
-        adminScope,
-        allowedSites: JSON.stringify(allowedSites),
-        allowedDepartments: JSON.stringify(allowedDepartments),
-        organizationId: req.user.organization_id,
-        createdBy: req.user.id,
-        createdAt: new Date(),
+        admin_scope: adminScope,
+        allowed_sites: allowedSites,
+        allowed_departments: allowedDepartments,
+        organization_id: req.user.organization_id!,
+        created_by: req.user.id,
+        created_at: new Date(),
       })
       .returning();
 
@@ -650,7 +650,7 @@ router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
       location: targetUser.location,
       avatarUrl: targetUser.avatar_url,
       responsibilities: targetUser.responsibilities,
-      aboutMe: targetUser.aboutMe,
+      aboutMe: targetUser.about_me,
       birthDate: targetUser.birth_date,
       hireDate: targetUser.hire_date,
       phoneNumber: targetUser.phone_number,

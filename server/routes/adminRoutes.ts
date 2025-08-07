@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt, { hash } from 'bcrypt';
 import {
   verifyToken,
   verifyAdmin,
@@ -805,16 +805,16 @@ router.get(
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      // Import organizationFeatures from shared schema
-      const { organizationFeatures } = await import('@shared/schema');
+      // Import organization_features from shared schema
+      const { organization_features } = await import('@shared/schema');
       const { db } = await import('../db');
       const { eq } = await import('drizzle-orm');
 
       // Get all features for this organization
       const features = await db
         .select()
-        .from(organizationFeatures)
-        .where(eq(organizationFeatures.organization_id, req.user.organization_id));
+        .from(organization_features)
+        .where(eq(organization_features.organization_id, req.user.organization_id));
 
       // If no features exist, create default ones
       if (features.length === 0) {
