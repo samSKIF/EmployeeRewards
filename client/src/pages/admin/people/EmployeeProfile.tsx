@@ -118,7 +118,7 @@ export default function EmployeeProfile() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: UpdateEmployeeData) => {
-      return await apiRequest(`/api/admin/users/${employeeId}`, {
+      return await apiRequest(`/api/admin/employees/${employeeId}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       });
