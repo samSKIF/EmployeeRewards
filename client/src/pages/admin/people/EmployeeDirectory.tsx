@@ -961,15 +961,16 @@ export default function EmployeeDirectory() {
 
             <div className="space-y-2">
               <Label htmlFor="sex">Gender</Label>
-              <Select value={formData.sex || 'prefer_not_to_say'} onValueChange={(value) => handleInputChange('sex', value)}>
+              <Select value={formData.sex || ''} onValueChange={(value) => handleInputChange('sex', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  <SelectItem value="">Not specified</SelectItem>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                 </SelectContent>
               </Select>
             </div>
