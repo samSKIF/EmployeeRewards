@@ -98,6 +98,7 @@
     "firebase-admin": "^13.3.0",
     "framer-motion": "^11.13.1",
     "fuzzball": "^2.2.2",
+    "http-proxy-middleware": "^3.0.5",
     "i18next": "^25.2.0",
     "i18next-browser-languagedetector": "^8.1.0",
     "input-otp": "^1.4.2",
