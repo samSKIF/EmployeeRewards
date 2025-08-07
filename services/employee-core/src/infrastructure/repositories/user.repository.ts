@@ -137,8 +137,8 @@ export class UserRepository {
           or(
             like(users.username, `%${filters.search}%`),
             like(users.email, `%${filters.search}%`),
-            like(users.first_name, `%${filters.search}%`),
-            like(users.last_name, `%${filters.search}%`)
+            like(users.name, `%${filters.search}%`),
+            like(users.surname, `%${filters.search}%`)
           )!
         );
       }

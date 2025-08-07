@@ -12,8 +12,9 @@ export const users = pgTable('users', {
   username: varchar('username', { length: 100 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
-  first_name: varchar('first_name', { length: 100 }),
-  last_name: varchar('last_name', { length: 100 }),
+  name: varchar('name', { length: 100 }),
+  surname: varchar('surname', { length: 100 }),
+  sex: varchar('sex', { length: 10 }),
   avatar_url: text('avatar_url'),
   phone: varchar('phone', { length: 20 }),
   
