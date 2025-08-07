@@ -17,6 +17,7 @@ import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 import { employeeCoreProxy } from '../dual-write/employee-core-proxy';
 import { migrationPhaseManager } from '../dual-write/migration-phases';
 import { runMigrationSimulation } from '../dual-write/simulate-migration';
+import { runComprehensiveTest } from '../dual-write/comprehensive-test';
 import { logger } from '@shared/logger';
 import { eventBus } from '../../services/shared/event-bus';
 
@@ -375,5 +376,41 @@ function generateMigrationRecommendation(successRate: number, status: any): stri
   
   return `Current success rate: ${successRate.toFixed(1)}%. Monitor for stability before making changes.`;
 }
+
+// Run comprehensive test with 5000 operations
+router.post('/test/comprehensive', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    logger.info('Starting comprehensive test initiated by admin:', (req.user as any)?.id);
+    
+    const config = req.body || {};
+    const testConfig = {
+      totalOperations: config.totalOperations ?? 5000,
+      batchSize: config.batchSize ?? 100,
+      delayBetweenBatches: config.delayBetweenBatches ?? 50,
+      includeFailureSimulation: config.includeFailureSimulation ?? true,
+      failureRate: config.failureRate ?? 2
+    };
+    
+    logger.info('Comprehensive test configuration:', testConfig);
+    
+    // Run the test
+    const result = await runComprehensiveTest(testConfig);
+    
+    res.json({
+      success: true,
+      message: 'Comprehensive test completed',
+      result,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error: any) {
+    logger.error('Error running comprehensive test:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to run comprehensive test',
+      error: error.message
+    });
+  }
+});
 
 export default router;
