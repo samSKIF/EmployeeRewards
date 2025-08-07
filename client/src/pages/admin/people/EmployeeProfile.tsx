@@ -108,11 +108,6 @@ export default function EmployeeProfile() {
     enabled: !!employeeId,
   });
 
-  // Debug logging when employee data changes
-  if (employee) {
-    console.log('Employee API response:', employee);
-    console.log('Employee sex field:', employee?.sex);
-  }
 
   const { data: departments = [] } = useQuery<string[]>({
     queryKey: ['/api/users/departments'],
@@ -146,8 +141,6 @@ export default function EmployeeProfile() {
 
   // Initialize form data when employee data loads
   if (employee && !isEditing && formData.email !== employee.email) {
-    console.log('Initializing form data with employee:', employee);
-    console.log('Setting sex to:', employee.sex);
     setFormData({
       name: employee.name || '',
       surname: employee.surname || '',
@@ -163,9 +156,8 @@ export default function EmployeeProfile() {
       responsibilities: employee.responsibilities || '',
       about_me: employee.about_me || '',
       nationality: employee.nationality || '',
-      sex: employee.sex || '',
+      sex: employee.sex ? employee.sex.toLowerCase() : '',
     });
-    console.log('Form data after initialization:', { sex: employee.sex || '' });
   }
 
   const handleInputChange = (field: keyof UpdateEmployeeData, value: string) => {
@@ -195,7 +187,7 @@ export default function EmployeeProfile() {
         responsibilities: employee.responsibilities || '',
         about_me: employee.about_me || '',
         nationality: employee.nationality || '',
-        sex: employee.sex || '',
+        sex: employee.sex ? employee.sex.toLowerCase() : '',
       });
     }
   };
@@ -397,7 +389,6 @@ export default function EmployeeProfile() {
                       value={formData.sex}
                       onValueChange={(value) => handleInputChange('sex', value)}
                     >
-                      {console.log('Gender dropdown value:', formData.sex)}
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -409,7 +400,7 @@ export default function EmployeeProfile() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-sm">{employee.sex || 'Not specified'}</p>
+                    <p className="text-sm">{employee.sex ? employee.sex.charAt(0).toUpperCase() + employee.sex.slice(1).toLowerCase() : 'Not specified'}</p>
                   )}
                 </div>
                 <div className="space-y-2">
