@@ -2102,5 +2102,175 @@ export type InsertInterestChannelJoinRequest = z.infer<
   typeof insertInterestChannelJoinRequestSchema
 >;
 
+// Feature Flags System for Gradual Decoupling
+export const feature_flags = pgTable('feature_flags', {
+  id: serial('id').primaryKey(),
+  flag_key: text('flag_key').notNull().unique(), // 'api_gateway_routing', 'employee_adapter_layer'
+  name: text('name').notNull(), // Human-readable name
+  description: text('description').notNull(),
+  category: text('category').notNull(), // 'architecture', 'feature', 'experiment'
+  flag_type: text('flag_type').notNull().default('boolean'), // 'boolean', 'string', 'number'
+  default_value: text('default_value').notNull().default('false'),
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_by: integer('created_by').references(() => users.id),
+});
+
+// Organization-level feature flag rollout configuration
+export const organization_feature_flags = pgTable('organization_feature_flags', {
+  id: serial('id').primaryKey(),
+  organization_id: integer('organization_id')
+    .references(() => organizations.id, { onDelete: 'cascade' })
+    .notNull(),
+  flag_key: text('flag_key')
+    .references(() => feature_flags.flag_key, { onDelete: 'cascade' })
+    .notNull(),
+  is_enabled: boolean('is_enabled').default(false).notNull(),
+  rollout_percentage: integer('rollout_percentage').default(0).notNull(), // 0-100
+  rollout_strategy: text('rollout_strategy').default('percentage').notNull(), // 'percentage', 'whitelist', 'all'
+  rollout_config: jsonb('rollout_config'), // Additional configuration like user_ids for whitelist
+  environment: text('environment').default('production').notNull(), // 'development', 'staging', 'production'
+  enabled_at: timestamp('enabled_at'),
+  enabled_by: integer('enabled_by').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// User-level feature flag overrides
+export const user_feature_flag_overrides = pgTable('user_feature_flag_overrides', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  flag_key: text('flag_key')
+    .references(() => feature_flags.flag_key, { onDelete: 'cascade' })
+    .notNull(),
+  override_value: text('override_value').notNull(), // 'true', 'false', or custom value
+  reason: text('reason'), // Why this override was set
+  expires_at: timestamp('expires_at'), // Optional expiration
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  created_by: integer('created_by').references(() => users.id),
+});
+
+// Feature flag evaluation logs for analytics and debugging
+export const feature_flag_evaluations = pgTable('feature_flag_evaluations', {
+  id: serial('id').primaryKey(),
+  flag_key: text('flag_key')
+    .references(() => feature_flags.flag_key, { onDelete: 'cascade' })
+    .notNull(),
+  user_id: integer('user_id').references(() => users.id),
+  organization_id: integer('organization_id').references(() => organizations.id),
+  evaluated_value: text('evaluated_value').notNull(),
+  evaluation_reason: text('evaluation_reason').notNull(), // 'default', 'rollout', 'override'
+  request_context: jsonb('request_context'), // Additional context like IP, user agent, etc.
+  created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Feature flag relations
+export const feature_flags_relations = relations(feature_flags, ({ many }) => ({
+  organization_flags: many(organization_feature_flags),
+  user_overrides: many(user_feature_flag_overrides),
+  evaluations: many(feature_flag_evaluations),
+}));
+
+export const organization_feature_flags_relations = relations(
+  organization_feature_flags,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [organization_feature_flags.organization_id],
+      references: [organizations.id],
+    }),
+    flag: one(feature_flags, {
+      fields: [organization_feature_flags.flag_key],
+      references: [feature_flags.flag_key],
+    }),
+    enabled_by_user: one(users, {
+      fields: [organization_feature_flags.enabled_by],
+      references: [users.id],
+    }),
+  })
+);
+
+export const user_feature_flag_overrides_relations = relations(
+  user_feature_flag_overrides,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [user_feature_flag_overrides.user_id],
+      references: [users.id],
+    }),
+    flag: one(feature_flags, {
+      fields: [user_feature_flag_overrides.flag_key],
+      references: [feature_flags.flag_key],
+    }),
+    created_by_user: one(users, {
+      fields: [user_feature_flag_overrides.created_by],
+      references: [users.id],
+    }),
+  })
+);
+
+export const feature_flag_evaluations_relations = relations(
+  feature_flag_evaluations,
+  ({ one }) => ({
+    flag: one(feature_flags, {
+      fields: [feature_flag_evaluations.flag_key],
+      references: [feature_flags.flag_key],
+    }),
+    user: one(users, {
+      fields: [feature_flag_evaluations.user_id],
+      references: [users.id],
+    }),
+    organization: one(organizations, {
+      fields: [feature_flag_evaluations.organization_id],
+      references: [organizations.id],
+    }),
+  })
+);
+
+// Feature flag types and schemas
+export type FeatureFlag = typeof feature_flags.$inferSelect;
+export const insertFeatureFlagSchema = createInsertSchema(feature_flags).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
+
+export type OrganizationFeatureFlag = typeof organization_feature_flags.$inferSelect;
+export const insertOrganizationFeatureFlagSchema = createInsertSchema(
+  organization_feature_flags
+).omit({
+  id: true,
+  enabled_at: true,
+  created_at: true,
+  updated_at: true,
+});
+export type InsertOrganizationFeatureFlag = z.infer<
+  typeof insertOrganizationFeatureFlagSchema
+>;
+
+export type UserFeatureFlagOverride = typeof user_feature_flag_overrides.$inferSelect;
+export const insertUserFeatureFlagOverrideSchema = createInsertSchema(
+  user_feature_flag_overrides
+).omit({
+  id: true,
+  created_at: true,
+});
+export type InsertUserFeatureFlagOverride = z.infer<
+  typeof insertUserFeatureFlagOverrideSchema
+>;
+
+export type FeatureFlagEvaluation = typeof feature_flag_evaluations.$inferSelect;
+export const insertFeatureFlagEvaluationSchema = createInsertSchema(
+  feature_flag_evaluations
+).omit({
+  id: true,
+  created_at: true,
+});
+export type InsertFeatureFlagEvaluation = z.infer<
+  typeof insertFeatureFlagEvaluationSchema
+>;
+
 // Export Onboarding Schema
 export * from './onboarding';

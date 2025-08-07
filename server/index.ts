@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from 'express';
 import { registerRoutes } from './routes';
+import { initializeApiGateway } from './gateway/api-gateway.init';
 import managementRoutes from './management-routes';
 import { setupVite, serveStatic, log } from './vite';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
@@ -99,6 +100,9 @@ app.use((req, res, next) => {
       console.log('Client disconnected:', socket.id);
     });
   });
+
+  // Initialize API Gateway for standardized routing (parallel deployment)
+  await initializeApiGateway(app);
 
   // Add management routes for SaaS backend
   app.use('/api/management', managementRoutes);

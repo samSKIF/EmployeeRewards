@@ -18,6 +18,7 @@ import featuredPostsRoutes from './featuredPostsRoutes';
 import prioritiesRoutes from './prioritiesRoutes';
 import postsRoutes from './postsRoutes';
 import subscriptionRoutes from './subscriptionRoutes';
+import featureFlagsRoutes from './feature-flags';
 import { logger } from '@shared/logger';
 
 // Import microservices
@@ -85,6 +86,15 @@ export function registerRoutes(app: Express) {
 
   // Subscription management routes
   app.use('/api/admin/subscription', subscriptionRoutes);
+
+  // Feature flags management routes (admin functionality)
+  app.use('/api/feature-flags', featureFlagsRoutes);
+
+  // Adapter Demo Routes (for testing and demonstration)
+  if (process.env.NODE_ENV === 'development') {
+    const adapterDemoRoutes = require('../gateway/adapter-demo-routes').default;
+    app.use('/api/v2/demo', adapterDemoRoutes);
+  }
 
   // Mount microservices with prefixes to avoid conflicts
   app.use('/api/recognition', recognitionMicroservice);
