@@ -2,7 +2,7 @@
 // Event schemas and factory functions for leave management lifecycle
 
 import { z } from 'zod';
-import { createBaseEvent, type BaseEvent } from './base';
+import { eventSystem } from './event-system';
 
 // Leave Type Events
 export const leaveTypeCreatedSchema = z.object({

@@ -10,7 +10,7 @@ import {
   leavePolicies,
   holidays,
   users,
-} from '../../../shared/schema';
+} from '@shared/schema';
 import type {
   LeaveType,
   LeaveRequest,

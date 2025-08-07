@@ -30,6 +30,8 @@ import socialRoutes from './features/social-system/api/social.routes';
 import { socialEventHandlers } from './features/social-system/events/social.handlers';
 import { leaveRoutes } from './features/leave-management';
 import { initializeLeaveEventHandlers } from './features/leave-management/events/leave.event-handlers';
+import { surveyRoutes } from './features/survey-system';
+import { initializeSurveyEventHandlers } from './features/survey-system/events/survey.event-handlers';
 import {
   users,
   insertUserSchema,
@@ -108,6 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register leave management vertical slice
   app.use('/api/leave', leaveRoutes);
+  app.use('/api/survey', surveyRoutes);
   
   // Initialize employee management event handlers
   employeeEventHandlers.initialize();
@@ -120,6 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Initialize leave management event handlers
   initializeLeaveEventHandlers();
+  initializeSurveyEventHandlers();
 
   // Legacy interests routes for employees (preserving existing functionality)
   app.get(

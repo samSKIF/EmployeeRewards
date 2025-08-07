@@ -8,6 +8,8 @@ export * from './event-system';
 export * from './employee-events';
 export * from './recognition-events';
 export * from './social-events';
+export * from './leave-events';
+export * from './survey-events';
 
 // Re-export key instances and functions
 export { eventSystem, subscribe, publish, unsubscribe } from './event-system';
