@@ -677,6 +677,8 @@ router.get('/org-chart/hierarchy', verifyToken, async (req: AuthenticatedRequest
 
     const hierarchy = buildHierarchy(orgUsers);
     
+    logger.debug(`Org hierarchy for org ${organizationId}: ${orgUsers.length} users, ${hierarchy.length} root nodes`);
+    
     res.json({
       success: true,
       data: hierarchy,
@@ -703,6 +705,14 @@ router.get('/org-chart/relationships/:userId?', verifyToken, async (req: Authent
 
     // Get hierarchical relationships
     const hierarchy = await storage.getUserHierarchy(userId);
+    
+    logger.debug(`User hierarchy for user ${userId}:`, {
+      hasManager: !!hierarchy.manager,
+      hasSkipManager: !!hierarchy.skipManager,
+      directReportsCount: hierarchy.directReports.length,
+      indirectReportsCount: hierarchy.indirectReports.length,
+      peersCount: hierarchy.peers.length
+    });
     
     // Format response with camelCase for frontend
     const response = {
@@ -788,6 +798,11 @@ router.get('/org-chart/reporting-tree/:userId?', verifyToken, async (req: Authen
     }
 
     const tree = await storage.getReportingTree(userId, maxDepth);
+    
+    logger.debug(`Reporting tree for user ${userId} with max depth ${maxDepth}:`, {
+      hasTree: !!tree,
+      userId
+    });
     
     res.json({
       success: true,
