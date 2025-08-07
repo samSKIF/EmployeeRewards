@@ -17,6 +17,7 @@ import {
 import { eq, sql, and, desc, count } from 'drizzle-orm';
 import { logger } from '@shared/logger';
 import jwt from 'jsonwebtoken';
+import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 
 const router = Router();
 
@@ -216,8 +217,11 @@ router.post('/register', async (req, res) => {
         `Creating user in PostgreSQL database: ${validatedUserData.email}`
       );
 
-      // Create the user in the database
-      const user = await storage.createUser(validatedUserData);
+      // Create the user in the database with dual-write pattern
+      const user = await dualWriteAdapter.handleUserCreation(
+        validatedUserData,
+        async () => storage.createUser(validatedUserData)
+      );
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
@@ -315,6 +319,12 @@ router.post('/login', async (req, res) => {
       logger.warn('Password verification failed');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+
+    // Dual-write pattern: Try login through Employee Core service
+    await dualWriteAdapter.handleLogin(
+      { email, username, password },
+      async () => ({ user, token: generateToken(user) })
+    );
 
     logger.debug(
       'Password verified, checking organization subscription status'

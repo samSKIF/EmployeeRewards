@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from 'express';
 import { registerRoutes } from './routes';
 import { initializeApiGateway } from './gateway/api-gateway.init';
 import managementRoutes from './management-routes';
+import dualWriteManagementRoutes from './routes/dual-write-management';
 import { setupVite, serveStatic, log } from './vite';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
@@ -106,6 +107,9 @@ app.use((req, res, next) => {
 
   // Add management routes for SaaS backend
   app.use('/api/management', managementRoutes);
+  
+  // Add dual-write management routes for microservices migration
+  app.use('/api/dual-write', dualWriteManagementRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
