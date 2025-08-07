@@ -657,7 +657,7 @@ router.get('/:id', verifyToken, async (req: AuthenticatedRequest, res) => {
       nationality: targetUser.nationality,
       sex: targetUser.sex,
       coverPhotoUrl: targetUser.cover_photo_url,
-      managerEmail: targetUser.manager_email,
+      manager_email: targetUser.manager_email,
       status: targetUser.status,
     };
 

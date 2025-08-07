@@ -601,7 +601,7 @@ router.patch(
         jobTitle: updatedEmployee.job_title,
         department: updatedEmployee.department,
         location: updatedEmployee.location,
-        managerEmail: updatedEmployee.manager_email,
+        manager_email: updatedEmployee.manager_email,
         sex: updatedEmployee.sex,
         nationality: updatedEmployee.nationality,
         birthDate: updatedEmployee.birth_date, // Changed from dateOfBirth to birthDate

@@ -53,7 +53,7 @@ interface Employee {
   hireDate?: string;
   birthDate?: string;
   managerId?: number;
-  managerEmail?: string;
+  manager_email?: string;
   responsibilities?: string;
   aboutMe?: string;
   nationality?: string;
@@ -71,7 +71,7 @@ interface UpdateEmployeeData {
   status: string;
   hireDate?: string;
   birthDate?: string;
-  managerEmail?: string;
+  manager_email?: string;
   responsibilities?: string;
   aboutMe?: string;
   nationality?: string;
@@ -93,7 +93,7 @@ export default function EmployeeProfile() {
     status: 'active',
     hireDate: '',
     birthDate: '',
-    managerEmail: '',
+    manager_email: '',
     responsibilities: '',
     aboutMe: '',
     nationality: '',
@@ -154,7 +154,7 @@ export default function EmployeeProfile() {
       status: employee.status || 'active',
       hireDate: employee.hireDate || '',
       birthDate: employee.birthDate || '',
-      managerEmail: employee.managerEmail || '',
+      manager_email: employee.manager_email || '',
       responsibilities: employee.responsibilities || '',
       aboutMe: employee.aboutMe || '',
       nationality: employee.nationality || '',
@@ -185,7 +185,7 @@ export default function EmployeeProfile() {
         status: employee.status || 'active',
         hireDate: employee.hireDate || '',
         birthDate: employee.birthDate || '',
-        managerEmail: employee.managerEmail || '',
+        manager_email: employee.manager_email || '',
         responsibilities: employee.responsibilities || '',
         aboutMe: employee.aboutMe || '',
         nationality: employee.nationality || '',
@@ -554,11 +554,11 @@ export default function EmployeeProfile() {
                     <Input
                       id="managerEmail"
                       type="email"
-                      value={formData.managerEmail}
-                      onChange={(e) => handleInputChange('managerEmail', e.target.value)}
+                      value={formData.manager_email}
+                      onChange={(e) => handleInputChange('manager_email', e.target.value))
                     />
                   ) : (
-                    <p className="text-sm">{employee.managerEmail || 'No manager assigned'}</p>
+                    <p className="text-sm">{employee.manager_email || 'No manager assigned'}</p>
                   )}
                 </div>
               </div>
