@@ -40,6 +40,95 @@ function convertDateFormat(dateStr?: string): string | undefined {
 
 const router = Router();
 
+// Shared CSV field mapping function
+const mapCsvRow = (row: any) => {
+  const keys = Object.keys(row);
+  const mapped: any = {};
+  
+  // Map name fields
+  const nameField = keys.find(k => 
+    k.toLowerCase().includes('name') || 
+    k.toLowerCase() === 'first name' || 
+    k.toLowerCase() === 'firstname'
+  );
+  if (nameField) mapped.name = row[nameField];
+  
+  // Handle full name parsing
+  const fullNameField = keys.find(k => 
+    k.toLowerCase() === 'full name' || 
+    k.toLowerCase() === 'fullname'
+  );
+  if (fullNameField && !mapped.name) {
+    const parts = row[fullNameField]?.split(' ') || [];
+    mapped.name = parts[0] || '';
+    mapped.surname = parts.slice(1).join(' ') || '';
+  }
+  
+  // Map surname/last name
+  if (!mapped.surname) {
+    const surnameField = keys.find(k => 
+      k.toLowerCase().includes('surname') || 
+      k.toLowerCase() === 'last name' || 
+      k.toLowerCase() === 'lastname'
+    );
+    if (surnameField) mapped.surname = row[surnameField];
+  }
+  
+  // Map email
+  const emailField = keys.find(k => 
+    k.toLowerCase().includes('email') || 
+    k.toLowerCase() === 'e-mail'
+  );
+  if (emailField) mapped.email = row[emailField];
+  
+  // Map department
+  const deptField = keys.find(k => 
+    k.toLowerCase().includes('department') || 
+    k.toLowerCase() === 'dept'
+  );
+  if (deptField) mapped.department = row[deptField];
+  
+  // Map job title
+  const jobField = keys.find(k => 
+    k.toLowerCase().includes('job') && k.toLowerCase().includes('title') ||
+    k.toLowerCase() === 'title' ||
+    k.toLowerCase() === 'position' ||
+    k.toLowerCase() === 'role'
+  );
+  if (jobField) mapped.jobTitle = row[jobField];
+  
+  // Map location
+  const locationField = keys.find(k => 
+    k.toLowerCase().includes('location') || 
+    k.toLowerCase().includes('office')
+  );
+  if (locationField) mapped.location = row[locationField];
+  
+  // Map phone
+  const phoneField = keys.find(k => 
+    k.toLowerCase().includes('phone') || 
+    k.toLowerCase().includes('mobile')
+  );
+  if (phoneField) mapped.phoneNumber = row[phoneField];
+  
+  // Map hire date
+  const hireDateField = keys.find(k => 
+    k.toLowerCase().includes('hire') || 
+    k.toLowerCase().includes('start') ||
+    k.toLowerCase() === 'start date'
+  );
+  if (hireDateField) mapped.hireDate = row[hireDateField];
+  
+  // Map birth date
+  const birthDateField = keys.find(k => 
+    k.toLowerCase().includes('birth') || 
+    k.toLowerCase().includes('dob')
+  );
+  if (birthDateField) mapped.birthDate = row[birthDateField];
+  
+  return mapped;
+};
+
 // Configure multer for file uploads
 const upload = multer({
   dest: 'server/uploads/',
@@ -107,36 +196,45 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // Parse CSV file
+    // Parse CSV file with flexible mapping
     let rowIndex = 0;
     await new Promise((resolve, reject) => {
       fs.createReadStream(req.file!.path)
         .pipe(csv())
         .on('data', (row) => {
           rowIndex++;
+          const mappedRow = mapCsvRow(row);
+          
           // Validate required fields
-          if (!row.name || !row.surname || !row.email || !row.department) {
-            errors.push(`Row ${rowIndex} missing required fields: ${JSON.stringify(row)}`);
+          if (!mappedRow.name || !mappedRow.email) {
+            console.log(`Row ${rowIndex} validation failed:`, { original: row, mapped: mappedRow });
+            errors.push(`Row ${rowIndex} missing required fields: name and email are required`);
             return;
+          }
+          
+          // Default department if missing
+          if (!mappedRow.department) {
+            mappedRow.department = 'General';
+            warnings.push(`Row ${rowIndex}: No department specified, using 'General'`);
           }
 
           // Email validation
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(row.email)) {
-            errors.push(`Row ${rowIndex} - Invalid email format: ${row.email}`);
+          if (!emailRegex.test(mappedRow.email)) {
+            errors.push(`Row ${rowIndex} - Invalid email format: ${mappedRow.email}`);
             return;
           }
 
           employees.push({
-            name: row.name.trim(),
-            surname: row.surname?.trim() || '',
-            email: row.email.trim().toLowerCase(),
-            department: row.department.trim(),
-            location: row.location?.trim() || undefined,
-            jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
-            phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
-            birthDate: convertDateFormat(row.birth_date?.trim() || row.birthDate?.trim()),
-            hireDate: convertDateFormat(row.hire_date?.trim() || row.hireDate?.trim()),
+            name: mappedRow.name.trim(),
+            surname: mappedRow.surname?.trim() || '',
+            email: mappedRow.email.trim().toLowerCase(),
+            department: mappedRow.department.trim(),
+            location: mappedRow.location?.trim() || undefined,
+            jobTitle: mappedRow.jobTitle?.trim() || undefined,
+            phoneNumber: mappedRow.phoneNumber?.trim() || undefined,
+            birthDate: convertDateFormat(mappedRow.birthDate?.trim()),
+            hireDate: convertDateFormat(mappedRow.hireDate?.trim()),
             rowIndex,
           });
         })
@@ -352,60 +450,74 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       
       jsonData.forEach((row: any) => {
+        const mappedRow = mapCsvRow(row);
+        
         // Validate required fields
-        if (!row.name || !row.surname || !row.email || !row.department) {
-          errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
+        if (!mappedRow.name || !mappedRow.email) {
+          errors.push(`Row missing required fields: name and email are required`);
           return;
+        }
+        
+        // Default department if missing
+        if (!mappedRow.department) {
+          mappedRow.department = 'General';
         }
 
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(row.email)) {
-          errors.push(`Invalid email format: ${row.email}`);
+        if (!emailRegex.test(mappedRow.email)) {
+          errors.push(`Invalid email format: ${mappedRow.email}`);
           return;
         }
 
         employees.push({
-          name: row.name.toString().trim(),
-          surname: row.surname?.toString().trim() || '',
-          email: row.email.toString().trim().toLowerCase(),
-          department: row.department.toString().trim(),
-          location: row.location?.toString().trim() || undefined,
-          jobTitle: row.job_title?.toString().trim() || row.jobTitle?.toString().trim() || undefined,
-          phoneNumber: row.phone_number?.toString().trim() || row.phoneNumber?.toString().trim() || undefined,
-          birthDate: convertDateFormat(row.birth_date?.toString().trim() || row.birthDate?.toString().trim()),
-          hireDate: convertDateFormat(row.hire_date?.toString().trim() || row.hireDate?.toString().trim()),
+          name: mappedRow.name.toString().trim(),
+          surname: mappedRow.surname?.toString().trim() || '',
+          email: mappedRow.email.toString().trim().toLowerCase(),
+          department: mappedRow.department.toString().trim(),
+          location: mappedRow.location?.toString().trim() || undefined,
+          jobTitle: mappedRow.jobTitle?.toString().trim() || undefined,
+          phoneNumber: mappedRow.phoneNumber?.toString().trim() || undefined,
+          birthDate: convertDateFormat(mappedRow.birthDate?.toString().trim()),
+          hireDate: convertDateFormat(mappedRow.hireDate?.toString().trim()),
         });
       });
     } else {
-      // Parse CSV file
+      // Parse CSV file with flexible mapping
       await new Promise((resolve, reject) => {
         fs.createReadStream(req.file!.path)
           .pipe(csv())
           .on('data', (row) => {
+            const mappedRow = mapCsvRow(row);
+            
             // Validate required fields
-            if (!row.name || !row.surname || !row.email || !row.department) {
-              errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
+            if (!mappedRow.name || !mappedRow.email) {
+              errors.push(`Row missing required fields: name and email are required`);
               return;
+            }
+            
+            // Default department if missing
+            if (!mappedRow.department) {
+              mappedRow.department = 'General';
             }
 
             // Email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(row.email)) {
-              errors.push(`Invalid email format: ${row.email}`);
+            if (!emailRegex.test(mappedRow.email)) {
+              errors.push(`Invalid email format: ${mappedRow.email}`);
               return;
             }
 
             employees.push({
-              name: row.name.trim(),
-              surname: row.surname?.trim() || '',
-              email: row.email.trim().toLowerCase(),
-              department: row.department.trim(),
-              location: row.location?.trim() || undefined,
-              jobTitle: row.job_title?.trim() || row.jobTitle?.trim() || undefined,
-              phoneNumber: row.phone_number?.trim() || row.phoneNumber?.trim() || undefined,
-              birthDate: convertDateFormat(row.birth_date?.trim() || row.birthDate?.trim()),
-              hireDate: convertDateFormat(row.hire_date?.trim() || row.hireDate?.trim()),
+              name: mappedRow.name.trim(),
+              surname: mappedRow.surname?.trim() || '',
+              email: mappedRow.email.trim().toLowerCase(),
+              department: mappedRow.department.trim(),
+              location: mappedRow.location?.trim() || undefined,
+              jobTitle: mappedRow.jobTitle?.trim() || undefined,
+              phoneNumber: mappedRow.phoneNumber?.trim() || undefined,
+              birthDate: convertDateFormat(mappedRow.birthDate?.trim()),
+              hireDate: convertDateFormat(mappedRow.hireDate?.trim()),
             });
           })
           .on('end', resolve)
