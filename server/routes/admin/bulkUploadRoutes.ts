@@ -283,14 +283,27 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
         // Compare current data with new data to identify changes
         const changes: string[] = [];
         
-        if (existingUser.name !== employee.name) changes.push('name');
-        if (existingUser.surname !== employee.surname) changes.push('surname');
-        if (existingUser.department !== employee.department) changes.push('department');
-        if (existingUser.location !== employee.location) changes.push('location');
-        if (existingUser.job_title !== employee.jobTitle) changes.push('job title');
-        if (existingUser.phone_number !== employee.phoneNumber) changes.push('phone number');
-        if (existingUser.birth_date !== employee.birthDate) changes.push('birth date');
-        if (existingUser.hire_date !== employee.hireDate) changes.push('hire date');
+        // Helper function to normalize values for comparison
+        const normalize = (value: any): string | null => {
+          if (value === null || value === undefined || value === '') return null;
+          return String(value).trim();
+        };
+        
+        // Helper function to compare normalized values
+        const hasChanged = (existing: any, newValue: any): boolean => {
+          const normalizedExisting = normalize(existing);
+          const normalizedNew = normalize(newValue);
+          return normalizedExisting !== normalizedNew;
+        };
+        
+        if (hasChanged(existingUser.name, employee.name)) changes.push('name');
+        if (hasChanged(existingUser.surname, employee.surname)) changes.push('surname');
+        if (hasChanged(existingUser.department, employee.department)) changes.push('department');
+        if (hasChanged(existingUser.location, employee.location)) changes.push('location');
+        if (hasChanged(existingUser.job_title, employee.jobTitle)) changes.push('job title');
+        if (hasChanged(existingUser.phone_number, employee.phoneNumber)) changes.push('phone number');
+        if (hasChanged(existingUser.birth_date, employee.birthDate)) changes.push('birth date');
+        if (hasChanged(existingUser.hire_date, employee.hireDate)) changes.push('hire date');
         
         existingEmployeeMatches.push({
           id: existingUser.id,
