@@ -249,6 +249,11 @@ export interface IChatStorage {
 export interface IDepartmentStorage {
   createDepartment(deptData: any): Promise<any>;
   getDepartmentsByOrganization(organizationId: number): Promise<any[]>;
+  getDepartmentById(id: number): Promise<any | undefined>;
+  getDepartmentByName(organizationId: number, name: string): Promise<any | undefined>;
+  updateDepartment(id: number, updateData: any): Promise<any>;
+  deleteDepartment(id: number): Promise<void>;
+  getEmployeeCountByDepartment(organizationId: number, departmentName: string): Promise<number>;
 }
 
 // Main storage interface combining all modules

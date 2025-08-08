@@ -6,6 +6,7 @@ import {
   organizations,
   departments,
   locations,
+  users,
 } from '@shared/schema';
 import type {
   InsertOrganization,
@@ -15,7 +16,7 @@ import type {
   InsertLocation,
   Location,
 } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, count, ilike } from 'drizzle-orm';
 
 export interface IOrganizationStorage {
   // Organization management
@@ -27,7 +28,11 @@ export interface IOrganizationStorage {
   // Department management
   createDepartment(deptData: InsertDepartment): Promise<Department>;
   getDepartmentsByOrganization(organizationId: number): Promise<Department[]>;
-  updateDepartment(id: number, updates: Partial<Department>): Promise<boolean>;
+  getDepartmentById(id: number): Promise<Department | undefined>;
+  getDepartmentByName(organizationId: number, name: string): Promise<Department | undefined>;
+  updateDepartment(id: number, updates: Partial<Department>): Promise<Department>;
+  deleteDepartment(id: number): Promise<void>;
+  getEmployeeCountByDepartment(organizationId: number, departmentName: string): Promise<number>;
   
   // Location management
   createLocation(locationData: InsertLocation): Promise<Location>;
@@ -130,19 +135,85 @@ export class OrganizationStorage implements IOrganizationStorage {
     }
   }
 
-  async updateDepartment(id: number, updates: Partial<Department>): Promise<boolean> {
+  async getDepartmentById(id: number): Promise<Department | undefined> {
     try {
-      await db
+      const [department] = await db
+        .select()
+        .from(departments)
+        .where(eq(departments.id, id));
+      return department;
+    } catch (error: any) {
+      console.error('Error getting department by ID:', error?.message || 'unknown_error');
+      return undefined;
+    }
+  }
+
+  async getDepartmentByName(organizationId: number, name: string): Promise<Department | undefined> {
+    try {
+      const [department] = await db
+        .select()
+        .from(departments)
+        .where(
+          and(
+            eq(departments.organization_id, organizationId),
+            ilike(departments.name, name)
+          )
+        );
+      return department;
+    } catch (error: any) {
+      console.error('Error getting department by name:', error?.message || 'unknown_error');
+      return undefined;
+    }
+  }
+
+  async updateDepartment(id: number, updates: Partial<Department>): Promise<Department> {
+    try {
+      const [updated] = await db
         .update(departments)
         .set({
           ...updates,
           updated_at: new Date(),
         })
-        .where(eq(departments.id, id));
-      return true;
+        .where(eq(departments.id, id))
+        .returning();
+      return updated;
     } catch (error: any) {
       console.error('Error updating department:', error?.message || 'unknown_error');
-      return false;
+      throw error;
+    }
+  }
+
+  async deleteDepartment(id: number): Promise<void> {
+    try {
+      await db
+        .update(departments)
+        .set({
+          is_active: false,
+          updated_at: new Date(),
+        })
+        .where(eq(departments.id, id));
+    } catch (error: any) {
+      console.error('Error deleting department:', error?.message || 'unknown_error');
+      throw error;
+    }
+  }
+
+  async getEmployeeCountByDepartment(organizationId: number, departmentName: string): Promise<number> {
+    try {
+      const result = await db
+        .select({ count: count() })
+        .from(users)
+        .where(
+          and(
+            eq(users.organization_id, organizationId),
+            eq(users.department, departmentName),
+            eq(users.status, 'active')
+          )
+        );
+      return result[0]?.count || 0;
+    } catch (error: any) {
+      console.error('Error getting employee count by department:', error?.message || 'unknown_error');
+      return 0;
     }
   }
 

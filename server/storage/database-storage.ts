@@ -336,9 +336,26 @@ export class DatabaseStorage implements IStorage {
     return this.organizationStorage.getDepartmentsByOrganization(organizationId);
   }
 
-  async updateDepartment(id: number, updates: any) {
-    return this.organizationStorage.updateDepartment(id, updates);
+  async getDepartmentById(id: number) {
+    return this.organizationStorage.getDepartmentById(id);
   }
+
+  async getDepartmentByName(organizationId: number, name: string) {
+    return this.organizationStorage.getDepartmentByName(organizationId, name);
+  }
+
+  async updateDepartment(id: number, updateData: any) {
+    return this.organizationStorage.updateDepartment(id, updateData);
+  }
+
+  async deleteDepartment(id: number) {
+    return this.organizationStorage.deleteDepartment(id);
+  }
+
+  async getEmployeeCountByDepartment(organizationId: number, departmentName: string) {
+    return this.organizationStorage.getEmployeeCountByDepartment(organizationId, departmentName);
+  }
+
 
   async createLocation(locationData: any) {
     return this.organizationStorage.createLocation(locationData);

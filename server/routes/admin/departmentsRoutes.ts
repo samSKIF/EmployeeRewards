@@ -8,8 +8,9 @@ const router = Router();
 
 // Get all departments for organization
 router.get('/', verifyToken, verifyAdmin, async (req, res) => {
+  let organizationId: number | undefined;
   try {
-    const organizationId = (req.user as any).organization_id;
+    organizationId = (req.user as any).organization_id;
     
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -17,8 +18,8 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 
     const departments = await storage.getDepartmentsByOrganization(organizationId);
     res.json(departments);
-  } catch (error) {
-    logger.error('Error fetching departments:', { error, organizationId });
+  } catch (error: any) {
+    logger.error('Error fetching departments:', { error: error?.message || 'unknown_error', organizationId });
     res.status(500).json({ message: 'Failed to fetch departments' });
   }
 });
@@ -60,8 +61,8 @@ router.post('/',
     });
 
     res.status(201).json(newDepartment);
-  } catch (error) {
-    logger.error('Error creating department:', { error: error?.message || 'unknown_error', organizationId });
+  } catch (error: any) {
+    logger.error('Error creating department:', { error: error?.message || 'unknown_error', organizationId: (req.user as any)?.organization_id });
     res.status(500).json({ message: 'Failed to create department' });
   }
 });
@@ -72,9 +73,11 @@ router.put('/:id',
   verifyAdmin,
   activityLogger({ action_type: 'update_department', resource_type: 'department' }),
   async (req, res) => {
+  let departmentId: number;
+  let organizationId: number | undefined;
   try {
-    const departmentId = parseInt(req.params.id);
-    const organizationId = (req.user as any).organization_id;
+    departmentId = parseInt(req.params.id);
+    organizationId = (req.user as any).organization_id;
     const { name, color, is_active } = req.body;
 
     if (!organizationId) {
@@ -116,8 +119,8 @@ router.put('/:id',
     });
 
     res.json(updatedDepartment);
-  } catch (error) {
-    logger.error('Error updating department:', { error, departmentId });
+  } catch (error: any) {
+    logger.error('Error updating department:', { error: error?.message || 'unknown_error', departmentId, organizationId });
     res.status(500).json({ message: 'Failed to update department' });
   }
 });
@@ -128,9 +131,11 @@ router.delete('/:id',
   verifyAdmin,
   activityLogger({ action_type: 'delete_department', resource_type: 'department' }),
   async (req, res) => {
+  let departmentId: number;
+  let organizationId: number | undefined;
   try {
-    const departmentId = parseInt(req.params.id);
-    const organizationId = (req.user as any).organization_id;
+    departmentId = parseInt(req.params.id);
+    organizationId = (req.user as any).organization_id;
 
     if (!organizationId) {
       return res.status(400).json({ message: 'User not associated with an organization' });
@@ -167,8 +172,8 @@ router.delete('/:id',
     });
 
     res.json({ message: 'Department deleted successfully' });
-  } catch (error) {
-    logger.error('Error deleting department:', { error, departmentId });
+  } catch (error: any) {
+    logger.error('Error deleting department:', { error: error?.message || 'unknown_error', departmentId, organizationId });
     res.status(500).json({ message: 'Failed to delete department' });
   }
 });
@@ -196,8 +201,8 @@ router.get('/api/admin/departments/:id/stats', verifyToken, verifyAdmin, async (
     };
 
     res.json(stats);
-  } catch (error) {
-    logger.error('Error fetching department stats:', { error, organizationId });
+  } catch (error: any) {
+    logger.error('Error fetching department stats:', { error: error?.message || 'unknown_error', organizationId: (req.user as any)?.organization_id });
     res.status(500).json({ message: 'Failed to fetch department statistics' });
   }
 });
