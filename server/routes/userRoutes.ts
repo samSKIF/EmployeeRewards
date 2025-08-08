@@ -311,18 +311,12 @@ router.get(
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      // Query the departments table directly (no caching for now) - only active departments
-      const departmentRows = await db.execute(sql`
-      SELECT name FROM departments 
-      WHERE organization_id = ${req.user.organization_id || 1} 
-      AND is_active = true
-      ORDER BY name
-    `);
-
-      const departments = departmentRows.rows.map((row: any) => row.name);
+      // Query only active departments using Drizzle ORM query builder
+      const activeDepartments = await storage.getDepartmentsByOrganization(req.user.organization_id || 1);
+      const departments = activeDepartments.map(dept => dept.name);
 
       logger.info(
-        `Returning ${departments.length} departments for org ${req.user.organization_id}:`,
+        `Returning ${departments.length} active departments for org ${req.user.organization_id}:`,
         departments
       );
       res.json(departments);
