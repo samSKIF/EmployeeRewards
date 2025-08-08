@@ -458,9 +458,71 @@ export default function EmployeeDirectory() {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleExport = () => {
-    // TODO: Implement CSV export functionality
-    console.log('Exporting employee data...');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Use all employees data, not just filtered
+      const exportData = employees.map(emp => ({
+        'Full Name': `${emp.name} ${emp.surname || ''}`.trim(),
+        'Email': emp.email,
+        'Job Title': emp.jobTitle || emp.job_title || '',
+        'Department': emp.department || '',
+        'Location': emp.location || '',
+        'Status': emp.status,
+        'Phone Number': emp.phoneNumber || emp.phone_number || '',
+        'Hire Date': emp.hireDate || emp.hire_date || '',
+        'Birth Date': emp.birthDate || emp.birth_date || '',
+        'Manager Email': emp.managerEmail || emp.manager_email || '',
+        'Nationality': emp.nationality || '',
+        'Gender': emp.sex || '',
+        'Last Seen': emp.lastSeenAt || emp.last_seen_at || '',
+        'Responsibilities': emp.responsibilities || '',
+        'About Me': emp.aboutMe || emp.about_me || ''
+      }));
+
+      // Convert to CSV format
+      const headers = Object.keys(exportData[0] || {});
+      const csvContent = [
+        headers.join(','), // Header row
+        ...exportData.map(row => 
+          headers.map(header => {
+            const value = row[header as keyof typeof row] || '';
+            // Escape commas and quotes in CSV values
+            const escapedValue = String(value).replace(/"/g, '""');
+            return `"${escapedValue}"`;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `employees_export_${timestamp}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Export Complete',
+        description: `Successfully exported ${employees.length} employee records`,
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Unable to export employee data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Remove duplicate calculations - use API-consistent values throughout
@@ -482,9 +544,14 @@ export default function EmployeeDirectory() {
         <h1 className="text-2xl font-bold text-gray-900">Employee Directory</h1>
         <p className="text-gray-600 text-base">Manage your team members and their information</p>
         <div className="flex gap-3">
-          <Button onClick={handleExport} variant="outline" className="border-2 border-gray-300 hover:bg-gray-50">
+          <Button 
+            onClick={handleExport} 
+            variant="outline" 
+            className="border-2 border-gray-300 hover:bg-gray-50"
+            disabled={isExporting || employees.length === 0}
+          >
             <Download className="h-4 w-4 mr-2" />
-            Export
+            {isExporting ? 'Exporting...' : 'Export'}
           </Button>
           <Link href="/admin/employees/mass-upload">
             <Button variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50">
