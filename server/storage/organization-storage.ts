@@ -206,7 +206,7 @@ export class OrganizationStorage implements IOrganizationStorage {
         .where(
           and(
             eq(users.organization_id, organizationId),
-            eq(users.department, departmentName),
+            ilike(users.department, departmentName), // Use case-insensitive matching
             eq(users.status, 'active')
           )
         );

@@ -263,18 +263,33 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
     logger.info(`Total users in organization ${organizationId}: ${userCount}`);
     logger.info(`Using subscription limit: ${subscriptionLimit}, offset: ${offset}`);
 
-    const users = await dualWriteAdapter.handleUsersList(
-      organizationId!,
-      subscriptionLimit, // Use subscription limit instead of hardcoded 50
-      parseInt(offset as string),
-      async () => {
-        return await storage.getUsers(
-          organizationId!,
-          subscriptionLimit,
-          parseInt(offset as string)
-        );
-      }
-    );
+    // Use filtered query if filters are provided
+    let users;
+    if (department || location || search) {
+      // Use getEmployeesWithFilters when filters are provided
+      users = await storage.getEmployeesWithFilters(organizationId!, {
+        department: department as string | undefined,
+        location: location as string | undefined,
+        search: search as string | undefined,
+        limit: subscriptionLimit,
+        offset: parseInt(offset as string),
+        status: 'active'
+      });
+    } else {
+      // Use regular getUsers when no filters
+      users = await dualWriteAdapter.handleUsersList(
+        organizationId!,
+        subscriptionLimit,
+        parseInt(offset as string),
+        async () => {
+          return await storage.getUsers(
+            organizationId!,
+            subscriptionLimit,
+            parseInt(offset as string)
+          );
+        }
+      );
+    }
 
     logger.info(
       `Returned ${users.length} users for organization ${organizationId}`

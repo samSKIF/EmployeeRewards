@@ -253,6 +253,7 @@ export class UserStorage implements IUserStorage {
     filters: {
       search?: string;
       department?: string;
+      location?: string;
       status?: string;
       limit?: number;
       offset?: number;
@@ -269,7 +270,11 @@ export class UserStorage implements IUserStorage {
       }
 
       if (filters.department) {
-        conditions.push(eq(users.department, filters.department));
+        conditions.push(ilike(users.department, filters.department));
+      }
+
+      if (filters.location) {
+        conditions.push(ilike(users.location, filters.location));
       }
 
       if (filters.search) {
