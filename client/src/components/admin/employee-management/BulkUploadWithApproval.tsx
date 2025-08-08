@@ -49,10 +49,8 @@ export default function BulkUploadWithApproval({ onUploadComplete }: BulkUploadW
   // File analysis mutation
   const analyzeFileMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      return apiRequest('/api/admin/employees/bulk-preview', {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await apiRequest('POST', '/api/admin/employees/preview', formData);
+      return response.json();
     },
     onSuccess: (data: PreviewData) => {
       setPreviewData(data);
@@ -71,15 +69,15 @@ export default function BulkUploadWithApproval({ onUploadComplete }: BulkUploadW
   // Bulk upload execution mutation
   const executeBulkUploadMutation = useMutation({
     mutationFn: async (uploadData: any) => {
-      return apiRequest('/api/admin/employees/bulk-upload', {
-        method: 'POST',
-        body: JSON.stringify(uploadData),
-      });
+      const formData = new FormData();
+      formData.append('file', uploadData.file);
+      const response = await apiRequest('POST', '/api/admin/employees/bulk-upload', formData);
+      return response.json();
     },
     onSuccess: (result) => {
       toast({
         title: 'Success',
-        description: `Successfully created ${result.employeesCreated} employees and ${result.departmentsCreated} departments`,
+        description: `Successfully created ${result.successCount || 0} employees, updated ${result.updateCount || 0}, and created ${result.departmentsCreated || 0} departments`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/departments'] });
@@ -121,10 +119,11 @@ export default function BulkUploadWithApproval({ onUploadComplete }: BulkUploadW
   };
 
   const handleApproveAndExecute = () => {
-    if (!previewData) return;
+    if (!previewData || !file) return;
     
     setUploadStep('processing');
     executeBulkUploadMutation.mutate({
+      file: file,
       employees: previewData.employees,
       createDepartments: previewData.newDepartments,
     });

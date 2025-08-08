@@ -40,7 +40,9 @@ import {
   FileText,
   X,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  Building2,
+  Settings
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -55,6 +57,8 @@ interface UploadError {
 interface UploadResult {
   message: string;
   successCount: number;
+  updateCount: number;
+  totalProcessed: number;
   errorCount: number;
   departmentsCreated?: number;
   totalRequested: number;
@@ -85,8 +89,20 @@ interface DepartmentAnalysis {
   rows: number[];
 }
 
+interface ExistingEmployeeMatch {
+  id: number;
+  email: string;
+  currentData: any;
+  newData: PreviewEmployee;
+  changes: string[];
+  hasChanges: boolean;
+}
+
 interface EnhancedPreviewData {
   employees: PreviewEmployee[];
+  newEmployees: PreviewEmployee[];
+  existingEmployees: ExistingEmployeeMatch[];
+  employeesWithChanges: ExistingEmployeeMatch[];
   departmentAnalysis: {
     new: DepartmentAnalysis[];
     typos: DepartmentAnalysis[];
@@ -94,6 +110,8 @@ interface EnhancedPreviewData {
     total: number;
   };
   employeeCount: number;
+  newEmployeeCount: number;
+  updateEmployeeCount: number;
   validation: {
     hasErrors: boolean;
     errors: string[];
@@ -238,7 +256,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
       
       toast({
         title: 'Upload Complete',
-        description: `${result.successCount} employees uploaded successfully, ${result.errorCount} errors`,
+        description: `${result.successCount} new employees, ${result.updateCount || 0} updated, ${result.errorCount} errors`,
         variant: result.errorCount > 0 ? 'destructive' : 'default',
       });
     },
@@ -425,38 +443,90 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
           <DialogHeader>
             <DialogTitle>Preview Employee Data</DialogTitle>
             <DialogDescription>
-              Review the data before uploading ({previewData.length} employees)
+              Review the data before uploading ({enhancedPreview?.employeeCount || previewData.length} total employees: {enhancedPreview?.newEmployeeCount || 0} new, {enhancedPreview?.updateEmployeeCount || 0} updates)
             </DialogDescription>
           </DialogHeader>
           
-          {previewData.length > 0 && (
-            <div className="mt-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Job Title</TableHead>
-                    <TableHead>Location</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {previewData.slice(0, 10).map((employee, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{employee.name} {employee.surname}</TableCell>
-                      <TableCell>{employee.email}</TableCell>
-                      <TableCell>{employee.department}</TableCell>
-                      <TableCell>{employee.job_title}</TableCell>
-                      <TableCell>{employee.location}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {previewData.length > 10 && (
-                <p className="text-sm text-gray-500 mt-2">
-                  Showing first 10 of {previewData.length} employees
-                </p>
+          {/* Enhanced Preview with New vs Existing Employees */}
+          {enhancedPreview && (
+            <div className="space-y-6">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">{enhancedPreview.newEmployeeCount}</div>
+                    <div className="text-sm text-gray-600">New Employees</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">{enhancedPreview.updateEmployeeCount}</div>
+                    <div className="text-sm text-gray-600">Will be Updated</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-600">{enhancedPreview.departmentAnalysis?.new?.length || 0}</div>
+                    <div className="text-sm text-gray-600">New Departments</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* New Employees Table */}
+              {enhancedPreview.newEmployees?.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-green-700 mb-3">New Employees ({enhancedPreview.newEmployees.length})</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Job Title</TableHead>
+                        <TableHead>Location</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {enhancedPreview.newEmployees.slice(0, 5).map((employee, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{employee.name} {employee.surname}</TableCell>
+                          <TableCell>{employee.email}</TableCell>
+                          <TableCell>{employee.department}</TableCell>
+                          <TableCell>{employee.job_title}</TableCell>
+                          <TableCell>{employee.location}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {enhancedPreview.newEmployees.length > 5 && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Showing first 5 of {enhancedPreview.newEmployees.length} new employees
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Employees to Update Table */}
+              {enhancedPreview.employeesWithChanges?.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-700 mb-3">Employees to Update ({enhancedPreview.employeesWithChanges.length})</h3>
+                  <div className="space-y-3">
+                    {enhancedPreview.employeesWithChanges.slice(0, 5).map((match, index) => (
+                      <div key={index} className="border border-blue-200 rounded-lg p-3 bg-blue-50">
+                        <div className="font-medium text-blue-900">{match.newData.name} {match.newData.surname}</div>
+                        <div className="text-sm text-blue-700">{match.email}</div>
+                        <div className="text-xs text-blue-600 mt-1">
+                          <strong>Changes:</strong> {match.changes.join(', ')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {enhancedPreview.employeesWithChanges.length > 5 && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Showing first 5 of {enhancedPreview.employeesWithChanges.length} employees with updates
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -467,7 +537,7 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
             </Button>
             <Button onClick={handleUpload}>
               <Upload className="h-4 w-4 mr-2" />
-              Upload {previewData.length} Employees
+              Process {enhancedPreview?.newEmployeeCount || 0} New + {enhancedPreview?.updateEmployeeCount || 0} Updates
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -487,14 +557,18 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{uploadResult.totalRequested}</div>
                 <div className="text-sm text-gray-600">Total Rows</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{uploadResult.successCount}</div>
-                <div className="text-sm text-gray-600">Successful</div>
+                <div className="text-sm text-gray-600">Created</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{uploadResult.updateCount || 0}</div>
+                <div className="text-sm text-gray-600">Updated</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">{uploadResult.errorCount}</div>
@@ -572,9 +646,15 @@ Jane,Smith,jane.smith@company.com,Marketing,Marketing Manager,London Office,+44-
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <h4 className="font-semibold text-green-700">Success Summary</h4>
                 </div>
-                <p className="text-sm text-green-600">
-                  {uploadResult.successCount} employee(s) were successfully created and can now access the system.
-                </p>
+                <div className="space-y-1 text-sm text-green-600">
+                  {uploadResult.successCount > 0 && (
+                    <p>✓ {uploadResult.successCount} new employee(s) were successfully created</p>
+                  )}
+                  {uploadResult.updateCount && uploadResult.updateCount > 0 && (
+                    <p>✓ {uploadResult.updateCount} existing employee(s) were successfully updated</p>
+                  )}
+                  <p className="font-medium">All processed employees can now access the system.</p>
+                </div>
               </div>
             )}
             

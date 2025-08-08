@@ -73,6 +73,15 @@ interface EmployeeRow {
   rowIndex?: number; // Track row number for error reporting
 }
 
+interface ExistingEmployeeMatch {
+  id: number;
+  email: string;
+  currentData: any;
+  newData: EmployeeRow;
+  changes: string[]; // List of fields that will be updated
+  hasChanges: boolean;
+}
+
 interface DepartmentAnalysis {
   name: string;
   action: 'existing' | 'new' | 'typo';
@@ -160,13 +169,51 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
       errors.push(`Duplicate emails found in file: ${duplicateEmails.join(', ')}`);
     }
 
-    // Check for existing emails in database
+    // Enhanced existing employee detection with change analysis
     const emailArray = Array.from(emailSet) as string[];
     const existingUsers = await storage.getUsersByEmails(emailArray);
-    const existingEmails = existingUsers.map((user: any) => user.email);
+    const existingEmployeeMatches: ExistingEmployeeMatch[] = [];
+    const newEmployees: EmployeeRow[] = [];
     
-    if (existingEmails.length > 0) {
-      warnings.push(`${existingEmails.length} emails already exist in system: ${existingEmails.slice(0, 5).join(', ')}${existingEmails.length > 5 ? '...' : ''}`);
+    // Analyze each employee for add vs update
+    employees.forEach(employee => {
+      const existingUser = existingUsers.find((user: any) => 
+        user.email.toLowerCase() === employee.email.toLowerCase()
+      );
+      
+      if (existingUser) {
+        // Compare current data with new data to identify changes
+        const changes: string[] = [];
+        
+        if (existingUser.name !== employee.name) changes.push('name');
+        if (existingUser.surname !== employee.surname) changes.push('surname');
+        if (existingUser.department !== employee.department) changes.push('department');
+        if (existingUser.location !== employee.location) changes.push('location');
+        if (existingUser.job_title !== employee.jobTitle) changes.push('job title');
+        if (existingUser.phone_number !== employee.phoneNumber) changes.push('phone number');
+        if (existingUser.birth_date !== employee.birthDate) changes.push('birth date');
+        if (existingUser.hire_date !== employee.hireDate) changes.push('hire date');
+        
+        existingEmployeeMatches.push({
+          id: existingUser.id,
+          email: employee.email,
+          currentData: existingUser,
+          newData: employee,
+          changes,
+          hasChanges: changes.length > 0
+        });
+      } else {
+        newEmployees.push(employee);
+      }
+    });
+    
+    const employeesWithChanges = existingEmployeeMatches.filter(match => match.hasChanges);
+    
+    if (existingEmployeeMatches.length > 0) {
+      warnings.push(`${existingEmployeeMatches.length} employees already exist in system`);
+      if (employeesWithChanges.length > 0) {
+        warnings.push(`${employeesWithChanges.length} existing employees will be updated with new data`);
+      }
     }
 
     // Smart department analysis with typo detection
@@ -241,19 +288,24 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     }
 
     const previewData = {
-      employees: employees.filter(emp => !existingEmails.includes(emp.email)), // Only new employees
+      employees: employees,
+      newEmployees,
+      existingEmployees: existingEmployeeMatches,
+      employeesWithChanges,
       departmentAnalysis: {
         new: newDepartments,
         typos: typoSuggestions,
         existing: existingDepartmentsList,
         total: departmentAnalysis.length
       },
-      employeeCount: employees.filter(emp => !existingEmails.includes(emp.email)).length,
+      employeeCount: employees.length,
+      newEmployeeCount: newEmployees.length,
+      updateEmployeeCount: employeesWithChanges.length,
       validation: {
         hasErrors: errors.length > 0,
         errors,
         warnings,
-        needsReview: typoSuggestions.length > 0, // Flag for frontend to show review UI
+        needsReview: typoSuggestions.length > 0 || newDepartments.length > 0, // Enhanced review conditions
       },
     };
 
@@ -373,6 +425,7 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
 
     let departmentsCreated = 0;
     let employeesCreated = 0;
+    let employeesUpdated = 0;
     const detailedErrors: Array<{
       row: number;
       email: string;
@@ -380,68 +433,58 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
       error: string;
       suggestion: string;
     }> = [];
+    
+    // Enhanced existing employee detection for bulk upload
+    const emailArray = employees.map(emp => emp.email);
+    const existingUsers = await storage.getUsersByEmails(emailArray);
+    const existingUserMap = new Map();
+    existingUsers.forEach((user: any) => {
+      existingUserMap.set(user.email.toLowerCase(), user);
+    });
+    
+    const employeesToCreate: EmployeeRow[] = [];
+    const employeesToUpdate: Array<{ existing: any; newData: EmployeeRow }> = [];
+    
+    // Separate employees into create vs update operations
+    employees.forEach(employee => {
+      const existingUser = existingUserMap.get(employee.email.toLowerCase());
+      if (existingUser) {
+        employeesToUpdate.push({ existing: existingUser, newData: employee });
+      } else {
+        employeesToCreate.push(employee);
+      }
+    });
 
-    // Enhanced department validation with fuzzy matching
+    // Process department creation and validation first
     const existingDepartments = await storage.getDepartmentsByOrganization(organizationId);
     const existingDeptNames = existingDepartments.map(dept => dept.name);
+    const allDepartments = Array.from(new Set(employees.map(emp => emp.department)));
     
-    const fileDepartments = Array.from(new Set(employees.map(emp => emp.department)));
-    const validatedDepartments = [];
-    const rejectedEmployees: number[] = [];
-
-    // Validate each department and employee against existing departments
-    for (let i = 0; i < employees.length; i++) {
-      const employee = employees[i];
-      const deptName = employee.department;
-      
+    for (const deptName of allDepartments) {
       // Check exact match (case insensitive)
       const exactMatch = existingDeptNames.find(existing => 
         existing.toLowerCase() === deptName.toLowerCase()
       );
       
-      if (exactMatch) {
-        // Use the exact existing department name
-        employee.department = exactMatch;
-        validatedDepartments.push(employee);
-      } else {
-        // Check for potential typos using fuzzy matching
-        const matches = existingDeptNames.map(existing => ({
-          name: existing,
-          ratio: fuzz.ratio(deptName.toLowerCase(), existing.toLowerCase())
-        })).sort((a, b) => b.ratio - a.ratio);
-        
-        const bestMatch = matches[0];
-        
-        // If similarity > 70%, it's likely a typo - suggest correction
-        if (bestMatch && bestMatch.ratio > 70) {
-          detailedErrors.push({
-            row: i + 2,
-            email: employee.email,
-            name: `${employee.name} ${employee.surname}`.trim(),
-            error: `Department name appears to be a typo: "${deptName}"`,
-            suggestion: `Please use the correct department name: "${bestMatch.name}" (${bestMatch.ratio}% similarity)`
+      if (!exactMatch) {
+        // Create new department
+        try {
+          await storage.createDepartment({
+            name: deptName,
+            description: `Auto-created from bulk upload`,
+            organization_id: organizationId,
           });
-          rejectedEmployees.push(i);
-        } else {
-          // New department - requires explicit approval
-          detailedErrors.push({
-            row: i + 2,
-            email: employee.email,
-            name: `${employee.name} ${employee.surname}`.trim(),
-            error: `New department detected: "${deptName}"`,
-            suggestion: `This department doesn't exist. Please either: 1) Use an existing department, or 2) Create "${deptName}" in Department Management first, then re-upload this file`
-          });
-          rejectedEmployees.push(i);
+          departmentsCreated++;
+          existingDeptNames.push(deptName); // Add to existing list for subsequent checks
+        } catch (error) {
+          console.error(`Error creating department ${deptName}:`, error);
         }
       }
     }
 
-    // Remove rejected employees from processing
-    const validEmployees = employees.filter((_, index) => !rejectedEmployees.includes(index));
-
-    // Create employees with detailed error tracking (only validated employees)
-    for (let i = 0; i < validEmployees.length; i++) {
-      const employeeData = validEmployees[i];
+    // Create new employees
+    for (let i = 0; i < employeesToCreate.length; i++) {
+      const employeeData = employeesToCreate[i];
       try {
         const userData = {
           name: employeeData.name,
@@ -503,17 +546,94 @@ router.post('/api/admin/employees/bulk-upload', verifyToken, verifyAdmin, upload
         });
       }
     }
+    
+    // Update existing employees
+    for (let i = 0; i < employeesToUpdate.length; i++) {
+      const { existing, newData } = employeesToUpdate[i];
+      try {
+        const updateData: any = {};
+        let hasChanges = false;
+        
+        // Compare and update only changed fields
+        if (existing.name !== newData.name) {
+          updateData.name = newData.name;
+          hasChanges = true;
+        }
+        if (existing.surname !== newData.surname) {
+          updateData.surname = newData.surname;
+          hasChanges = true;
+        }
+        if (existing.department !== newData.department) {
+          updateData.department = newData.department;
+          hasChanges = true;
+        }
+        if (existing.location !== newData.location) {
+          updateData.location = newData.location;
+          hasChanges = true;
+        }
+        if (existing.job_title !== newData.jobTitle) {
+          updateData.job_title = newData.jobTitle;
+          hasChanges = true;
+        }
+        if (existing.phone_number !== newData.phoneNumber) {
+          updateData.phone_number = newData.phoneNumber;
+          hasChanges = true;
+        }
+        if (existing.birth_date !== newData.birthDate) {
+          updateData.birth_date = newData.birthDate;
+          hasChanges = true;
+        }
+        if (existing.hire_date !== newData.hireDate) {
+          updateData.hire_date = newData.hireDate;
+          hasChanges = true;
+        }
+        
+        if (hasChanges) {
+          await storage.updateUser(existing.id, updateData);
+          employeesUpdated++;
+        }
+      } catch (error: any) {
+        console.error(`Error updating employee ${newData.email}:`, error);
+        
+        let userFriendlyError = 'Unknown error occurred while updating';
+        let suggestion = 'Please check the data format and try again';
+        
+        // Parse specific database errors for updates
+        if (error.message && typeof error.message === 'string') {
+          if (error.message.includes('date/time field value out of range')) {
+            userFriendlyError = 'Invalid date format in update';
+            suggestion = 'Please use DD/MM/YYYY format for dates (e.g., 25/12/1990)';
+          } else if (error.message.includes('invalid input syntax')) {
+            userFriendlyError = 'Invalid data format in update';
+            suggestion = 'Please check the data format matches the expected format';
+          }
+        }
+        
+        // Find original row index for this employee
+        const originalIndex = employees.findIndex(emp => emp.email === newData.email);
+        detailedErrors.push({
+          row: originalIndex + 2,
+          email: newData.email || 'N/A',
+          name: `${newData.name} ${newData.surname}`.trim() || 'N/A',
+          error: userFriendlyError,
+          suggestion: suggestion
+        });
+      }
+    }
 
+    const totalProcessed = employeesCreated + employeesUpdated;
     res.json({
       message: detailedErrors.length === 0
-        ? 'Bulk upload completed successfully' 
-        : `Bulk upload completed with ${detailedErrors.length} errors`,
+        ? `Bulk upload completed successfully: ${employeesCreated} created, ${employeesUpdated} updated` 
+        : `Bulk upload completed with ${detailedErrors.length} errors: ${employeesCreated} created, ${employeesUpdated} updated`,
       successCount: employeesCreated,
+      updateCount: employeesUpdated,
+      totalProcessed,
       errorCount: detailedErrors.length,
       departmentsCreated,
       totalRequested: employees.length,
       errors: detailedErrors,
-      success: employeesCreated > 0
+      success: totalProcessed > 0
     });
 
   } catch (error) {

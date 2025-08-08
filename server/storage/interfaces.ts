@@ -58,6 +58,7 @@ export interface IUserStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsersByEmails(emails: string[]): Promise<User[]>;
   getUserByName(name: string, surname: string): Promise<User | undefined>;
   checkDuplicateUser(
     email: string,
@@ -245,6 +246,11 @@ export interface IChatStorage {
   getMessagesByConversationId(conversationId: number): Promise<MessageWithSender[]>;
 }
 
+export interface IDepartmentStorage {
+  createDepartment(deptData: any): Promise<any>;
+  getDepartmentsByOrganization(organizationId: number): Promise<any[]>;
+}
+
 // Main storage interface combining all modules
 export interface IStorage
   extends IUserStorage,
@@ -253,4 +259,5 @@ export interface IStorage
     ISocialStorage,
     IRecognitionStorage,
     ISurveyStorage,
-    IChatStorage {}
+    IChatStorage,
+    IDepartmentStorage {}

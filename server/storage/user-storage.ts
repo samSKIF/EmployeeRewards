@@ -3,7 +3,7 @@
 
 import { db } from '../db';
 import { users, accounts, type User, type InsertUser, type Account } from '@shared/schema';
-import { eq, and, or, count, like } from 'drizzle-orm';
+import { eq, and, or, count, like, inArray } from 'drizzle-orm';
 import { hash, compare } from 'bcrypt';
 import type { UserWithBalance } from '@shared/types';
 import type { IUserStorage } from './interfaces';
@@ -26,6 +26,17 @@ export class UserStorage implements IUserStorage {
     } catch (error: any) {
       console.error('Error getting user by email:', error?.message || 'unknown_error');
       return undefined;
+    }
+  }
+
+  async getUsersByEmails(emails: string[]): Promise<User[]> {
+    try {
+      if (emails.length === 0) return [];
+      const userList = await db.select().from(users).where(inArray(users.email, emails));
+      return userList;
+    } catch (error: any) {
+      console.error('Error getting users by emails:', error?.message || 'unknown_error');
+      return [];
     }
   }
 
