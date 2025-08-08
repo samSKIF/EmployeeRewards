@@ -270,6 +270,7 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
     // Enhanced existing employee detection with change analysis
     const emailArray = Array.from(emailSet) as string[];
     const existingUsers = await storage.getUsersByEmails(emailArray);
+    console.log(`DEBUG: Found ${existingUsers.length} existing users out of ${emailArray.length} emails`);
     const existingEmployeeMatches: ExistingEmployeeMatch[] = [];
     const newEmployees: EmployeeRow[] = [];
     
@@ -304,6 +305,10 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
         if (hasChanged(existingUser.phone_number, employee.phoneNumber)) changes.push('phone number');
         if (hasChanged(existingUser.birth_date, employee.birthDate)) changes.push('birth date');
         if (hasChanged(existingUser.hire_date, employee.hireDate)) changes.push('hire date');
+        
+        if (changes.length > 0) {
+          console.log(`DEBUG: Employee ${employee.email} has ${changes.length} changes:`, changes);
+        }
         
         existingEmployeeMatches.push({
           id: existingUser.id,
@@ -398,8 +403,13 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
       warnings.push(`${newDepartments.length} new departments will be created. Please confirm or correct any typos.`);
     }
 
+    console.log(`DEBUG: Final counts - Total: ${employees.length}, New: ${newEmployees.length}, Updates: ${employeesWithChanges.length}, New Departments: ${newDepartments.length}`);
+    
     const previewData = {
       employees: employees,
+      newDepartments: newDepartments.map(d => d.name),
+      existingDepartments: existingDepartmentsList.map(d => d.name),
+      employeeCount: newEmployees.length, // Only count new employees for the main counter
       newEmployees,
       existingEmployees: existingEmployeeMatches,
       employeesWithChanges,
@@ -409,14 +419,13 @@ router.post('/api/admin/employees/preview', verifyToken, verifyAdmin, upload.sin
         existing: existingDepartmentsList,
         total: departmentAnalysis.length
       },
-      employeeCount: employees.length,
       newEmployeeCount: newEmployees.length,
       updateEmployeeCount: employeesWithChanges.length,
       validation: {
         hasErrors: errors.length > 0,
         errors,
         warnings,
-        needsReview: typoSuggestions.length > 0 || newDepartments.length > 0, // Enhanced review conditions
+        needsReview: typoSuggestions.length > 0 || newDepartments.length > 0,
       },
     };
 
