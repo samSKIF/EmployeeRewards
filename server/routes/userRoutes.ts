@@ -657,7 +657,20 @@ router.get('/org-chart/hierarchy', verifyToken, async (req: AuthenticatedRequest
     }
 
     // Get all users in the organization with their hierarchy info
-    const orgUsers = await storage.getOrganizationHierarchy(organizationId);
+    const allOrgUsers = await storage.getOrganizationHierarchy(organizationId);
+    
+    // Filter out isolated super users (admins with no manager and no direct reports)
+    const orgUsers = allOrgUsers.filter(user => {
+      const hasManager = !!user.manager_email;
+      const hasDirectReports = allOrgUsers.some(otherUser => otherUser.manager_email === user.email);
+      const isIsolatedSuperUser = user.admin_scope && !hasManager && !hasDirectReports;
+      
+      if (isIsolatedSuperUser) {
+        logger.debug(`Filtering out isolated super user: ${user.name} (${user.email})`);
+        return false;
+      }
+      return true;
+    });
     
     // Build the hierarchical tree structure based on manager_email
     const buildHierarchy = (users: any[], managerEmail: string | null = null): any[] => {
@@ -713,6 +726,20 @@ router.get('/org-chart/relationships/:userId?', verifyToken, async (req: Authent
       indirectReportsCount: hierarchy.indirectReports.length,
       peersCount: hierarchy.peers.length
     });
+    
+    // Check if this is a super user with no organizational relationships
+    // Super users without manager and without direct reports should not appear in org chart
+    const isIsolatedSuperUser = hierarchy.user.admin_scope && 
+                               !hierarchy.manager && 
+                               hierarchy.directReports.length === 0;
+                               
+    if (isIsolatedSuperUser) {
+      logger.debug(`User ${userId} is an isolated super user - excluding from org chart`);
+      return res.status(404).json({ 
+        message: 'User not part of organizational hierarchy',
+        reason: 'isolated_super_user'
+      });
+    }
     
     // Format response with camelCase for frontend
     const response = {
