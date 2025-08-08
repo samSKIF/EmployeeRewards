@@ -311,10 +311,11 @@ router.get(
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      // Query the departments table directly (no caching for now)
+      // Query the departments table directly (no caching for now) - only active departments
       const departmentRows = await db.execute(sql`
       SELECT name FROM departments 
       WHERE organization_id = ${req.user.organization_id || 1} 
+      AND is_active = true
       ORDER BY name
     `);
 
