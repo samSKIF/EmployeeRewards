@@ -46,6 +46,10 @@ export class DatabaseStorage implements IStorage {
     return this.userStorage.getUserByEmail(email);
   }
 
+  async getUsersByEmails(emails: string[]) {
+    return this.userStorage.getUsersByEmails(emails);
+  }
+
   async getUserByName(name: string, surname: string) {
     return this.userStorage.getUserByName(name, surname);
   }
