@@ -1,24 +1,48 @@
 {
-  "extends": ["./.eslintrc.json"],
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "env": { "es6": true, "node": true, "browser": true },
+  "ignorePatterns": ["node_modules/", "dist/", "packages/**/dist/", "client/public/"],
   "rules": {
-    "max-lines": ["error", {
-      "max": 200,
-      "skipBlankLines": true,
-      "skipComments": true
-    }],
-    "max-lines-per-function": ["warn", {
-      "max": 50,
-      "skipBlankLines": true,
-      "skipComments": true
-    }],
+    "max-lines": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+    "max-lines-per-function": ["warn", { "max": 50, "skipBlankLines": true, "skipComments": true }],
     "complexity": ["warn", 10],
     "max-params": ["warn", 4],
     "max-depth": ["warn", 4],
-    "max-nested-callbacks": ["warn", 3]
+
+    "@typescript-eslint/naming-convention": [
+      "error",
+      { "selector": "variable", "format": ["camelCase","UPPER_CASE","PascalCase"], "leadingUnderscore": "allow" },
+      { "selector": "function", "format": ["camelCase","PascalCase"] },
+      { "selector": "parameter", "format": ["camelCase"], "leadingUnderscore": "allow" },
+      { "selector": "property", "format": ["camelCase"] },
+      { "selector": "property", "modifiers": ["requiresQuotes"], "format": null },
+      { "selector": "class", "format": ["PascalCase"] },
+      { "selector": "typeAlias", "format": ["PascalCase"] },
+      { "selector": "interface", "format": ["PascalCase"], "prefix": ["I"] }
+    ],
+    "@typescript-eslint/no-implicit-any-catch": ["error", { "allowExplicitAny": false }],
+    "@typescript-eslint/no-explicit-any": ["warn", { "ignoreRestArgs": true }],
+
+    "no-restricted-imports": ["warn", {
+      "paths": [
+        { "name": "@shared", "message": "Legacy shared import. Prefer @platform/sdk for cross-cutting utilities." }
+      ],
+      "patterns": ["@shared/*"]
+    }]
   },
   "overrides": [
     {
-      "files": ["*.test.ts", "*.test.tsx"],
+      "files": ["client/**/*.ts", "client/**/*.tsx"],
+      "env": { "browser": true, "node": false }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
       "rules": {
         "max-lines": ["error", 300],
         "max-lines-per-function": ["warn", 100]
