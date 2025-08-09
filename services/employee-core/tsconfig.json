@@ -1,7 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@employee-core/domain": ["src/domain/index.ts"],
+      "@employee-core/domain/*": ["src/domain/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["dist","node_modules"]

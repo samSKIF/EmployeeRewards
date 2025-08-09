@@ -36,6 +36,12 @@
         { "name": "@shared/types", "message": "Use @platform/sdk/types (compat shim exists)." }
       ],
       "patterns": ["@shared/*", "@shared/logger", "@shared/types"]
+    }],
+    "import/no-restricted-imports": ["warn", {
+      "paths": [
+        { "name": "@shared/schema", "message": "Domain schema should live inside each service. Use the local service domain shim (services/<svc>/src/domain) instead." }
+      ],
+      "patterns": ["@shared/schema"]
     }]
   },
   "overrides": [
