@@ -36,7 +36,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@platform/sdk';
+import { logger } from '@platform/sdk/browser';
 
 interface Space {
   id: number;
