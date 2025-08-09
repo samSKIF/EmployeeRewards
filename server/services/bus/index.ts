@@ -28,4 +28,6 @@ if (BUS_MODE === 'kafka') {
   close = Stub.close;
 }
 
+console.log('[bus] mode =', process.env.BUS || 'stub');
+
 export { publish, registerConsumer, health, start, close };

@@ -14,6 +14,8 @@ import { initGracefulShutdown } from './bootstrap/shutdown';
 import { start as startBus } from './services/bus';
 import { startEmployeeCreatedAuditConsumer } from './consumers/employee-created-audit';
 import { startTelemetry, stopTelemetry } from '../packages/otel-bootstrap/src';
+
+const OTEL_ENABLED = process.env.OTEL_ENABLE !== 'false';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -127,7 +129,13 @@ app.use((req, res, next) => {
   await initializeApiGateway(app);
 
   // Initialize OpenTelemetry tracing
-  await startTelemetry();
+  if (OTEL_ENABLED) {
+    try { 
+      await startTelemetry(); 
+    } catch (e) { 
+      console.warn('[otel] disabled:', (e as any)?.message || e); 
+    }
+  }
 
   // Initialize event bus and consumers
   await startBus();
@@ -194,6 +202,7 @@ app.use((req, res, next) => {
   const port = 5000;
   httpServer.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
+    console.log('[startup] BUS=', process.env.BUS || 'stub', ' OTEL_ENABLE=', process.env.OTEL_ENABLE ?? 'true');
   });
 
   // Register telemetry shutdown hook
