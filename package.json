@@ -114,6 +114,7 @@
     "json-schema-to-typescript": "^15.0.4",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
+    "kafkajs": "^2.2.4",
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",

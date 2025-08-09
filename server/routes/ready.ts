@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { publish } from '../services/event-bus';
+import { health as busHealth } from '../services/bus';
 import { isDraining } from '../bootstrap/shutdown';
 
 const router = Router();
@@ -10,10 +10,10 @@ router.get('/__ready', async (req, res) => {
   // Process
   checks.process = { ok: true, uptime_s: Math.floor(process.uptime()) };
 
-  // Event bus (stub)
+  // Event bus
   try {
-    await publish('__probe__', { t: Date.now() });
-    checks.event_bus = { ok: true };
+    const h = await busHealth();
+    checks.event_bus = h.ok ? { ok: true, details: h.details } : { ok: false, error: h.details };
   } catch (e: any) {
     checks.event_bus = { ok: false, error: e?.message || String(e) };
   }

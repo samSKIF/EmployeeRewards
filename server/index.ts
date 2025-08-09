@@ -11,6 +11,8 @@ import { errorHandler } from './middleware/error-handler';
 import { tenant } from './middleware/tenant';
 import readyRouter from './routes/ready';
 import { initGracefulShutdown } from './bootstrap/shutdown';
+import { start as startBus } from './services/bus';
+import { startEmployeeCreatedAuditConsumer } from './consumers/employee-created-audit';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -122,6 +124,10 @@ app.use((req, res, next) => {
 
   // Initialize API Gateway for standardized routing (parallel deployment)
   await initializeApiGateway(app);
+
+  // Initialize event bus and consumers
+  await startBus();
+  await startEmployeeCreatedAuditConsumer();
 
   // Add management routes for SaaS backend
   app.use('/api/management', managementRoutes);

@@ -102,6 +102,7 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **drizzle-orm**: Type-safe database ORM
 - **bcrypt**: Password hashing
 - **jsonwebtoken**: JWT token management
+- **kafkajs**: Kafka client for event bus communication
 
 ### Development Dependencies
 - **Vite**: Build tool and dev server
@@ -114,6 +115,17 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **Kafka**: Event bus for service communication
 - **OpenTelemetry**: Observability and monitoring
 - **MongoDB**: Social engagement service database
+
+### Event Bus Configuration
+- **BUS feature flag**:
+  - `BUS=stub` (default) → console-only bus for development
+  - `BUS=kafka` → use KafkaJS for production event-driven communication
+- **Required Kafka environment variables** (when BUS=kafka):
+  - `KAFKA_BROKERS=broker1:9092,broker2:9092`
+  - `KAFKA_CLIENT_ID=thrivio`
+  - `KAFKA_SSL=true|false`
+  - `KAFKA_SASL_MECHANISM=plain|scram-sha-256|scram-sha-512` (optional)
+  - `KAFKA_SASL_USERNAME=...`, `KAFKA_SASL_PASSWORD=...` (optional)
 
 ## Architecture Enforcement
 
