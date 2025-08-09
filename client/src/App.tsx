@@ -58,6 +58,7 @@ import DualWriteMonitor from '@/pages/admin/DualWriteMonitor';
 import { BrandingProvider } from '@/context/BrandingContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
+import AuthGate from '@/features/auth/AuthGate';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import SocialLayout from '@/layouts/SocialLayout';
 import { Loader2 } from 'lucide-react';
@@ -136,7 +137,7 @@ function App() {
         <Switch>
           {/* Public routes - No authentication required */}
           <Route path="/auth">
-            <AuthPage />
+            <AuthGate />
           </Route>
           <Route path="/corporate-login">
             <CorporateLoginPage />
@@ -400,7 +401,7 @@ function App() {
 
                   {/* ThrivioHR Social Platform routes */}
                   <Route path="/auth">
-                    <AuthPage />
+                    <AuthGate />
                   </Route>
                   <Route path="/corporate-login">
                     <CorporateLoginPage />
