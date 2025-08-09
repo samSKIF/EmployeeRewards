@@ -93,6 +93,24 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **Next Priority**: HR Operations Service migration
 - **Target**: Full microservices architecture with event-driven communication
 
+### PII Encryption (App-level AES-256-GCM)
+- Configure keys via env:
+  - `DATA_KEY_CURRENT_KID=v1`
+  - `DATA_KEY_CURRENT=<base64-32-bytes>`
+  - `DATA_KEYS_JSON={"v1":"<base64-32-bytes>","v0":"<old-base64>"}`
+- Usage:
+  - `encryptPII(value, { tenant_id, field })` -> store `{ kid, iv, ct, tag, alg }`
+  - `decryptPII(enc, { tenant_id, field })`
+  - `maybeRotate(enc, { tenant_id, field })` to re-encrypt with the current key
+- Rotation playbook:
+  1) Generate: `generateDataKey()` (returns `{ kid, keyB64 }`)
+  2) Add to `DATA_KEYS_JSON` with new kid
+  3) Set `DATA_KEY_CURRENT_KID` and `DATA_KEY_CURRENT` to new key
+  4) Re-encrypt on read path via `maybeRotate(...)` (lazy rotation)
+
+### Log Redaction
+- Sensitive fields (`password`, `token`, `email`, `phone`, Authorization headers) are redacted automatically in logs.
+
 ## External Dependencies
 
 ### Core Dependencies
