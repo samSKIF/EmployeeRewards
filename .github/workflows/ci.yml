@@ -1,0 +1,46 @@
+name: CI (contracts + SDK)
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install ephemeral dev tools (no-save)
+        run: |
+          npm i --no-save ajv-cli@^5 ajv-formats@^3 json-schema-to-typescript@^15 openapi-typescript-codegen@^0.29
+
+      - name: Validate event schemas (AJV)
+        run: |
+          npx ajv validate -c ajv-formats -s contracts/events/*.json -d contracts/events/*.json
+
+      - name: Generate event types (json-schema -> d.ts)
+        run: |
+          node scripts/generate-event-types.mjs
+          echo "Generated files:"
+          ls -la packages/events-types || true
+
+      - name: Build platform SDK
+        working-directory: packages/platform-sdk
+        run: |
+          npm ci
+          npm run build
+          ls -la dist
+
+      - name: Upload SDK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-sdk-dist
+          path: packages/platform-sdk/dist
