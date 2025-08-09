@@ -143,6 +143,13 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
   - Send as `Authorization: Bearer <token>` (or header `X-Service-Auth`).
   - Verify on receiver: `serviceAuth({ audience: 'server' })` middleware.
   - Tokens are short-lived (5 minutes by default). Rotate secret regularly.
+- **OpenTelemetry Tracing**:
+  - Enabled by default at server start. Configure via environment variables:
+    - `OTEL_SERVICE_NAME=server` (default: 'server')
+    - `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` (or your collector)
+  - HTTP client requests and Kafka events automatically propagate W3C trace context
+  - Request logs include `trace_id` for correlation with distributed traces
+  - Graceful shutdown includes telemetry cleanup
 
 ## Architecture Enforcement
 

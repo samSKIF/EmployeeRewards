@@ -13,6 +13,7 @@ import readyRouter from './routes/ready';
 import { initGracefulShutdown } from './bootstrap/shutdown';
 import { start as startBus } from './services/bus';
 import { startEmployeeCreatedAuditConsumer } from './consumers/employee-created-audit';
+import { startTelemetry, stopTelemetry } from '../packages/otel-bootstrap/src';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -125,6 +126,9 @@ app.use((req, res, next) => {
   // Initialize API Gateway for standardized routing (parallel deployment)
   await initializeApiGateway(app);
 
+  // Initialize OpenTelemetry tracing
+  await startTelemetry();
+
   // Initialize event bus and consumers
   await startBus();
   await startEmployeeCreatedAuditConsumer();
@@ -190,6 +194,16 @@ app.use((req, res, next) => {
   const port = 5000;
   httpServer.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
+  });
+
+  // Register telemetry shutdown hook
+  const { registerShutdownHook } = await import('./bootstrap/shutdown');
+  registerShutdownHook(async () => { 
+    try { 
+      await stopTelemetry(); 
+    } catch (e) {
+      console.error('[shutdown] Failed to stop telemetry:', e);
+    }
   });
 
   // Initialize graceful shutdown with 25s grace (tune to k8s terminationGracePeriodSeconds)

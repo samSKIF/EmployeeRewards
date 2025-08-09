@@ -1,5 +1,6 @@
 import { Kafka, logLevel } from 'kafkajs';
 import { KAFKA, BUS_RETRIES, BUS_BACKOFF_MS, DLQ_SUFFIX } from '../../config/bus';
+import { context, propagation } from '@opentelemetry/api';
 
 async function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -39,9 +40,14 @@ async function ensureProducer() {
 export async function publish(topic: string, message: unknown): Promise<void> {
   await ensureProducer();
   const producer = (globalThis as any).__busProducer as import('kafkajs').Producer;
+  const headers: Record<string, string> = {};
+  propagation.inject(context.active(), headers, {
+    set: (c, k, v) => { c[k] = String(v); }
+  });
+
   await producer.send({
     topic,
-    messages: [{ value: JSON.stringify(message) }]
+    messages: [{ value: JSON.stringify(message), headers }]
   });
 }
 
@@ -59,21 +65,29 @@ export async function registerConsumer(topic: string, handler: (msg: any) => Pro
       const parsed = JSON.parse(val);
       let attempt = 0;
       let lastError: any = null;
-      while (attempt < BUS_RETRIES) {
-        try {
-          const h = handlers.get(topic);
-          if (h) await h(parsed);
-          lastError = null;
-          break;
-        } catch (e: any) {
-          lastError = e;
-          attempt++;
-          if (attempt < BUS_RETRIES) {
-            const delay = BUS_BACKOFF_MS * Math.pow(2, attempt - 1);
-            await sleep(delay);
+      const hdrs = Object.fromEntries(Object.entries(message.headers || {}).map(([k, v]) => [k, v?.toString?.() || String(v)]));
+      const extracted = propagation.extract(context.active(), hdrs, {
+        get: (c, k) => (c as any)[k],
+        keys: (c) => Object.keys(c as any)
+      });
+
+      await context.with(extracted, async () => {
+        while (attempt < BUS_RETRIES) {
+          try {
+            const h = handlers.get(topic);
+            if (h) await h(parsed);
+            lastError = null;
+            break;
+          } catch (e: any) {
+            lastError = e;
+            attempt++;
+            if (attempt < BUS_RETRIES) {
+              const delay = BUS_BACKOFF_MS * Math.pow(2, attempt - 1);
+              await sleep(delay);
+            }
           }
         }
-      }
+      });
       if (lastError) {
         // Send to DLQ with metadata
         const producer = (globalThis as any).__busProducer as import('kafkajs').Producer;
