@@ -1,59 +1,29 @@
-# ThrivioHR System Architecture & Development Standards
-**Version:** 2.0 | **Last Updated:** August 2025 | **Status:** ENFORCED
-
-> **⚠️ MANDATORY**: This document is the single source of truth for all architectural decisions and development standards. All code MUST comply with these guidelines. Non-compliance will result in rejection during code review.
-
-## Table of Contents
-1. [Architecture Overview](#1-architecture-overview)
-2. [Service Architecture](#2-service-architecture)
-3. [Golden Development Standards](#3-golden-development-standards)
-4. [Service Boundaries & Responsibilities](#4-service-boundaries--responsibilities)
-5. [Communication Patterns](#5-communication-patterns)
-6. [Data Management Strategy](#6-data-management-strategy)
-7. [Frontend Architecture](#7-frontend-architecture)
-8. [Code Organization Rules](#8-code-organization-rules)
-9. [Implementation Checklist](#9-implementation-checklist)
-10. [Compliance Validation](#10-compliance-validation)
-
----
+# System Architecture
 
 ## 1. Architecture Overview
 
-### Core Architecture Pattern: Domain-Driven Microservices
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        API Gateway                          │
-│                    (Kong/Traefik/Nginx)                    │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                     Service Mesh                            │
-│                    (Istio/Linkerd)                         │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-     ┌───────────────┼───────────────┬──────────────┐
-     │               │               │              │
-┌────▼────┐    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
-│Employee │    │ Social  │    │   HR    │    │Recognition│
-│  Core   │    │Engagement│   │Operations│   │ & Rewards │
-│    DB   │    │    DB   │    │    DB   │    │    DB    │
-└─────────┘    └─────────┘    └─────────┘    └──────────┘
-     │               │               │              │
-     └───────────────┼───────────────┼──────────────┘
-                     │               │
-              ┌──────▼───────────────▼──────┐
-              │      Event Bus (Kafka)      │
-              └─────────────────────────────┘
-```
+### 1.1 Architecture Defaults (MVP)
+- **API Gateway:** Nginx Ingress
+- **Service Mesh:** None (defer to post-GA)
+- **Event Bus:** Kafka
+- **Databases:** Postgres per service, except Social Engagement = MongoDB
+- **Contracts:** OpenAPI/JSON-Schema; typed clients generated in CI
+- **Shared Backend Code:** Only `@platform/sdk` (logging, errors, tracing, HTTP client, event envelope). **No domain logic**.
+- **Observability:** OpenTelemetry tracing + logs + metrics; W3C `traceparent` propagation.
+- **Tenancy:** App-level checks + DB-level enforcement (Postgres RLS; Mongo tenant filters).
+- **Coverage Targets (MVP):** BL 85%, API 90%, Security 100%, Events 85%. (Post-GA: 90/95/100/90)
 
-### Key Principles
-1. **Database per Service**: Each service owns its data exclusively
-2. **API-First Communication**: Services communicate only through APIs
-3. **Event-Driven Architecture**: Asynchronous communication via event bus
-4. **No Shared Code**: Services are completely independent
-5. **Domain Boundaries**: Clear separation of business domains
+### 1.2 Naming & Conventions
+- **DB & wire payloads:** `snake_case`
+- **Application code (TS/JS):** `camelCase`
+- **Types/Components:** `PascalCase`
+- **Constants/ENV:** `UPPER_SNAKE_CASE`
+- **Filenames:** `kebab-case` (React components may be `PascalCase.tsx`)
 
----
+### 1.3 Repo-specific note
+- We currently have `shared/` and `services/shared/`. These are **temporary** and may contain legacy utilities.
+- **Deprecated:** add no new domain logic to `shared/`.
+- **Target:** move cross-cutting utilities into **`packages/platform-sdk`**; keep domain logic inside each service.
 
 ## 2. Service Architecture
 
@@ -147,338 +117,52 @@
 - Policy (id, name, content, effective_date)
 ```
 
-### 2.5 Communication Service
-**Path:** `/services/communication/`
-**Port:** 3005
-**Database:** PostgreSQL (communication_db) + Redis
+## 3. Code Quality & Error Handling
 
-**Responsibilities:**
-- Mass communications and broadcasts
-- Email notifications
-- Push notifications
-- In-app notifications
-- Announcement management
-- Newsletter distribution
+Use `unknown` in catch clauses and normalize to `AppError`.
 
-**Owned Entities:**
 ```typescript
-- Announcement (id, title, content, audience, priority)
-- Notification (id, user_id, type, content, read_status)
-- EmailTemplate (id, name, subject, body, variables[])
-- Campaign (id, name, audience, channels[], schedule)
-- NotificationPreference (user_id, channel, types[])
-```
+import { logger, AppError } from '@platform/sdk';
 
-### 2.6 Onboarding Service
-**Path:** `/services/onboarding/`
-**Port:** 3006
-**Database:** PostgreSQL (onboarding_db)
-
-**Responsibilities:**
-- Onboarding workflows
-- Task assignment and tracking
-- Document collection
-- Training schedules
-- Buddy/mentor assignment
-- Progress monitoring
-
-**Owned Entities:**
-```typescript
-- OnboardingPlan (id, employee_id, start_date, template_id)
-- OnboardingTask (id, plan_id, title, assignee_id, status)
-- DocumentRequest (id, plan_id, document_type, status)
-- Training (id, plan_id, name, scheduled_date, completed)
-- BuddyAssignment (plan_id, buddy_id, start_date, end_date)
-```
-
-### 2.7 Analytics Service
-**Path:** `/services/analytics/`
-**Port:** 3007
-**Database:** ClickHouse/TimescaleDB (analytics_db)
-
-**Responsibilities:**
-- Data aggregation and warehousing
-- Report generation
-- Dashboard metrics
-- Predictive analytics
-- AI/ML model serving
-- Business intelligence
-
-**Owned Entities:**
-```typescript
-- Metric (id, name, value, timestamp, dimensions{})
-- Report (id, name, type, parameters, schedule)
-- Dashboard (id, name, widgets[], refresh_rate)
-- DataPipeline (id, source, transformations[], destination)
-- MLModel (id, name, version, endpoint, metrics{})
-```
-
-### 2.8 Marketplace Service
-**Path:** `/services/marketplace/`
-**Port:** 3008
-**Database:** PostgreSQL (marketplace_db)
-
-**Responsibilities:**
-- Product catalog management
-- Points redemption
-- Order processing
-- Vendor management
-- Inventory tracking
-- Transaction processing
-
-**Owned Entities:**
-```typescript
-- Product (id, name, description, points_cost, stock)
-- Order (id, user_id, items[], total_points, status)
-- Transaction (id, order_id, points, timestamp, status)
-- Vendor (id, name, products[], commission_rate)
-- Inventory (product_id, quantity, reserved, available)
-```
-
----
-
-## 3. Golden Development Standards
-
-### 3.1 Code Quality Standards (Target: 95/100)
-
-#### MANDATORY Requirements:
-```typescript
-// ✅ CORRECT: Enterprise Error Handling
 try {
-  const result = await someOperation();
-  return result;
-} catch (error: any) {
-  logger.error('Operation failed', {
-    error: error?.message || 'unknown_error',
-    stack: error?.stack,
-    context: { /* relevant context */ }
-  });
-  throw new ServiceError(
-    'OPERATION_FAILED',
-    error?.message || 'Operation failed',
-    500
-  );
-}
-
-// ❌ WRONG: Poor error handling
-try {
-  const result = await someOperation();
-  return result;
-} catch (error) {
-  console.log(error);
-  throw error;
+  // ...
+} catch (error: unknown) {
+  const appErr = AppError.normalize(error, 'operation_failed').withHttp(400);
+  logger.error({ code: appErr.code, message: appErr.message, stack: appErr.stack });
+  throw appErr;
 }
 ```
 
-#### Database Operations:
-```typescript
-// ✅ CORRECT: Soft delete with audit trail
-async deleteEmployee(id: number, deletedBy: number): Promise<void> {
-  await db.transaction(async (trx) => {
-    // Archive current state
-    const current = await trx.select().from(employees).where(eq(employees.id, id)).single();
-    await trx.insert(employeeAudit).values({
-      ...current,
-      action: 'DELETE',
-      performed_by: deletedBy,
-      performed_at: new Date()
-    });
-    
-    // Soft delete
-    await trx.update(employees)
-      .set({ 
-        status: 'deleted',
-        deleted_at: new Date(),
-        deleted_by: deletedBy
-      })
-      .where(eq(employees.id, id));
-  });
-}
+### 3.1 Error Handling Standards
+- All catch blocks must use `unknown` type
+- Normalize errors through `AppError.normalize()`
+- Include structured logging with error context
+- Maintain error traceability across service boundaries
 
-// ❌ WRONG: Hard delete
-await db.delete(employees).where(eq(employees.id, id));
-```
+### 3.2 Testing Standards
+- Business Logic: 85% minimum coverage (90% post-GA)
+- API Routes: 90% minimum coverage (95% post-GA)
+- Security Functions: 100% required coverage
+- Event Handlers: 85% minimum coverage (90% post-GA)
 
-### 3.2 API Design Standards
-
-#### RESTful Endpoints:
-```typescript
-// ✅ CORRECT: Consistent API design
-GET    /api/v1/employees?page=1&limit=20&sort=name
-GET    /api/v1/employees/:id
-POST   /api/v1/employees
-PATCH  /api/v1/employees/:id
-DELETE /api/v1/employees/:id  // Soft delete
-
-// Response format
-{
-  "success": true,
-  "data": { /* entity or array */ },
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "hasMore": true
-  },
-  "message": "Employees retrieved successfully"
-}
-
-// Error format
-{
-  "success": false,
-  "error": "VALIDATION_FAILED",
-  "message": "Email is already in use",
-  "details": { /* field-specific errors */ }
-}
-```
-
-### 3.3 Event Standards
-
-#### Event Publishing:
-```typescript
-// ✅ CORRECT: Rich event with full context
-await eventBus.publish({
-  type: 'employee.created',
-  version: '1.0',
-  id: generateEventId(),
-  timestamp: new Date().toISOString(),
-  source: 'employee-core-service',
-  correlationId: req.correlationId,
-  data: {
-    employee: {
-      id: employee.id,
-      username: employee.username,
-      department_id: employee.department_id
-    },
-    organization: {
-      id: org.id
-    },
-    created_by: {
-      id: user.id
-    }
-  },
-  metadata: {
-    ip_address: req.ip,
-    user_agent: req.headers['user-agent']
-  }
-});
-```
-
-### 3.4 Testing Standards
-
-#### Coverage Requirements:
-- Business Logic: **95%** minimum
-- API Routes: **90%** minimum
-- Security Functions: **100%** required
-- Event Handlers: **85%** minimum
-
-#### Test Structure:
-```typescript
-describe('EmployeeService', () => {
-  describe('createEmployee', () => {
-    it('should create employee with valid data', async () => {
-      // Arrange
-      const data = buildEmployeeData();
-      
-      // Act
-      const result = await service.createEmployee(data);
-      
-      // Assert
-      expect(result).toMatchObject({
-        id: expect.any(Number),
-        username: data.username
-      });
-      
-      // Verify events
-      expect(eventBus.publish).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'employee.created'
-        })
-      );
-    });
-    
-    it('should handle duplicate username error', async () => {
-      // Test error scenarios
-    });
-  });
-});
-```
-
----
-
-## 4. Service Boundaries & Responsibilities
+## 4. Service Boundaries & Communication
 
 ### 4.1 Strict Boundary Rules
-
-#### ALLOWED:
+**ALLOWED:**
 - Service owns its database exclusively
 - Service exposes REST/GraphQL/gRPC APIs
 - Service publishes domain events
 - Service maintains its own cache
 
-#### FORBIDDEN:
+**FORBIDDEN:**
 - Direct database access across services
-- Shared libraries between services
+- Shared domain logic between services
 - Synchronous cascading calls (max 1 hop)
 - Storing another service's data (except IDs)
 
-### 4.2 Data Ownership Matrix
+### 4.2 Event-Driven Communication
+All state changes must publish events through Kafka event bus:
 
-| Data Type | Owner Service | Consumers | Access Method |
-|-----------|--------------|-----------|---------------|
-| User Authentication | Employee Core | All | JWT Token |
-| Employee Profile | Employee Core | All | API/Events |
-| Social Posts | Social Engagement | Analytics | API/Events |
-| Leave Requests | HR Operations | Employee Core | API/Events |
-| Recognition | Recognition & Rewards | Social, Analytics | Events |
-| Notifications | Communication | All | API |
-| Points Balance | Recognition & Rewards | Marketplace | API |
-
----
-
-## 5. Communication Patterns
-
-### 5.1 Synchronous Communication (REST/gRPC)
-
-#### When to Use:
-- User-initiated requests requiring immediate response
-- Data queries for UI rendering
-- Authentication/authorization checks
-
-#### Implementation:
-```typescript
-// Service-to-service client
-class EmployeeServiceClient {
-  private readonly baseUrl = process.env.EMPLOYEE_SERVICE_URL;
-  private readonly timeout = 5000; // 5 seconds
-  
-  async getEmployee(id: number): Promise<Employee> {
-    const response = await fetch(`${this.baseUrl}/internal/employees/${id}`, {
-      headers: {
-        'X-Service-Auth': this.getServiceToken(),
-        'X-Correlation-Id': this.correlationId
-      },
-      timeout: this.timeout
-    });
-    
-    if (!response.ok) {
-      throw new ServiceUnavailableError('Employee service unavailable');
-    }
-    
-    return response.json();
-  }
-}
-```
-
-### 5.2 Asynchronous Communication (Events)
-
-#### When to Use:
-- State changes that multiple services care about
-- Long-running operations
-- Eventual consistency scenarios
-- Decoupled workflows
-
-#### Event Categories:
 ```typescript
 // Domain Events (state changes)
 'employee.created'
@@ -496,433 +180,94 @@ class EmployeeServiceClient {
 'ad.user_created'
 ```
 
-### 5.3 Saga Pattern for Distributed Transactions
+## 5. Data Management Strategy
 
-```typescript
-// Employee Onboarding Saga
-class OnboardingSaga {
-  private steps = [
-    { service: 'employee-core', action: 'createAccount', compensate: 'deleteAccount' },
-    { service: 'hr-operations', action: 'initializeLeaveBalance', compensate: 'removeLeaveBalance' },
-    { service: 'communication', action: 'sendWelcomeEmail', compensate: null },
-    { service: 'onboarding', action: 'createPlan', compensate: 'deletePlan' }
-  ];
-  
-  async execute(data: OnboardingData): Promise<void> {
-    const executedSteps = [];
-    
-    try {
-      for (const step of this.steps) {
-        await this.executeStep(step, data);
-        executedSteps.push(step);
-      }
-    } catch (error) {
-      // Compensate in reverse order
-      await this.compensate(executedSteps.reverse(), data);
-      throw error;
-    }
-  }
-}
-```
-
----
-
-## 6. Data Management Strategy
-
-### 6.1 Database Selection Guide
-
+### 5.1 Database Selection Guide
 | Service | Database | Rationale |
 |---------|----------|-----------|
 | Employee Core | PostgreSQL | ACID compliance, relationships |
 | Social Engagement | MongoDB | Flexible schema, nested documents |
 | Recognition & Rewards | PostgreSQL + Redis | Transactions + Caching |
 | HR Operations | PostgreSQL | Compliance, audit trails |
-| Communication | PostgreSQL + Redis | Queue management |
-| Onboarding | PostgreSQL | Workflow state management |
-| Analytics | ClickHouse | Time-series, aggregations |
-| Marketplace | PostgreSQL | Transactions, inventory |
 
-### 6.2 Data Synchronization Patterns
+### 5.2 Multi-tenancy Implementation
+- **PostgreSQL:** Row Level Security (RLS) policies
+- **MongoDB:** Application-level tenant filtering
+- **All Services:** Mandatory organization_id validation
+- **API Gateway:** Tenant context propagation
 
-#### Event-Carried State Transfer:
-```typescript
-// When employee department changes
-await eventBus.publish({
-  type: 'employee.department_changed',
-  data: {
-    employee_id: 123,
-    old_department: { id: 1, name: 'Engineering' },
-    new_department: { id: 2, name: 'Product' },
-    effective_date: '2025-08-01'
-  }
-});
+## 6. Observability & Monitoring
 
-// Social service updates user's display info
-eventBus.subscribe('employee.department_changed', async (event) => {
-  await updateUserDisplay(event.data.employee_id, {
-    department: event.data.new_department.name
-  });
-});
-```
+### 6.1 OpenTelemetry Standards
+- **Tracing:** W3C traceparent propagation across all services
+- **Metrics:** Service-level SLIs (latency, error rate, throughput)
+- **Logging:** Structured JSON logs with correlation IDs
+- **Health Checks:** `/health` endpoint on all services
 
-### 6.3 CQRS Implementation
+### 6.2 Performance Targets
+- API Response Time: <200ms (95th percentile)
+- Database Query Time: <100ms (95th percentile)
+- Event Processing: <1s end-to-end
+- Service Availability: 99.9% uptime
 
-```typescript
-// Command Model (Write)
-class EmployeeCommandService {
-  async createEmployee(data: CreateEmployeeDto): Promise<void> {
-    const employee = await this.repository.create(data);
-    await this.eventBus.publish('employee.created', employee);
-  }
-}
+## 7. Security Standards
 
-// Query Model (Read)
-class EmployeeQueryService {
-  private readonly cache = new Redis();
-  
-  async getEmployeeView(id: number): Promise<EmployeeView> {
-    // Check cache first
-    const cached = await this.cache.get(`employee:${id}`);
-    if (cached) return JSON.parse(cached);
-    
-    // Build view from multiple sources
-    const employee = await this.getEmployeeData(id);
-    const recognition = await this.recognitionClient.getStats(id);
-    const social = await this.socialClient.getProfile(id);
-    
-    const view = {
-      ...employee,
-      recognition_points: recognition.total_points,
-      social_connections: social.connections_count
-    };
-    
-    await this.cache.setex(`employee:${id}`, 300, JSON.stringify(view));
-    return view;
-  }
-}
-```
+### 7.1 Authentication & Authorization
+- JWT tokens with RS256 signing
+- Role-based access control (RBAC)
+- API key authentication for service-to-service
+- Multi-factor authentication for admin access
 
----
+### 7.2 Data Protection
+- TLS 1.3 for all external communication
+- Encryption at rest for sensitive data
+- PII data classification and handling
+- GDPR compliance for EU users
 
-## 7. Frontend Architecture
+## 8. Deployment & Infrastructure
 
-### 7.1 Micro-Frontend Structure
+### 8.1 Container Strategy
+- Docker containers for all services
+- Multi-stage builds for optimization
+- Distroless base images for security
+- Resource limits and health checks
 
-```
-/apps
-  /employee-portal          # Main employee application
-    /src
-      /features
-        /profile           # Employee profile module
-        /dashboard         # Dashboard module
-        /leave            # Leave management module
-      /shared
-        /api              # API clients
-        /components       # Shared components
-        /hooks           # Shared hooks
-        
-  /admin-dashboard         # Admin application
-    /src
-      /features
-        /employees       # Employee management
-        /analytics      # Analytics dashboard
-        /settings       # System settings
-        
-  /marketplace           # Marketplace application
-    /src
-      /features
-        /catalog        # Product catalog
-        /cart          # Shopping cart
-        /orders        # Order history
-```
+### 8.2 CI/CD Pipeline
+- Automated testing on all PRs
+- Contract testing between services
+- Progressive deployment (canary/blue-green)
+- Automated rollback on failure
 
-### 7.2 State Management
+## 9. Migration Strategy
 
-```typescript
-// Feature-based state slices
-/store
-  /slices
-    /auth.slice.ts
-    /employee.slice.ts
-    /notification.slice.ts
-  /middleware
-    /api.middleware.ts
-    /websocket.middleware.ts
-  /selectors
-    /employee.selectors.ts
-```
+### 9.1 Current Status
+- **Employee Core Service:** 85% complete, production-ready
+- **Legacy Monolith:** Still serving traffic, gradual migration
+- **Dual-write Pattern:** Implemented for data consistency
+- **Feature Flags:** Control traffic routing during migration
 
-### 7.3 API Integration Layer
+### 9.2 Next Steps
+1. Complete HR Operations Service migration
+2. Extract Recognition & Rewards Service
+3. Migrate Social Engagement to MongoDB
+4. Implement full event-driven architecture
+5. Sunset legacy monolith endpoints
 
-```typescript
-// Generated API client from OpenAPI spec
-import { EmployeeServiceApi } from '@generated/employee-service';
+## 10. Compliance & Validation
 
-// Wrapper with authentication and error handling
-class EmployeeApiClient {
-  private api: EmployeeServiceApi;
-  
-  constructor() {
-    this.api = new EmployeeServiceApi({
-      basePath: process.env.VITE_API_GATEWAY_URL,
-      headers: {
-        'Authorization': () => `Bearer ${getAuthToken()}`
-      }
-    });
-  }
-  
-  async getEmployee(id: number): Promise<Employee> {
-    try {
-      return await this.api.getEmployee(id);
-    } catch (error) {
-      this.handleApiError(error);
-    }
-  }
-  
-  private handleApiError(error: any): never {
-    if (error.status === 401) {
-      // Trigger re-authentication
-      store.dispatch(logout());
-    }
-    throw new ApiError(error.message, error.status);
-  }
-}
-```
+### 10.1 Architecture Compliance Checklist
+- [ ] Service has dedicated database
+- [ ] No shared domain logic with other services
+- [ ] All state changes publish events
+- [ ] Error handling uses AppError.normalize()
+- [ ] Test coverage meets minimum thresholds
+- [ ] OpenAPI contracts defined and validated
+- [ ] Health checks implemented
+- [ ] Observability instrumentation complete
 
----
-
-## 8. Code Organization Rules
-
-### 8.1 Service Structure
-
-```
-/services/[service-name]/
-  /src
-    /api
-      /controllers      # HTTP request handlers
-      /routes          # Route definitions
-      /middleware      # Service-specific middleware
-      /validators      # Request validation
-    /domain
-      /entities        # Domain models
-      /services        # Business logic
-      /events         # Domain events
-      /exceptions     # Domain exceptions
-    /infrastructure
-      /database       # Database configuration
-      /repositories   # Data access layer
-      /cache         # Cache implementations
-      /messaging     # Event bus integration
-    /application
-      /commands      # Command handlers (CQRS)
-      /queries       # Query handlers (CQRS)
-      /sagas        # Saga orchestrators
-    /tests
-      /unit         # Unit tests
-      /integration  # Integration tests
-      /e2e         # End-to-end tests
-  /config           # Configuration files
-  /scripts         # Deployment/migration scripts
-  Dockerfile       # Container definition
-  package.json     # Dependencies
-  README.md        # Service documentation
-```
-
-### 8.2 Naming Conventions
-
-```typescript
-// Files
-employee.entity.ts        // Entities
-employee.service.ts       // Services
-employee.controller.ts    // Controllers
-employee.repository.ts    // Repositories
-employee.created.event.ts // Events
-employee.dto.ts          // DTOs
-
-// Variables & Functions
-const employee_id = 123;  // Snake_case for database fields
-const userId = 123;       // camelCase for application code
-const CACHE_TTL = 300;    // UPPER_CASE for constants
-
-// Classes & Interfaces
-class EmployeeService {}
-interface IEmployeeRepository {}
-type EmployeeCreateDto = {}
-enum EmployeeStatus {}
-```
-
-### 8.3 Import Order
-
-```typescript
-// 1. Node modules
-import express from 'express';
-import { Injectable } from '@nestjs/common';
-
-// 2. Service imports
-import { EmployeeService } from '@services/employee-core';
-
-// 3. Domain imports
-import { Employee } from '@domain/entities/employee.entity';
-import { EmployeeCreatedEvent } from '@domain/events';
-
-// 4. Infrastructure imports
-import { PostgresRepository } from '@infrastructure/database';
-
-// 5. Shared/Common imports
-import { logger } from '@shared/logger';
-import { BaseController } from '@shared/base';
-
-// 6. Relative imports
-import { validateEmployee } from './validators';
-import type { EmployeeDto } from './types';
-```
-
----
-
-## 9. Implementation Checklist
-
-### Before Writing Any Code:
-
-#### Architecture Compliance
-- [ ] Service boundary clearly defined?
-- [ ] Database isolation maintained?
-- [ ] No shared code between services?
-- [ ] Event-driven communication used?
-- [ ] API contracts defined?
-
-#### Code Quality
-- [ ] Error handling follows gold standard?
-- [ ] All catch blocks typed properly?
-- [ ] Soft delete implemented?
-- [ ] Audit trail included?
-- [ ] Snake_case for database fields?
-
-#### Testing
-- [ ] Unit tests written (95% coverage)?
-- [ ] Integration tests included?
-- [ ] Event handlers tested?
-- [ ] Error scenarios covered?
-- [ ] Performance benchmarks met?
-
-#### Documentation
-- [ ] API documentation updated?
-- [ ] Event schemas documented?
-- [ ] README updated?
-- [ ] Architecture decision recorded?
-
-#### Security
-- [ ] Authentication required?
-- [ ] Authorization checked?
-- [ ] Input validation complete?
-- [ ] SQL injection prevented?
-- [ ] Sensitive data encrypted?
-
----
-
-## 10. Compliance Validation
-
-### Automated Checks
-
-```typescript
-// Pre-commit hook validation
-export function validateArchitectureCompliance(files: string[]): ValidationResult {
-  const violations = [];
-  
-  // Check service boundaries
-  if (hasSharedDatabaseAccess(files)) {
-    violations.push('Services must not share database access');
-  }
-  
-  // Check error handling
-  if (hasUnTypedCatchBlocks(files)) {
-    violations.push('All catch blocks must be typed as (error: any)');
-  }
-  
-  // Check soft deletes
-  if (hasHardDeletes(files)) {
-    violations.push('Hard deletes are forbidden - use soft delete pattern');
-  }
-  
-  // Check event publishing
-  if (hasMissingEventPublishing(files)) {
-    violations.push('State changes must publish domain events');
-  }
-  
-  return {
-    valid: violations.length === 0,
-    violations
-  };
-}
-```
-
-### Manual Review Checklist
-
-#### Service Review
-- [ ] Single responsibility principle followed?
-- [ ] Bounded context properly defined?
-- [ ] Dependencies minimized?
-- [ ] Resilience patterns implemented?
-
-#### API Review
-- [ ] RESTful conventions followed?
-- [ ] Versioning implemented?
-- [ ] Rate limiting configured?
-- [ ] Documentation complete?
-
-#### Database Review
-- [ ] Schema optimized?
-- [ ] Indexes appropriate?
-- [ ] Migrations versioned?
-- [ ] Backup strategy defined?
-
-#### Security Review
-- [ ] OWASP Top 10 addressed?
-- [ ] Secrets management proper?
-- [ ] Encryption at rest/transit?
-- [ ] Audit logging complete?
-
----
-
-## Enforcement & Governance
-
-### Violation Consequences
-
-| Severity | Examples | Action |
-|----------|----------|--------|
-| CRITICAL | Shared database access, Hard deletes, No error handling | Block deployment |
-| HIGH | Missing events, Poor test coverage, No audit trail | Require immediate fix |
-| MEDIUM | Naming violations, Import order, File size | Fix in next sprint |
-| LOW | Documentation gaps, Code formatting | Track for cleanup |
-
-### Architecture Review Board
-
-**Weekly Reviews:**
-- New service proposals
-- Major refactoring plans
-- Technology additions
-- Pattern changes
-
-**Approval Required For:**
-- New services
-- Database changes
-- API breaking changes
-- New dependencies
-- Infrastructure changes
-
----
-
-## Living Document Notice
-
-This architecture document is maintained and enforced through:
-1. Automated CI/CD checks
-2. Code review requirements
-3. Quarterly architecture reviews
-4. Team training sessions
-
-**Last Architecture Review:** August 2025
-**Next Scheduled Review:** November 2025
-**Contact:** architecture@thriviohr.com
-
----
-
-**Remember:** Every line of code contributes to either technical debt or technical wealth. Choose wealth.
+### 10.2 Code Review Requirements
+- Architecture compliance validation
+- Security review for all changes
+- Performance impact assessment
+- Test coverage verification
+- Documentation updates
