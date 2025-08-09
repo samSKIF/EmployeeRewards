@@ -9,6 +9,7 @@ import { correlationId } from './middleware/correlation-id';
 import { requestLogger } from './middleware/request-logger';
 import { errorHandler } from './middleware/error-handler';
 import { tenant } from './middleware/tenant';
+import readyRouter from './routes/ready';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -35,6 +36,9 @@ app.use(requestLogger);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Readiness probe (before tenant middleware)
+app.use(readyRouter);
 
 // Multi-tenant safety enforcement (before routes)
 app.use(tenant(true)); // require tenant by default; relax to false on public routes if needed
