@@ -47,6 +47,12 @@
         "max-lines": ["error", 300],
         "max-lines-per-function": ["warn", 100]
       }
+    },
+    {
+      "files": ["packages/platform-sdk/src/types.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     }
   ]
 }

@@ -12,7 +12,8 @@
     "baseUrl": ".",
     "paths": {
       "@platform/sdk": ["packages/platform-sdk/src"],
-      "@platform/sdk/*": ["packages/platform-sdk/src/*"]
+      "@platform/sdk/*": ["packages/platform-sdk/src/*"],
+      "@shared/*": ["shared/*"]
     },
     "types": ["node"],
     "resolveJsonModule": true
