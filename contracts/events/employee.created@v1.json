@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "employee.created@v1",
+  "type": "object",
+  "required": ["id","type","version","timestamp","tenant_id","payload"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "type": { "const": "employee.created" },
+    "version": { "const": 1 },
+    "source": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "tenant_id": { "type": "string" },
+    "correlation_id": { "type": "string" },
+    "causation_id": { "type": "string" },
+    "idempotency_key": { "type": "string" },
+    "payload": {
+      "type": "object",
+      "required": ["employee_id", "email"],
+      "properties": {
+        "employee_id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,1 @@
+Place your service OpenAPI specs here (or keep them under each service and reference them in `scripts/generate-openapi.mjs`).

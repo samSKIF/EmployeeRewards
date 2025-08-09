@@ -1,0 +1,1 @@
+Generated TypeScript declaration files from event JSON Schemas live here.
