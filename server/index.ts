@@ -10,6 +10,7 @@ import { requestLogger } from './middleware/request-logger';
 import { errorHandler } from './middleware/error-handler';
 import { tenant } from './middleware/tenant';
 import readyRouter from './routes/ready';
+import { initGracefulShutdown } from './bootstrap/shutdown';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -180,4 +181,7 @@ app.use((req, res, next) => {
   httpServer.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
   });
+
+  // Initialize graceful shutdown with 25s grace (tune to k8s terminationGracePeriodSeconds)
+  initGracefulShutdown(httpServer, { graceMs: 25000 });
 })();

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { publish } from '../services/event-bus';
+import { isDraining } from '../bootstrap/shutdown';
 
 const router = Router();
 
@@ -51,6 +52,17 @@ router.get('/__ready', async (req, res) => {
     }
   } catch (e: any) {
     checks.mongo = { ok: false, error: e?.message || String(e) };
+  }
+
+  const draining = isDraining();
+  if (draining) {
+    return res.status(503).json({
+      ok: false,
+      status: 'draining',
+      checks,
+      ts: new Date().toISOString(),
+      correlation_id: (req as any).correlationId
+    });
   }
 
   const ok = Object.values(checks).every((c: any) => c.ok === true || c.ok === 'skipped' || c.ok === 'unknown');
