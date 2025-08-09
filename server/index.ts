@@ -45,7 +45,7 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(readyRouter);
 
 // Multi-tenant safety enforcement (before routes)
-app.use(tenant(false)); // relax tenant requirement to allow frontend to load
+app.use(tenant(true)); // require tenant by default; relax to false on public routes if needed
 
 // Set up static file serving for uploaded files
 setupStaticFileServing(app);
