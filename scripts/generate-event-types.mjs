@@ -9,10 +9,18 @@ await mkdir(OUT_DIR, { recursive: true });
 
 const files = await readdir(IN_DIR);
 for (const f of files) {
-  if (!f.endsWith('.json')) continue;
+  if (!f.endsWith('.json') || f.includes('.example.')) continue;
   const name = f.replace('.json', '').replace('@', '_');
   const schemaPath = path.join(IN_DIR, f);
-  const ts = await compileFromFile(schemaPath, { bannerComment: '' });
+  
+  // Generate TypeScript with proper interface naming
+  const ts = await compileFromFile(schemaPath, { 
+    bannerComment: '', 
+    style: { bracketSpacing: false },
+    format: false, // Disable prettier formatting to avoid syntax errors
+    additionalProperties: false
+  });
+  
   await writeFile(path.join(OUT_DIR, `${name}.d.ts`), ts, 'utf8');
   console.log('Generated:', `${name}.d.ts`);
 }

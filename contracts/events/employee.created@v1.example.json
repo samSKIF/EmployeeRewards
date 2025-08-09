@@ -1,0 +1,17 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "employee.created",
+  "version": 1,
+  "source": "employee-core-service",
+  "timestamp": "2025-08-09T10:30:00.000Z",
+  "tenant_id": "org_12345",
+  "correlation_id": "corr_67890",
+  "causation_id": "cause_11111",
+  "idempotency_key": "idem_22222",
+  "payload": {
+    "employee_id": "emp_33333",
+    "email": "john.doe@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  }
+}
