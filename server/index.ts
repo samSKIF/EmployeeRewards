@@ -91,8 +91,15 @@ app.use((req, res, next) => {
     await setupMongoDBSocialRoutes(app);
   }
 
-  // Multi-tenant safety enforcement (scoped to API routes only)
-  app.use('/api', tenant(true));
+  // Multi-tenant safety enforcement (scoped to API routes only, excluding auth)
+  app.use('/api', (req, res, next) => {
+    // Skip tenant enforcement for auth endpoints  
+    // When middleware is mounted at /api, req.path is relative to that mount point
+    if (req.path.startsWith('/auth/')) {
+      return next();
+    }
+    return tenant(true)(req, res, next);
+  });
   
   const server = await registerRoutes(app);
 
