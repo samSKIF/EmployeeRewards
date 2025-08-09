@@ -20,7 +20,7 @@ import type {
   User,
   LeaveDependencies,
 } from '../domain/leave.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Leave Repository

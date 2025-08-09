@@ -5,7 +5,7 @@ import { db } from '../db';
 import { users, accounts, type User, type InsertUser, type Account } from '@shared/schema';
 import { eq, and, or, count, like, inArray } from 'drizzle-orm';
 import { hash, compare } from 'bcrypt';
-import type { UserWithBalance } from '@shared/types';
+import type { UserWithBalance } from '@platform/sdk/types';
 import type { IUserStorage } from './interfaces';
 
 export class UserStorage implements IUserStorage {

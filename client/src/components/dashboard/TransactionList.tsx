@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { TransactionWithDetails } from '@shared/types';
+import { TransactionWithDetails } from '@platform/sdk/types';
 import { format } from 'date-fns';
 
 const TransactionList = () => {

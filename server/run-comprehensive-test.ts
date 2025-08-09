@@ -4,7 +4,7 @@
  */
 
 import { runComprehensiveTest } from './dual-write/comprehensive-test';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 async function main() {
   logger.info('========================================');

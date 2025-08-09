@@ -5,7 +5,7 @@
 import { Router } from 'express';
 import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
 import { celebrationPostService } from '../services/celebrationPostService';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

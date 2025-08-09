@@ -5,7 +5,7 @@
 
 import { dualWriteAdapter } from './dual-write-adapter';
 import { migrationPhaseManager } from './migration-phases';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { eventBus } from '../../services/shared/event-bus';
 
 export interface TestConfig {

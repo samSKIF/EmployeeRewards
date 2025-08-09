@@ -25,7 +25,7 @@ import {
   createRecognitionRejectedEvent,
   createManagerBudgetUpdatedEvent,
 } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 // Validation schemas for recognition operations
 export const createRecognitionSchema = createInsertSchema(recognitions).omit({

@@ -7,7 +7,7 @@ import { db } from '../../../db';
 import { users } from '@shared/schema';
 import { SocialService } from '../../../mongodb/socialService';
 import type { SocialPost, Comment, User, SocialDependencies } from '../domain/social.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Social Repository

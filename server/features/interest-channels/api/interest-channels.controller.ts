@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { InterestChannelsDomain } from '../domain/interest-channels.domain';
 import { InterestChannelsRepository } from '../infrastructure/interest-channels.repository';
 import { AuthenticatedRequest } from '../../../middleware/auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type {
   CreateInterestChannelData,
   UpdateInterestChannelData,

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { storage } from '../../storage';
 import { verifyToken, verifyAdmin } from '../../middleware/auth';
 import { AuthenticatedRequest } from '../../types/auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

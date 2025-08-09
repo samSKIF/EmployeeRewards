@@ -3,7 +3,7 @@
 
 import leaveRoutes from './api/leave.routes';
 import { initializeLeaveEventHandlers } from './events/leave.event-handlers';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Initialize the leave management feature module

@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { User } from '@shared/types';
+import { User } from '@platform/sdk/types';
 import { X, Plus, Trash2, Calendar, Send } from 'lucide-react';
 import {
   Popover,

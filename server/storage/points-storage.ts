@@ -10,7 +10,7 @@ import {
   type Transaction,
 } from '@shared/schema';
 import { eq, desc, and, or, count, sum } from 'drizzle-orm';
-import type { TransactionWithDetails, DashboardStats } from '@shared/types';
+import type { TransactionWithDetails, DashboardStats } from '@platform/sdk/types';
 import type { IPointsStorage } from './interfaces';
 
 export class PointsStorage implements IPointsStorage {

@@ -58,7 +58,7 @@ import {
   Eye,
   Store,
 } from 'lucide-react';
-import { PostWithDetails, SocialStats, User } from '@shared/types';
+import { PostWithDetails, SocialStats, User } from '@platform/sdk/types';
 import { useToast } from '@/hooks/use-toast';
 import {
   Select,

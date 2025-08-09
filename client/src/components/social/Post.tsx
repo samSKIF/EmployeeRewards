@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { PostWithDetails, User } from '@shared/types';
+import { PostWithDetails, User } from '@platform/sdk/types';
 import {
   MessageCircle,
   ThumbsUp,

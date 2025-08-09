@@ -29,11 +29,13 @@
     "@typescript-eslint/no-implicit-any-catch": ["error", { "allowExplicitAny": false }],
     "@typescript-eslint/no-explicit-any": ["warn", { "ignoreRestArgs": true }],
 
-    "no-restricted-imports": ["warn", {
+    "no-restricted-imports": ["error", {
       "paths": [
-        { "name": "@shared", "message": "Legacy shared import. Prefer @platform/sdk for cross-cutting utilities." }
+        { "name": "@shared", "message": "Legacy shared import. Prefer @platform/sdk for cross-cutting utilities." },
+        { "name": "@shared/logger", "message": "Use @platform/sdk (logger is exported from the SDK)." },
+        { "name": "@shared/types", "message": "Use @platform/sdk/types (compat shim exists)." }
       ],
-      "patterns": ["@shared/*"]
+      "patterns": ["@shared/*", "@shared/logger", "@shared/types"]
     }]
   },
   "overrides": [

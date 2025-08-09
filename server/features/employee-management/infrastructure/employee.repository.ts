@@ -6,7 +6,7 @@ import { users, accounts, type User, type InsertUser } from '@shared/schema';
 import { eq, and, or, count, like, desc, asc, sql, ilike } from 'drizzle-orm';
 import { hash, compare } from 'bcrypt';
 import type { EmployeeFilters } from '../domain/employee.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 export interface EmployeeDependencies {
   hasActivePosts: boolean;

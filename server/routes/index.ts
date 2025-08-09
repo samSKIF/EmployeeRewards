@@ -19,7 +19,7 @@ import prioritiesRoutes from './prioritiesRoutes';
 import postsRoutes from './postsRoutes';
 import subscriptionRoutes from './subscriptionRoutes';
 import featureFlagsRoutes from './feature-flags';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 // Import microservices
 import recognitionMicroservice from '../microservices/recognition';

@@ -6,7 +6,7 @@ import { verifyToken, AuthenticatedRequest } from '../../../middleware/auth';
 import { upload } from '../../../file-upload';
 import { SocialDomain, type CreatePostData, type CreateCommentData, type ReactionData, type PollVoteData, type PostFilters } from '../domain/social.domain';
 import { SocialRepository } from '../infrastructure/social.repository';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 

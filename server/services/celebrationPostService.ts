@@ -5,7 +5,7 @@
 import { db, pool } from '../db';
 import { users } from '@shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 interface CelebrationUser {
   id: number;

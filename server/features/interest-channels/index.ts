@@ -3,7 +3,7 @@
 
 import interestChannelsRoutes from './api/interest-channels.routes';
 import { initializeInterestChannelsEventHandlers } from './events/interest-channels.event-handlers';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Initialize the interest channels system feature module

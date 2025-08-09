@@ -3,7 +3,7 @@
 
 import surveyRoutes from './api/survey.routes';
 import { initializeSurveyEventHandlers } from './events/survey.event-handlers';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Initialize the survey system feature module

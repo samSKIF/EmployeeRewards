@@ -5,7 +5,7 @@ import {
   AuthenticatedRequest,
 } from '../middleware/auth';
 import { storage } from '../storage';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

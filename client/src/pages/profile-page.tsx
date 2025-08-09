@@ -37,7 +37,7 @@ import {
   Camera as CameraIcon,
   Loader2,
 } from 'lucide-react';
-import { User as BaseUserType } from '@shared/types';
+import { User as BaseUserType } from '@platform/sdk/types';
 import InterestsSection from '@/components/profile/InterestsSection';
 
 // Extended UserType with additional profile fields

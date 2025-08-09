@@ -26,7 +26,7 @@ import type {
   CommentWithUser,
   PollWithVotes,
   SocialStats,
-} from '@shared/types';
+} from '@platform/sdk/types';
 import type { ISocialStorage } from './interfaces';
 
 export class SocialStorage implements ISocialStorage {

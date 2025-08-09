@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { verifyToken, verifyAdmin, AuthenticatedRequest } from '../../../middleware/auth';
 import { storage } from '../../../storage';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { logActivity } from '../../../middleware/activityLogger';
 
 const router = Router();

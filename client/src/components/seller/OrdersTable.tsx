@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { OrderWithDetails } from '@shared/types';
+import { OrderWithDetails } from '@platform/sdk/types';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import {

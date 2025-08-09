@@ -19,7 +19,7 @@ import {
 } from '@shared/schema';
 import { eq, and, desc, asc, count, gte, lte, ilike, sql, inArray } from 'drizzle-orm';
 import type { RecognitionFilters } from '../domain/recognition.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Recognition Repository

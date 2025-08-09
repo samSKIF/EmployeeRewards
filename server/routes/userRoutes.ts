@@ -4,7 +4,7 @@ import { storage } from '../storage';
 import { db } from '../db';
 import { users, subscriptions } from '@shared/schema';
 import { eq, desc, sql, and, gte } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { CacheService } from '../cache/cacheService';
 import { hash } from 'bcrypt';
 import { dualWriteAdapter } from '../dual-write/dual-write-adapter';

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import MainLayout from '@/components/layout/MainLayout';
 import ProductCard from '@/components/shop/ProductCard';
 import { Product } from '@shared/schema';
-import { ProductWithAvailable } from '@shared/types';
+import { ProductWithAvailable } from '@platform/sdk/types';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';

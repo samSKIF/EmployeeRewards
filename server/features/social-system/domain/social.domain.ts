@@ -13,7 +13,7 @@ import {
   createPollVoteCastEvent,
   createEngagementMilestoneEvent,
 } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 // Social domain types based on MongoDB models
 export interface SocialPost {

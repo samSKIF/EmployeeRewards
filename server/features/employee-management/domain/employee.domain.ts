@@ -13,7 +13,7 @@ import {
   type EmployeeUpdatedEvent
 } from '@shared/events';
 import { publish } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 // Employee filters and search options
 export const employeeFiltersSchema = z.object({

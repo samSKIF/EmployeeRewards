@@ -5,7 +5,7 @@ import { Express } from 'express';
 import { apiGateway, registerGatewayRoutes } from '../../shared/gateway/api-gateway.service';
 import { allGatewayRoutes } from './route-definitions';
 import { featureFlagService } from '../../shared/services/feature-flags.service';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Initialize the API Gateway with all route configurations

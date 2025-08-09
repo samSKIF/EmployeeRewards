@@ -51,7 +51,7 @@ import type {
   MessageWithSender,
   ConversationWithDetails,
   SocialStats,
-} from '@shared/types';
+} from '@platform/sdk/types';
 
 export interface IUserStorage {
   // User management

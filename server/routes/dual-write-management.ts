@@ -18,7 +18,7 @@ import { employeeCoreProxy } from '../dual-write/employee-core-proxy';
 import { migrationPhaseManager } from '../dual-write/migration-phases';
 import { runMigrationSimulation } from '../dual-write/simulate-migration';
 import { runComprehensiveTest } from '../dual-write/comprehensive-test';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { eventBus } from '../../services/shared/event-bus';
 
 const router = Router();

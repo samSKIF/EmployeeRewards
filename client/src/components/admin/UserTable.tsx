@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { UserWithBalance } from '@shared/types';
+import { UserWithBalance } from '@platform/sdk/types';
 import {
   Table,
   TableBody,

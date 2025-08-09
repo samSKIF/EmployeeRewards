@@ -11,7 +11,7 @@ import type {
   UserMentionedEvent,
   EngagementMilestoneEvent 
 } from '@shared/events/social-events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { db } from '../../../db';
 import { audit_logs } from '@shared/schema';
 

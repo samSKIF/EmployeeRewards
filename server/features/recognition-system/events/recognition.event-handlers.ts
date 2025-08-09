@@ -2,7 +2,7 @@
 // Handles recognition domain events for cross-cutting concerns
 
 import { subscribe, type RecognitionCreatedEvent, type RecognitionApprovedEvent, type PointsAwardedEvent, type RecognitionRejectedEvent, type ManagerBudgetUpdatedEvent } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Recognition Event Handler Service

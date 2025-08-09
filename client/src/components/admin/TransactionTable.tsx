@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { TransactionWithDetails } from '@shared/types';
+import { TransactionWithDetails } from '@platform/sdk/types';
 import {
   Table,
   TableBody,

@@ -15,7 +15,7 @@ import {
   type InsertMessage,
 } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
-import type { ConversationWithDetails, MessageWithSender } from '@shared/types';
+import type { ConversationWithDetails, MessageWithSender } from '@platform/sdk/types';
 import type { IChatStorage } from './interfaces';
 
 export class ChatStorage implements IChatStorage {

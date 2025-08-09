@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { verifyToken, verifyAdmin } from '../../middleware/auth';
 import { AuthenticatedRequest } from '../../middleware/activityLogger';
 import { storage } from '../../storage';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { activityLogger, logActivity, auditLogger } from '../../middleware/activityLogger';
 import { publishEmployeeCreated } from '../../events/publishers/employee-created';
 

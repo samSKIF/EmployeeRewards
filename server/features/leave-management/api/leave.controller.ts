@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { LeaveDomain } from '../domain/leave.domain';
 import { LeaveRepository } from '../infrastructure/leave.repository';
 import { AuthenticatedRequest } from '../../../middleware/auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type {
   CreateLeaveTypeData,
   CreateLeaveRequestData,

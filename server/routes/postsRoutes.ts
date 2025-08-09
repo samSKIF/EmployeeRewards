@@ -8,7 +8,7 @@ import {
 } from '../../shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

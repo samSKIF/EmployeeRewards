@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
 import { user_activities, audit_logs } from '@shared/schema';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 export interface AuthenticatedRequest extends Request {
   user?: {

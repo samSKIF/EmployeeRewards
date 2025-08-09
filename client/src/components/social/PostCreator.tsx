@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { User } from '@shared/types';
+import { User } from '@platform/sdk/types';
 import {
   Smile,
   Image as ImageIcon,

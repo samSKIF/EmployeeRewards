@@ -15,7 +15,7 @@ import {
   insertUserSchema,
 } from '@shared/schema';
 import { eq, sql, and, desc, count } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import jwt from 'jsonwebtoken';
 import { dualWriteAdapter } from '../dual-write/dual-write-adapter';
 

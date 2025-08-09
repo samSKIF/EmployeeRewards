@@ -4,7 +4,7 @@ import { User } from '@shared/schema';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
 import { users } from '@shared/schema';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'rewardhub-secret-key';
 

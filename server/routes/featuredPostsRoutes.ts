@@ -6,7 +6,7 @@ import {
   users,
 } from '../../shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

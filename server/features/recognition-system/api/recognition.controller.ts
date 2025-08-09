@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../../../middleware/auth';
 import { RecognitionDomain, type CreateRecognitionData, type RecognitionFilters, type ManagerBudgetData } from '../domain/recognition.domain';
 import { RecognitionRepository } from '../infrastructure/recognition.repository';
 import { storage } from '../../../storage';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { z } from 'zod';
 
 /**

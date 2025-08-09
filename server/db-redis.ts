@@ -1,6 +1,6 @@
 
 import Redis from 'ioredis';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
  // Redis is now optional - only connect if REDIS_URL is provided
  const isRedisEnabled = !!process.env.REDIS_URL;

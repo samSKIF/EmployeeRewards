@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User } from '@shared/types';
+import { User } from '@platform/sdk/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';

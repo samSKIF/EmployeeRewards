@@ -4,7 +4,7 @@
  */
 import cron from 'node-cron';
 import { celebrationPostService } from '../services/celebrationPostService';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Schedule celebration post generation

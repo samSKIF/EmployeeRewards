@@ -9,7 +9,7 @@ import {
   type InsertRecognition,
 } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
-import type { RecognitionWithDetails } from '@shared/types';
+import type { RecognitionWithDetails } from '@platform/sdk/types';
 import type { IRecognitionStorage } from './interfaces';
 
 export class RecognitionStorage implements IRecognitionStorage {

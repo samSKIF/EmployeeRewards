@@ -27,7 +27,7 @@ import type {
   SurveyFilters,
   CreateSurveyResponseData,
 } from '../domain/survey.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Survey Repository

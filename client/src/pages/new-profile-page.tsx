@@ -39,7 +39,7 @@ import {
   BarChart4,
   Share2,
 } from 'lucide-react';
-import { User as BaseUserType } from '@shared/types';
+import { User as BaseUserType } from '@platform/sdk/types';
 
 // Extended UserType with additional profile fields
 interface UserType extends BaseUserType {

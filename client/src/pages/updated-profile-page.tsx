@@ -40,7 +40,7 @@ import {
   ImageIcon,
   Camera as CameraIcon,
 } from 'lucide-react';
-import { User as BaseUserType } from '@shared/types';
+import { User as BaseUserType } from '@platform/sdk/types';
 import { CompactInterestsSection } from '@/components/profile/CompactInterestsSection';
 
 // Extended UserType with additional profile fields

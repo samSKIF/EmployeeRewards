@@ -11,7 +11,7 @@ import {
   createLeaveTypeCreatedEvent,
   createLeaveEntitlementAdjustedEvent,
 } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 // Leave domain types
 export interface LeaveType {

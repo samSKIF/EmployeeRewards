@@ -9,7 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ThumbsUp, Award, Sparkles } from 'lucide-react';
-import { User } from '@shared/types';
+import { User } from '@platform/sdk/types';
 import { useLocation } from 'wouter';
 
 interface LikesModalProps {

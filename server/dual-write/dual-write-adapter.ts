@@ -4,7 +4,7 @@
  * Implements the Strangler Fig pattern for gradual migration
  */
 
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { employeeCoreProxy } from './employee-core-proxy';
 import { eventBus } from '../../services/shared/event-bus';
 import { migrationPhaseManager } from './migration-phases';

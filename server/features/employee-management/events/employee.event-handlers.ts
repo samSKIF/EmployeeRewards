@@ -2,7 +2,7 @@
 // Handles employee domain events for cross-cutting concerns
 
 import { subscribe, type EmployeeCreatedEvent, type EmployeeUpdatedEvent, type EmployeeDeactivatedEvent } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Employee Event Handler Service

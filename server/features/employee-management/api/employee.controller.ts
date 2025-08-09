@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { EmployeeDomain, type CreateEmployeeData, type UpdateEmployeeData } from '../domain/employee.domain';
 import { EmployeeRepository } from '../infrastructure/employee.repository';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import { logActivity } from '../../../middleware/activityLogger';
 import type { AuthenticatedRequest } from '../../../middleware/auth';
 

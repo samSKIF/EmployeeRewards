@@ -1,4 +1,4 @@
-import { TilloResponse, CarltonResponse } from '@shared/types';
+import { TilloResponse, CarltonResponse } from '@platform/sdk/types';
 
 // Check if we're in dry run mode (default) or live mode
 const MODE = process.env.MODE || 'DRY_RUN';

@@ -3,7 +3,7 @@ import cron from "node-cron";
  import { users, accounts } from "@shared/schema";
  import { eq, sql } from "drizzle-orm";
 import { awardBirthdayPoints } from '../storage';
-import { logger } from "@shared/logger";
+import { logger } from "@platform/sdk";
 
  // Format for date comparison in PostgreSQL
  const formatPostgresDate = (date: Date) => {

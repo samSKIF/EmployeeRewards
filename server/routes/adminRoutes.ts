@@ -9,7 +9,7 @@ import { storage } from '../storage';
 import { db, pool } from '../db';
 import { users, interestChannels } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

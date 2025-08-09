@@ -2,7 +2,7 @@
 // Processes domain events for interest channels features
 
 import { subscribe } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type {
   InterestChannelCreatedEvent,
   InterestChannelUpdatedEvent,

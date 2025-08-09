@@ -3,7 +3,7 @@ import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
 import { db, pool } from '../db';
 import { users, organizations, subscriptions } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 const router = Router();
 

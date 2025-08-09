@@ -2,7 +2,7 @@
 // Processes domain events for leave management features
 
 import { subscribe } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type {
   LeaveTypeCreatedEvent,
   LeaveTypeUpdatedEvent,

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Middleware to ensure only corporate admins can access management routes

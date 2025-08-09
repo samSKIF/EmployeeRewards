@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { eventSystem } from '@shared/events';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type { SurveyRepository } from '../infrastructure/survey.repository';
 import type {
   Survey,

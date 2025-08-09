@@ -36,7 +36,7 @@ import type {
   InterestChannelFilters,
   ChannelPostFilters,
 } from '../domain/interest-channels.domain';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 /**
  * Interest Channels Repository

@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { SurveyDomain } from '../domain/survey.domain';
 import { SurveyRepository } from '../infrastructure/survey.repository';
 import { AuthenticatedRequest } from '../../../middleware/auth';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import type {
   CreateSurveyData,
   UpdateSurveyData,

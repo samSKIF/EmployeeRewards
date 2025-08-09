@@ -4,7 +4,7 @@
  * Part of the dual-write pattern for gradual migration
  */
 
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 
 export interface EmployeeCoreConfig {
   baseUrl: string;

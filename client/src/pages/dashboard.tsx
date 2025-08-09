@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import TransactionList from '@/components/dashboard/TransactionList';
 import RewardCard from '@/components/dashboard/RewardCard';
-import { DashboardStats } from '@shared/types';
+import { DashboardStats } from '@platform/sdk/types';
 import { Product } from '@shared/schema';
 import { Coins, ArrowUp, ArrowDown, Gift } from 'lucide-react';
 

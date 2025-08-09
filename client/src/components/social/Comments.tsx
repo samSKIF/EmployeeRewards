@@ -4,7 +4,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CommentWithUser, User } from '@shared/types';
+import { CommentWithUser, User } from '@platform/sdk/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ThumbsUp, MoreHorizontal, Trash2 } from 'lucide-react';
 import {

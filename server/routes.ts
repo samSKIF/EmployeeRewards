@@ -83,7 +83,7 @@ import path from 'path';
 
 // Import modular routes
 import { registerRoutes as registerModularRoutes } from './routes/index';
-import { logger } from '@shared/logger';
+import { logger } from '@platform/sdk';
 import managementRoutes from './management-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {

@@ -12,7 +12,7 @@ import {
   type InsertOrder,
 } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
-import type { ProductWithAvailable, OrderWithDetails } from '@shared/types';
+import type { ProductWithAvailable, OrderWithDetails } from '@platform/sdk/types';
 import type { IShopStorage } from './interfaces';
 
 export class ShopStorage implements IShopStorage {
