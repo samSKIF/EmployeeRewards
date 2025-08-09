@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats';
 import { AppError } from './errors';
 
 const ajv = new Ajv({ allErrors: true });
-addFormats(ajv);
+addFormats(ajv as any); // Temporary fix for AJV version mismatch
 
 export interface EventEnvelope<T = unknown> {
   id: string;

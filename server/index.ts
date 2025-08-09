@@ -135,6 +135,10 @@ app.use((req, res, next) => {
   // Add dual-write management routes for microservices migration
   app.use('/api/dual-write', dualWriteManagementRoutes);
 
+  // Internal service routes (opt-in protection)
+  const internalRouter = (await import('./routes/internal-example')).default;
+  app.use(internalRouter);
+
   // Platform health check route
   app.use(healthRouter);
 

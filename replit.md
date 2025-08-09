@@ -133,6 +133,16 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
 - **Retry & DLQ (Kafka mode)**:
   - Retries: `BUS_RETRIES` (default 5), backoff base `BUS_BACKOFF_MS` (default 300ms, exponential)
   - DLQ topic: `<original>.DLQ` (overridable via `BUS_DLQ_SUFFIX`)
+- **Service-to-service auth**:
+  - Set `SERVICE_TOKEN_SECRET=<strong-random>` in env.
+  - Issue a token from any trusted service using:
+    ```ts
+    import { issueServiceToken } from '@platform/sdk';
+    const token = await issueServiceToken(process.env.SERVICE_TOKEN_SECRET!, { svc: 'gateway', aud: 'server' });
+    ```
+  - Send as `Authorization: Bearer <token>` (or header `X-Service-Auth`).
+  - Verify on receiver: `serviceAuth({ audience: 'server' })` middleware.
+  - Tokens are short-lived (5 minutes by default). Rotate secret regularly.
 
 ## Architecture Enforcement
 
