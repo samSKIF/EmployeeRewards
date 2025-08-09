@@ -4,6 +4,10 @@ import { initializeApiGateway } from './gateway/api-gateway.init';
 import managementRoutes from './management-routes';
 import dualWriteManagementRoutes from './routes/dual-write-management';
 import { setupVite, serveStatic, log } from './vite';
+import healthRouter from './routes/health';
+import { correlationId } from './middleware/correlation-id';
+import { requestLogger } from './middleware/request-logger';
+import { errorHandler } from './middleware/error-handler';
 // import { createAdminUser } from "./create-admin-user"; // Removed Firebase dependency
 import { setupStaticFileServing } from './file-upload';
 import path from 'path';
@@ -23,6 +27,11 @@ import {
 // Firebase admin removed - using custom JWT authentication only
 
 const app = express();
+
+// Platform-standard middlewares (early in pipeline)
+app.use(correlationId);
+app.use(requestLogger);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
@@ -111,13 +120,8 @@ app.use((req, res, next) => {
   // Add dual-write management routes for microservices migration
   app.use('/api/dual-write', dualWriteManagementRoutes);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || 'Internal Server Error';
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Platform health check route
+  app.use(healthRouter);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
@@ -140,10 +144,11 @@ app.use((req, res, next) => {
         timestamp: new Date().toISOString(),
         services: health,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.status(503).json({
         status: 'unhealthy',
-        error: error.message,
+        error: errorMessage,
         timestamp: new Date().toISOString(),
       });
     }
@@ -156,6 +161,9 @@ app.use((req, res, next) => {
   setTimeout(() => {
     runCelebrationPostsOnStartup();
   }, 5000); // Wait 5 seconds after server startup
+
+  // Platform error handler (must be last middleware)
+  app.use(errorHandler);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
