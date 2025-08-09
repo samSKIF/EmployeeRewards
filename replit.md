@@ -126,6 +126,13 @@ ThrivioHR is a comprehensive, modular HR and employee engagement platform design
   - `KAFKA_SSL=true|false`
   - `KAFKA_SASL_MECHANISM=plain|scram-sha-256|scram-sha-512` (optional)
   - `KAFKA_SASL_USERNAME=...`, `KAFKA_SASL_PASSWORD=...` (optional)
+- **Idempotency**:
+  - Events default `idempotency_key = id`
+  - Consumers should call `consumeOnce(pool, consumerName, idempotencyKey, tenantId)` before side-effects
+  - Postgres table: `event_consumptions` (PRIMARY KEY on (consumer, idempotency_key))
+- **Retry & DLQ (Kafka mode)**:
+  - Retries: `BUS_RETRIES` (default 5), backoff base `BUS_BACKOFF_MS` (default 300ms, exponential)
+  - DLQ topic: `<original>.DLQ` (overridable via `BUS_DLQ_SUFFIX`)
 
 ## Architecture Enforcement
 

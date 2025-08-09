@@ -1,5 +1,7 @@
 import { Kafka, logLevel } from 'kafkajs';
-import { KAFKA } from '../../config/bus';
+import { KAFKA, BUS_RETRIES, BUS_BACKOFF_MS, DLQ_SUFFIX } from '../../config/bus';
+
+async function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 let kafka: Kafka | null = null;
 let producerStarted = false;
@@ -53,14 +55,37 @@ export async function registerConsumer(topic: string, handler: (msg: any) => Pro
 
   await consumer.run({
     eachMessage: async ({ message }) => {
-      try {
-        const val = message.value ? message.value.toString('utf-8') : '{}';
-        const parsed = JSON.parse(val);
-        const h = handlers.get(topic);
-        if (h) await h(parsed);
-      } catch (e) {
-        // TODO: add DLQ / retry policy
-        console.error('[KAFKA] consumer error on', topic, e);
+      const val = message.value ? message.value.toString('utf-8') : '{}';
+      const parsed = JSON.parse(val);
+      let attempt = 0;
+      let lastError: any = null;
+      while (attempt < BUS_RETRIES) {
+        try {
+          const h = handlers.get(topic);
+          if (h) await h(parsed);
+          lastError = null;
+          break;
+        } catch (e: any) {
+          lastError = e;
+          attempt++;
+          if (attempt < BUS_RETRIES) {
+            const delay = BUS_BACKOFF_MS * Math.pow(2, attempt - 1);
+            await sleep(delay);
+          }
+        }
+      }
+      if (lastError) {
+        // Send to DLQ with metadata
+        const producer = (globalThis as any).__busProducer as import('kafkajs').Producer;
+        const dlqTopic = `${topic}${DLQ_SUFFIX}`;
+        const payload = {
+          error: String(lastError?.message || lastError),
+          original: parsed,
+          attempts: BUS_RETRIES,
+          ts: new Date().toISOString()
+        };
+        await producer.send({ topic: dlqTopic, messages: [{ value: JSON.stringify(payload) }] });
+        // Note: by handling error here, we prevent infinite reprocessing loops
       }
     }
   });

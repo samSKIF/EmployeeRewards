@@ -14,3 +14,7 @@ export const KAFKA = {
       }
     : undefined
 };
+
+export const BUS_RETRIES = Number(process.env.BUS_RETRIES ?? 5);
+export const BUS_BACKOFF_MS = Number(process.env.BUS_BACKOFF_MS ?? 300); // base for exp backoff
+export const DLQ_SUFFIX = process.env.BUS_DLQ_SUFFIX || '.DLQ';

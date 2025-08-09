@@ -1,9 +1,18 @@
-import { randomUUID } from 'node:crypto';
-import { validateEmployeeCreated } from '../validators/employee-created';
-import { publish } from '../../services/event-bus';
+import { randomUUID } from 'crypto';
+import { publish } from '../../services/bus';
+import { TOPICS } from '../../services/bus/topics';
 
-// Temporary EventEnvelope interface until @platform/sdk is available
-interface EventEnvelope<T = unknown> {
+interface EmployeeCreatedInput {
+  employeeId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  tenantId: string;
+  source?: string;
+  correlationId?: string;
+}
+
+interface EventEnvelope {
   id: string;
   type: string;
   version: number;
@@ -11,22 +20,11 @@ interface EventEnvelope<T = unknown> {
   timestamp: string;
   tenant_id: string;
   correlation_id?: string;
-  causation_id?: string;
+  payload: any;
   idempotency_key?: string;
-  payload: T;
 }
 
-type Input = {
-  tenantId: string;
-  employeeId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  correlationId?: string;
-  source?: string;
-};
-
-export async function publishEmployeeCreated(input: Input): Promise<EventEnvelope> {
+export async function publishEmployeeCreated(input: EmployeeCreatedInput) {
   const envelope: EventEnvelope = {
     id: randomUUID(),
     type: 'employee.created',
@@ -43,11 +41,8 @@ export async function publishEmployeeCreated(input: Input): Promise<EventEnvelop
     }
   };
 
-  // validate against JSON-Schema
-  validateEmployeeCreated(envelope);
+  // default idempotency_key
+  (envelope as any).idempotency_key = (envelope as any).id;
 
-  // publish to a semantic topic (will be Kafka later)
-  await publish('employee.created.v1', envelope);
-
-  return envelope;
+  await publish(TOPICS.EMPLOYEE_CREATED_V1, envelope);
 }
