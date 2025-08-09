@@ -46,9 +46,6 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 // Readiness probe (before tenant middleware)
 app.use(readyRouter);
 
-// Multi-tenant safety enforcement (before routes)
-app.use(tenant(true)); // require tenant by default; relax to false on public routes if needed
-
 // Set up static file serving for uploaded files
 setupStaticFileServing(app);
 
@@ -94,6 +91,9 @@ app.use((req, res, next) => {
     await setupMongoDBSocialRoutes(app);
   }
 
+  // Multi-tenant safety enforcement (scoped to API routes only)
+  app.use('/api', tenant(true));
+  
   const server = await registerRoutes(app);
 
   // Create HTTP server for WebSocket support
@@ -141,10 +141,10 @@ app.use((req, res, next) => {
   await startBus();
   await startEmployeeCreatedAuditConsumer();
 
-  // Add management routes for SaaS backend
+  // Add management routes for SaaS backend (tenant already enforced via /api scope)
   app.use('/api/management', managementRoutes);
   
-  // Add dual-write management routes for microservices migration
+  // Add dual-write management routes for microservices migration (tenant already enforced via /api scope)
   app.use('/api/dual-write', dualWriteManagementRoutes);
 
   // Internal service routes (opt-in protection)
