@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '../../middleware/activityLogger';
 import { storage } from '../../storage';
 import { logger } from '@shared/logger';
 import { activityLogger, logActivity, auditLogger } from '../../middleware/activityLogger';
+import { publishEmployeeCreated } from '../../events/publishers/employee-created';
 
 const router = Router();
 
@@ -169,6 +170,25 @@ router.post('/',
       organization_context: organizationId,
       success: true,
     });
+
+    // Publish employee.created event with validation
+    try {
+      await publishEmployeeCreated({
+        tenantId: organizationId.toString(),
+        employeeId: newEmployee.id.toString(),
+        email: newEmployee.email,
+        firstName: newEmployee.name,
+        lastName: newEmployee.surname || undefined,
+        correlationId: req.correlationId,
+        source: 'server'
+      });
+    } catch (eventError: unknown) {
+      // Log event publishing error but don't fail the request
+      logger.error('Failed to publish employee.created event:', { 
+        error: eventError,
+        employeeId: newEmployee.id 
+      });
+    }
 
     res.status(201).json({
       employee: newEmployee,

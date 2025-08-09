@@ -1,4 +1,10 @@
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { AppError } from './errors';
+
+const ajv = new Ajv({ allErrors: true });
+addFormats(ajv);
+
 export interface EventEnvelope<T = unknown> {
   id: string;
   type: string;
@@ -11,5 +17,22 @@ export interface EventEnvelope<T = unknown> {
   idempotency_key?: string;
   payload: T;
 }
-const ajv = new Ajv({ allErrors: true });
-export function compileSchema(schema: object) { return ajv.compile(schema); }
+
+/** Compile and return a raw AJV validator */
+export function compileSchema(schema: object) {
+  return ajv.compile(schema);
+}
+
+/** Create a validator that throws AppError(400) if data is invalid */
+export function createValidator(schema: object) {
+  const validate = compileSchema(schema);
+  return (data: unknown) => {
+    if (!validate(data)) {
+      throw new AppError('invalid_event', 'Event failed validation', {
+        cause: validate.errors,
+        status: 400
+      });
+    }
+    return data;
+  };
+}

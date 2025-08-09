@@ -14,6 +14,7 @@
       "@platform/sdk": ["packages/platform-sdk/src"],
       "@platform/sdk/*": ["packages/platform-sdk/src/*"]
     },
-    "types": ["node"]
+    "types": ["node"],
+    "resolveJsonModule": true
   }
 }
