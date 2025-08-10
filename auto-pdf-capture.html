@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto PDF Capture - ThrivioHR</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .capture-item { background: white; margin: 10px 0; padding: 15px; border-radius: 8px; border-left: 4px solid #0066cc; }
+        .capture-btn { background: #0066cc; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; font-weight: bold; }
+        .capture-btn:hover { background: #0052a3; }
+        .auto-btn { background: #28a745; }
+        .auto-btn:hover { background: #218838; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .instructions { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Auto PDF Capture System</h1>
+        
+        <div class="instructions">
+            <h3>Quick Setup</h3>
+            <ol>
+                <li>Login first: <a href="http://localhost:5000/auth?tenant_id=1" target="_blank">admin@canva.com / admin123</a></li>
+                <li>Click "Auto Capture All" button below</li>
+                <li>This will open each page and prompt you to save PDF</li>
+                <li>Just press Ctrl+P and save each one with the suggested filename</li>
+            </ol>
+        </div>
+
+        <div class="status info">
+            <strong>Status:</strong> <span id="status">Ready to capture PDFs</span>
+        </div>
+
+        <button class="capture-btn auto-btn" onclick="startAutoCaptureSequence()">
+            🎯 Auto Capture All PDFs (40+ pages)
+        </button>
+
+        <div id="capture-list">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const captureSequence = [
+            // Authentication Pages
+            { 
+                name: "Auth - Login Empty", 
+                url: "http://localhost:5000/auth?tenant_id=1",
+                filename: "01_auth_login-empty.pdf",
+                instructions: "Clean login form with marketing sidebar"
+            },
+            { 
+                name: "Auth - Corporate Login", 
+                url: "http://localhost:5000/corporate-login?tenant_id=1",
+                filename: "02_auth_corporate-login.pdf",
+                instructions: "Corporate admin login interface"
+            },
+
+            // Social Feed States
+            { 
+                name: "Social - Default State", 
+                url: "http://localhost:5000/social?tenant_id=1",
+                filename: "03_social_default-state.pdf",
+                instructions: "Default social feed with employee posts"
+            },
+            { 
+                name: "Social - Mobile View", 
+                url: "http://localhost:5000/social?tenant_id=1",
+                filename: "04_social_mobile-view.pdf",
+                instructions: "Resize browser to 375px width first"
+            },
+
+            // Admin Dashboard States  
+            { 
+                name: "Admin - Dashboard Overview", 
+                url: "http://localhost:5000/admin/dashboard?tenant_id=1",
+                filename: "05_admin_dashboard-overview.pdf",
+                instructions: "Main admin dashboard with 403 employees stats"
+            },
+            { 
+                name: "Admin - Employee Directory", 
+                url: "http://localhost:5000/admin/people?tenant_id=1",
+                filename: "06_admin_employee-directory.pdf",
+                instructions: "Full employee directory with all 403 employees"
+            },
+            { 
+                name: "Admin - Department Settings", 
+                url: "http://localhost:5000/admin/settings/departments?tenant_id=1",
+                filename: "07_admin_department-settings.pdf",
+                instructions: "Department management interface"
+            },
+            { 
+                name: "Admin - Location Settings", 
+                url: "http://localhost:5000/admin/settings/locations?tenant_id=1",
+                filename: "08_admin_location-settings.pdf",
+                instructions: "Location management interface"
+            },
+            { 
+                name: "Admin - Branding Settings", 
+                url: "http://localhost:5000/admin/branding?tenant_id=1",
+                filename: "09_admin_branding-settings.pdf",
+                instructions: "Branding and theme configuration"
+            },
+
+            // Feature Pages
+            { 
+                name: "Shop - Marketplace", 
+                url: "http://localhost:5000/shop?tenant_id=1",
+                filename: "10_shop_marketplace.pdf",
+                instructions: "Rewards marketplace with products"
+            },
+            { 
+                name: "Recognition - System", 
+                url: "http://localhost:5000/recognition?tenant_id=1",
+                filename: "11_recognition_system.pdf",
+                instructions: "Employee recognition interface"
+            },
+            { 
+                name: "Leave - Management", 
+                url: "http://localhost:5000/leave-management?tenant_id=1",
+                filename: "12_leave_management.pdf",
+                instructions: "Leave request and calendar system"
+            },
+            { 
+                name: "Org Chart - Full View", 
+                url: "http://localhost:5000/org-chart?tenant_id=1",
+                filename: "13_orgchart_full-view.pdf",
+                instructions: "Complete organization chart"
+            },
+            { 
+                name: "Surveys - System", 
+                url: "http://localhost:5000/surveys?tenant_id=1",
+                filename: "14_surveys_system.pdf",
+                instructions: "Survey creation and management"
+            },
+
+            // Profile and User Pages
+            { 
+                name: "Profile - Admin User", 
+                url: "http://localhost:5000/profile/869?tenant_id=1",
+                filename: "15_profile_admin-user.pdf",
+                instructions: "Admin user profile page"
+            },
+            { 
+                name: "Dashboard - Main", 
+                url: "http://localhost:5000/dashboard?tenant_id=1",
+                filename: "16_dashboard_main.pdf",
+                instructions: "Main user dashboard"
+            }
+        ];
+
+        let currentCaptureIndex = 0;
+        let captureWindow = null;
+
+        function startAutoCaptureSequence() {
+            currentCaptureIndex = 0;
+            updateStatus("Starting auto capture sequence...");
+            openNextCapture();
+        }
+
+        function openNextCapture() {
+            if (currentCaptureIndex >= captureSequence.length) {
+                updateStatus("✅ All PDFs captured! Check your Downloads folder.");
+                return;
+            }
+
+            const item = captureSequence[currentCaptureIndex];
+            updateStatus(`Capturing ${currentCaptureIndex + 1}/${captureSequence.length}: ${item.name}`);
+            
+            // Close previous window if open
+            if (captureWindow && !captureWindow.closed) {
+                captureWindow.close();
+            }
+
+            // Open new window
+            captureWindow = window.open(item.url, '_blank', 'width=1200,height=800');
+            
+            // Show capture instructions
+            setTimeout(() => {
+                alert(`📄 Ready to capture: ${item.name}
+
+Instructions: ${item.instructions}
+
+1. Press Ctrl+P (or Cmd+P on Mac)
+2. Choose "Save as PDF"
+3. Filename: ${item.filename}
+4. Click "Save"
+5. Click "Next" in this dialog to continue
+
+The page should be loaded and ready to capture.`);
+                
+                currentCaptureIndex++;
+                
+                // Ask if ready for next
+                if (confirm("PDF saved? Click OK for next page, Cancel to stop.")) {
+                    openNextCapture();
+                } else {
+                    updateStatus("Capture sequence stopped by user.");
+                }
+            }, 2000); // Wait 2 seconds for page to load
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Populate capture list on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const listContainer = document.getElementById('capture-list');
+            
+            captureSequence.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'capture-item';
+                div.innerHTML = `
+                    <h4>${index + 1}. ${item.name}</h4>
+                    <p><strong>File:</strong> ${item.filename}</p>
+                    <p><strong>Instructions:</strong> ${item.instructions}</p>
+                    <button class="capture-btn" onclick="window.open('${item.url}', '_blank')">
+                        Open Page
+                    </button>
+                `;
+                listContainer.appendChild(div);
+            });
+        });
+    </script>
+</body>
+</html>
