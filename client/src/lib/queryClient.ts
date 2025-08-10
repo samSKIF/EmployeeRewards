@@ -15,6 +15,9 @@ export async function apiRequest(
 ): Promise<Response> {
   // Get JWT token from localStorage
   const token = localStorage.getItem('token');
+  
+  // Get tenant_id from localStorage (stored during login)
+  const tenantId = localStorage.getItem('tenant_id') || '1';
 
   // Prepare headers with auth token
   const headers: Record<string, string> = { ...customHeaders };
@@ -28,7 +31,14 @@ export async function apiRequest(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
+  // Add tenant_id to URL if not already present
+  let finalUrl = url;
+  if (!url.includes('tenant_id=')) {
+    const separator = url.includes('?') ? '&' : '?';
+    finalUrl = `${url}${separator}tenant_id=${tenantId}`;
+  }
+
+  const res = await fetch(finalUrl, {
     method,
     headers,
     body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
@@ -49,6 +59,9 @@ export const getQueryFn: <T>(options: {
     const firebaseToken = localStorage.getItem('firebaseToken');
     const jwtToken = localStorage.getItem('token');
     const token = firebaseToken || jwtToken;
+    
+    // Get tenant_id from localStorage (stored during login)
+    const tenantId = localStorage.getItem('tenant_id') || '1';
 
     // Prepare headers
     const headers: Record<string, string> = {};
@@ -56,7 +69,14 @@ export const getQueryFn: <T>(options: {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const res = await fetch(queryKey[0] as string, {
+    // Add tenant_id to URL if not already present
+    let url = queryKey[0] as string;
+    if (!url.includes('tenant_id=')) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}tenant_id=${tenantId}`;
+    }
+
+    const res = await fetch(url, {
       credentials: 'include',
       headers,
     });
