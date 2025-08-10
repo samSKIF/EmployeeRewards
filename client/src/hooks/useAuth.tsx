@@ -67,7 +67,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         if (token) {
           console.log('useAuth: Making API call to /api/users/me');
-          const response = await fetch('/api/users/me', {
+          // Get tenant_id from URL params or localStorage
+          const urlParams = new URLSearchParams(window.location.search);
+          const tenantId = urlParams.get('tenant_id') || localStorage.getItem('tenant_id') || '1';
+          
+          const response = await fetch(`/api/users/me?tenant_id=${tenantId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

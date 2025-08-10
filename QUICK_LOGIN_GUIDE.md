@@ -14,6 +14,8 @@
 http://localhost:5000/auth?tenant_id=1
 ```
 
+**IMPORTANT: Login should now work and stay logged in!**
+
 **MANAGEMENT PAGE:**
 ```
 http://localhost:5000/management?tenant_id=1

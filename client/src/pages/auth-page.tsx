@@ -123,7 +123,11 @@ export default function AuthPage() {
 
     try {
       // Use our database-based authentication for multi-tenant system
-      const response = await fetch('/api/auth/login', {
+      // Get tenant_id from URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const tenantId = urlParams.get('tenant_id') || '1';
+      
+      const response = await fetch(`/api/auth/login?tenant_id=${tenantId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,8 +155,10 @@ export default function AuthPage() {
 
       const data = await response.json();
 
-      // Store the authentication token
+      // Store the authentication token and tenant_id
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('tenant_id', tenantId);
 
       toast({
         title: 'Success',
