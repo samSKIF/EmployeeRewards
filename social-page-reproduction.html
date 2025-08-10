@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThrivioHR Social Page - Exact Reproduction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        /* Custom Tailwind configuration to match exact brand colors */
+        :root {
+            --primary: #00A389;
+            --secondary: #232E3E;
+            --accent: #FFA500;
+        }
+        
+        /* Custom grid classes for exact layout */
+        .grid-social-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 1rem;
+            max-width: 2200px;
+            margin: 0 auto;
+            padding-top: 1rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-social-layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-left, .sidebar-right {
+                display: none;
+            }
+        }
+        
+        /* Exact component dimensions */
+        .main-content {
+            max-width: 1800px;
+            width: 100%;
+        }
+        
+        .sidebar-left {
+            max-width: 750px;
+            width: 100%;
+        }
+        
+        /* Custom button styles */
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #008f78;
+        }
+        
+        /* Post card styles */
+        .post-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        /* Dropdown menu styles */
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 200px;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: #374151;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* Avatar styles */
+        .avatar {
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* Recognition badge styles */
+        .recognition-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Celebration banner styles */
+        .celebration-banner {
+            background: linear-gradient(135deg, #fdf2f8, #fce7f3, #fdf2f8);
+            border: 2px solid #f9a8d4;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .celebration-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(251, 207, 232, 0.3), rgba(249, 168, 212, 0.3), rgba(251, 207, 232, 0.3));
+        }
+        
+        /* Animation for loading states */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Main Social Page Layout -->
+    <div class="grid-social-layout">
+        <!-- Left Sidebar -->
+        <div class="sidebar-left">
+            <!-- Wallet Widget -->
+            <div class="post-card">
+                <div class="px-6 pt-5 pb-4">
+                    <h2 class="font-bold text-gray-800 text-lg mb-4">ThrivioHR Points</h2>
+                    
+                    <!-- To Give section -->
+                    <div class="border-b border-gray-100 pb-4 mb-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mr-3">
+                                    <i data-lucide="gift" class="h-5 w-5 text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs uppercase text-gray-500 font-medium">TO GIVE</div>
+                                    <div class="text-xl font-bold text-blue-500">500</div>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50">
+                                <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500 flex items-center">
+                            <span class="mr-1">300 Point Bonus</span>
+                            <i data-lucide="info" class="h-3 w-3"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- To Spend section -->
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mr-3">
+                                    <i data-lucide="credit-card" class="h-5 w-5 text-green-500"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs uppercase text-gray-500 font-medium">TO SPEND</div>
+                                    <div class="text-xl font-bold text-green-500">400</div>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50">
+                                <i data-lucide="chevron-right" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="bg-gray-50 px-6 py-4 text-center">
+                    <div class="text-xs text-gray-500 mb-2 font-medium">#thanksmatter</div>
+                    <button class="btn-primary">Show Details</button>
+                </div>
+            </div>
+            
+            <!-- Priorities Widget -->
+            <div class="post-card">
+                <div class="p-6">
+                    <h3 class="font-bold text-gray-800 text-lg mb-4">My Priorities</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="target" class="h-5 w-5 text-blue-500"></i>
+                                <span class="font-medium text-blue-900">Complete Q3 Goals</span>
+                            </div>
+                            <span class="text-xs text-blue-600 bg-blue-200 px-2 py-1 rounded-full">75%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="users" class="h-5 w-5 text-green-500"></i>
+                                <span class="font-medium text-green-900">Team Development</span>
+                            </div>
+                            <span class="text-xs text-green-600 bg-green-200 px-2 py-1 rounded-full">90%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Post Creator -->
+            <div class="post-card">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center border-2 border-gray-100">
+                            <span class="text-blue-700 text-xl font-bold">CA</span>
+                        </div>
+                        <div class="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-6 py-3 cursor-pointer transition-colors duration-200">
+                            <span class="text-gray-500 text-md">What's on your mind?</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="flex items-center justify-center gap-1.5 bg-green-100 text-green-800 py-2 px-3 rounded-lg text-sm font-medium">
+                            <i data-lucide="image" class="h-4 w-4 text-green-600"></i>
+                            <span>Share</span>
+                        </button>
+                        <button class="flex items-center justify-center gap-1.5 bg-amber-100 text-amber-800 py-2 px-3 rounded-lg text-sm font-medium">
+                            <i data-lucide="award" class="h-4 w-4 text-amber-500"></i>
+                            <span>Appreciate</span>
+                        </button>
+                        <button class="flex items-center justify-center gap-1.5 bg-purple-100 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium">
+                            <i data-lucide="bar-chart" class="h-4 w-4 text-purple-500"></i>
+                            <span>Poll</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="flex justify-end items-center mb-4">
+                <div class="flex items-center text-sm text-gray-600">
+                    <span>Filter by</span>
+                    <div class="relative ml-2">
+                        <button class="border border-gray-300 rounded-md px-3 py-1 flex items-center hover:bg-gray-50" onclick="toggleDropdown()">
+                            <span>My Company</span>
+                            <i data-lucide="chevron-down" class="ml-1 h-4 w-4"></i>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div id="filterDropdown" class="dropdown-menu hidden">
+                            <div class="dropdown-item">
+                                <i data-lucide="building" class="h-4 w-4"></i>
+                                <span>My Company</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <i data-lucide="users" class="h-4 w-4"></i>
+                                <span>My Department</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <i data-lucide="user" class="h-4 w-4"></i>
+                                <span>Following</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <i data-lucide="globe" class="h-4 w-4"></i>
+                                <span>All Posts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Posts -->
+            <!-- Post 1: Regular Post -->
+            <div class="post-card">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="text-purple-700 text-lg font-bold">JS</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Jessica Smith</div>
+                                <div class="text-sm text-gray-500">Product Designer • 2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full" onclick="togglePostMenu(1)">
+                                <i data-lucide="more-horizontal" class="h-5 w-5"></i>
+                            </button>
+                            <div id="postMenu1" class="dropdown-menu hidden">
+                                <div class="dropdown-item">
+                                    <i data-lucide="bookmark" class="h-4 w-4"></i>
+                                    <span>Save Post</span>
+                                </div>
+                                <div class="dropdown-item">
+                                    <i data-lucide="flag" class="h-4 w-4"></i>
+                                    <span>Report</span>
+                                </div>
+                                <div class="dropdown-item text-red-600">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                    <span>Delete</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-800 leading-relaxed">Excited to share our latest design milestone! 🎨 The new user interface is coming together beautifully. Working with such an amazing team makes all the difference!</p>
+                    </div>
+                    
+                    <!-- Post Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="thumbs-up" class="h-5 w-5"></i>
+                                <span class="text-sm">Like</span>
+                                <span class="text-sm">12</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="message-circle" class="h-5 w-5"></i>
+                                <span class="text-sm">Comment</span>
+                                <span class="text-sm">5</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="share-2" class="h-5 w-5"></i>
+                                <span class="text-sm">Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Post 2: Recognition Post -->
+            <div class="post-card">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-green-700 text-lg font-bold">MJ</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Michael Johnson</div>
+                                <div class="text-sm text-gray-500">Engineering Manager • 4 hours ago</div>
+                            </div>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full">
+                            <i data-lucide="more-horizontal" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Recognition Badge -->
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="rounded-full bg-amber-500 text-white p-1.5">
+                                <i data-lucide="award" class="h-4 w-4"></i>
+                            </div>
+                            <span class="font-medium text-amber-900">Excellence Award</span>
+                            <div class="ml-auto recognition-badge">50 Points</div>
+                        </div>
+                        <p class="text-amber-900 text-sm">Outstanding performance on the Q3 project delivery!</p>
+                        
+                        <div class="mt-3 flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center border-2 border-white">
+                                <span class="text-amber-700 text-sm font-bold">AS</span>
+                            </div>
+                            <div class="ml-2">
+                                <div class="text-sm font-medium">Alex Rodriguez</div>
+                                <div class="text-xs text-gray-500">Senior Developer</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-800 leading-relaxed">Congratulations @Alex for exceptional dedication and technical excellence! Your innovative solutions and collaborative spirit truly make a difference.</p>
+                    </div>
+                    
+                    <!-- Post Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <button class="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-600 font-medium rounded-lg">
+                                <i data-lucide="thumbs-up" class="h-5 w-5"></i>
+                                <span class="text-sm">24</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="message-circle" class="h-5 w-5"></i>
+                                <span class="text-sm">8</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="share-2" class="h-5 w-5"></i>
+                                <span class="text-sm">Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Post 3: Birthday Celebration -->
+            <div class="post-card">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
+                                <span class="text-pink-700 text-lg font-bold">HR</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">HR Team</div>
+                                <div class="text-sm text-gray-500">Human Resources • 1 day ago</div>
+                            </div>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full">
+                            <i data-lucide="more-horizontal" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Birthday Celebration Banner -->
+                    <div class="celebration-banner">
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white p-2">
+                                    <i data-lucide="cake" class="h-5 w-5"></i>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="sparkles" class="text-pink-500 h-4 w-4"></i>
+                                    <span class="font-semibold text-pink-900 text-lg">🎂 Birthday Celebration!</span>
+                                    <i data-lucide="sparkles" class="text-pink-500 h-4 w-4"></i>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-pink-800">Celebrating </span>
+                                <button class="font-bold text-pink-900 hover:text-pink-700 hover:underline cursor-pointer bg-pink-100/50 px-2 py-1 rounded-md transition-colors">
+                                    Sarah Chen
+                                </button>
+                                <span class="text-pink-800">'s special day! 🎉</span>
+                            </div>
+                            <div class="text-sm text-pink-700 font-medium">
+                                🎈 Join us in wishing them a wonderful year ahead! 🎈
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-800 leading-relaxed">Happy Birthday to Sarah Chen! 🎂 Wishing you a fantastic day filled with joy, laughter, and all your favorite things. Thank you for bringing such positive energy to our team every day!</p>
+                    </div>
+                    
+                    <!-- Post Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="heart" class="h-5 w-5 text-red-500"></i>
+                                <span class="text-sm">18</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="message-circle" class="h-5 w-5"></i>
+                                <span class="text-sm">12</span>
+                            </button>
+                            <button class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i data-lucide="gift" class="h-5 w-5 text-purple-500"></i>
+                                <span class="text-sm">Send Gift</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State for More Posts -->
+            <div class="post-card">
+                <div class="p-6 text-center">
+                    <div class="inline-flex items-center gap-2 text-gray-500">
+                        <div class="w-4 h-4 border-2 border-t-transparent border-gray-400 rounded-full animate-spin"></div>
+                        <span>Loading more posts...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="sidebar-right hidden lg:block">
+            <!-- Celebrations Widget -->
+            <div class="post-card">
+                <div class="p-6">
+                    <h3 class="font-bold text-gray-800 text-lg mb-4">🎉 Celebrations</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
+                            <i data-lucide="cake" class="h-5 w-5 text-pink-500"></i>
+                            <div>
+                                <div class="font-medium text-pink-900">Sarah Chen</div>
+                                <div class="text-xs text-pink-600">Birthday Today!</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                            <i data-lucide="trophy" class="h-5 w-5 text-blue-500"></i>
+                            <div>
+                                <div class="font-medium text-blue-900">Mike Ross</div>
+                                <div class="text-xs text-blue-600">3 Years Anniversary</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending Channels -->
+            <div class="post-card">
+                <div class="p-6">
+                    <h3 class="font-bold text-gray-800 text-lg mb-4">📈 Trending</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                                    <i data-lucide="code" class="h-4 w-4 text-purple-500"></i>
+                                </div>
+                                <span class="font-medium text-gray-800">Engineering</span>
+                            </div>
+                            <span class="text-xs text-gray-500">24 posts</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                                    <i data-lucide="palette" class="h-4 w-4 text-green-500"></i>
+                                </div>
+                                <span class="font-medium text-gray-800">Design</span>
+                            </div>
+                            <span class="text-xs text-gray-500">18 posts</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                    <i data-lucide="megaphone" class="h-4 w-4 text-blue-500"></i>
+                                </div>
+                                <span class="font-medium text-gray-800">Marketing</span>
+                            </div>
+                            <span class="text-xs text-gray-500">15 posts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('filterDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        function togglePostMenu(postId) {
+            const menu = document.getElementById('postMenu' + postId);
+            menu.classList.toggle('hidden');
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.closest('.relative').contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Mock interactions
+        document.addEventListener('click', function(event) {
+            const button = event.target.closest('button');
+            if (!button) return;
+            
+            // Handle like/reaction buttons
+            if (button.querySelector('[data-lucide="thumbs-up"]') || button.querySelector('[data-lucide="heart"]')) {
+                button.classList.toggle('bg-teal-50');
+                button.classList.toggle('text-teal-600');
+                button.classList.toggle('font-medium');
+            }
+            
+            // Handle dropdown items
+            if (button.classList.contains('dropdown-item') || button.closest('.dropdown-item')) {
+                const dropdown = button.closest('.dropdown-menu');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        });
+        
+        // Mock real-time updates
+        setInterval(() => {
+            const loadingElement = document.querySelector('.animate-spin');
+            if (loadingElement && Math.random() > 0.8) {
+                // Simulate loading completion
+                const parent = loadingElement.closest('.post-card');
+                if (parent) {
+                    parent.innerHTML = `
+                        <div class="p-6 text-center text-gray-500">
+                            <p>All caught up! 🎉</p>
+                            <p class="text-sm mt-1">You've seen all recent posts</p>
+                        </div>
+                    `;
+                }
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
