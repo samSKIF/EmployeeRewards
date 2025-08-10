@@ -14,6 +14,90 @@
             --accent: #FFA500;
         }
         
+        /* Top Navigation Bar - matching exact spacing and design */
+        .top-navbar {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+        
+        .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 2rem; /* Exact spacing between nav items */
+            flex: 1;
+            justify-content: center;
+            max-width: 600px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            min-width: 80px;
+        }
+        
+        .nav-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+            background-color: #f0fdfa;
+        }
+        
+        .nav-item-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .nav-item-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6b7280;
+        }
+        
         /* Custom grid classes for exact layout */
         .grid-social-layout {
             display: grid;
@@ -21,7 +105,7 @@
             gap: 1rem;
             max-width: 2200px;
             margin: 0 auto;
-            padding-top: 1rem;
+            padding-top: 5rem; /* Account for fixed navbar */
         }
         
         @media (max-width: 1024px) {
@@ -30,6 +114,13 @@
             }
             .sidebar-left, .sidebar-right {
                 display: none;
+            }
+            .nav-center {
+                gap: 1rem;
+            }
+            .nav-item {
+                min-width: 60px;
+                padding: 0.25rem 0.5rem;
             }
         }
         
