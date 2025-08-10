@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThrivioHR Comprehensive PDF Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .page-section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .state-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; margin: 15px 0; }
+        .state-card { border: 1px solid #ddd; padding: 15px; border-radius: 6px; background: #fafafa; }
+        .state-title { font-weight: bold; color: #0066cc; margin-bottom: 10px; }
+        .capture-btn { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .capture-btn:hover { background: #0052a3; }
+        .url-link { color: #0066cc; text-decoration: none; font-family: monospace; }
+        .instructions { background: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .workflow { background: #f0f9ff; padding: 15px; border-left: 4px solid #0066cc; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 ThrivioHR Complete PDF Documentation System</h1>
+        
+        <div class="instructions">
+            <h2>🎯 Comprehensive State Capture Strategy</h2>
+            <p>This system creates detailed PDFs showing every possible interaction state for each page:</p>
+            <ul>
+                <li><strong>Default States:</strong> Clean, empty, initial load</li>
+                <li><strong>Populated States:</strong> With real data, posts, notifications</li>
+                <li><strong>Interactive States:</strong> Menus open, modals visible, forms filled</li>
+                <li><strong>Error States:</strong> Loading, validation errors, empty results</li>
+            </ul>
+        </div>
+
+        <div class="workflow">
+            <h3>🔧 Capture Workflow</h3>
+            <ol>
+                <li><strong>Login:</strong> <a href="http://localhost:5000/auth?tenant_id=1" target="_blank">admin@canva.com / admin123</a></li>
+                <li><strong>Navigate:</strong> Go to each page URL</li>
+                <li><strong>Capture States:</strong> Use Browser DevTools → Print → Save as PDF</li>
+                <li><strong>Name Files:</strong> page-name_state-description.pdf</li>
+            </ol>
+        </div>
+
+        <!-- Social Feed Page -->
+        <div class="page-section">
+            <h2>📱 Social Feed Page</h2>
+            <p><strong>Base URL:</strong> <a class="url-link" href="http://localhost:5000/social?tenant_id=1" target="_blank">http://localhost:5000/social?tenant_id=1</a></p>
+            
+            <div class="state-grid">
+                <div class="state-card">
+                    <div class="state-title">🏠 Default State</div>
+                    <p>Clean social feed with real employee posts</p>
+                    <button class="capture-btn" onclick="window.open('http://localhost:5000/social?tenant_id=1')">Open Page</button>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">📝 Post Creator Open</div>
+                    <p>Click "What's on your mind?" to open post composer</p>
+                    <ul>
+                        <li>Empty composer</li>
+                        <li>With text typed</li>
+                        <li>With emoji picker open</li>
+                        <li>With attachment options</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🎊 Celebration Modal</div>
+                    <p>Birthday/anniversary celebration popup</p>
+                    <ul>
+                        <li>Birthday celebration open</li>
+                        <li>Work anniversary modal</li>
+                        <li>Achievement notification</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">👤 Profile Menu</div>
+                    <p>User dropdown menu states</p>
+                    <ul>
+                        <li>Menu closed</li>
+                        <li>Profile dropdown open</li>
+                        <li>Settings submenu</li>
+                        <li>Admin options visible</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">💬 Comments & Interactions</div>
+                    <p>Post interaction states</p>
+                    <ul>
+                        <li>Comments collapsed</li>
+                        <li>Comments expanded</li>
+                        <li>Like modal open</li>
+                        <li>Reply interface</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">📱 Mobile View</div>
+                    <p>Responsive states (resize browser)</p>
+                    <ul>
+                        <li>Mobile (375px width)</li>
+                        <li>Tablet (768px width)</li>
+                        <li>Sidebar collapsed</li>
+                        <li>Mobile menu open</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="page-section">
+            <h2>⚙️ Admin Dashboard</h2>
+            <p><strong>Base URL:</strong> <a class="url-link" href="http://localhost:5000/admin/dashboard?tenant_id=1" target="_blank">http://localhost:5000/admin/dashboard?tenant_id=1</a></p>
+            
+            <div class="state-grid">
+                <div class="state-card">
+                    <div class="state-title">📊 Default Dashboard</div>
+                    <p>Clean admin overview with 403 employees</p>
+                    <button class="capture-btn" onclick="window.open('http://localhost:5000/admin/dashboard?tenant_id=1')">Open Page</button>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">👥 Employee Management</div>
+                    <p><a class="url-link" href="http://localhost:5000/admin/people?tenant_id=1" target="_blank">Employee Directory</a></p>
+                    <ul>
+                        <li>Full employee list (403 employees)</li>
+                        <li>Search results filtered</li>
+                        <li>Department filter applied</li>
+                        <li>Employee details modal</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🏢 Department Settings</div>
+                    <p><a class="url-link" href="http://localhost:5000/admin/settings/departments?tenant_id=1" target="_blank">Department Management</a></p>
+                    <ul>
+                        <li>Department list view</li>
+                        <li>Add department modal</li>
+                        <li>Edit department form</li>
+                        <li>Delete confirmation dialog</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🎨 Branding Settings</div>
+                    <p><a class="url-link" href="http://localhost:5000/admin/branding?tenant_id=1" target="_blank">Branding Configuration</a></p>
+                    <ul>
+                        <li>Color picker open</li>
+                        <li>Logo upload interface</li>
+                        <li>Theme preview</li>
+                        <li>Save confirmation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Pages -->
+        <div class="page-section">
+            <h2>🔐 Authentication Pages</h2>
+            
+            <div class="state-grid">
+                <div class="state-card">
+                    <div class="state-title">🏠 Main Login</div>
+                    <p><a class="url-link" href="http://localhost:5000/auth?tenant_id=1" target="_blank">Two-Column Auth</a></p>
+                    <ul>
+                        <li>Empty login form</li>
+                        <li>Form with credentials filled</li>
+                        <li>Loading state</li>
+                        <li>Error message display</li>
+                        <li>Success state</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🏢 Corporate Login</div>
+                    <p><a class="url-link" href="http://localhost:5000/corporate-login?tenant_id=1" target="_blank">Corporate Interface</a></p>
+                    <ul>
+                        <li>Corporate login form</li>
+                        <li>Admin setup dialog</li>
+                        <li>Organization selection</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Pages -->
+        <div class="page-section">
+            <h2>🎯 Feature Pages</h2>
+            
+            <div class="state-grid">
+                <div class="state-card">
+                    <div class="state-title">🛍️ Marketplace</div>
+                    <p><a class="url-link" href="http://localhost:5000/shop?tenant_id=1" target="_blank">Rewards Shop</a></p>
+                    <ul>
+                        <li>Product grid view</li>
+                        <li>Product details modal</li>
+                        <li>Shopping cart</li>
+                        <li>Purchase confirmation</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🏆 Recognition</div>
+                    <p><a class="url-link" href="http://localhost:5000/recognition?tenant_id=1" target="_blank">Recognition System</a></p>
+                    <ul>
+                        <li>Recognition feed</li>
+                        <li>Give recognition modal</li>
+                        <li>Badge selector</li>
+                        <li>Leaderboard view</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">📊 Leave Management</div>
+                    <p><a class="url-link" href="http://localhost:5000/leave-management?tenant_id=1" target="_blank">Leave System</a></p>
+                    <ul>
+                        <li>Leave calendar</li>
+                        <li>Request leave form</li>
+                        <li>Approval workflow</li>
+                        <li>Leave history</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">🌳 Org Chart</div>
+                    <p><a class="url-link" href="http://localhost:5000/org-chart?tenant_id=1" target="_blank">Organization Chart</a></p>
+                    <ul>
+                        <li>Full org chart view</li>
+                        <li>Department filtered</li>
+                        <li>Employee details popup</li>
+                        <li>Search results</li>
+                    </ul>
+                </div>
+                
+                <div class="state-card">
+                    <div class="state-title">📋 Surveys</div>
+                    <p><a class="url-link" href="http://localhost:5000/surveys?tenant_id=1" target="_blank">Survey System</a></p>
+                    <ul>
+                        <li>Survey list</li>
+                        <li>Create survey form</li>
+                        <li>Survey taking interface</li>
+                        <li>Results dashboard</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>📋 PDF Creation Checklist</h2>
+            <h3>For Each Page State:</h3>
+            <ol>
+                <li><strong>Navigate:</strong> Go to the specific URL</li>
+                <li><strong>Interact:</strong> Click buttons, open menus, fill forms</li>
+                <li><strong>Capture:</strong> Browser → Print → Save as PDF</li>
+                <li><strong>Name:</strong> page-name_state-description.pdf</li>
+            </ol>
+            
+            <h3>📁 Recommended File Structure:</h3>
+            <div style="font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+/pdf-documentation/<br>
+├── social-feed/<br>
+│   ├── social_default-state.pdf<br>
+│   ├── social_post-creator-open.pdf<br>
+│   ├── social_celebration-modal.pdf<br>
+│   ├── social_comments-expanded.pdf<br>
+│   └── social_mobile-view.pdf<br>
+├── admin-dashboard/<br>
+│   ├── admin_dashboard-overview.pdf<br>
+│   ├── admin_employee-directory.pdf<br>
+│   ├── admin_department-settings.pdf<br>
+│   └── admin_branding-settings.pdf<br>
+├── authentication/<br>
+│   ├── auth_login-empty.pdf<br>
+│   ├── auth_login-filled.pdf<br>
+│   ├── auth_login-error.pdf<br>
+│   └── auth_corporate-login.pdf<br>
+└── features/<br>
+    ├── shop_marketplace-grid.pdf<br>
+    ├── recognition_give-recognition.pdf<br>
+    ├── leave_calendar-view.pdf<br>
+    ├── orgchart_full-view.pdf<br>
+    └── surveys_survey-list.pdf
+            </div>
+        </div>
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0066cc;">
+            <h3>🚀 AI Reconstruction Benefits</h3>
+            <p>With this comprehensive PDF collection, you'll have:</p>
+            <ul>
+                <li><strong>Complete Visual Reference:</strong> Every possible UI state documented</li>
+                <li><strong>Interaction Patterns:</strong> How menus, modals, and forms should behave</li>
+                <li><strong>Responsive Layouts:</strong> Mobile, tablet, and desktop variations</li>
+                <li><strong>Error Handling:</strong> How the UI handles different states</li>
+                <li><strong>Data Context:</strong> Real 403 employee data for authentic reconstruction</li>
+            </ul>
+            <p><strong>Result:</strong> Perfect input for AI tools to recreate pixel-perfect, fully functional React components.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add some helpful capture functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('PDF Capture System Ready');
+            console.log('Login at: http://localhost:5000/auth?tenant_id=1');
+            console.log('Credentials: admin@canva.com / admin123');
+        });
+    </script>
+</body>
+</html>
