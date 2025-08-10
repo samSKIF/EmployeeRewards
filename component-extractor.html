@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThrivioHR Component Extractor</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .component-card { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .component-title { color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 10px; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 14px; border-left: 4px solid #0066cc; }
+        .preview { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 4px; background: white; }
+        .tag { display: inline-block; background: #e7f3ff; color: #0066cc; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 ThrivioHR Component Documentation</h1>
+        <p>This document captures the exact UI components from the live application for AI-powered reconstruction.</p>
+
+        <!-- Auth Page Components -->
+        <div class="component-card">
+            <h2 class="component-title">🔐 Authentication Page Layout</h2>
+            <div class="tag">Two-Column</div>
+            <div class="tag">Marketing Sidebar</div>
+            <div class="tag">Responsive</div>
+            
+            <h3>Visual Structure:</h3>
+            <div class="code-block">
+┌─────────────────────────────────────────────────────────────┐
+│  ThrivioHR Platform                     [Marketing Image]  │
+│                                                             │
+│  Welcome Back                           Empower Your        │
+│                                         Workplace           │
+│  Email: [admin@canva.com     ]                             │
+│  Password: [••••••••••••     ]          Connect, engage    │
+│                                         and recognize...    │
+│  [Sign In Button]                                          │
+│                                         ✓ Peer Recognition │
+│  OR                                     ✓ Rewards System   │
+│                                         ✓ Polls & Surveys  │
+│  [Login as Corporate]                                      │
+└─────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h3>Component Breakdown:</h3>
+            <div class="code-block">
+// Left Panel - Login Form
+- Brand header: "ThrivioHR Platform"
+- Welcome text: "Welcome Back"
+- Email input: Pre-filled with admin@canva.com
+- Password input: Masked
+- Primary button: "Sign In" (dark blue)
+- Divider: "OR"
+- Secondary button: "Login as Corporate"
+
+// Right Panel - Marketing
+- Hero illustration: Employee engagement graphic
+- Headline: "Empower Your Workplace"
+- Subtitle: Connection and engagement messaging
+- Feature list: 3 items with checkmark icons
+- Color scheme: Blue primary, professional layout
+            </div>
+
+            <h3>CSS Properties:</h3>
+            <div class="code-block">
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.auth-left {
+  flex: 1;
+  padding: 2rem;
+  max-width: 480px;
+}
+
+.auth-right {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem;
+  color: white;
+}
+
+.sign-in-button {
+  background: #1f2937;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+}
+            </div>
+        </div>
+
+        <!-- Social Feed Components -->
+        <div class="component-card">
+            <h2 class="component-title">📱 Social Feed Layout</h2>
+            <div class="tag">Three-Column</div>
+            <div class="tag">Responsive Sidebar</div>
+            <div class="tag">Infinite Scroll</div>
+            
+            <h3>Visual Structure:</h3>
+            <div class="code-block">
+┌──────────────────────────────────────────────────────────────────────┐
+│ [Logo] ThrivioHR    [Search]         [Notifications] [Profile Menu] │
+├──────────────────────────────────────────────────────────────────────┤
+│ ┌─────────────┐ ┌─────────────────────────┐ ┌─────────────────────┐ │
+│ │ Left Sidebar│ │     Main Feed           │ │   Right Sidebar    │ │
+│ │             │ │                         │ │                     │ │
+│ │ 🏠 Home     │ │ [Post Composer]         │ │ 👥 Suggested       │ │
+│ │ 👥 People   │ │                         │ │    Connections      │ │
+│ │ 🎯 Admin    │ │ ┌─────────────────────┐ │ │                     │ │
+│ │ 🛍️ Shop     │ │ │ Post by John Doe    │ │ │ 🎂 Birthdays       │ │
+│ │ 🏆 Rewards  │ │ │ "Great team work!"  │ │ │                     │ │
+│ │ 📊 Leave    │ │ │ [Like][Comment]     │ │ │ 📈 Quick Stats     │ │
+│ │ 📋 Surveys  │ │ └─────────────────────┘ │ │                     │ │
+│ └─────────────┘ │                         │ └─────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h3>Component Breakdown:</h3>
+            <div class="code-block">
+// Top Navigation
+- Logo + brand name
+- Global search bar
+- Notification bell icon
+- User avatar dropdown
+
+// Left Sidebar Navigation
+- Home, People, Admin, Shop, Rewards, Leave, Surveys
+- Active state highlighting
+- Collapsible on mobile
+
+// Main Feed
+- Post composer with rich text
+- Individual post cards
+- User avatars, names, timestamps
+- Like/comment/share actions
+- Infinite scroll loading
+
+// Right Sidebar
+- Suggested connections
+- Birthday celebrations
+- Quick stats widgets
+- Recent activity
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Components -->
+        <div class="component-card">
+            <h2 class="component-title">⚙️ Admin Dashboard</h2>
+            <div class="tag">Grid Layout</div>
+            <div class="tag">Statistics Cards</div>
+            <div class="tag">Data Tables</div>
+            
+            <h3>Visual Structure:</h3>
+            <div class="code-block">
+┌─────────────────────────────────────────────────────────────┐
+│ Admin Dashboard                        [+ New Employee]    │
+├─────────────────────────────────────────────────────────────┤
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
+│ │ Total Users │ │ Active      │ │ Departments │           │
+│ │    403      │ │    387      │ │     12      │           │
+│ └─────────────┘ └─────────────┘ └─────────────┘           │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Employee Directory                                      │ │
+│ │ ┌─────────────────────────────────────────────────────┐ │ │
+│ │ │ [Search] [Filter: All] [Export]                     │ │ │
+│ │ └─────────────────────────────────────────────────────┘ │ │
+│ │                                                         │ │
+│ │ Name          Department    Status      Last Active     │ │
+│ │ John Doe      Engineering   Active      2 hours ago     │ │
+│ │ Jane Smith    Marketing     Active      1 day ago       │ │
+│ │ ...                                                     │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+            </div>
+        </div>
+
+        <!-- Interactive Elements -->
+        <div class="component-card">
+            <h2 class="component-title">🎯 Interactive Elements</h2>
+            
+            <h3>Buttons:</h3>
+            <div class="code-block">
+Primary: #1f2937 (dark gray/blue)
+Secondary: #f3f4f6 (light gray)
+Success: #10b981 (green)
+Warning: #f59e0b (orange)
+Danger: #ef4444 (red)
+
+Border radius: 0.5rem (8px)
+Padding: 0.75rem 1.5rem
+Font weight: 500
+            </div>
+
+            <h3>Form Elements:</h3>
+            <div class="code-block">
+Input fields:
+- Border: #d1d5db
+- Focus: #3b82f6 (blue)
+- Padding: 0.75rem
+- Border radius: 0.5rem
+
+Select dropdowns:
+- Chevron icon
+- Same styling as inputs
+- Dropdown shadow: 0 10px 25px rgba(0,0,0,0.1)
+            </div>
+
+            <h3>Typography:</h3>
+            <div class="code-block">
+Font family: Inter, system-ui, sans-serif
+
+Headings:
+- H1: 2.25rem (36px), font-weight: 700
+- H2: 1.875rem (30px), font-weight: 600  
+- H3: 1.5rem (24px), font-weight: 600
+
+Body: 1rem (16px), font-weight: 400
+Small: 0.875rem (14px), font-weight: 400
+            </div>
+        </div>
+
+        <div class="component-card">
+            <h2 class="component-title">📐 Layout System</h2>
+            
+            <h3>Grid System:</h3>
+            <div class="code-block">
+Container: max-width: 1200px
+Columns: 12-column grid
+Gutters: 1rem (16px)
+Breakpoints:
+- Mobile: 640px
+- Tablet: 768px  
+- Desktop: 1024px
+- Large: 1280px
+            </div>
+
+            <h3>Spacing Scale:</h3>
+            <div class="code-block">
+0.25rem (4px)  - xs
+0.5rem (8px)   - sm  
+0.75rem (12px) - base
+1rem (16px)    - md
+1.5rem (24px)  - lg
+2rem (32px)    - xl
+3rem (48px)    - 2xl
+4rem (64px)    - 3xl
+            </div>
+        </div>
+
+        <div class="component-card">
+            <h2 class="component-title">🎨 Color Palette</h2>
+            
+            <div class="code-block">
+Primary Brand: #00A389 (teal)
+Secondary: #232E3E (dark blue)
+Accent: #FFA500 (orange)
+
+Grays:
+- #f8fafc (background)
+- #f3f4f6 (light gray)
+- #d1d5db (border)
+- #6b7280 (text secondary)
+- #374151 (text primary)
+- #1f2937 (dark)
+
+Status Colors:
+- Success: #10b981
+- Warning: #f59e0b  
+- Error: #ef4444
+- Info: #3b82f6
+            </div>
+        </div>
+
+        <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>🚀 AI Reconstruction Instructions</h3>
+            <p>With this component documentation, you can:</p>
+            <ul>
+                <li><strong>Exact Layout Recreation:</strong> Use the ASCII diagrams for precise positioning</li>
+                <li><strong>Component Library:</strong> Build reusable React components from these specs</li>
+                <li><strong>Styling System:</strong> Apply the documented colors, typography, and spacing</li>
+                <li><strong>Responsive Behavior:</strong> Implement the grid system and breakpoints</li>
+                <li><strong>Interactive States:</strong> Apply hover, focus, and active states</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
